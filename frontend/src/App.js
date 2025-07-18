@@ -2254,6 +2254,34 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   placeholder="Nom de la société cliente"
                 />
               </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    📞 Téléphone
+                  </label>
+                  <input
+                    type="tel"
+                    value={inputData.engineer_phone || ''}
+                    onChange={(e) => handleInputChange('engineer_phone', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="+226 XX XX XX XX"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    📧 Email
+                  </label>
+                  <input
+                    type="email"
+                    value={inputData.engineer_email || ''}
+                    onChange={(e) => handleInputChange('engineer_email', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="ingenieur@ecopump.com"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
