@@ -3933,8 +3933,8 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         📊 EXPERT HYDRAULIQUE
       </text>
       
-      {/* Section Propriétés du Fluide */}
-      <rect x="850" y="160" width="320" height="130" fill="#f0f9ff" stroke="#0284c7" strokeWidth="2" rx="10" />
+      {/* Section Propriétés du Fluide avec calculs automatiques */}
+      <rect x="850" y="160" width="320" height="150" fill="#f0f9ff" stroke="#0284c7" strokeWidth="2" rx="10" />
       <text x="860" y="180" className="text-sm font-bold" fill="#0c4a6e">💧 PROPRIÉTÉS DU FLUIDE</text>
       
       <text x="860" y="200" className="text-xs" fill="#1f2937">
@@ -3944,18 +3944,68 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         Température: {inputData.temperature}°C
       </text>
       <text x="860" y="230" className="text-xs" fill="#1f2937">
-        Masse volumique: {results.npshd_analysis?.fluid_properties?.density || 'N/A'} kg/m³
+        Masse volumique: {(() => {
+          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
+          if (!selectedFluid) return 'N/A';
+          
+          let density = selectedFluid.density;
+          if (inputData.fluid_type === 'water') {
+            density = 1000 - 0.2 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'oil') {
+            density = 850 - 0.7 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycol') {
+            density = 1050 - 0.3 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'acid') {
+            density = 1200 - 0.1 * (inputData.temperature - 20);
+          }
+          
+          return Math.max(density, 700).toFixed(1);
+        })()} kg/m³
       </text>
       <text x="860" y="245" className="text-xs" fill="#1f2937">
-        Viscosité: {results.npshd_analysis?.fluid_properties?.viscosity || 'N/A'} Pa·s
+        Viscosité: {(() => {
+          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
+          if (!selectedFluid) return 'N/A';
+          
+          let viscosity = selectedFluid.viscosity;
+          if (inputData.fluid_type === 'water') {
+            viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
+          } else if (inputData.fluid_type === 'oil') {
+            viscosity = 0.1 * Math.exp(-0.05 * (inputData.temperature - 20));
+          } else if (inputData.fluid_type === 'glycol') {
+            viscosity = 0.01 * Math.exp(-0.04 * (inputData.temperature - 20));
+          } else if (inputData.fluid_type === 'acid') {
+            viscosity = 0.0012 * Math.exp(-0.025 * (inputData.temperature - 20));
+          }
+          
+          return Math.max(viscosity, 0.0001).toFixed(4);
+        })()} Pa·s
       </text>
       <text x="860" y="260" className="text-xs" fill="#1f2937">
-        P. vapeur: {results.npshd_analysis?.fluid_properties?.vapor_pressure ? 
-          (results.npshd_analysis.fluid_properties.vapor_pressure / 1000).toFixed(2) : 'N/A'} kPa
+        P. vapeur: {(() => {
+          let vaporPressure = 0;
+          if (inputData.fluid_type === 'water') {
+            vaporPressure = 611 * Math.exp(17.27 * inputData.temperature / (inputData.temperature + 237.3));
+          } else if (inputData.fluid_type === 'oil') {
+            vaporPressure = 10 * Math.exp(0.05 * (inputData.temperature - 20));
+          } else if (inputData.fluid_type === 'glycol') {
+            vaporPressure = 100 * Math.exp(0.08 * (inputData.temperature - 20));
+          } else if (inputData.fluid_type === 'acid') {
+            vaporPressure = 800 * Math.exp(0.06 * (inputData.temperature - 20));
+          }
+          
+          return (Math.max(vaporPressure, 1) / 1000).toFixed(1);
+        })()} kPa
       </text>
       <text x="860" y="275" className="text-xs" fill="#1f2937">
         P. atmosphérique: {results.npshd_analysis?.atmospheric_pressure ? 
           (results.npshd_analysis.atmospheric_pressure / 1000).toFixed(1) : '101.3'} kPa
+      </text>
+      <text x="860" y="290" className="text-xs" fill="#1f2937">
+        Altitude: {inputData.altitude || 0}m
+      </text>
+      <text x="860" y="305" className="text-xs" fill="#1f2937">
+        Temp. ambiante: {inputData.ambient_temperature || 25}°C
       </text>
       
       {/* Section Configuration */}
