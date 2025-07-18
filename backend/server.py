@@ -140,7 +140,6 @@ class FittingInput(BaseModel):
     quantity: int = 1
 
 class NPSHdCalculationInput(BaseModel):
-    altitude: float = 0  # m (altitude for automatic Patm calculation)
     suction_type: str = "flooded"  # "flooded" or "suction_lift"
     hasp: float  # m (suction height - positive = flooded / negative = suction lift)
     flow_rate: float  # m³/h
