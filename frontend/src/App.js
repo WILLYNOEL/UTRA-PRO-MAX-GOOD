@@ -3157,102 +3157,105 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         📊 EXPERT HYDRAULIQUE
       </text>
       
+      {/* Section Propriétés du Fluide */}
+      <rect x="850" y="160" width="320" height="130" fill="#f0f9ff" stroke="#0284c7" strokeWidth="2" rx="10" />
+      <text x="860" y="180" className="text-sm font-bold" fill="#0c4a6e">💧 PROPRIÉTÉS DU FLUIDE</text>
+      
+      <text x="860" y="200" className="text-xs" fill="#1f2937">
+        Type: {fluids.find(f => f.id === inputData.fluid_type)?.name || 'N/A'}
+      </text>
+      <text x="860" y="215" className="text-xs" fill="#1f2937">
+        Température: {inputData.temperature}°C
+      </text>
+      <text x="860" y="230" className="text-xs" fill="#1f2937">
+        Masse volumique: {results.npshd_analysis?.fluid_properties?.density || 'N/A'} kg/m³
+      </text>
+      <text x="860" y="245" className="text-xs" fill="#1f2937">
+        Viscosité: {results.npshd_analysis?.fluid_properties?.viscosity || 'N/A'} Pa·s
+      </text>
+      <text x="860" y="260" className="text-xs" fill="#1f2937">
+        P. vapeur: {results.npshd_analysis?.fluid_properties?.vapor_pressure ? 
+          (results.npshd_analysis.fluid_properties.vapor_pressure / 1000).toFixed(2) : 'N/A'} kPa
+      </text>
+      <text x="860" y="275" className="text-xs" fill="#1f2937">
+        P. atmosphérique: {results.npshd_analysis?.atmospheric_pressure ? 
+          (results.npshd_analysis.atmospheric_pressure / 1000).toFixed(1) : '101.3'} kPa
+      </text>
+      
       {/* Section Configuration */}
-      <rect x="850" y="160" width="320" height="100" fill={isFlooded ? "#e0f2fe" : "#fef2f2"} stroke={aspirationColor} strokeWidth="2" rx="10" />
-      <text x="860" y="180" className="text-sm font-bold" fill={aspirationColor}>
+      <rect x="850" y="300" width="320" height="100" fill={isFlooded ? "#e0f2fe" : "#fef2f2"} stroke={aspirationColor} strokeWidth="2" rx="10" />
+      <text x="860" y="320" className="text-sm font-bold" fill={aspirationColor}>
         {statusIcon} CONFIGURATION {statusText}
       </text>
       
-      <text x="860" y="200" className="text-xs" fill="#1f2937">
+      <text x="860" y="340" className="text-xs" fill="#1f2937">
         Installation: {inputData.installation_type === 'surface' ? 'Surface' : 'Immergée'}
       </text>
-      <text x="860" y="215" className="text-xs" fill="#1f2937">
+      <text x="860" y="355" className="text-xs" fill="#1f2937">
         Type aspiration: {isFlooded ? 'Gravitaire (charge)' : 'Dépression (lift)'}
       </text>
-      <text x="860" y="230" className="text-xs" fill="#1f2937">
+      <text x="860" y="370" className="text-xs" fill="#1f2937">
         Hauteur: {Math.abs(inputData.suction_height).toFixed(1)}m {isFlooded ? '(sous pompe)' : '(à aspirer)'}
       </text>
-      <text x="860" y="245" className="text-xs" fill="#1f2937">
+      <text x="860" y="385" className="text-xs" fill="#1f2937">
         Avantages: {isFlooded ? 'Amorçage auto, fiabilité' : 'Pompe protégée, maintenance'}
       </text>
       
       {/* Section Hydraulique */}
-      <rect x="850" y="270" width="320" height="160" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" rx="10" />
-      <text x="860" y="290" className="text-sm font-bold" fill="#1e40af">💧 HYDRAULIQUE</text>
+      <rect x="850" y="410" width="320" height="140" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" rx="10" />
+      <text x="860" y="430" className="text-sm font-bold" fill="#1e40af">⚡ HYDRAULIQUE</text>
       
-      <text x="860" y="310" className="text-xs" fill="#1f2937">
+      <text x="860" y="450" className="text-xs" fill="#1f2937">
         Débit nominal: {inputData.flow_rate} m³/h ({((inputData.flow_rate || 0) / 3.6).toFixed(3)} m³/s)
       </text>
-      <text x="860" y="325" className="text-xs" fill="#1f2937">
+      <text x="860" y="465" className="text-xs" fill="#1f2937">
         NPSHd calculé: {results.npshd_analysis?.npshd?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="340" className="text-xs" fill="#1f2937">
+      <text x="860" y="480" className="text-xs" fill="#1f2937">
         NPSH requis: {inputData.npsh_required} m
       </text>
-      <text x="860" y="355" className="text-xs" fill="#1f2937">
+      <text x="860" y="495" className="text-xs" fill="#1f2937">
         Marge sécurité: {results.npshd_analysis?.npsh_margin?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="370" className="text-xs" fill="#1f2937">
+      <text x="860" y="510" className="text-xs" fill="#1f2937">
         HMT total: {results.hmt_analysis?.hmt?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="385" className="text-xs" fill="#1f2937">
+      <text x="860" y="525" className="text-xs" fill="#1f2937">
         Vitesse aspiration: {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'} m/s
       </text>
-      <text x="860" y="400" className="text-xs" fill="#1f2937">
-        Vitesse refoulement: {results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'} m/s
-      </text>
-      <text x="860" y="415" className="text-xs" fill="#1f2937">
+      <text x="860" y="540" className="text-xs" fill="#1f2937">
         Régime écoulement: {results.npshd_analysis?.reynolds_number > 4000 ? 'Turbulent' : 
                   results.npshd_analysis?.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'} 
         (Re={results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'})
       </text>
       
       {/* Section Pertes de charge */}
-      <rect x="850" y="440" width="320" height="120" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2" rx="10" />
-      <text x="860" y="460" className="text-sm font-bold" fill="#92400e">⚡ PERTES DE CHARGE</text>
+      <rect x="850" y="560" width="320" height="100" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2" rx="10" />
+      <text x="860" y="580" className="text-sm font-bold" fill="#92400e">📉 PERTES DE CHARGE</text>
       
-      <text x="860" y="480" className="text-xs" fill="#1f2937">
+      <text x="860" y="600" className="text-xs" fill="#1f2937">
         Pertes aspiration: {results.npshd_analysis?.total_head_loss?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="495" className="text-xs" fill="#1f2937">
+      <text x="860" y="615" className="text-xs" fill="#1f2937">
         Pertes refoulement: {results.hmt_analysis?.total_head_loss?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="510" className="text-xs" fill="#1f2937">
+      <text x="860" y="630" className="text-xs" fill="#1f2937">
         Pertes totales: {results.total_head_loss?.toFixed(2) || 'N/A'} m
       </text>
-      <text x="860" y="525" className="text-xs" fill="#1f2937">
-        Pression utile: {inputData.useful_pressure} bar ({(inputData.useful_pressure * 10.2).toFixed(1)} m CE)
-      </text>
-      <text x="860" y="540" className="text-xs" fill="#1f2937">
-        Hauteur statique: {results.hmt_analysis?.static_head?.toFixed(1) || 'N/A'} m
-      </text>
-      <text x="860" y="555" className="text-xs" fill="#1f2937">
+      <text x="860" y="645" className="text-xs" fill="#1f2937">
         Coefficient K total: {((results.total_head_loss || 0) / ((results.npshd_analysis?.velocity || 1)**2 / (2 * 9.81))).toFixed(1)}
       </text>
       
       {/* Section Performance */}
-      <rect x="850" y="570" width="320" height="100" fill="#f0fdf4" stroke="#10b981" strokeWidth="2" rx="10" />
-      <text x="860" y="590" className="text-sm font-bold" fill="#166534">📈 PERFORMANCE</text>
+      <rect x="850" y="670" width="320" height="60" fill="#f0fdf4" stroke="#10b981" strokeWidth="2" rx="10" />
+      <text x="860" y="690" className="text-sm font-bold" fill="#166534">📈 PERFORMANCE</text>
       
-      <text x="860" y="610" className="text-xs" fill="#1f2937">
-        Rendement pompe: {inputData.pump_efficiency}%
+      <text x="860" y="710" className="text-xs" fill="#1f2937">
+        Rendement global: {results.overall_efficiency?.toFixed(1) || 'N/A'}% 
+        (Pompe: {inputData.pump_efficiency}% × Moteur: {inputData.motor_efficiency}%)
       </text>
-      <text x="860" y="625" className="text-xs" fill="#1f2937">
-        Rendement moteur: {inputData.motor_efficiency}%
-      </text>
-      <text x="860" y="640" className="text-xs" fill="#1f2937">
-        Rendement global: {results.overall_efficiency?.toFixed(1) || 'N/A'}%
-      </text>
-      <text x="860" y="655" className="text-xs" fill="#1f2937">
-        Puissance hydraulique: {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'} kW
-      </text>
-      
-      {/* Section Matériaux */}
-      <rect x="850" y="680" width="320" height="50" fill="#fdf2f8" stroke="#ec4899" strokeWidth="2" rx="10" />
-      <text x="860" y="700" className="text-sm font-bold" fill="#be185d">🔧 MATÉRIAUX</text>
-      
-      <text x="860" y="720" className="text-xs" fill="#1f2937">
-        Asp: {pipeMaterials.find(m => m.id === inputData.suction_material)?.name || 'N/A'} ⌀{inputData.suction_pipe_diameter}mm
+      <text x="860" y="725" className="text-xs" fill="#1f2937">
+        Puissance: {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'} kW hydraulique
       </text>
       
       {/* Indicateurs de statut dynamiques */}
