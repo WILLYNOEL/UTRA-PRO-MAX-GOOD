@@ -1740,6 +1740,16 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 {loading ? 'Calcul...' : 'Calculer'}
               </button>
             )}
+            
+            {/* Bouton de remise à zéro */}
+            <button
+              onClick={resetAllFields}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center space-x-2"
+              title="Remettre à zéro tous les champs"
+            >
+              <span>🔄</span>
+              <span>Réinitialiser</span>
+            </button>
           </div>
           
           <div className="flex space-x-2">
