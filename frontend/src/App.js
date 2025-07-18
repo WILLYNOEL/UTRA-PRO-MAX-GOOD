@@ -2303,6 +2303,8 @@ function App() {
         return <HMTCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'performance':
         return <PerformanceAnalysis fluids={fluids} pipeMaterials={pipeMaterials} />;
+      case 'expert':
+        return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'history':
         return (
           <div className="bg-white rounded-lg shadow-lg p-6">
