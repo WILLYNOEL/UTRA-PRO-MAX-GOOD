@@ -203,9 +203,9 @@ class NPSHdResult(BaseModel):
 class HMTResult(BaseModel):
     input_data: HMTCalculationInput
     fluid_properties: FluidProperties
-    suction_velocity: float  # m/s
+    suction_velocity: Optional[float] = None  # m/s - Optional for submersible
     discharge_velocity: float  # m/s
-    suction_head_loss: float  # m
+    suction_head_loss: Optional[float] = None  # m - Optional for submersible
     discharge_head_loss: float  # m
     total_head_loss: float  # m
     static_head: float  # m
