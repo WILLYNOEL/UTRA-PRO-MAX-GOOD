@@ -1048,10 +1048,336 @@ class HydraulicPumpTester:
         
         return overall_passed
 
+    def test_corrected_global_efficiency_formula(self):
+        """Test the corrected global efficiency formula: Rendement Global = Rendement Moteur × Rendement Pompe"""
+        print("\n🎯 Testing Corrected Global Efficiency Formula...")
+        
+        # Test data from user request
+        test_data = {
+            "flow_rate": 50.0,  # m³/h
+            "hmt": 30.0,  # m
+            "pipe_diameter": 100.0,
+            "required_npsh": 3.0,
+            "calculated_npshd": 8.0,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80.0,  # %
+            "motor_efficiency": 90.0,  # %
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Get efficiency values
+                pump_efficiency = result.get("pump_efficiency", 0)
+                motor_efficiency = result.get("motor_efficiency", 0)
+                overall_efficiency = result.get("overall_efficiency", 0)
+                
+                # Expected global efficiency = 80% × 90% = 72%
+                expected_global_efficiency = (80.0 / 100) * (90.0 / 100) * 100  # 72%
+                
+                # Check that the formula is correctly applied
+                if abs(overall_efficiency - expected_global_efficiency) > 0.1:
+                    self.log_test("Corrected Global Efficiency Formula", False, 
+                                f"Expected {expected_global_efficiency:.1f}%, got {overall_efficiency:.1f}%")
+                    return False
+                
+                # Verify individual efficiencies are preserved
+                if abs(pump_efficiency - 80.0) > 0.1:
+                    self.log_test("Pump Efficiency Preservation", False, 
+                                f"Expected 80.0%, got {pump_efficiency:.1f}%")
+                    return False
+                
+                if abs(motor_efficiency - 90.0) > 0.1:
+                    self.log_test("Motor Efficiency Preservation", False, 
+                                f"Expected 90.0%, got {motor_efficiency:.1f}%")
+                    return False
+                
+                self.log_test("Corrected Global Efficiency Formula", True, 
+                            f"Pump: {pump_efficiency:.1f}%, Motor: {motor_efficiency:.1f}%, Global: {overall_efficiency:.1f}%")
+                return True
+            else:
+                self.log_test("Corrected Global Efficiency Formula", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Corrected Global Efficiency Formula", False, f"Error: {str(e)}")
+            return False
+    
+    def test_operating_point_precision(self):
+        """Test that the best operating point corresponds exactly to user input values"""
+        print("\n🎯 Testing Operating Point Precision...")
+        
+        test_cases = [
+            {
+                "name": "Standard Operating Point",
+                "data": {
+                    "flow_rate": 50.0,  # m³/h
+                    "hmt": 30.0,  # m
+                    "pipe_diameter": 100.0,
+                    "required_npsh": 3.0,
+                    "calculated_npshd": 8.0,
+                    "fluid_type": "water",
+                    "pipe_material": "pvc",
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "starting_method": "star_delta",
+                    "power_factor": 0.8,
+                    "cable_length": 50.0,
+                    "voltage": 400
+                }
+            },
+            {
+                "name": "High Flow Operating Point",
+                "data": {
+                    "flow_rate": 120.0,  # m³/h
+                    "hmt": 45.0,  # m
+                    "pipe_diameter": 150.0,
+                    "required_npsh": 4.0,
+                    "calculated_npshd": 10.0,
+                    "fluid_type": "water",
+                    "pipe_material": "steel",
+                    "pump_efficiency": 85.0,
+                    "motor_efficiency": 92.0,
+                    "starting_method": "direct_on_line",
+                    "power_factor": 0.85,
+                    "cable_length": 75.0,
+                    "voltage": 400
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-performance", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    performance_curves = result.get("performance_curves", {})
+                    best_operating_point = performance_curves.get("best_operating_point", {})
+                    
+                    if not best_operating_point:
+                        self.log_test(f"Operating Point Precision - {case['name']}", False, 
+                                    "Missing best_operating_point in performance_curves")
+                        all_passed = False
+                        continue
+                    
+                    # Check that operating point matches input exactly
+                    input_flow = case["data"]["flow_rate"]
+                    input_hmt = case["data"]["hmt"]
+                    input_efficiency = case["data"]["pump_efficiency"]
+                    
+                    op_flow = best_operating_point.get("flow", 0)
+                    op_hmt = best_operating_point.get("hmt", 0)
+                    op_efficiency = best_operating_point.get("efficiency", 0)
+                    
+                    # Check flow rate precision
+                    if abs(op_flow - input_flow) > 0.1:
+                        self.log_test(f"Operating Point Flow - {case['name']}", False, 
+                                    f"Expected {input_flow:.1f} m³/h, got {op_flow:.1f} m³/h")
+                        all_passed = False
+                        continue
+                    
+                    # Check HMT precision
+                    if abs(op_hmt - input_hmt) > 0.1:
+                        self.log_test(f"Operating Point HMT - {case['name']}", False, 
+                                    f"Expected {input_hmt:.1f} m, got {op_hmt:.1f} m")
+                        all_passed = False
+                        continue
+                    
+                    # Check efficiency precision
+                    if abs(op_efficiency - input_efficiency) > 0.1:
+                        self.log_test(f"Operating Point Efficiency - {case['name']}", False, 
+                                    f"Expected {input_efficiency:.1f}%, got {op_efficiency:.1f}%")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Operating Point Precision - {case['name']}", True, 
+                                f"Flow: {op_flow:.1f} m³/h, HMT: {op_hmt:.1f} m, Eff: {op_efficiency:.1f}%")
+                else:
+                    self.log_test(f"Operating Point Precision - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Operating Point Precision - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_darcy_formula_integration(self):
+        """Test that Darcy-Weisbach formula is properly used in all head loss calculations"""
+        print("\n🎯 Testing Darcy Formula Integration...")
+        
+        test_cases = [
+            {
+                "name": "NPSHd Calculation with Darcy",
+                "endpoint": "/calculate-npshd",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 50.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 2}
+                    ]
+                }
+            },
+            {
+                "name": "HMT Calculation with Darcy",
+                "endpoint": "/calculate-hmt",
+                "data": {
+                    "installation_type": "surface",
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "discharge_height": 20.0,
+                    "useful_pressure": 1.5,
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_pipe_length": 30.0,
+                    "discharge_pipe_length": 100.0,
+                    "suction_pipe_material": "pvc",
+                    "discharge_pipe_material": "steel",
+                    "suction_fittings": [],
+                    "discharge_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 3},
+                        {"fitting_type": "gate_valve_open", "quantity": 1}
+                    ],
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "flow_rate": 50.0
+                }
+            },
+            {
+                "name": "Performance Analysis with Darcy",
+                "endpoint": "/calculate-performance",
+                "data": {
+                    "flow_rate": 50.0,
+                    "hmt": 30.0,
+                    "pipe_diameter": 100.0,
+                    "required_npsh": 3.0,
+                    "calculated_npshd": 8.0,
+                    "fluid_type": "water",
+                    "pipe_material": "pvc",
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "starting_method": "star_delta",
+                    "power_factor": 0.8,
+                    "cable_length": 50.0,
+                    "voltage": 400
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}{case['endpoint']}", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check for Darcy-related calculations
+                    if case["endpoint"] == "/calculate-npshd":
+                        # Check NPSHd calculation components
+                        velocity = result.get("velocity", 0)
+                        reynolds_number = result.get("reynolds_number", 0)
+                        friction_factor = result.get("friction_factor", 0)
+                        linear_head_loss = result.get("linear_head_loss", 0)
+                        
+                        if velocity <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Velocity", False, "Velocity is zero or negative")
+                            all_passed = False
+                            continue
+                        
+                        if reynolds_number <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Reynolds", False, "Reynolds number is zero or negative")
+                            all_passed = False
+                            continue
+                        
+                        if friction_factor <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Friction Factor", False, "Friction factor is zero or negative")
+                            all_passed = False
+                            continue
+                        
+                        if linear_head_loss <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Head Loss", False, "Linear head loss is zero or negative")
+                            all_passed = False
+                            continue
+                        
+                        # Verify Darcy formula: ΔH = f × (L/D) × (V²/2g)
+                        pipe_length = case["data"]["pipe_length"]
+                        pipe_diameter = case["data"]["pipe_diameter"] / 1000  # Convert mm to m
+                        expected_head_loss = friction_factor * (pipe_length / pipe_diameter) * (velocity**2) / (2 * 9.81)
+                        
+                        if abs(linear_head_loss - expected_head_loss) > 0.1:
+                            self.log_test(f"Darcy Integration - {case['name']} - Formula Verification", False, 
+                                        f"Expected {expected_head_loss:.3f} m, got {linear_head_loss:.3f} m")
+                            all_passed = False
+                            continue
+                    
+                    elif case["endpoint"] == "/calculate-hmt":
+                        # Check HMT calculation components
+                        suction_velocity = result.get("suction_velocity", 0)
+                        discharge_velocity = result.get("discharge_velocity", 0)
+                        suction_head_loss = result.get("suction_head_loss", 0)
+                        discharge_head_loss = result.get("discharge_head_loss", 0)
+                        
+                        if suction_velocity <= 0 or discharge_velocity <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Velocities", False, "Velocities are zero or negative")
+                            all_passed = False
+                            continue
+                        
+                        if suction_head_loss < 0 or discharge_head_loss <= 0:
+                            self.log_test(f"Darcy Integration - {case['name']} - Head Losses", False, "Head losses are negative or zero")
+                            all_passed = False
+                            continue
+                    
+                    elif case["endpoint"] == "/calculate-performance":
+                        # Check performance curves use Darcy formula
+                        performance_curves = result.get("performance_curves", {})
+                        head_loss_points = performance_curves.get("head_loss", [])
+                        
+                        if not head_loss_points:
+                            self.log_test(f"Darcy Integration - {case['name']} - Head Loss Curve", False, "Missing head_loss curve")
+                            all_passed = False
+                            continue
+                        
+                        # Check that head loss increases with flow (Darcy behavior)
+                        if len(head_loss_points) > 1:
+                            increasing_trend = True
+                            for i in range(1, len(head_loss_points)):
+                                if head_loss_points[i] < head_loss_points[i-1]:
+                                    increasing_trend = False
+                                    break
+                            
+                            if not increasing_trend:
+                                self.log_test(f"Darcy Integration - {case['name']} - Head Loss Trend", False, 
+                                            "Head loss should increase with flow (Darcy behavior)")
+                                all_passed = False
+                                continue
+                    
+                    self.log_test(f"Darcy Integration - {case['name']}", True, "Darcy-Weisbach formula properly integrated")
+                else:
+                    self.log_test(f"Darcy Integration - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Darcy Integration - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
-        """Run all tests including the new formula tests"""
+        """Run all tests including the specific corrections requested"""
         print("=" * 80)
-        print("HYDRAULIC PUMP CALCULATION API - UPDATED FORMULAS TESTING")
+        print("HYDRAULIC PUMP CALCULATION API - CORRECTIONS TESTING")
         print("=" * 80)
         print()
         
@@ -1062,13 +1388,16 @@ class HydraulicPumpTester:
         
         print()
         
-        # Run all tests - prioritizing new formula tests
+        # Run all tests - prioritizing the specific corrections
         tests = [
             self.test_fluids_api,
-            self.test_updated_npshd_formula,  # NEW: Test updated NPSHd formula
-            self.test_updated_power_formulas,  # NEW: Test updated power formulas
-            self.test_performance_curves_flow_vs_hmt,  # NEW: Test performance curves
-            self.test_api_endpoints_comprehensive,  # NEW: Test all endpoints
+            self.test_corrected_global_efficiency_formula,  # NEW: Test corrected global efficiency
+            self.test_operating_point_precision,  # NEW: Test operating point precision
+            self.test_darcy_formula_integration,  # NEW: Test Darcy formula integration
+            self.test_updated_npshd_formula,  # Test updated NPSHd formula
+            self.test_updated_power_formulas,  # Test updated power formulas
+            self.test_performance_curves_flow_vs_hmt,  # Test performance curves
+            self.test_api_endpoints_comprehensive,  # Test all endpoints
             self.test_standard_water_calculation,
             self.test_oil_calculation_high_temp,
             self.test_edge_cases,
