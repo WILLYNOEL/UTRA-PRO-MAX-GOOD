@@ -1533,10 +1533,167 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_urgent_performance_endpoint_issue(self):
+        """URGENT: Test the specific issue reported by user with /api/calculate-performance endpoint"""
+        print("\n🚨 URGENT: Testing Performance Endpoint Issue...")
+        
+        # Exact test data from user request
+        test_data = {
+            "flow_rate": 50,
+            "hmt": 30,
+            "pipe_diameter": 100,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80,
+            "motor_efficiency": 90,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50,
+            "cable_material": "copper",
+            "voltage": 400
+        }
+        
+        try:
+            print(f"Testing with data: {test_data}")
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=test_data, timeout=15)
+            
+            # 1. Check that API doesn't return error
+            if response.status_code != 200:
+                self.log_test("URGENT - API No Error", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
+            
+            result = response.json()
+            self.log_test("URGENT - API No Error", True, f"Status: {response.status_code}")
+            
+            # 2. Check that NPSH fields are absent from results
+            npsh_fields = ["npshd", "npsh_available", "npsh_required", "calculated_npshd", "required_npsh"]
+            found_npsh_fields = []
+            
+            def check_npsh_in_dict(data, path=""):
+                """Recursively check for NPSH fields in nested dictionaries"""
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        current_path = f"{path}.{key}" if path else key
+                        if any(npsh_field.lower() in key.lower() for npsh_field in npsh_fields):
+                            found_npsh_fields.append(current_path)
+                        if isinstance(value, (dict, list)):
+                            check_npsh_in_dict(value, current_path)
+                elif isinstance(data, list):
+                    for i, item in enumerate(data):
+                        check_npsh_in_dict(item, f"{path}[{i}]")
+            
+            check_npsh_in_dict(result)
+            
+            if found_npsh_fields:
+                self.log_test("URGENT - NPSH Fields Absent", False, f"Found NPSH fields: {found_npsh_fields}")
+                return False
+            else:
+                self.log_test("URGENT - NPSH Fields Absent", True, "No NPSH fields found in response")
+            
+            # 3. Check that velocity and alerts are present
+            velocity = result.get("velocity")
+            alerts = result.get("alerts")
+            reynolds_number = result.get("reynolds_number")
+            
+            if velocity is None:
+                self.log_test("URGENT - Velocity Present", False, "Velocity field missing")
+                return False
+            elif velocity <= 0:
+                self.log_test("URGENT - Velocity Present", False, f"Invalid velocity: {velocity}")
+                return False
+            else:
+                self.log_test("URGENT - Velocity Present", True, f"Velocity: {velocity:.2f} m/s")
+            
+            if reynolds_number is None:
+                self.log_test("URGENT - Reynolds Number Present", False, "Reynolds number field missing")
+                return False
+            elif reynolds_number <= 0:
+                self.log_test("URGENT - Reynolds Number Present", False, f"Invalid Reynolds number: {reynolds_number}")
+                return False
+            else:
+                self.log_test("URGENT - Reynolds Number Present", True, f"Reynolds: {reynolds_number:.0f}")
+            
+            if alerts is None:
+                self.log_test("URGENT - Alerts Present", False, "Alerts field missing")
+                return False
+            elif not isinstance(alerts, list):
+                self.log_test("URGENT - Alerts Present", False, f"Alerts should be a list, got: {type(alerts)}")
+                return False
+            else:
+                self.log_test("URGENT - Alerts Present", True, f"Alerts: {len(alerts)} items")
+            
+            # 4. Check that performance curves are generated correctly
+            performance_curves = result.get("performance_curves")
+            if not performance_curves:
+                self.log_test("URGENT - Performance Curves Present", False, "Performance curves missing")
+                return False
+            
+            # Check required curve data
+            required_curves = ["flow", "hmt"]
+            missing_curves = [curve for curve in required_curves if curve not in performance_curves]
+            if missing_curves:
+                self.log_test("URGENT - Performance Curves Structure", False, f"Missing curves: {missing_curves}")
+                return False
+            
+            # Check curve data quality
+            flow_points = performance_curves.get("flow", [])
+            hmt_points = performance_curves.get("hmt", [])
+            
+            if len(flow_points) < 10:
+                self.log_test("URGENT - Performance Curves Data", False, f"Too few flow points: {len(flow_points)}")
+                return False
+            
+            if len(flow_points) != len(hmt_points):
+                self.log_test("URGENT - Performance Curves Data", False, f"Flow points ({len(flow_points)}) != HMT points ({len(hmt_points)})")
+                return False
+            
+            # Check for best operating point
+            best_operating_point = performance_curves.get("best_operating_point")
+            if not best_operating_point:
+                self.log_test("URGENT - Operating Point Present", False, "Best operating point missing")
+                return False
+            
+            # Verify operating point matches input
+            op_flow = best_operating_point.get("flow", 0)
+            op_hmt = best_operating_point.get("hmt", 0)
+            
+            if abs(op_flow - test_data["flow_rate"]) > 0.1:
+                self.log_test("URGENT - Operating Point Accuracy", False, f"Flow mismatch: expected {test_data['flow_rate']}, got {op_flow}")
+                return False
+            
+            if abs(op_hmt - test_data["hmt"]) > 0.1:
+                self.log_test("URGENT - Operating Point Accuracy", False, f"HMT mismatch: expected {test_data['hmt']}, got {op_hmt}")
+                return False
+            
+            self.log_test("URGENT - Performance Curves Generated", True, f"Curves with {len(flow_points)} points, Operating point: {op_flow:.1f} m³/h, {op_hmt:.1f} m")
+            
+            # Additional checks for power calculations
+            power_calculations = result.get("power_calculations", {})
+            hydraulic_power = power_calculations.get("hydraulic_power", 0)
+            absorbed_power = power_calculations.get("absorbed_power", 0)
+            
+            if hydraulic_power <= 0:
+                self.log_test("URGENT - Power Calculations", False, f"Invalid hydraulic power: {hydraulic_power}")
+                return False
+            
+            if absorbed_power <= hydraulic_power:
+                self.log_test("URGENT - Power Calculations", False, f"Absorbed power ({absorbed_power}) should be > hydraulic power ({hydraulic_power})")
+                return False
+            
+            self.log_test("URGENT - Power Calculations", True, f"P2: {hydraulic_power:.3f} kW, P1: {absorbed_power:.3f} kW")
+            
+            # Overall success
+            self.log_test("URGENT - Performance Endpoint Overall", True, "All requirements met successfully")
+            return True
+            
+        except Exception as e:
+            self.log_test("URGENT - Performance Endpoint Overall", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
-        print("HYDRAULIC PUMP CALCULATION API - CORRECTIONS TESTING")
+        print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
         print()
         
@@ -1546,6 +1703,9 @@ class HydraulicPumpTester:
             return False
         
         print()
+        
+        # URGENT TEST FIRST - Performance endpoint issue
+        urgent_success = self.test_urgent_performance_endpoint_issue()
         
         # Run all tests - prioritizing the specific corrections
         tests = [
@@ -1591,6 +1751,9 @@ class HydraulicPumpTester:
         
         success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
         print(f"\nSuccess Rate: {success_rate:.1f}%")
+        
+        # Highlight urgent test result
+        print(f"\n🚨 URGENT TEST RESULT: {'✅ PASSED' if urgent_success else '❌ FAILED'}")
         
         if success_rate >= 90:
             print("\n🎉 EXCELLENT: Backend API is working very well!")
