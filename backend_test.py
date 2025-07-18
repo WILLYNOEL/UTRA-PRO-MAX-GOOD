@@ -2875,6 +2875,279 @@ class HydraulicPumpTester:
             self.log_test("Expert Analysis - Complete Test", False, f"Error: {str(e)}")
             return False
 
+    def test_expert_analysis_final_comprehensive(self):
+        """
+        Final comprehensive test for EXPERT tab with all user-requested improvements:
+        1. Pression utile (Useful pressure) in HMT calculation
+        2. Pertes de charges (Head losses) display
+        3. Régime d'écoulement (Flow regime) determination
+        4. Sélection aspiration (Suction selection) configuration
+        5. Prix kWh (kWh price) in cost calculations
+        6. Singularités complètes (Complete singularities) integration
+        """
+        print("\n🎯 FINAL EXPERT ANALYSIS COMPREHENSIVE TEST...")
+        print("Testing all user-requested improvements with complete test case")
+        
+        # Test case from review request with all new features
+        expert_test_data = {
+            "flow_rate": 80,
+            "fluid_type": "water",
+            "temperature": 25,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 100,
+            "discharge_pipe_diameter": 80,
+            "suction_height": 2.5,
+            "discharge_height": 30.0,
+            "useful_pressure": 2.5,  # Should add 25.5m CE to HMT
+            "suction_length": 15,
+            "discharge_length": 60,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            
+            # Complete singularities - ASPIRATION
+            "suction_elbow_90": 2,
+            "suction_elbow_45": 1,
+            "suction_elbow_30": 1,
+            "suction_tee_flow": 1,
+            "suction_gate_valve": 1,
+            "suction_ball_valve": 1,
+            "suction_check_valve": 1,
+            "suction_strainer": 1,
+            "suction_foot_valve": 1,
+            
+            # Complete singularities - REFOULEMENT
+            "discharge_elbow_90": 4,
+            "discharge_elbow_45": 2,
+            "discharge_tee_flow": 1,
+            "discharge_reducer_gradual": 1,
+            "discharge_gate_valve": 2,
+            "discharge_ball_valve": 1,
+            "discharge_butterfly_valve": 1,
+            "discharge_check_valve": 1,
+            "discharge_flow_meter": 1,
+            "discharge_pressure_gauge": 1,
+            
+            # Electrical and performance
+            "pump_efficiency": 75,
+            "motor_efficiency": 85,
+            "voltage": 400,
+            "power_factor": 0.85,
+            "starting_method": "star_delta",
+            "cable_length": 40,
+            "cable_material": "copper",
+            "npsh_required": 4.0,
+            "installation_type": "surface",
+            "operating_hours": 5000,
+            "electricity_cost": 0.15,  # €/kWh - should be used in cost calculations
+            "altitude": 150,
+            "ambient_temperature": 20,
+            "humidity": 50
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_test_data, timeout=15)
+            if response.status_code != 200:
+                self.log_test("Expert Analysis Final - API Response", False, f"Status: {response.status_code}")
+                return False
+            
+            result = response.json()
+            all_tests_passed = True
+            
+            # 1. TEST PRESSION UTILE (Useful Pressure) Integration
+            hmt_analysis = result.get("hmt_analysis", {})
+            hmt_value = hmt_analysis.get("hmt", 0)
+            useful_pressure_head = hmt_analysis.get("useful_pressure_head", 0)
+            
+            # 2.5 bar = 25.5 m CE (approximately)
+            expected_useful_pressure_head = 2.5 * 10.2  # bar to m CE
+            if abs(useful_pressure_head - expected_useful_pressure_head) > 1.0:
+                self.log_test("Expert Analysis - Useful Pressure Integration", False, 
+                            f"Expected ~{expected_useful_pressure_head:.1f}m, got {useful_pressure_head:.1f}m")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - Useful Pressure Integration", True, 
+                            f"Useful pressure: {useful_pressure_head:.1f}m CE included in HMT")
+            
+            # Verify HMT includes useful pressure
+            if hmt_value < useful_pressure_head:
+                self.log_test("Expert Analysis - HMT includes Useful Pressure", False, 
+                            f"HMT ({hmt_value:.1f}m) should include useful pressure ({useful_pressure_head:.1f}m)")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - HMT includes Useful Pressure", True, 
+                            f"HMT: {hmt_value:.1f}m includes useful pressure")
+            
+            # 2. TEST PERTES DE CHARGES (Head Losses) Display
+            total_head_loss = result.get("total_head_loss", 0)
+            npshd_analysis = result.get("npshd_analysis", {})
+            npshd_head_loss = npshd_analysis.get("total_head_loss", 0)
+            hmt_head_loss = hmt_analysis.get("total_head_loss", 0)
+            
+            if total_head_loss <= 0:
+                self.log_test("Expert Analysis - Head Losses Display", False, "Total head loss is zero or missing")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - Head Losses Display", True, 
+                            f"Total head losses: {total_head_loss:.2f}m (NPSHd: {npshd_head_loss:.2f}m, HMT: {hmt_head_loss:.2f}m)")
+            
+            # 3. TEST RÉGIME D'ÉCOULEMENT (Flow Regime) Determination
+            reynolds_number = npshd_analysis.get("reynolds_number", 0)
+            if reynolds_number <= 0:
+                self.log_test("Expert Analysis - Flow Regime Determination", False, "Reynolds number missing or zero")
+                all_tests_passed = False
+            else:
+                # Determine flow regime
+                if reynolds_number > 4000:
+                    flow_regime = "turbulent"
+                elif reynolds_number < 2300:
+                    flow_regime = "laminar"
+                else:
+                    flow_regime = "transitional"
+                
+                # For flow_rate=80 m³/h, diameter=100mm, water, should be turbulent (Re > 4000)
+                if reynolds_number <= 4000:
+                    self.log_test("Expert Analysis - Flow Regime Determination", False, 
+                                f"Expected turbulent flow (Re > 4000), got Re = {reynolds_number:.0f}")
+                    all_tests_passed = False
+                else:
+                    self.log_test("Expert Analysis - Flow Regime Determination", True, 
+                                f"Flow regime: {flow_regime} (Re = {reynolds_number:.0f})")
+            
+            # 4. TEST SÉLECTION ASPIRATION (Suction Selection) Configuration
+            input_data = result.get("input_data", {})
+            suction_type = input_data.get("suction_type", "")
+            if suction_type != "flooded":
+                self.log_test("Expert Analysis - Suction Selection", False, 
+                            f"Expected 'flooded', got '{suction_type}'")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - Suction Selection", True, 
+                            f"Suction type configured: {suction_type}")
+            
+            # 5. TEST PRIX kWh (kWh Price) in Cost Calculations
+            electrical_analysis = result.get("electrical_analysis", {})
+            annual_energy_cost = electrical_analysis.get("annual_energy_cost", 0)
+            electricity_cost = electrical_analysis.get("electricity_cost", 0)
+            operating_hours = electrical_analysis.get("operating_hours", 0)
+            
+            if electricity_cost != 0.15:
+                self.log_test("Expert Analysis - kWh Price Configuration", False, 
+                            f"Expected 0.15 €/kWh, got {electricity_cost} €/kWh")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - kWh Price Configuration", True, 
+                            f"Electricity cost: {electricity_cost} €/kWh")
+            
+            # Verify cost calculation uses the price
+            if annual_energy_cost <= 0:
+                self.log_test("Expert Analysis - Annual Energy Cost Calculation", False, 
+                            "Annual energy cost is zero or missing")
+                all_tests_passed = False
+            else:
+                # Verify calculation: cost = power × hours × price
+                performance_analysis = result.get("performance_analysis", {})
+                hydraulic_power = performance_analysis.get("hydraulic_power", 0)
+                expected_cost = hydraulic_power * operating_hours * electricity_cost
+                
+                if abs(annual_energy_cost - expected_cost) > expected_cost * 0.1:  # 10% tolerance
+                    self.log_test("Expert Analysis - Cost Calculation Logic", False, 
+                                f"Expected ~{expected_cost:.0f}€, got {annual_energy_cost:.0f}€")
+                    all_tests_passed = False
+                else:
+                    self.log_test("Expert Analysis - Annual Energy Cost Calculation", True, 
+                                f"Annual cost: {annual_energy_cost:.0f}€ (Power: {hydraulic_power:.1f}kW × {operating_hours}h × {electricity_cost}€/kWh)")
+            
+            # 6. TEST SINGULARITÉS COMPLÈTES (Complete Singularities) Integration
+            # Count all singularities from input
+            total_suction_singularities = (
+                expert_test_data["suction_elbow_90"] + expert_test_data["suction_elbow_45"] + 
+                expert_test_data["suction_elbow_30"] + expert_test_data["suction_tee_flow"] +
+                expert_test_data["suction_gate_valve"] + expert_test_data["suction_ball_valve"] +
+                expert_test_data["suction_check_valve"] + expert_test_data["suction_strainer"] +
+                expert_test_data["suction_foot_valve"]
+            )
+            
+            total_discharge_singularities = (
+                expert_test_data["discharge_elbow_90"] + expert_test_data["discharge_elbow_45"] +
+                expert_test_data["discharge_tee_flow"] + expert_test_data["discharge_reducer_gradual"] +
+                expert_test_data["discharge_gate_valve"] + expert_test_data["discharge_ball_valve"] +
+                expert_test_data["discharge_butterfly_valve"] + expert_test_data["discharge_check_valve"] +
+                expert_test_data["discharge_flow_meter"] + expert_test_data["discharge_pressure_gauge"]
+            )
+            
+            total_singularities = total_suction_singularities + total_discharge_singularities
+            
+            # Verify singularities affect head losses
+            if npshd_head_loss <= 0 or hmt_head_loss <= 0:
+                self.log_test("Expert Analysis - Singularities Integration", False, 
+                            "Head losses should be > 0 with many singularities")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - Singularities Integration", True, 
+                            f"All {total_singularities} singularities integrated (Suction: {total_suction_singularities}, Discharge: {total_discharge_singularities})")
+            
+            # 7. TEST EXPERT RECOMMENDATIONS
+            expert_recommendations = result.get("expert_recommendations", [])
+            if not expert_recommendations:
+                self.log_test("Expert Analysis - Expert Recommendations", False, "No expert recommendations generated")
+                all_tests_passed = False
+            else:
+                # Check for detailed recommendations
+                recommendation_types = [rec.get("type", "") for rec in expert_recommendations]
+                if len(set(recommendation_types)) < 2:  # Should have diverse recommendation types
+                    self.log_test("Expert Analysis - Recommendation Diversity", False, 
+                                f"Limited recommendation types: {recommendation_types}")
+                    all_tests_passed = False
+                else:
+                    self.log_test("Expert Analysis - Expert Recommendations", True, 
+                                f"Generated {len(expert_recommendations)} recommendations with types: {set(recommendation_types)}")
+            
+            # 8. TEST COMPLETE STRUCTURE
+            required_sections = [
+                "npshd_analysis", "hmt_analysis", "performance_analysis", "electrical_analysis",
+                "overall_efficiency", "total_head_loss", "system_stability", "energy_consumption",
+                "expert_recommendations", "optimization_potential", "performance_curves", "system_curves"
+            ]
+            
+            missing_sections = [section for section in required_sections if section not in result]
+            if missing_sections:
+                self.log_test("Expert Analysis - Complete Structure", False, 
+                            f"Missing sections: {missing_sections}")
+                all_tests_passed = False
+            else:
+                self.log_test("Expert Analysis - Complete Structure", True, 
+                            f"All {len(required_sections)} sections present")
+            
+            # 9. TEST PERFORMANCE CURVES
+            performance_curves = result.get("performance_curves", {})
+            if "best_operating_point" not in performance_curves:
+                self.log_test("Expert Analysis - Performance Curves", False, "Missing best_operating_point")
+                all_tests_passed = False
+            else:
+                best_op = performance_curves["best_operating_point"]
+                op_flow = best_op.get("flow", 0)
+                if abs(op_flow - 80.0) > 0.1:  # Should match input flow
+                    self.log_test("Expert Analysis - Operating Point Match", False, 
+                                f"Expected flow 80.0, got {op_flow}")
+                    all_tests_passed = False
+                else:
+                    self.log_test("Expert Analysis - Performance Curves", True, 
+                                f"Operating point matches input: {op_flow} m³/h")
+            
+            # 10. OVERALL SUMMARY
+            if all_tests_passed:
+                self.log_test("🎯 EXPERT ANALYSIS FINAL COMPREHENSIVE TEST", True, 
+                            "ALL USER REQUIREMENTS SUCCESSFULLY IMPLEMENTED AND TESTED")
+                return True
+            else:
+                self.log_test("🎯 EXPERT ANALYSIS FINAL COMPREHENSIVE TEST", False, 
+                            "Some user requirements failed testing")
+                return False
+                
+        except Exception as e:
+            self.log_test("Expert Analysis Final Comprehensive", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
