@@ -572,6 +572,43 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
         warnings=warnings
     )
 
+def calculate_darcy_head_loss(flow_rate: float, pipe_diameter: float, pipe_length: float, 
+                             pipe_material: str, fluid_density: float, fluid_viscosity: float) -> float:
+    """Calculate head loss using Darcy-Weisbach formula"""
+    if flow_rate <= 0 or pipe_diameter <= 0:
+        return 0
+    
+    # Convert units
+    diameter_m = pipe_diameter / 1000  # mm to m
+    pipe_area = math.pi * (diameter_m / 2) ** 2  # m²
+    velocity = (flow_rate / 3600) / pipe_area  # m/s
+    
+    # Calculate Reynolds number
+    reynolds_number = calculate_reynolds_number(velocity, diameter_m, fluid_density, fluid_viscosity)
+    
+    # Get pipe roughness
+    if pipe_material not in PIPE_MATERIALS:
+        roughness = 0.045  # Default steel roughness in mm
+    else:
+        roughness = PIPE_MATERIALS[pipe_material]["roughness"]  # mm
+    
+    # Calculate friction factor using Colebrook-White equation (Swamee-Jain approximation)
+    relative_roughness = roughness / pipe_diameter  # Relative roughness
+    
+    if reynolds_number < 2300:
+        # Laminar flow
+        friction_factor = 64 / reynolds_number
+    else:
+        # Turbulent flow - Swamee-Jain approximation
+        term1 = (relative_roughness / 3.7) ** 1.11
+        term2 = 6.9 / reynolds_number
+        friction_factor = 0.25 / (math.log10(term1 + term2) ** 2)
+    
+    # Darcy-Weisbach formula: ΔH = f × (L/D) × (V²/2g)
+    head_loss = friction_factor * (pipe_length / diameter_m) * (velocity**2) / (2 * 9.81)
+    
+    return head_loss
+
 def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[str, List[float]]:
     """Generate comprehensive performance curves with corrected power formulas"""
     flow_points = []
