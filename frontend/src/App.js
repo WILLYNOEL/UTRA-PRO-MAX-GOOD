@@ -1152,26 +1152,25 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     humidity: 60 // Valeur de référence
   });
 
-  // Table de correspondance DN/mm (codes DN normalisés)
+  // Table de correspondance DN/mm (diamètres intérieurs réels)
   const dnSizes = [
-    { dn: 'DN15', mm: 15, label: 'DN15 (15mm)' },
-    { dn: 'DN20', mm: 20, label: 'DN20 (20mm)' },
-    { dn: 'DN25', mm: 25, label: 'DN25 (25mm)' },
-    { dn: 'DN32', mm: 32, label: 'DN32 (32mm)' },
-    { dn: 'DN40', mm: 40, label: 'DN40 (40mm)' },
-    { dn: 'DN50', mm: 50, label: 'DN50 (50mm)' },
-    { dn: 'DN65', mm: 65, label: 'DN65 (65mm)' },
-    { dn: 'DN80', mm: 80, label: 'DN80 (80mm)' },
-    { dn: 'DN100', mm: 100, label: 'DN100 (100mm)' },
-    { dn: 'DN125', mm: 125, label: 'DN125 (125mm)' },
-    { dn: 'DN150', mm: 150, label: 'DN150 (150mm)' },
-    { dn: 'DN200', mm: 200, label: 'DN200 (200mm)' },
-    { dn: 'DN250', mm: 250, label: 'DN250 (250mm)' },
-    { dn: 'DN300', mm: 300, label: 'DN300 (300mm)' },
-    { dn: 'DN350', mm: 350, label: 'DN350 (350mm)' },
-    { dn: 'DN400', mm: 400, label: 'DN400 (400mm)' },
-    { dn: 'DN450', mm: 450, label: 'DN450 (450mm)' },
-    { dn: 'DN500', mm: 500, label: 'DN500 (500mm)' }
+    { dn: 'DN20', mm: 26.9, label: 'DN20 (26.9mm)' },
+    { dn: 'DN25', mm: 33.7, label: 'DN25 (33.7mm)' },
+    { dn: 'DN32', mm: 42.4, label: 'DN32 (42.4mm)' },
+    { dn: 'DN40', mm: 48.3, label: 'DN40 (48.3mm)' },
+    { dn: 'DN50', mm: 60.3, label: 'DN50 (60.3mm)' },
+    { dn: 'DN65', mm: 76.1, label: 'DN65 (76.1mm)' },
+    { dn: 'DN80', mm: 88.9, label: 'DN80 (88.9mm)' },
+    { dn: 'DN100', mm: 114.3, label: 'DN100 (114.3mm)' },
+    { dn: 'DN125', mm: 139.7, label: 'DN125 (139.7mm)' },
+    { dn: 'DN150', mm: 168.3, label: 'DN150 (168.3mm)' },
+    { dn: 'DN200', mm: 219.1, label: 'DN200 (219.1mm)' },
+    { dn: 'DN250', mm: 273.1, label: 'DN250 (273.1mm)' },
+    { dn: 'DN300', mm: 323.9, label: 'DN300 (323.9mm)' },
+    { dn: 'DN350', mm: 355.6, label: 'DN350 (355.6mm)' },
+    { dn: 'DN400', mm: 406.4, label: 'DN400 (406.4mm)' },
+    { dn: 'DN450', mm: 457.2, label: 'DN450 (457.2mm)' },
+    { dn: 'DN500', mm: 508, label: 'DN500 (508mm)' }
   ];
 
   const [results, setResults] = useState(null);
