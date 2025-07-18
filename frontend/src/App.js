@@ -3404,7 +3404,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         <circle cx="0" cy="0" r="8" fill="none" stroke="#ffffff" strokeWidth="2" />
         <path d="M -6 -6 L 6 6 M -6 6 L 6 -6" stroke="#ffffff" strokeWidth="1" />
       </g>
-      <text x="270" y={waterLevel + 25} textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
+      <text x="270" y={waterLevel + 23} textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
         🔧 Crépine
       </text>
       
