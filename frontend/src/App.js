@@ -1538,7 +1538,9 @@ const ExpertInstallationSchema = ({ inputData, results }) => {
       </text>
     </svg>
   );
-}; de Performance
+};
+
+// Component pour Tab 3 - Analyse de Performance
 const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
   const [inputData, setInputData] = useState({
     flow_rate: 50,
