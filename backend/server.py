@@ -149,6 +149,7 @@ class NPSHdCalculationInput(BaseModel):
     pipe_material: str
     pipe_length: float  # m (suction side)
     suction_fittings: List[FittingInput] = []
+    npsh_required: float = 3.5  # m (NPSH requis from pump manufacturer)
 
 class HMTCalculationInput(BaseModel):
     installation_type: str = "surface"  # "surface" or "submersible"
