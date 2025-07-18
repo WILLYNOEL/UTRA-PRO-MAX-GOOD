@@ -215,11 +215,12 @@ class HMTResult(BaseModel):
 
 class PerformanceAnalysisResult(BaseModel):
     input_data: PerformanceAnalysisInput
-    npsh_comparison: Dict[str, float]  # npshd vs required_npsh
-    cavitation_risk: bool
+    # Removed NPSH fields as requested
     pump_efficiency: float  # %
     motor_efficiency: float  # %
     overall_efficiency: float  # %
+    velocity: float  # m/s - Added velocity data
+    reynolds_number: float  # Added Reynolds number
     nominal_current: float  # A
     starting_current: float  # A
     recommended_cable_section: float  # mm²
@@ -228,6 +229,7 @@ class PerformanceAnalysisResult(BaseModel):
     performance_curves: Dict[str, Any]  # Flow points and corresponding values
     recommendations: List[str]
     warnings: List[str]
+    alerts: List[str]  # Added alerts field
 
 # Legacy models for backward compatibility
 class CalculationInput(BaseModel):
