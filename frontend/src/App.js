@@ -334,6 +334,64 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
               </div>
             </div>
           </div>
+          
+          {/* Section Comparaison NPSH et Analyse de Cavitation */}
+          <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Analyse de Cavitation</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Comparaison NPSH</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>NPSH Requis (constructeur):</span>
+                    <span className="font-medium">{result.npsh_required?.toFixed(2)} m</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>NPSHd Calculé:</span>
+                    <span className="font-medium">{result.npshd?.toFixed(2)} m</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="font-semibold">Marge de sécurité:</span>
+                    <span className={`font-bold ${result.npsh_margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {result.npsh_margin?.toFixed(2)} m
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Statut de Cavitation</h4>
+                <div className="text-center">
+                  <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                    result.cavitation_risk ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {result.cavitation_risk ? '🚨 RISQUE DE CAVITATION' : '✅ AUCUN RISQUE'}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600">
+                    {result.cavitation_risk ? 
+                      'Des corrections sont nécessaires' : 
+                      'Installation sécurisée'
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Recommandations de correction */}
+            {result.recommendations && result.recommendations.length > 0 && (
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800 mb-3">💡 Recommandations de Correction</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  {result.recommendations.map((recommendation, index) => (
+                    <li key={index} className="leading-relaxed">
+                      {recommendation}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
