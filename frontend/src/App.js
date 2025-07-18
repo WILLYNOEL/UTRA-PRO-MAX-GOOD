@@ -2069,14 +2069,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Hauteur Asp. (m)
+                      ⭐ Hauteur Asp. (m)
                     </label>
                     <input
                       type="number"
                       step="0.1"
-                      value={inputData.suction_height}
+                      value={inputData.suction_height || ''}
                       onChange={(e) => handleInputChange('suction_height', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="Hauteur d'aspiration"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       {inputData.suction_type === 'flooded' ? 'En charge (positif)' : 'Dépression (hauteur)'}
@@ -2085,14 +2086,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Hauteur Ref. (m)
+                      ⭐ Hauteur Ref. (m)
                     </label>
                     <input
                       type="number"
                       step="0.1"
-                      value={inputData.discharge_height}
+                      value={inputData.discharge_height || ''}
                       onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="Hauteur de refoulement"
                     />
                   </div>
                 </div>
