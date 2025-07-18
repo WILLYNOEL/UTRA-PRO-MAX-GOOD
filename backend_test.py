@@ -1565,22 +1565,27 @@ class HydraulicPumpTester:
             result = response.json()
             self.log_test("URGENT - API No Error", True, f"Status: {response.status_code}")
             
-            # 2. Check that NPSH fields are absent from results
+            # 2. Check that NPSH fields are absent from results (not input_data)
             npsh_fields = ["npshd", "npsh_available", "npsh_required", "calculated_npshd", "required_npsh"]
             found_npsh_fields = []
             
-            def check_npsh_in_dict(data, path=""):
-                """Recursively check for NPSH fields in nested dictionaries"""
+            def check_npsh_in_dict(data, path="", exclude_input_data=True):
+                """Recursively check for NPSH fields in nested dictionaries, excluding input_data"""
                 if isinstance(data, dict):
                     for key, value in data.items():
                         current_path = f"{path}.{key}" if path else key
+                        
+                        # Skip input_data section as it's just echoing the input
+                        if exclude_input_data and key == "input_data":
+                            continue
+                            
                         if any(npsh_field.lower() in key.lower() for npsh_field in npsh_fields):
                             found_npsh_fields.append(current_path)
                         if isinstance(value, (dict, list)):
-                            check_npsh_in_dict(value, current_path)
+                            check_npsh_in_dict(value, current_path, exclude_input_data)
                 elif isinstance(data, list):
                     for i, item in enumerate(data):
-                        check_npsh_in_dict(item, f"{path}[{i}]")
+                        check_npsh_in_dict(item, f"{path}[{i}]", exclude_input_data)
             
             check_npsh_in_dict(result)
             
