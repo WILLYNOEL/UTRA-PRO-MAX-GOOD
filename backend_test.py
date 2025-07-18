@@ -2279,13 +2279,19 @@ class HydraulicPumpTester:
         # URGENT TEST FIRST - Performance endpoint issue
         urgent_success = self.test_urgent_performance_endpoint_issue()
         
-        # Run all tests - prioritizing the specific corrections
+        # Run all tests - prioritizing the specific corrections and NPSHd tests
         tests = [
             self.test_fluids_api,
-            self.test_user_interface_modifications,  # NEW: Test user interface modifications
-            self.test_corrected_global_efficiency_formula,  # NEW: Test corrected global efficiency
-            self.test_operating_point_precision,  # NEW: Test operating point precision
-            self.test_darcy_formula_integration,  # NEW: Test Darcy formula integration
+            # URGENT NPSHD SPECIFIC TESTS (from review request)
+            self.test_npshd_required_field_acceptance,  # NEW: Test npsh_required field acceptance
+            self.test_npshd_vs_npsh_required_comparison,  # NEW: Test NPSHd vs NPSHr comparison
+            self.test_cavitation_risk_detection,  # NEW: Test cavitation risk detection
+            self.test_cavitation_alerts_and_recommendations,  # NEW: Test cavitation alerts and recommendations
+            # Other existing tests
+            self.test_user_interface_modifications,  # Test user interface modifications
+            self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
+            self.test_operating_point_precision,  # Test operating point precision
+            self.test_darcy_formula_integration,  # Test Darcy formula integration
             self.test_updated_npshd_formula,  # Test updated NPSHd formula
             self.test_updated_power_formulas,  # Test updated power formulas
             self.test_performance_curves_flow_vs_hmt,  # Test performance curves
