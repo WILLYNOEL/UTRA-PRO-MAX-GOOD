@@ -2152,7 +2152,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-900">🏗️ Schéma d'Installation Expert</h3>
           <div className="flex justify-center">
-            <ExpertInstallationSchema inputData={inputData} results={results} />
+            <ExpertInstallationSchema inputData={inputData} results={results} pipeMaterials={pipeMaterials} fluids={fluids} />
           </div>
         </div>
       )}
