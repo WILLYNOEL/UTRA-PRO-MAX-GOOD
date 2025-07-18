@@ -2012,25 +2012,27 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Débit (m³/h)
+                      ⭐ Débit (m³/h)
                     </label>
                     <input
                       type="number"
-                      value={inputData.flow_rate}
+                      value={inputData.flow_rate || ''}
                       onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="Saisissez le débit"
                     />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Température (°C)
+                      ⭐ Température (°C)
                     </label>
                     <input
                       type="number"
-                      value={inputData.temperature}
-                      onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 20)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={inputData.temperature || ''}
+                      onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="Température du fluide"
                     />
                   </div>
                 </div>
