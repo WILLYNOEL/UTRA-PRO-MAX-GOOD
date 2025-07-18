@@ -6,10 +6,11 @@ import './App.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Component pour Tab 1 - Calcul NPSHr
-const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
+// Component pour Tab 1 - Calcul NPSHd
+const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
-    patm: 101325,
+    altitude: 0,
+    suction_type: 'flooded',
     hasp: 3.0,
     flow_rate: 50,
     fluid_type: 'water',
@@ -49,14 +50,14 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }));
   };
 
-  const calculateNPSHr = async () => {
+  const calculateNPSHd = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/calculate-npshr`, inputData);
+      const response = await axios.post(`${API}/calculate-npshd`, inputData);
       setResult(response.data);
     } catch (error) {
-      console.error('Erreur calcul NPSHr:', error);
-      alert('Erreur lors du calcul NPSHr');
+      console.error('Erreur calcul NPSHd:', error);
+      alert('Erreur lors du calcul NPSHd: ' + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,7 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟦 Calcul NPSHr</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟦 Calcul NPSHd (Net Positive Suction Head Available)</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Paramètres principaux */}
@@ -75,14 +76,29 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pression Atmosphérique (Pa)
+                  Altitude (m)
                 </label>
                 <input
                   type="number"
-                  value={inputData.patm}
-                  onChange={(e) => handleInputChange('patm', parseFloat(e.target.value))}
+                  value={inputData.altitude}
+                  onChange={(e) => handleInputChange('altitude', parseFloat(e.target.value) || 0)}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <p className="text-xs text-gray-500 mt-1">Calcul automatique de la pression atmosphérique</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type d'Aspiration
+                </label>
+                <select
+                  value={inputData.suction_type}
+                  onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="flooded">Aspiration en charge</option>
+                  <option value="suction_lift">Aspiration en dépression</option>
+                </select>
               </div>
               
               <div>
@@ -95,7 +111,9 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Positif = en charge / Négatif = en aspiration</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {inputData.suction_type === 'flooded' ? 'Hauteur de fluide au-dessus de la pompe' : 'Hauteur de dénivelé à aspirer'}
+                </p>
               </div>
               
               <div>
@@ -141,7 +159,7 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
           
           {/* Tuyauterie */}
           <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Tuyauterie</h3>
+            <h3 className="font-medium text-gray-700">Tuyauterie d'Aspiration</h3>
             
             <div className="space-y-3">
               <div>
@@ -230,11 +248,11 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
         
         <div className="mt-6">
           <button
-            onClick={calculateNPSHr}
+            onClick={calculateNPSHd}
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
           >
-            {loading ? 'Calcul en cours...' : 'Calculer NPSHr'}
+            {loading ? 'Calcul en cours...' : 'Calculer NPSHd'}
           </button>
         </div>
       </div>
@@ -242,7 +260,7 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
       {/* Résultats */}
       {result && (
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">Résultats NPSHr</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Résultats NPSHd</h3>
           
           {result.warnings && result.warnings.length > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -257,8 +275,12 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <h4 className="font-medium text-gray-700 border-b pb-2">Paramètres Hydrauliques</h4>
+              <h4 className="font-medium text-gray-700 border-b pb-2">Paramètres Calculés</h4>
               <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Pression atmosphérique:</span>
+                  <span className="font-medium">{(result.atmospheric_pressure / 1000).toFixed(1)} kPa</span>
+                </div>
                 <div className="flex justify-between">
                   <span>Vitesse:</span>
                   <span className="font-medium">{result.velocity?.toFixed(2)} m/s</span>
@@ -290,8 +312,8 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <span className="font-medium">{result.total_head_loss?.toFixed(2)} m</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
-                  <span className="font-semibold">NPSHr:</span>
-                  <span className="font-bold text-blue-600">{result.npshr?.toFixed(2)} m</span>
+                  <span className="font-semibold">NPSHd:</span>
+                  <span className="font-bold text-blue-600">{result.npshd?.toFixed(2)} m</span>
                 </div>
               </div>
             </div>
@@ -305,8 +327,11 @@ const NPSHrCalculator = ({ fluids, pipeMaterials, fittings }) => {
 // Component pour Tab 2 - Calcul HMT
 const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
+    installation_type: 'surface',
+    suction_type: 'flooded',
     hasp: 3.0,
     discharge_height: 25.0,
+    useful_pressure: 0,
     suction_pipe_diameter: 100,
     discharge_pipe_diameter: 80,
     suction_pipe_length: 10,
@@ -356,7 +381,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
       setResult(response.data);
     } catch (error) {
       console.error('Erreur calcul HMT:', error);
-      alert('Erreur lors du calcul HMT');
+      alert('Erreur lors du calcul HMT: ' + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
@@ -365,7 +390,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟩 Calcul HMT</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟩 Calcul HMT (Hauteur Manométrique Totale)</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Paramètres généraux */}
@@ -375,15 +400,47 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hauteur d'Aspiration (m)
+                  Type d'Installation
                 </label>
-                <input
-                  type="number"
-                  value={inputData.hasp}
-                  onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
+                <select
+                  value={inputData.installation_type}
+                  onChange={(e) => handleInputChange('installation_type', e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                >
+                  <option value="surface">Installation en surface</option>
+                  <option value="submersible">Installation submersible</option>
+                </select>
               </div>
+              
+              {inputData.installation_type === 'surface' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Type d'Aspiration
+                    </label>
+                    <select
+                      value={inputData.suction_type}
+                      onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="flooded">Aspiration en charge</option>
+                      <option value="suction_lift">Aspiration en dépression</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Hauteur d'Aspiration (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.hasp}
+                      onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </>
+              )}
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -395,6 +452,19 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Pression Utile (bar)
+                </label>
+                <input
+                  type="number"
+                  value={inputData.useful_pressure}
+                  onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Pression de refoulement requise</p>
               </div>
               
               <div>
@@ -443,69 +513,71 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <h3 className="font-medium text-gray-700">Tuyauteries</h3>
             
             <div className="space-y-3">
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h4 className="font-medium text-gray-600 mb-2">Aspiration</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Diamètre (mm)</label>
-                    <input
-                      type="number"
-                      value={inputData.suction_pipe_diameter}
-                      onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value))}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Longueur (m)</label>
-                    <input
-                      type="number"
-                      value={inputData.suction_pipe_length}
-                      onChange={(e) => handleInputChange('suction_pipe_length', parseFloat(e.target.value))}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Matériau</label>
-                    <select
-                      value={inputData.suction_pipe_material}
-                      onChange={(e) => handleInputChange('suction_pipe_material', e.target.value)}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
-                    >
-                      {pipeMaterials.map(material => (
-                        <option key={material.id} value={material.id}>{material.name}</option>
-                      ))}
-                    </select>
+              {inputData.installation_type === 'surface' && (
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">Aspiration</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs text-blue-700 mb-1">Diamètre (mm)</label>
+                      <input
+                        type="number"
+                        value={inputData.suction_pipe_diameter}
+                        onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value))}
+                        className="w-full p-1 border border-blue-300 rounded text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-blue-700 mb-1">Longueur (m)</label>
+                      <input
+                        type="number"
+                        value={inputData.suction_pipe_length}
+                        onChange={(e) => handleInputChange('suction_pipe_length', parseFloat(e.target.value))}
+                        className="w-full p-1 border border-blue-300 rounded text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-blue-700 mb-1">Matériau</label>
+                      <select
+                        value={inputData.suction_pipe_material}
+                        onChange={(e) => handleInputChange('suction_pipe_material', e.target.value)}
+                        className="w-full p-1 border border-blue-300 rounded text-sm"
+                      >
+                        {pipeMaterials.map(material => (
+                          <option key={material.id} value={material.id}>{material.name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h4 className="font-medium text-gray-600 mb-2">Refoulement</h4>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <h4 className="font-medium text-green-800 mb-2">Refoulement</h4>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Diamètre (mm)</label>
+                    <label className="block text-xs text-green-700 mb-1">Diamètre (mm)</label>
                     <input
                       type="number"
                       value={inputData.discharge_pipe_diameter}
                       onChange={(e) => handleInputChange('discharge_pipe_diameter', parseFloat(e.target.value))}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
+                      className="w-full p-1 border border-green-300 rounded text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Longueur (m)</label>
+                    <label className="block text-xs text-green-700 mb-1">Longueur (m)</label>
                     <input
                       type="number"
                       value={inputData.discharge_pipe_length}
                       onChange={(e) => handleInputChange('discharge_pipe_length', parseFloat(e.target.value))}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
+                      className="w-full p-1 border border-green-300 rounded text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Matériau</label>
+                    <label className="block text-xs text-green-700 mb-1">Matériau</label>
                     <select
                       value={inputData.discharge_pipe_material}
                       onChange={(e) => handleInputChange('discharge_pipe_material', e.target.value)}
-                      className="w-full p-1 border border-gray-300 rounded text-sm"
+                      className="w-full p-1 border border-green-300 rounded text-sm"
                     >
                       {pipeMaterials.map(material => (
                         <option key={material.id} value={material.id}>{material.name}</option>
@@ -521,46 +593,48 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
         {/* Raccords */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Raccords aspiration */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium text-gray-700">Raccords Aspiration</h4>
-              <button
-                onClick={() => addFitting('suction')}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-              >
-                + Ajouter
-              </button>
+          {inputData.installation_type === 'surface' && (
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-medium text-gray-700">Raccords Aspiration</h4>
+                <button
+                  onClick={() => addFitting('suction')}
+                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                >
+                  + Ajouter
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                {inputData.suction_fittings.map((fitting, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <select
+                      value={fitting.fitting_type}
+                      onChange={(e) => updateFitting('suction', index, 'fitting_type', e.target.value)}
+                      className="flex-1 p-1 border border-gray-300 rounded text-sm"
+                    >
+                      {fittings.map(f => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      value={fitting.quantity}
+                      onChange={(e) => updateFitting('suction', index, 'quantity', parseInt(e.target.value))}
+                      min="1"
+                      className="w-16 p-1 border border-gray-300 rounded text-sm"
+                    />
+                    <button
+                      onClick={() => removeFitting('suction', index)}
+                      className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              {inputData.suction_fittings.map((fitting, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <select
-                    value={fitting.fitting_type}
-                    onChange={(e) => updateFitting('suction', index, 'fitting_type', e.target.value)}
-                    className="flex-1 p-1 border border-gray-300 rounded text-sm"
-                  >
-                    {fittings.map(f => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    value={fitting.quantity}
-                    onChange={(e) => updateFitting('suction', index, 'quantity', parseInt(e.target.value))}
-                    min="1"
-                    className="w-16 p-1 border border-gray-300 rounded text-sm"
-                  />
-                  <button
-                    onClick={() => removeFitting('suction', index)}
-                    className="bg-red-600 text-white px-2 py-1 rounded text-sm hover:bg-red-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
           
           {/* Raccords refoulement */}
           <div>
@@ -568,7 +642,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
               <h4 className="font-medium text-gray-700">Raccords Refoulement</h4>
               <button
                 onClick={() => addFitting('discharge')}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
               >
                 + Ajouter
               </button>
@@ -672,6 +746,10 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <span>Hauteur statique:</span>
                   <span className="font-medium">{result.static_head?.toFixed(2)} m</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Pression utile:</span>
+                  <span className="font-medium">{result.useful_pressure_head?.toFixed(2)} m</span>
+                </div>
                 <div className="flex justify-between border-t pt-2">
                   <span className="font-semibold">HMT:</span>
                   <span className="font-bold text-green-600">{result.hmt?.toFixed(2)} m</span>
@@ -692,10 +770,11 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     hmt: 25,
     pipe_diameter: 100,
     required_npsh: 3.5,
-    calculated_npshr: 4.2,
+    calculated_npshd: 4.2,
     fluid_type: 'water',
     pipe_material: 'pvc',
     pump_efficiency: 75,
+    motor_efficiency: 90,
     absorbed_power: null,
     hydraulic_power: null,
     starting_method: 'star_delta',
@@ -707,6 +786,8 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
 
   const handleInputChange = (field, value) => {
     setInputData(prev => ({ ...prev, [field]: value }));
@@ -717,18 +798,119 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     try {
       const response = await axios.post(`${API}/calculate-performance`, inputData);
       setResult(response.data);
+      updateChart(response.data);
     } catch (error) {
       console.error('Erreur analyse performance:', error);
-      alert('Erreur lors de l\'analyse de performance');
+      alert('Erreur lors de l\'analyse de performance: ' + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
   };
 
+  const updateChart = (data) => {
+    if (!chartRef.current) return;
+
+    const ctx = chartRef.current.getContext('2d');
+    
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const curves = data.performance_curves;
+    
+    chartInstance.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: curves.flow,
+        datasets: [
+          {
+            label: 'HMT (m)',
+            data: curves.hmt,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'NPSH (m)',
+            data: curves.npsh,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Rendement (%)',
+            data: curves.efficiency,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            yAxisID: 'y1'
+          },
+          {
+            label: 'Puissance (kW)',
+            data: curves.power,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            yAxisID: 'y2'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Débit (m³/h)'
+            }
+          },
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: 'HMT & NPSH (m)'
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Rendement (%)'
+            },
+            grid: {
+              drawOnChartArea: false,
+            },
+          },
+          y2: {
+            type: 'linear',
+            display: false,
+            position: 'right',
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Courbes de Performance de la Pompe'
+          }
+        }
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟨 Analyse de Performance</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟨 Analyse de Performance & Calculs Électriques</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Paramètres hydrauliques */}
@@ -786,12 +968,12 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NPSHr calculé (m) - Onglet 1
+                  NPSHd calculé (m) - Onglet NPSHd
                 </label>
                 <input
                   type="number"
-                  value={inputData.calculated_npshr}
-                  onChange={(e) => handleInputChange('calculated_npshr', parseFloat(e.target.value))}
+                  value={inputData.calculated_npshd}
+                  onChange={(e) => handleInputChange('calculated_npshd', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -841,6 +1023,18 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
                   type="number"
                   value={inputData.pump_efficiency}
                   onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Rendement moteur (%)
+                </label>
+                <input
+                  type="number"
+                  value={inputData.motor_efficiency}
+                  onChange={(e) => handleInputChange('motor_efficiency', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -954,88 +1148,131 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
       
       {/* Résultats */}
       {result && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">Résultats Analyse de Performance</h3>
-          
-          {result.warnings && result.warnings.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-yellow-800 mb-2">⚠️ Avertissements</h4>
-              <ul className="text-sm text-yellow-700 space-y-1">
-                {result.warnings.map((warning, index) => (
-                  <li key={index}>• {warning}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-700 border-b pb-2">Comparaison NPSH</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>NPSHr calculé:</span>
-                  <span className="font-medium">{result.npsh_comparison?.npshr_calculated?.toFixed(2)} m</span>
+        <>
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Résultats Analyse de Performance</h3>
+            
+            {result.warnings && result.warnings.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-yellow-800 mb-2">⚠️ Avertissements</h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  {result.warnings.map((warning, index) => (
+                    <li key={index}>• {warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {result.recommendations && result.recommendations.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-blue-800 mb-2">💡 Recommandations</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  {result.recommendations.map((recommendation, index) => (
+                    <li key={index}>• {recommendation}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Comparaison NPSH</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>NPSHd calculé:</span>
+                    <span className="font-medium">{result.npsh_comparison?.npshd_calculated?.toFixed(2)} m</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>NPSH requis:</span>
+                    <span className="font-medium">{result.npsh_comparison?.npsh_required?.toFixed(2)} m</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Marge de sécurité:</span>
+                    <span className={`font-medium ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
+                      {result.npsh_comparison?.safety_margin?.toFixed(2)} m
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="font-semibold">Risque cavitation:</span>
+                    <span className={`font-bold ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
+                      {result.cavitation_risk ? 'OUI' : 'NON'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>NPSH requis:</span>
-                  <span className="font-medium">{result.npsh_comparison?.npsh_required?.toFixed(2)} m</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Marge de sécurité:</span>
-                  <span className={`font-medium ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
-                    {result.npsh_comparison?.safety_margin?.toFixed(2)} m
-                  </span>
-                </div>
-                <div className="flex justify-between border-t pt-2">
-                  <span className="font-semibold">Risque cavitation:</span>
-                  <span className={`font-bold ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
-                    {result.cavitation_risk ? 'OUI' : 'NON'}
-                  </span>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Rendements</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Rendement pompe:</span>
+                    <span className="font-medium">{result.pump_efficiency?.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Rendement moteur:</span>
+                    <span className="font-medium">{result.motor_efficiency?.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="font-semibold">Rendement global:</span>
+                    <span className="font-bold">{result.overall_efficiency?.toFixed(1)}%</span>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-700 border-b pb-2">Calculs Électriques</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Rendement global:</span>
-                  <span className="font-medium">{result.overall_efficiency?.toFixed(1)}%</span>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Calculs Électriques</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Courant nominal:</span>
+                    <span className="font-medium">{result.nominal_current?.toFixed(1)} A</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Courant démarrage:</span>
+                    <span className="font-medium">{result.starting_current?.toFixed(1)} A</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Section de câble:</span>
+                    <span className="font-medium">{result.recommended_cable_section?.toFixed(1)} mm²</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Méthode démarrage:</span>
+                    <span className="font-medium">{result.electrical_data?.starting_method === 'star_delta' ? 'Étoile-Triangle' : 'Direct'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Courant nominal:</span>
-                  <span className="font-medium">{result.nominal_current?.toFixed(1)} A</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Section de câble:</span>
-                  <span className="font-medium">{result.recommended_cable_section?.toFixed(1)} mm²</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Méthode démarrage:</span>
-                  <span className="font-medium">{result.electrical_data?.starting_method === 'star_delta' ? 'Étoile-Triangle' : 'Direct'}</span>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-700 border-b pb-2">Puissances</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>Puissance hydraulique:</span>
+                    <span className="font-medium">{result.power_calculations?.hydraulic_power?.toFixed(2)} kW</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Puissance absorbée:</span>
+                    <span className="font-medium">{result.power_calculations?.absorbed_power?.toFixed(2)} kW</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tension:</span>
+                    <span className="font-medium">{result.electrical_data?.voltage} V</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Facteur de puissance:</span>
+                    <span className="font-medium">{result.electrical_data?.power_factor}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-6 pt-4 border-t">
-            <h4 className="font-medium text-gray-700 mb-3">Calculs de Puissance</h4>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <div className="font-medium">{result.power_calculations?.hydraulic_power?.toFixed(2)}</div>
-                <div className="text-gray-500">Puissance hydraulique (kW)</div>
-              </div>
-              <div className="text-center">
-                <div className="font-medium">{result.power_calculations?.absorbed_power?.toFixed(2)}</div>
-                <div className="text-gray-500">Puissance absorbée (kW)</div>
-              </div>
-              <div className="text-center">
-                <div className="font-medium">{result.power_calculations?.efficiency?.toFixed(1)}%</div>
-                <div className="text-gray-500">Rendement</div>
-              </div>
-            </div>
+          {/* Graphique des courbes de performance */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Courbes de Performance</h3>
+            <canvas ref={chartRef} className="w-full h-96"></canvas>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -1043,15 +1280,11 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
 
 // Composant principal
 function App() {
-  const [activeTab, setActiveTab] = useState('npshr');
+  const [activeTab, setActiveTab] = useState('npshd');
   const [fluids, setFluids] = useState([]);
   const [pipeMaterials, setPipeMaterials] = useState([]);
   const [fittings, setFittings] = useState([]);
   const [history, setHistory] = useState([]);
-
-  // Références pour les graphiques
-  const chartRef = useRef(null);
-  const chartInstance = useRef(null);
 
   useEffect(() => {
     loadData();
@@ -1077,8 +1310,8 @@ function App() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'npshr':
-        return <NPSHrCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
+      case 'npshd':
+        return <NPSHdCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'hmt':
         return <HMTCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'performance':
@@ -1127,14 +1360,14 @@ function App() {
             </div>
             <div className="flex space-x-4">
               <button
-                onClick={() => setActiveTab('npshr')}
+                onClick={() => setActiveTab('npshd')}
                 className={`px-4 py-2 rounded-md font-medium ${
-                  activeTab === 'npshr'
+                  activeTab === 'npshd'
                     ? 'bg-blue-700 text-white'
                     : 'text-blue-200 hover:bg-blue-800'
                 }`}
               >
-                🟦 NPSHr
+                🟦 NPSHd
               </button>
               <button
                 onClick={() => setActiveTab('hmt')}
