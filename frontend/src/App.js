@@ -802,12 +802,133 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
       const response = await axios.post(`${API}/calculate-performance`, inputData);
       setResult(response.data);
       updateChart(response.data);
+      updatePowerChart(response.data);
     } catch (error) {
       console.error('Erreur analyse performance:', error);
       alert('Erreur lors de l\'analyse de performance: ' + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
+  };
+
+  const updatePowerChart = (data) => {
+    if (!powerChartRef.current) return;
+
+    const ctx = powerChartRef.current.getContext('2d');
+    
+    if (powerChartInstance.current) {
+      powerChartInstance.current.destroy();
+    }
+
+    const curves = data.performance_curves;
+    const bestPoint = curves.best_operating_point;
+    
+    powerChartInstance.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: curves.flow,
+        datasets: [
+          {
+            label: 'Puissance Absorbée (kW)',
+            data: curves.power,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false
+          },
+          {
+            label: 'Point de Fonctionnement',
+            data: curves.flow.map((f, index) => {
+              if (Math.abs(f - bestPoint.flow) < 0.1) {
+                return curves.power[index];
+              }
+              return null;
+            }),
+            borderColor: '#000000',
+            backgroundColor: '#000000',
+            borderWidth: 4,
+            pointRadius: 8,
+            pointHoverRadius: 12,
+            showLine: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Débit (m³/h)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Puissance Absorbée (kW)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: {
+                size: 12,
+                weight: 'bold'
+              },
+              usePointStyle: true
+            }
+          },
+          title: {
+            display: true,
+            text: 'Courbe de Puissance Absorbée',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                const datasetLabel = context.dataset.label;
+                
+                if (datasetLabel.includes('Puissance')) {
+                  return `Puissance au point de fonctionnement: ${bestPoint.power?.toFixed(2)} kW`;
+                } else if (datasetLabel.includes('Point')) {
+                  return `Point de fonctionnement saisi: Q=${bestPoint.flow}m³/h, P=${bestPoint.power?.toFixed(2)}kW`;
+                }
+                return '';
+              }
+            }
+          }
+        }
+      }
+    });
   };
 
   const updateChart = (data) => {
