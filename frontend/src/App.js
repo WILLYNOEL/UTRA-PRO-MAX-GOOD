@@ -3322,8 +3322,8 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         🌍 NIVEAU SOL - RÉFÉRENCE ALTIMÉTRIQUE
       </text>
       
-      {/* Titre dynamique avec configuration */}
-      <rect x="20" y="20" width="600" height="80" fill="white" stroke={aspirationColor} strokeWidth="4" rx="15" filter="url(#shadow)"/>
+      {/* Titre dynamique avec configuration amélioré */}
+      <rect x="20" y="20" width="600" height="100" fill="white" stroke={aspirationColor} strokeWidth="3" rx="12" filter="url(#shadow)"/>
       <text x="320" y="45" textAnchor="middle" className="text-lg font-bold" fill={aspirationColor}>
         {statusIcon} CONFIGURATION {statusText}
       </text>
@@ -3332,6 +3332,9 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="320" y="85" textAnchor="middle" className="text-sm font-medium" fill="#4b5563">
         Q={inputData.flow_rate} m³/h • H={Math.abs(inputData.suction_height)}m • T={inputData.temperature}°C
+      </text>
+      <text x="320" y="105" textAnchor="middle" className="text-xs" fill="#6b7280">
+        {inputData.engineer_firstname} {inputData.engineer_name} - {inputData.company_name}
       </text>
       
       {/* Réservoir avec détails selon la configuration */}
