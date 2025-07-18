@@ -664,17 +664,32 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
             power = ((flow * hmt) / (efficiency * 367)) * 100 if efficiency > 0 else 0
         
         # Head loss curve using Darcy-Weisbach formula
+        # Adjusted to intersect with HMT curve at operating point
         if flow == 0:
             head_loss = 0
         else:
-            head_loss = calculate_darcy_head_loss(
-                flow_rate=flow,
+            # Calculate base head loss at operating point
+            base_head_loss = calculate_darcy_head_loss(
+                flow_rate=operating_point_flow,
                 pipe_diameter=input_data.pipe_diameter,
                 pipe_length=50.0,  # Assumed standard length for curves
                 pipe_material=input_data.pipe_material,
                 fluid_density=fluid_props.density,
                 fluid_viscosity=fluid_props.viscosity
             )
+            
+            # Scale head loss to ensure intersection at operating point
+            # Head loss should equal HMT at operating point
+            scaling_factor = operating_point_hmt / base_head_loss if base_head_loss > 0 else 1
+            
+            head_loss = calculate_darcy_head_loss(
+                flow_rate=flow,
+                pipe_diameter=input_data.pipe_diameter,
+                pipe_length=50.0,
+                pipe_material=input_data.pipe_material,
+                fluid_density=fluid_props.density,
+                fluid_viscosity=fluid_props.viscosity
+            ) * scaling_factor
         
         flow_points.append(flow)
         hmt_points.append(max(0, hmt))
