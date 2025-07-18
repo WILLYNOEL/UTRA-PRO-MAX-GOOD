@@ -152,6 +152,20 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  NPSH Requis (m) - Données Constructeur
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={inputData.npsh_required}
+                  onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Ex: 3.5"
+                />
+              </div>
             </div>
           </div>
           
