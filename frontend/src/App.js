@@ -2216,7 +2216,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 };
 
 // Composant pour le schéma d'installation expert
-const ExpertInstallationSchema = ({ inputData, results }) => {
+const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids }) => {
   const isFlooded = inputData.suction_height > 0;
   const reservoirY = isFlooded ? 150 : 280;
   const reservoirHeight = isFlooded ? 120 : 80;
