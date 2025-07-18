@@ -2609,9 +2609,10 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <input
                       type="number"
-                      value={inputData.cable_length}
+                      value={inputData.cable_length || ''}
                       onChange={(e) => handleInputChange('cable_length', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Longueur du câble"
                     />
                   </div>
                   
@@ -2630,6 +2631,23 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </div>
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Chute de Tension (V)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={inputData.voltage_drop || ''}
+                    onChange={(e) => handleInputChange('voltage_drop', parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Chute de tension admissible"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Chute de tension admissible dans le câble (généralement 3% max)
+                  </p>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2637,22 +2655,24 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <input
                       type="number"
-                      value={inputData.operating_hours}
+                      value={inputData.operating_hours || ''}
                       onChange={(e) => handleInputChange('operating_hours', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Heures de fonctionnement annuel"
                     />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Prix kWh (€)
+                      Prix kWh (FCFA)
                     </label>
                     <input
                       type="number"
-                      step="0.001"
-                      value={inputData.electricity_cost}
+                      step="0.1"
+                      value={inputData.electricity_cost || ''}
                       onChange={(e) => handleInputChange('electricity_cost', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Prix du kWh en FCFA"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Prix unitaire de l'électricité (tarif industriel/domestique)
