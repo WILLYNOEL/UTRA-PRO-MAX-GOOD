@@ -3232,97 +3232,113 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 </div>
               </div>
               
-              {/* Section Données Hydrauliques Principales */}
-              <div className="mt-6 bg-blue-50 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
-                  💧 Données Hydrauliques Principales
+              {/* Section Données Hydrauliques Principales avec valeurs mises en évidence */}
+              <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+                <h4 className="font-semibold text-blue-800 mb-4 flex items-center">
+                  💧 Résultats Hydrauliques Principaux
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* DÉBIT - Valeur mise en évidence */}
                   <div className="text-center">
-                    <div className="text-lg font-bold text-blue-600">
-                      {inputData.flow_rate?.toFixed(1) || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Débit (m³/h)</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {((inputData.flow_rate || 0) / 3.6).toFixed(3)} m³/s
+                    <div className="bg-white p-4 rounded-lg border-4 border-blue-500 shadow-lg">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {inputData.flow_rate?.toFixed(1) || 'N/A'}
+                      </div>
+                      <div className="text-sm font-medium text-blue-800">DÉBIT</div>
+                      <div className="text-xs text-gray-600">m³/h</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {((inputData.flow_rate || 0) / 3.6).toFixed(3)} m³/s
+                      </div>
                     </div>
                   </div>
                   
+                  {/* HMT - Valeur mise en évidence */}
                   <div className="text-center">
-                    <div className="text-lg font-bold text-red-600">
-                      {results.total_head_loss?.toFixed(2) || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Pertes Totales (m)</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Asp: {results.npshd_analysis?.total_head_loss?.toFixed(2) || 'N/A'}m
+                    <div className="bg-white p-4 rounded-lg border-4 border-green-500 shadow-lg">
+                      <div className="text-2xl font-bold text-green-600 mb-1">
+                        {results.hmt_analysis?.hmt?.toFixed(1) || 'N/A'}
+                      </div>
+                      <div className="text-sm font-medium text-green-800">HMT</div>
+                      <div className="text-xs text-gray-600">m</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Hauteur Manométrique
+                      </div>
                     </div>
                   </div>
                   
+                  {/* P2 - Valeur mise en évidence */}
                   <div className="text-center">
-                    <div className="text-lg font-bold text-indigo-600">
-                      {results.npshd_analysis?.reynolds_number ? (
-                        results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
-                        results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'
-                      ) : 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Régime d'Écoulement</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Re: {results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'}
+                    <div className="bg-white p-4 rounded-lg border-4 border-orange-500 shadow-lg">
+                      <div className="text-2xl font-bold text-orange-600 mb-1">
+                        {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'}
+                      </div>
+                      <div className="text-sm font-medium text-orange-800">P2</div>
+                      <div className="text-xs text-gray-600">kW</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Puissance Hydraulique
+                      </div>
                     </div>
                   </div>
                   
+                  {/* COURANT NOMINAL - Valeur mise en évidence */}
                   <div className="text-center">
-                    <div className="text-lg font-bold text-cyan-600">
-                      {inputData.useful_pressure?.toFixed(1) || '0.0'}
-                    </div>
-                    <div className="text-sm text-gray-600">Pression Utile (bar)</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {(inputData.useful_pressure * 10.2)?.toFixed(1) || '0.0'}m CE
+                    <div className="bg-white p-4 rounded-lg border-4 border-purple-500 shadow-lg">
+                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                        {results.performance_analysis?.nominal_current?.toFixed(1) || 'N/A'}
+                      </div>
+                      <div className="text-sm font-medium text-purple-800">COURANT</div>
+                      <div className="text-xs text-gray-600">A</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Courant Nominal
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Ligne supplémentaire pour vitesses */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-blue-200">
+                {/* Ligne supplémentaire pour autres résultats importants */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t border-blue-200">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-teal-600">
-                      {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Vitesse Aspiration (m/s)</div>
-                    <div className={`text-xs mt-1 ${(results.npshd_analysis?.velocity || 0) > 3 ? 'text-red-600' : 'text-green-600'}`}>
-                      {(results.npshd_analysis?.velocity || 0) > 3 ? '⚠️ Élevée' : '✅ Normale'}
+                    <div className="bg-white p-3 rounded-lg border-2 border-red-300 shadow">
+                      <div className="text-lg font-bold text-red-600">
+                        {results.total_head_loss?.toFixed(2) || 'N/A'}
+                      </div>
+                      <div className="text-sm text-red-800">Pertes Totales</div>
+                      <div className="text-xs text-gray-500">m</div>
                     </div>
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-lg font-bold text-teal-600">
-                      {results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Vitesse Refoulement (m/s)</div>
-                    <div className={`text-xs mt-1 ${(results.hmt_analysis?.discharge_velocity || 0) > 5 ? 'text-red-600' : 'text-green-600'}`}>
-                      {(results.hmt_analysis?.discharge_velocity || 0) > 5 ? '⚠️ Élevée' : '✅ Normale'}
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-green-600">
-                      {inputData.temperature?.toFixed(1) || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">Température (°C)</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {inputData.fluid_type === 'water' ? 'Eau' : 
-                       inputData.fluid_type === 'oil' ? 'Huile' : 
-                       inputData.fluid_type === 'acid' ? 'Acide' : 'Glycol'}
+                    <div className="bg-white p-3 rounded-lg border-2 border-indigo-300 shadow">
+                      <div className="text-lg font-bold text-indigo-600">
+                        {results.npshd_analysis?.reynolds_number ? (
+                          results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
+                          results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'
+                        ) : 'N/A'}
+                      </div>
+                      <div className="text-sm text-indigo-800">Régime</div>
+                      <div className="text-xs text-gray-500">
+                        Re: {results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'}
+                      </div>
                     </div>
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-lg font-bold text-purple-600">
-                      {inputData.suction_type === 'flooded' ? 'EN CHARGE' : 'DÉPRESSION'}
+                    <div className="bg-white p-3 rounded-lg border-2 border-cyan-300 shadow">
+                      <div className="text-lg font-bold text-cyan-600">
+                        {inputData.useful_pressure?.toFixed(1) || '0.0'}
+                      </div>
+                      <div className="text-sm text-cyan-800">Pression Utile</div>
+                      <div className="text-xs text-gray-500">bar</div>
                     </div>
-                    <div className="text-sm text-gray-600">Type d'Aspiration</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {Math.abs(inputData.suction_height || 0).toFixed(1)}m
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="bg-white p-3 rounded-lg border-2 border-teal-300 shadow">
+                      <div className="text-lg font-bold text-teal-600">
+                        {results.overall_efficiency?.toFixed(1) || 'N/A'}
+                      </div>
+                      <div className="text-sm text-teal-800">Rendement Global</div>
+                      <div className="text-xs text-gray-500">%</div>
                     </div>
                   </div>
                 </div>
