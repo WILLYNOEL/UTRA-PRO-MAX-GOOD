@@ -1695,6 +1695,170 @@ class HydraulicPumpTester:
             self.log_test("URGENT - Performance Endpoint Overall", False, f"Exception: {str(e)}")
             return False
 
+    def test_urgent_hmt_surface_installation(self):
+        """🚨 URGENT: Test HMT endpoint with surface installation data as requested"""
+        print("\n🚨 URGENT: Testing HMT Surface Installation Issue...")
+        
+        # Exact test data from the review request
+        test_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 3.0,
+            "discharge_height": 25.0,
+            "useful_pressure": 0,
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "suction_pipe_length": 10.0,
+            "discharge_pipe_length": 50.0,
+            "suction_pipe_material": "pvc",
+            "discharge_pipe_material": "pvc",
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "water",
+            "temperature": 20,
+            "flow_rate": 60
+        }
+        
+        try:
+            print(f"🔍 Testing /api/calculate-hmt with surface installation data...")
+            print(f"   Flow Rate: {test_data['flow_rate']} m³/h")
+            print(f"   Installation: {test_data['installation_type']}")
+            print(f"   Suction Type: {test_data['suction_type']}")
+            print(f"   HASP: {test_data['hasp']} m")
+            print(f"   Discharge Height: {test_data['discharge_height']} m")
+            
+            response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=test_data, timeout=15)
+            
+            # Check 1: API doesn't return an error
+            if response.status_code != 200:
+                error_detail = ""
+                try:
+                    error_data = response.json()
+                    error_detail = f" - {error_data.get('detail', 'Unknown error')}"
+                except:
+                    error_detail = f" - Response: {response.text[:200]}"
+                
+                self.log_test("🚨 URGENT - HMT API No Error", False, 
+                            f"API returned status {response.status_code}{error_detail}")
+                return False
+            
+            result = response.json()
+            self.log_test("🚨 URGENT - HMT API No Error", True, 
+                        f"API returned HTTP 200 successfully")
+            
+            # Check 2: Suction calculations are included for surface installation
+            suction_velocity = result.get("suction_velocity")
+            suction_head_loss = result.get("suction_head_loss")
+            
+            if suction_velocity is None:
+                self.log_test("🚨 URGENT - Suction Calculations Included", False, 
+                            "suction_velocity is None - should be calculated for surface installation")
+                return False
+            
+            if suction_head_loss is None:
+                self.log_test("🚨 URGENT - Suction Calculations Included", False, 
+                            "suction_head_loss is None - should be calculated for surface installation")
+                return False
+            
+            if suction_velocity <= 0:
+                self.log_test("🚨 URGENT - Suction Calculations Included", False, 
+                            f"suction_velocity is {suction_velocity} - should be positive for surface installation")
+                return False
+            
+            self.log_test("🚨 URGENT - Suction Calculations Included", True, 
+                        f"Suction velocity: {suction_velocity:.2f} m/s, Suction head loss: {suction_head_loss:.2f} m")
+            
+            # Check 3: Data correctness
+            errors = []
+            
+            # Check discharge velocity
+            discharge_velocity = result.get("discharge_velocity", 0)
+            if discharge_velocity <= 0:
+                errors.append(f"discharge_velocity is {discharge_velocity} - should be positive")
+            
+            # Check HMT calculation
+            hmt = result.get("hmt", 0)
+            if hmt <= 0:
+                errors.append(f"hmt is {hmt} - should be positive")
+            
+            # Check total head loss
+            total_head_loss = result.get("total_head_loss", 0)
+            if total_head_loss <= 0:
+                errors.append(f"total_head_loss is {total_head_loss} - should be positive")
+            
+            # Check static head calculation
+            static_head = result.get("static_head", 0)
+            expected_static_head = test_data["discharge_height"] - test_data["hasp"]  # 25 - 3 = 22m
+            if abs(static_head - expected_static_head) > 0.1:
+                errors.append(f"static_head is {static_head} - expected ~{expected_static_head}")
+            
+            # Check fluid properties
+            fluid_props = result.get("fluid_properties", {})
+            if fluid_props.get("name") != "Eau":
+                errors.append(f"fluid name is '{fluid_props.get('name')}' - expected 'Eau'")
+            
+            # Check input data preservation
+            input_data = result.get("input_data", {})
+            if input_data.get("installation_type") != "surface":
+                errors.append("installation_type not preserved in response")
+            
+            if errors:
+                self.log_test("🚨 URGENT - Data Correctness", False, "; ".join(errors))
+                return False
+            else:
+                self.log_test("🚨 URGENT - Data Correctness", True, 
+                            f"HMT: {hmt:.2f} m, Static Head: {static_head:.2f} m, Total Head Loss: {total_head_loss:.2f} m")
+            
+            # Check 4: Detailed response structure for debugging Network Error
+            required_fields = [
+                "input_data", "fluid_properties", "suction_velocity", "discharge_velocity",
+                "suction_head_loss", "discharge_head_loss", "total_head_loss", 
+                "static_head", "useful_pressure_head", "hmt", "warnings"
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in result]
+            if missing_fields:
+                self.log_test("🚨 URGENT - Response Structure", False, 
+                            f"Missing fields: {missing_fields}")
+                return False
+            
+            # Print detailed response for debugging
+            print(f"   ✅ Complete Response Structure:")
+            print(f"      - Suction Velocity: {suction_velocity:.3f} m/s")
+            print(f"      - Discharge Velocity: {discharge_velocity:.3f} m/s")
+            print(f"      - Suction Head Loss: {suction_head_loss:.3f} m")
+            print(f"      - Discharge Head Loss: {result.get('discharge_head_loss', 0):.3f} m")
+            print(f"      - Total Head Loss: {total_head_loss:.3f} m")
+            print(f"      - Static Head: {static_head:.3f} m")
+            print(f"      - HMT: {hmt:.3f} m")
+            print(f"      - Warnings: {len(result.get('warnings', []))}")
+            
+            self.log_test("🚨 URGENT - Response Structure", True, 
+                        f"All {len(required_fields)} required fields present")
+            
+            # Overall success
+            self.log_test("🚨 URGENT - HMT Surface Installation", True, 
+                        f"All checks passed - API working correctly for surface installation")
+            
+            return True
+            
+        except requests.exceptions.Timeout:
+            self.log_test("🚨 URGENT - HMT Surface Installation", False, 
+                        "Request timeout - possible network issue")
+            return False
+        except requests.exceptions.ConnectionError as e:
+            self.log_test("🚨 URGENT - HMT Surface Installation", False, 
+                        f"Connection error - Network Error cause identified: {str(e)}")
+            return False
+        except requests.exceptions.RequestException as e:
+            self.log_test("🚨 URGENT - HMT Surface Installation", False, 
+                        f"Request error - Network Error cause: {str(e)}")
+            return False
+        except Exception as e:
+            self.log_test("🚨 URGENT - HMT Surface Installation", False, 
+                        f"Unexpected error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
