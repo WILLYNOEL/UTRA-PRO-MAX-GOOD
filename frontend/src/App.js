@@ -17,7 +17,8 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
     pipe_diameter: 100,
     pipe_material: 'pvc',
     pipe_length: 50,
-    suction_fittings: []
+    suction_fittings: [],
+    npsh_required: 3.5  // Nouveau champ pour NPSH requis
   });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
