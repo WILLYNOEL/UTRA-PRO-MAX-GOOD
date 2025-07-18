@@ -756,8 +756,8 @@ class HydraulicPumpTester:
                     motor_eff = case["data"]["motor_efficiency"]
                     
                     if "hydraulic_power" not in case["data"]:
-                        # Calculate expected hydraulic power: P2 = (débit × HMT) / (rendement pompe × 367)
-                        expected_p2 = (flow_rate * hmt) / (pump_eff * 367)
+                        # Calculate expected hydraulic power: P2 = ((débit × HMT) / (rendement pompe × 367)) * 100
+                        expected_p2 = ((flow_rate * hmt) / (pump_eff * 367)) * 100
                         
                         if abs(hydraulic_power - expected_p2) > 0.1:
                             self.log_test(f"Power Formula P2 - {case['name']}", False, 
