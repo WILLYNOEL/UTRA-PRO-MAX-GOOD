@@ -733,8 +733,8 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         absorbed_power = hydraulic_power / (input_data.motor_efficiency / 100)
         actual_motor_efficiency = input_data.motor_efficiency
     
-    # Overall efficiency
-    overall_efficiency = (hydraulic_power / absorbed_power) * 100
+    # Overall efficiency: Rendement Global = Rendement Moteur × Rendement Pompe
+    overall_efficiency = (actual_motor_efficiency / 100) * (input_data.pump_efficiency / 100) * 100
     
     # Electrical calculations adapted for starting method
     if input_data.voltage == 230:
