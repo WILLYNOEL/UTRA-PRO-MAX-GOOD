@@ -3122,18 +3122,20 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Chute de Tension (V)
+                    Chute de Tension (%)
                   </label>
                   <input
                     type="number"
                     step="0.1"
+                    min="0"
+                    max="10"
                     value={inputData.voltage_drop || ''}
                     onChange={(e) => handleInputChange('voltage_drop', parseFloat(e.target.value) || 0)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Chute de tension admissible"
+                    placeholder="3"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Chute de tension admissible dans le câble (généralement 3% max)
+                    Chute de tension admissible en % (généralement 3% max pour moteurs)
                   </p>
                 </div>
                 
