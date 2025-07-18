@@ -392,6 +392,120 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
               </div>
             )}
           </div>
+          
+          {/* Schéma d'Installation */}
+          <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Schéma d'Installation</h3>
+            
+            <div className="flex justify-center">
+              <svg width="600" height="400" viewBox="0 0 600 400" className="border border-gray-200 rounded-lg">
+                {/* Fond */}
+                <rect width="600" height="400" fill="#f8fafc" />
+                
+                {/* Niveau d'eau */}
+                <rect x="50" y="200" width="200" height="150" fill="#3b82f6" opacity="0.3" />
+                <text x="150" y="190" textAnchor="middle" className="text-sm font-medium" fill="#1f2937">
+                  Niveau d'eau
+                </text>
+                
+                {/* Tuyauterie d'aspiration */}
+                <line x1="250" y1="275" x2="350" y2="275" stroke="#4b5563" strokeWidth="8" />
+                <circle cx="250" cy="275" r="4" fill="#4b5563" />
+                
+                {/* Pompe */}
+                <rect x="350" y="250" width="60" height="50" fill="#10b981" stroke="#059669" strokeWidth="2" />
+                <text x="380" y="280" textAnchor="middle" className="text-xs font-medium" fill="white">
+                  POMPE
+                </text>
+                
+                {/* Tuyauterie de refoulement */}
+                <line x1="410" y1="275" x2="500" y2="275" stroke="#4b5563" strokeWidth="8" />
+                <line x1="500" y1="275" x2="500" y2="150" stroke="#4b5563" strokeWidth="8" />
+                
+                {/* Cotes - Hauteur d'aspiration */}
+                {inputData.suction_type === 'flooded' ? (
+                  <>
+                    <line x1="30" y1="200" x2="30" y2="275" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
+                    <line x1="30" y1="275" x2="30" y2="200" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
+                    <text x="15" y="237" textAnchor="middle" className="text-xs font-medium" fill="#ef4444">
+                      {inputData.hasp.toFixed(1)}m
+                    </text>
+                    <text x="15" y="252" textAnchor="middle" className="text-xs" fill="#ef4444">
+                      (en charge)
+                    </text>
+                  </>
+                ) : (
+                  <>
+                    <line x1="30" y1="275" x2="30" y2="200" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
+                    <text x="15" y="237" textAnchor="middle" className="text-xs font-medium" fill="#ef4444">
+                      {inputData.hasp.toFixed(1)}m
+                    </text>
+                    <text x="15" y="252" textAnchor="middle" className="text-xs" fill="#ef4444">
+                      (dépression)
+                    </text>
+                  </>
+                )}
+                
+                {/* Cotes - Diamètre */}
+                <line x1="250" y1="260" x2="350" y2="260" stroke="#6b7280" strokeWidth="1" />
+                <text x="300" y="255" textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
+                  ⌀{inputData.pipe_diameter}mm
+                </text>
+                
+                {/* Cotes - Longueur */}
+                <line x1="250" y1="290" x2="350" y2="290" stroke="#6b7280" strokeWidth="1" />
+                <text x="300" y="305" textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
+                  L={inputData.pipe_length}m
+                </text>
+                
+                {/* Vitesse */}
+                {result && (
+                  <text x="300" y="320" textAnchor="middle" className="text-xs font-medium" fill="#059669">
+                    V={result.velocity?.toFixed(2)}m/s
+                  </text>
+                )}
+                
+                {/* Flèches de direction */}
+                <defs>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                  </marker>
+                  <marker id="flowArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#059669" />
+                  </marker>
+                </defs>
+                
+                {/* Flèche de débit */}
+                <line x1="280" y1="275" x2="320" y2="275" stroke="#059669" strokeWidth="2" markerEnd="url(#flowArrow)" />
+                
+                {/* Matériau */}
+                <text x="300" y="340" textAnchor="middle" className="text-xs font-medium" fill="#4b5563">
+                  Matériau: {pipeMaterials.find(m => m.id === inputData.pipe_material)?.name || inputData.pipe_material}
+                </text>
+                
+                {/* Fluide */}
+                <text x="150" y="360" textAnchor="middle" className="text-xs font-medium" fill="#3b82f6">
+                  {fluids.find(f => f.id === inputData.fluid_type)?.name || inputData.fluid_type} à {inputData.temperature}°C
+                </text>
+                
+                {/* Légende */}
+                <text x="520" y="30" className="text-xs font-medium" fill="#1f2937">Légende:</text>
+                <line x1="520" y1="40" x2="540" y2="40" stroke="#ef4444" strokeWidth="1" />
+                <text x="545" y="45" className="text-xs" fill="#ef4444">Cotes</text>
+                <line x1="520" y1="55" x2="540" y2="55" stroke="#059669" strokeWidth="2" markerEnd="url(#flowArrow)" />
+                <text x="545" y="60" className="text-xs" fill="#059669">Débit</text>
+                <rect x="520" y="70" width="20" height="10" fill="#3b82f6" opacity="0.3" />
+                <text x="545" y="80" className="text-xs" fill="#3b82f6">Fluide</text>
+              </svg>
+            </div>
+            
+            <div className="mt-4 text-sm text-gray-600 text-center">
+              <p>Schéma d'installation pour calcul NPSHd</p>
+              <p className="text-xs mt-1">
+                Type: {inputData.suction_type === 'flooded' ? 'Aspiration en charge' : 'Aspiration en dépression'}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
