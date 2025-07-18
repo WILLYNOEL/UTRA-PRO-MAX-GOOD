@@ -248,7 +248,7 @@ function App() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold">Hydraulic Pump Calculator</h1>
+                <h1 className="text-2xl font-bold">Calculateur de Pompe Hydraulique</h1>
               </div>
             </div>
             <div className="flex space-x-4">
@@ -260,7 +260,7 @@ function App() {
                     : 'text-blue-200 hover:bg-blue-800'
                 }`}
               >
-                Calculator
+                Calculateur
               </button>
               <button
                 onClick={() => setActiveTab('history')}
@@ -270,7 +270,7 @@ function App() {
                     : 'text-blue-200 hover:bg-blue-800'
                 }`}
               >
-                History
+                Historique
               </button>
             </div>
           </div>
