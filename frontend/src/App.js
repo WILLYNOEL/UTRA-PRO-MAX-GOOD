@@ -2371,48 +2371,98 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 </div>
               </div>
               
-              {/* Ligne de résultats hydrauliques */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-red-600">
-                    {results.total_head_loss?.toFixed(2) || 'N/A'}
+              {/* Section Données Hydrauliques Principales */}
+              <div className="mt-6 bg-blue-50 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                  💧 Données Hydrauliques Principales
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-blue-600">
+                      {inputData.flow_rate?.toFixed(1) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Débit (m³/h)</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {((inputData.flow_rate || 0) / 3.6).toFixed(3)} m³/s
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600">Pertes Totales (m)</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Asp: {results.npshd_analysis?.total_head_loss?.toFixed(2) || 'N/A'}m
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-red-600">
+                      {results.total_head_loss?.toFixed(2) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Pertes Totales (m)</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Asp: {results.npshd_analysis?.total_head_loss?.toFixed(2) || 'N/A'}m
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-indigo-600">
+                      {results.npshd_analysis?.reynolds_number ? (
+                        results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
+                        results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'
+                      ) : 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Régime d'Écoulement</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Re: {results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-cyan-600">
+                      {inputData.useful_pressure?.toFixed(1) || '0.0'}
+                    </div>
+                    <div className="text-sm text-gray-600">Pression Utile (bar)</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {(inputData.useful_pressure * 10.2)?.toFixed(1) || '0.0'}m CE
+                    </div>
                   </div>
                 </div>
                 
-                <div className="text-center">
-                  <div className="text-lg font-bold text-indigo-600">
-                    {results.npshd_analysis?.reynolds_number ? (
-                      results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
-                      results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'
-                    ) : 'N/A'}
+                {/* Ligne supplémentaire pour vitesses */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-blue-200">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-teal-600">
+                      {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Vitesse Aspiration (m/s)</div>
+                    <div className={`text-xs mt-1 ${(results.npshd_analysis?.velocity || 0) > 3 ? 'text-red-600' : 'text-green-600'}`}>
+                      {(results.npshd_analysis?.velocity || 0) > 3 ? '⚠️ Élevée' : '✅ Normale'}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600">Régime</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Re: {results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'}
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-teal-600">
+                      {results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Vitesse Refoulement (m/s)</div>
+                    <div className={`text-xs mt-1 ${(results.hmt_analysis?.discharge_velocity || 0) > 5 ? 'text-red-600' : 'text-green-600'}`}>
+                      {(results.hmt_analysis?.discharge_velocity || 0) > 5 ? '⚠️ Élevée' : '✅ Normale'}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-lg font-bold text-cyan-600">
-                    {inputData.useful_pressure?.toFixed(1) || '0.0'}
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-600">
+                      {inputData.temperature?.toFixed(1) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-600">Température (°C)</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {inputData.fluid_type === 'water' ? 'Eau' : 
+                       inputData.fluid_type === 'oil' ? 'Huile' : 
+                       inputData.fluid_type === 'acid' ? 'Acide' : 'Glycol'}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600">Pression Utile (bar)</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {(inputData.useful_pressure * 10.2)?.toFixed(1) || '0.0'}m CE
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-lg font-bold text-teal-600">
-                    {results.hmt_analysis?.suction_velocity?.toFixed(2) || results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'}
-                  </div>
-                  <div className="text-sm text-gray-600">Vitesse Ref. (m/s)</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    Refoulement
+                  
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-600">
+                      {inputData.suction_type === 'flooded' ? 'EN CHARGE' : 'DÉPRESSION'}
+                    </div>
+                    <div className="text-sm text-gray-600">Type d'Aspiration</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {Math.abs(inputData.suction_height || 0).toFixed(1)}m
+                    </div>
                   </div>
                 </div>
               </div>
