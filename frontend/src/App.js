@@ -2156,9 +2156,10 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <input
                       type="number"
-                      value={inputData.suction_length}
+                      value={inputData.suction_length || ''}
                       onChange={(e) => handleInputChange('suction_length', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Longueur aspiration"
                     />
                   </div>
                   
@@ -2168,9 +2169,10 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <input
                       type="number"
-                      value={inputData.discharge_length}
+                      value={inputData.discharge_length || ''}
                       onChange={(e) => handleInputChange('discharge_length', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Longueur refoulement"
                     />
                   </div>
                 </div>
