@@ -1152,30 +1152,6 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NPSH requis (m) - Données constructeur
-                </label>
-                <input
-                  type="number"
-                  value={inputData.required_npsh}
-                  onChange={(e) => handleInputChange('required_npsh', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NPSHd calculé (m) - Onglet NPSHd
-                </label>
-                <input
-                  type="number"
-                  value={inputData.calculated_npshd}
-                  onChange={(e) => handleInputChange('calculated_npshd', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Type de fluide
                 </label>
                 <select
