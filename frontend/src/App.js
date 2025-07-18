@@ -2217,68 +2217,374 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
 // Composant pour le schéma d'installation expert
 const ExpertInstallationSchema = ({ inputData, results }) => {
+  const isFlooded = inputData.suction_height > 0;
+  const reservoirY = isFlooded ? 150 : 280;
+  const reservoirHeight = isFlooded ? 120 : 80;
+  const waterLevel = reservoirY + 20;
+  const heightScale = Math.min(Math.max(Math.abs(inputData.suction_height) * 12, 20), 100);
+  const pumpY = isFlooded ? waterLevel + heightScale : waterLevel - heightScale;
+  
   return (
-    <svg width="800" height="500" viewBox="0 0 800 500" className="border border-gray-200 rounded-lg">
-      <rect width="800" height="500" fill="#f8fafc" />
+    <svg width="1000" height="600" viewBox="0 0 1000 600" className="border border-gray-200 rounded-lg">
+      <defs>
+        <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{stopColor:'#3b82f6', stopOpacity:0.7}} />
+          <stop offset="100%" style={{stopColor:'#1e40af', stopOpacity:0.9}} />
+        </linearGradient>
+        <linearGradient id="pumpGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style={{stopColor:'#10b981', stopOpacity:1}} />
+          <stop offset="100%" style={{stopColor:'#059669', stopOpacity:1}} />
+        </linearGradient>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="2" dy="2" stdDeviation="3" floodColor="rgba(0,0,0,0.3)"/>
+        </filter>
+        <marker id="arrowRed" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#ef4444" />
+        </marker>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#3b82f6" />
+        </marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0 0, 10 4, 0 8" fill="#10b981" />
+        </marker>
+      </defs>
+      
+      <rect width="1000" height="600" fill="#f8fafc" />
+      
+      {/* Fond avec grille */}
+      <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
+      </pattern>
+      <rect width="1000" height="600" fill="url(#grid)" opacity="0.3"/>
+      
+      {/* Titre */}
+      <text x="500" y="30" textAnchor="middle" className="text-xl font-bold" fill="#1f2937">
+        Installation {isFlooded ? 'EN CHARGE' : 'EN DÉPRESSION'} - Analyse Expert
+      </text>
       
       {/* Réservoir */}
-      <rect x="50" y="200" width="200" height="150" fill="#e5e7eb" stroke="#6b7280" strokeWidth="2" />
-      <rect x="55" y="220" width="190" height="125" fill="#3b82f6" opacity="0.6" />
+      <rect 
+        x="50" 
+        y={reservoirY} 
+        width="200" 
+        height={reservoirHeight} 
+        fill="#d1d5db" 
+        stroke="#6b7280" 
+        strokeWidth="3"
+        rx="5"
+        filter="url(#shadow)"
+      />
       
-      {/* Pompe */}
-      <rect x="350" y="275" width="80" height="60" fill="#10b981" stroke="#059669" strokeWidth="3" rx="10" />
-      <text x="390" y="310" textAnchor="middle" className="text-sm font-bold" fill="white">
+      {/* Niveau d'eau */}
+      <rect 
+        x="55" 
+        y={waterLevel} 
+        width="190" 
+        height={reservoirHeight - 25} 
+        fill="url(#waterGradient)"
+        rx="3"
+      />
+      
+      {/* Étiquette du réservoir */}
+      <text x="150" y={reservoirY - 10} textAnchor="middle" className="text-sm font-bold" fill="#1f2937">
+        RÉSERVOIR
+      </text>
+      
+      {/* Ligne de niveau d'eau */}
+      <line x1="50" y1={waterLevel} x2="250" y2={waterLevel} stroke="#1d4ed8" strokeWidth="3" strokeDasharray="8,4" />
+      <text x="260" y={waterLevel + 5} className="text-xs font-bold" fill="#1d4ed8">
+        Niveau d'eau
+      </text>
+      
+      {/* Tuyauterie d'aspiration */}
+      <line 
+        x1="250" 
+        y1={waterLevel} 
+        x2="420" 
+        y2={pumpY + 40} 
+        stroke="#4b5563" 
+        strokeWidth={Math.max(6, inputData.suction_pipe_diameter / 15)}
+        strokeLinecap="round"
+      />
+      
+      {/* Crépine */}
+      <circle cx="250" cy={waterLevel} r="8" fill="#6b7280" stroke="#374151" strokeWidth="2" />
+      <text x="250" y={waterLevel + 25} textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
+        Crépine
+      </text>
+      
+      {/* Pompe - Position et taille dynamiques */}
+      <rect 
+        x="420" 
+        y={pumpY} 
+        width="80" 
+        height="60" 
+        fill="url(#pumpGradient)"
+        stroke="#047857" 
+        strokeWidth="3"
+        rx="10"
+        filter="url(#shadow)"
+      />
+      
+      {/* Détails de la pompe */}
+      <text x="460" y={pumpY + 25} textAnchor="middle" className="text-xs font-bold" fill="white">
         POMPE
       </text>
-      
-      {/* Tuyauteries */}
-      <line x1="250" y1="305" x2="350" y2="305" stroke="#4b5563" strokeWidth="8" />
-      <line x1="430" y1="305" x2="550" y2="305" stroke="#4b5563" strokeWidth="8" />
-      <line x1="550" y1="305" x2="550" y2="150" stroke="#4b5563" strokeWidth="8" />
-      
-      {/* Données temps réel */}
-      <rect x="600" y="50" width="180" height="200" fill="white" stroke="#d1d5db" strokeWidth="2" rx="10" />
-      <text x="690" y="75" textAnchor="middle" className="text-sm font-bold" fill="#1f2937">
-        DONNÉES TEMPS RÉEL
+      <text x="460" y={pumpY + 40} textAnchor="middle" className="text-xs font-medium" fill="white">
+        {inputData.pump_type || 'CENTRIFUGE'}
+      </text>
+      <text x="460" y={pumpY + 55} textAnchor="middle" className="text-xs font-medium" fill="white">
+        η={inputData.pump_efficiency}%
       </text>
       
-      {/* Affichage des résultats */}
-      <text x="610" y="100" className="text-xs" fill="#4b5563">
-        NPSHd: {results.npshd?.npshd?.toFixed(2) || 'N/A'} m
-      </text>
-      <text x="610" y="120" className="text-xs" fill="#4b5563">
-        HMT: {results.hmt?.hmt?.toFixed(2) || 'N/A'} m
-      </text>
-      <text x="610" y="140" className="text-xs" fill="#4b5563">
-        Vitesse: {results.npshd?.velocity?.toFixed(2) || 'N/A'} m/s
-      </text>
-      <text x="610" y="160" className="text-xs" fill="#4b5563">
-        Rendement: {results.expert_analysis?.overall_efficiency?.toFixed(1) || 'N/A'}%
+      {/* Tuyauterie de refoulement */}
+      <line 
+        x1="500" 
+        y1={pumpY + 30} 
+        x2="600" 
+        y2={pumpY + 30} 
+        stroke="#4b5563" 
+        strokeWidth={Math.max(6, inputData.discharge_pipe_diameter / 15)}
+        strokeLinecap="round"
+      />
+      
+      {/* Coude de refoulement */}
+      <path 
+        d={`M 600 ${pumpY + 30} Q 620 ${pumpY + 30} 620 ${pumpY + 10} L 620 150`}
+        stroke="#4b5563" 
+        strokeWidth={Math.max(6, inputData.discharge_pipe_diameter / 15)}
+        fill="none"
+        strokeLinecap="round"
+      />
+      
+      {/* Sortie */}
+      <rect x="610" y="140" width="20" height="20" fill="#10b981" rx="3" />
+      <text x="640" y="155" className="text-xs font-bold" fill="#10b981">
+        SORTIE
       </text>
       
-      {/* Indicateurs visuels */}
-      <circle 
-        cx="750" 
-        cy="100" 
-        r="10" 
-        fill={results.npshd?.cavitation_risk ? "#ef4444" : "#10b981"}
+      {/* Cotes dynamiques - Hauteur */}
+      <line 
+        x1="30" 
+        y1={waterLevel} 
+        x2="30" 
+        y2={pumpY + 30} 
+        stroke="#ef4444" 
+        strokeWidth="2"
+        markerEnd="url(#arrowRed)"
+      />
+      <line 
+        x1="30" 
+        y1={pumpY + 30} 
+        x2="30" 
+        y2={waterLevel} 
+        stroke="#ef4444" 
+        strokeWidth="2"
+        markerEnd="url(#arrowRed)"
+      />
+      
+      <text 
+        x="15" 
+        y={(waterLevel + pumpY + 30) / 2} 
+        textAnchor="middle" 
+        className="text-sm font-bold" 
+        fill="#ef4444"
+        transform={`rotate(-90, 15, ${(waterLevel + pumpY + 30) / 2})`}
+      >
+        {Math.abs(inputData.suction_height).toFixed(1)}m
+      </text>
+      
+      {/* Cotes - Hauteur de refoulement */}
+      <line 
+        x1="640" 
+        y1={pumpY + 30} 
+        x2="640" 
+        y2="150" 
+        stroke="#10b981" 
+        strokeWidth="2"
+        markerEnd="url(#arrowGreen)"
+      />
+      <line 
+        x1="640" 
+        y1="150" 
+        x2="640" 
+        y2={pumpY + 30} 
+        stroke="#10b981" 
+        strokeWidth="2"
+        markerEnd="url(#arrowGreen)"
+      />
+      
+      <text 
+        x="655" 
+        y={(pumpY + 30 + 150) / 2} 
+        textAnchor="middle" 
+        className="text-sm font-bold" 
+        fill="#10b981"
+        transform={`rotate(-90, 655, ${(pumpY + 30 + 150) / 2})`}
+      >
+        {inputData.discharge_height.toFixed(1)}m
+      </text>
+      
+      {/* Flèches de débit */}
+      <line 
+        x1="300" 
+        y1={waterLevel + 10} 
+        x2="380" 
+        y2={pumpY + 20} 
+        stroke="#3b82f6" 
+        strokeWidth="4"
+        markerEnd="url(#arrowBlue)"
       />
       <text 
-        x="750" 
-        y="105" 
+        x="340" 
+        y={(waterLevel + pumpY + 30) / 2 - 10} 
         textAnchor="middle" 
-        className="text-xs font-bold" 
-        fill="white"
+        className="text-sm font-bold" 
+        fill="#3b82f6"
       >
-        {results.npshd?.cavitation_risk ? "!" : "✓"}
+        {inputData.flow_rate} m³/h
       </text>
       
-      <text x="610" y="220" className="text-xs font-bold" fill="#4b5563">
-        Débit: {inputData.flow_rate} m³/h
+      <line 
+        x1="520" 
+        y1={pumpY + 30} 
+        x2="580" 
+        y2={pumpY + 30} 
+        stroke="#3b82f6" 
+        strokeWidth="4"
+        markerEnd="url(#arrowBlue)"
+      />
+      
+      {/* Informations techniques détaillées */}
+      <rect x="720" y="80" width="260" height="480" fill="white" stroke="#d1d5db" strokeWidth="2" rx="10" filter="url(#shadow)" />
+      <text x="850" y="105" textAnchor="middle" className="text-lg font-bold" fill="#1f2937">
+        DONNÉES TECHNIQUES
       </text>
-      <text x="610" y="240" className="text-xs font-bold" fill="#4b5563">
-        Température: {inputData.temperature}°C
+      
+      {/* Section Hydraulique */}
+      <rect x="730" y="120" width="240" height="100" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" rx="5" />
+      <text x="740" y="135" className="text-sm font-bold" fill="#1e40af">💧 HYDRAULIQUE</text>
+      
+      <text x="740" y="155" className="text-xs" fill="#1f2937">
+        NPSHd: {results.npshd_analysis?.npshd?.toFixed(2) || 'N/A'} m
       </text>
+      <text x="740" y="170" className="text-xs" fill="#1f2937">
+        HMT: {results.hmt_analysis?.hmt?.toFixed(2) || 'N/A'} m
+      </text>
+      <text x="740" y="185" className="text-xs" fill="#1f2937">
+        Vitesse asp: {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'} m/s
+      </text>
+      <text x="740" y="200" className="text-xs" fill="#1f2937">
+        Vitesse ref: {results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'} m/s
+      </text>
+      
+      {/* Section Électrique */}
+      <rect x="730" y="230" width="240" height="100" fill="#fef3c7" stroke="#f59e0b" strokeWidth="1" rx="5" />
+      <text x="740" y="245" className="text-sm font-bold" fill="#92400e">⚡ ÉLECTRIQUE</text>
+      
+      <text x="740" y="265" className="text-xs" fill="#1f2937">
+        P1: {results.performance_analysis?.electrical_power?.toFixed(1) || 'N/A'} kW
+      </text>
+      <text x="740" y="280" className="text-xs" fill="#1f2937">
+        P2: {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'} kW
+      </text>
+      <text x="740" y="295" className="text-xs" fill="#1f2937">
+        Courant: {results.performance_analysis?.nominal_current?.toFixed(1) || 'N/A'} A
+      </text>
+      <text x="740" y="310" className="text-xs" fill="#1f2937">
+        Tension: {inputData.voltage}V - {inputData.voltage === 230 ? 'Mono' : 'Tri'}
+      </text>
+      
+      {/* Section Performance */}
+      <rect x="730" y="340" width="240" height="100" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" rx="5" />
+      <text x="740" y="355" className="text-sm font-bold" fill="#166534">📊 PERFORMANCE</text>
+      
+      <text x="740" y="375" className="text-xs" fill="#1f2937">
+        Rendement global: {results.overall_efficiency?.toFixed(1) || 'N/A'}%
+      </text>
+      <text x="740" y="390" className="text-xs" fill="#1f2937">
+        Consommation: {results.energy_consumption?.toFixed(3) || 'N/A'} kWh/m³
+      </text>
+      <text x="740" y="405" className="text-xs" fill="#1f2937">
+        Coût annuel: {results.electrical_analysis?.annual_energy_cost?.toFixed(0) || 'N/A'} €
+      </text>
+      <text x="740" y="420" className="text-xs" fill="#1f2937">
+        Stabilité: {results.system_stability ? '✅ Stable' : '⚠️ Instable'}
+      </text>
+      
+      {/* Section Matériaux */}
+      <rect x="730" y="450" width="240" height="80" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1" rx="5" />
+      <text x="740" y="465" className="text-sm font-bold" fill="#be185d">🔧 MATÉRIAUX</text>
+      
+      <text x="740" y="485" className="text-xs" fill="#1f2937">
+        Asp: {pipeMaterials.find(m => m.id === inputData.suction_material)?.name || 'N/A'} - ⌀{inputData.suction_pipe_diameter}mm
+      </text>
+      <text x="740" y="500" className="text-xs" fill="#1f2937">
+        Ref: {pipeMaterials.find(m => m.id === inputData.discharge_material)?.name || 'N/A'} - ⌀{inputData.discharge_pipe_diameter}mm
+      </text>
+      <text x="740" y="515" className="text-xs" fill="#1f2937">
+        Fluide: {fluids.find(f => f.id === inputData.fluid_type)?.name || 'N/A'} à {inputData.temperature}°C
+      </text>
+      
+      {/* Indicateurs de statut */}
+      <g transform="translate(900, 540)">
+        <circle 
+          cx="0" 
+          cy="0" 
+          r="12" 
+          fill={results.npshd_analysis?.cavitation_risk ? "#ef4444" : "#10b981"}
+          stroke="white"
+          strokeWidth="2"
+        />
+        <text 
+          x="0" 
+          y="5" 
+          textAnchor="middle" 
+          className="text-sm font-bold" 
+          fill="white"
+        >
+          {results.npshd_analysis?.cavitation_risk ? "!" : "✓"}
+        </text>
+        <text 
+          x="0" 
+          y="30" 
+          textAnchor="middle" 
+          className="text-xs font-medium" 
+          fill={results.npshd_analysis?.cavitation_risk ? "#ef4444" : "#10b981"}
+        >
+          {results.npshd_analysis?.cavitation_risk ? "CAVITATION" : "SÉCURISÉ"}
+        </text>
+      </g>
+      
+      {/* Singularités visibles */}
+      {inputData.suction_elbow_90 > 0 && (
+        <g>
+          <rect x="330" y={waterLevel + 5} width="12" height="8" fill="#6b7280" rx="2" />
+          <text x="336" y={waterLevel + 25} textAnchor="middle" className="text-xs" fill="#6b7280">
+            {inputData.suction_elbow_90}×90°
+          </text>
+        </g>
+      )}
+      
+      {inputData.discharge_valve > 0 && (
+        <g>
+          <rect x="555" y={pumpY + 26} width="12" height="8" fill="#6b7280" rx="2" />
+          <text x="561" y={pumpY + 50} textAnchor="middle" className="text-xs" fill="#6b7280">
+            {inputData.discharge_valve}×V
+          </text>
+        </g>
+      )}
+      
+      {/* Légende */}
+      <text x="50" y="580" className="text-xs font-bold" fill="#1f2937">LÉGENDE:</text>
+      <line x1="110" y1="575" x2="130" y2="575" stroke="#ef4444" strokeWidth="2" markerEnd="url(#arrowRed)" />
+      <text x="135" y="580" className="text-xs" fill="#ef4444">Cotes</text>
+      <line x1="170" y1="575" x2="190" y2="575" stroke="#3b82f6" strokeWidth="4" markerEnd="url(#arrowBlue)" />
+      <text x="195" y="580" className="text-xs" fill="#3b82f6">Débit</text>
+      <rect x="230" y="572" width="15" height="8" fill="url(#waterGradient)" />
+      <text x="250" y="580" className="text-xs" fill="#3b82f6">Fluide</text>
+      <rect x="285" y="572" width="15" height="8" fill="url(#pumpGradient)" />
+      <text x="305" y="580" className="text-xs" fill="#10b981">Pompe</text>
     </svg>
   );
 };
