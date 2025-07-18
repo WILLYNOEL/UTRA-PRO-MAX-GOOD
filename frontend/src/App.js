@@ -2781,14 +2781,14 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="3" dy="3" stdDeviation="4" floodColor="rgba(0,0,0,0.3)"/>
         </filter>
-        <marker id="arrowRed" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
-          <polygon points="0 0, 12 5, 0 10" fill="#ef4444" />
+        <marker id="arrowRed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
         </marker>
-        <marker id="arrowBlue" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
-          <polygon points="0 0, 12 5, 0 10" fill="#3b82f6" />
+        <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#3b82f6" />
         </marker>
-        <marker id="arrowGreen" markerWidth="12" markerHeight="10" refX="11" refY="5" orient="auto">
-          <polygon points="0 0, 12 5, 0 10" fill="#10b981" />
+        <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#10b981" />
         </marker>
       </defs>
       
