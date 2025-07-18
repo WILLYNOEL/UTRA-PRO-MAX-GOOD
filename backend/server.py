@@ -658,14 +658,14 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     
     cavitation_risk = input_data.calculated_npshd <= input_data.required_npsh
     
-    # Power calculations using the correct formulas
+    # Power calculations using the corrected formulas
     if input_data.hydraulic_power:
         # Use provided hydraulic power
         hydraulic_power = input_data.hydraulic_power
     else:
-        # Calculate hydraulic power using the correct formula:
-        # P2 = (débit x HMT) / (rendement pompe x 367)
-        hydraulic_power = (input_data.flow_rate * input_data.hmt) / (input_data.pump_efficiency * 367)
+        # Calculate hydraulic power using the corrected formula:
+        # P2 = ((débit × HMT) / (rendement pompe × 367)) * 100
+        hydraulic_power = ((input_data.flow_rate * input_data.hmt) / (input_data.pump_efficiency * 367)) * 100
     
     if input_data.absorbed_power:
         # Use provided absorbed power
@@ -673,9 +673,9 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         # Calculate actual motor efficiency
         actual_motor_efficiency = (hydraulic_power / absorbed_power) * 100
     else:
-        # Calculate absorbed power using the correct formula:
-        # P1 = P2 / rendement moteur
-        absorbed_power = hydraulic_power / (input_data.motor_efficiency / 100)
+        # Calculate absorbed power using the corrected formula:
+        # P1 = (P2 / rendement moteur) * 100
+        absorbed_power = (hydraulic_power / input_data.motor_efficiency) * 100
         actual_motor_efficiency = input_data.motor_efficiency
     
     # Overall efficiency
