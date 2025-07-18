@@ -283,16 +283,16 @@ function App() {
             {/* Input Panel */}
             <div className="space-y-6">
               <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4 text-gray-900">Input Parameters</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-900">Paramètres d'Entrée</h2>
                 
                 {/* Hydraulic Data */}
                 <div className="space-y-4">
-                  <h3 className="font-medium text-gray-700">Hydraulic Data</h3>
+                  <h3 className="font-medium text-gray-700">Données Hydrauliques</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Flow Rate (m³/h)
+                        Débit (m³/h)
                       </label>
                       <input
                         type="number"
@@ -304,7 +304,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Suction Height (m)
+                        Hauteur d'Aspiration (m)
                       </label>
                       <input
                         type="number"
@@ -316,7 +316,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Pipe Diameter (mm)
+                        Diamètre de Tuyauterie (mm)
                       </label>
                       <input
                         type="number"
@@ -328,7 +328,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Pipe Length (m)
+                        Longueur de Tuyauterie (m)
                       </label>
                       <input
                         type="number"
@@ -342,12 +342,12 @@ function App() {
 
                 {/* Fluid Selection */}
                 <div className="mt-6 space-y-4">
-                  <h3 className="font-medium text-gray-700">Fluid Properties</h3>
+                  <h3 className="font-medium text-gray-700">Propriétés du Fluide</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Fluid Type
+                        Type de Fluide
                       </label>
                       <select
                         value={inputData.fluid_type}
@@ -364,7 +364,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Temperature (°C)
+                        Température (°C)
                       </label>
                       <input
                         type="number"
@@ -378,12 +378,12 @@ function App() {
 
                 {/* Pump Parameters */}
                 <div className="mt-6 space-y-4">
-                  <h3 className="font-medium text-gray-700">Pump & Motor Parameters</h3>
+                  <h3 className="font-medium text-gray-700">Paramètres Pompe & Moteur</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Pump Efficiency (%)
+                        Rendement Pompe (%)
                       </label>
                       <input
                         type="number"
@@ -395,7 +395,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Motor Efficiency (%)
+                        Rendement Moteur (%)
                       </label>
                       <input
                         type="number"
@@ -407,7 +407,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Voltage (V)
+                        Tension (V)
                       </label>
                       <select
                         value={inputData.voltage}
@@ -421,7 +421,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cable Length (m)
+                        Longueur de Câble (m)
                       </label>
                       <input
                         type="number"
@@ -439,13 +439,13 @@ function App() {
                     disabled={loading}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
                   >
-                    {loading ? 'Calculating...' : 'Calculate'}
+                    {loading ? 'Calcul en cours...' : 'Calculer'}
                   </button>
                   
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="Project name"
+                      placeholder="Nom du projet"
                       value={projectName}
                       onChange={(e) => setProjectName(e.target.value)}
                       className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -454,7 +454,7 @@ function App() {
                       onClick={saveCalculation}
                       className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-medium"
                     >
-                      Save
+                      Sauvegarder
                     </button>
                   </div>
                 </div>
