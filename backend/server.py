@@ -678,8 +678,8 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         actual_motor_efficiency = (hydraulic_power / absorbed_power) * 100
     else:
         # Calculate absorbed power using the corrected formula:
-        # P1 = (P2 / rendement moteur) * 100
-        absorbed_power = (hydraulic_power / input_data.motor_efficiency) * 100
+        # P1 = P2 / (rendement moteur / 100)
+        absorbed_power = hydraulic_power / (input_data.motor_efficiency / 100)
         actual_motor_efficiency = input_data.motor_efficiency
     
     # Overall efficiency
