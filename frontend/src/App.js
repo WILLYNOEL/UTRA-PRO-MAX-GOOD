@@ -393,116 +393,231 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             )}
           </div>
           
-          {/* Schéma d'Installation */}
+          {/* Schéma d'Installation Dynamique */}
           <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Schéma d'Installation</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Schéma d'Installation Dynamique</h3>
             
             <div className="flex justify-center">
               <svg width="600" height="400" viewBox="0 0 600 400" className="border border-gray-200 rounded-lg">
                 {/* Fond */}
                 <rect width="600" height="400" fill="#f8fafc" />
                 
-                {/* Niveau d'eau */}
-                <rect x="50" y="200" width="200" height="150" fill="#3b82f6" opacity="0.3" />
-                <text x="150" y="190" textAnchor="middle" className="text-sm font-medium" fill="#1f2937">
-                  Niveau d'eau
-                </text>
-                
-                {/* Tuyauterie d'aspiration */}
-                <line x1="250" y1="275" x2="350" y2="275" stroke="#4b5563" strokeWidth="8" />
-                <circle cx="250" cy="275" r="4" fill="#4b5563" />
-                
-                {/* Pompe */}
-                <rect x="350" y="250" width="60" height="50" fill="#10b981" stroke="#059669" strokeWidth="2" />
-                <text x="380" y="280" textAnchor="middle" className="text-xs font-medium" fill="white">
-                  POMPE
-                </text>
-                
-                {/* Tuyauterie de refoulement */}
-                <line x1="410" y1="275" x2="500" y2="275" stroke="#4b5563" strokeWidth="8" />
-                <line x1="500" y1="275" x2="500" y2="150" stroke="#4b5563" strokeWidth="8" />
-                
-                {/* Cotes - Hauteur d'aspiration */}
-                {inputData.suction_type === 'flooded' ? (
-                  <>
-                    <line x1="30" y1="200" x2="30" y2="275" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
-                    <line x1="30" y1="275" x2="30" y2="200" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
-                    <text x="15" y="237" textAnchor="middle" className="text-xs font-medium" fill="#ef4444">
-                      {inputData.hasp.toFixed(1)}m
-                    </text>
-                    <text x="15" y="252" textAnchor="middle" className="text-xs" fill="#ef4444">
-                      (en charge)
-                    </text>
-                  </>
-                ) : (
-                  <>
-                    <line x1="30" y1="275" x2="30" y2="200" stroke="#ef4444" strokeWidth="1" markerEnd="url(#arrowhead)" />
-                    <text x="15" y="237" textAnchor="middle" className="text-xs font-medium" fill="#ef4444">
-                      {inputData.hasp.toFixed(1)}m
-                    </text>
-                    <text x="15" y="252" textAnchor="middle" className="text-xs" fill="#ef4444">
-                      (dépression)
-                    </text>
-                  </>
-                )}
-                
-                {/* Cotes - Diamètre */}
-                <line x1="250" y1="260" x2="350" y2="260" stroke="#6b7280" strokeWidth="1" />
-                <text x="300" y="255" textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
-                  ⌀{inputData.pipe_diameter}mm
-                </text>
-                
-                {/* Cotes - Longueur */}
-                <line x1="250" y1="290" x2="350" y2="290" stroke="#6b7280" strokeWidth="1" />
-                <text x="300" y="305" textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
-                  L={inputData.pipe_length}m
-                </text>
-                
-                {/* Vitesse */}
-                {result && (
-                  <text x="300" y="320" textAnchor="middle" className="text-xs font-medium" fill="#059669">
-                    V={result.velocity?.toFixed(2)}m/s
-                  </text>
-                )}
-                
-                {/* Flèches de direction */}
-                <defs>
-                  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
-                  </marker>
-                  <marker id="flowArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#059669" />
-                  </marker>
-                </defs>
-                
-                {/* Flèche de débit */}
-                <line x1="280" y1="275" x2="320" y2="275" stroke="#059669" strokeWidth="2" markerEnd="url(#flowArrow)" />
-                
-                {/* Matériau */}
-                <text x="300" y="340" textAnchor="middle" className="text-xs font-medium" fill="#4b5563">
-                  Matériau: {pipeMaterials.find(m => m.id === inputData.pipe_material)?.name || inputData.pipe_material}
-                </text>
-                
-                {/* Fluide */}
-                <text x="150" y="360" textAnchor="middle" className="text-xs font-medium" fill="#3b82f6">
-                  {fluids.find(f => f.id === inputData.fluid_type)?.name || inputData.fluid_type} à {inputData.temperature}°C
-                </text>
-                
-                {/* Légende */}
-                <text x="520" y="30" className="text-xs font-medium" fill="#1f2937">Légende:</text>
-                <line x1="520" y1="40" x2="540" y2="40" stroke="#ef4444" strokeWidth="1" />
-                <text x="545" y="45" className="text-xs" fill="#ef4444">Cotes</text>
-                <line x1="520" y1="55" x2="540" y2="55" stroke="#059669" strokeWidth="2" markerEnd="url(#flowArrow)" />
-                <text x="545" y="60" className="text-xs" fill="#059669">Débit</text>
-                <rect x="520" y="70" width="20" height="10" fill="#3b82f6" opacity="0.3" />
-                <text x="545" y="80" className="text-xs" fill="#3b82f6">Fluide</text>
+                {/* Configuration dynamique selon le type d'aspiration */}
+                {(() => {
+                  const isFlooded = inputData.suction_type === 'flooded';
+                  const reservoirY = isFlooded ? 150 : 250;
+                  const reservoirHeight = isFlooded ? 100 : 80;
+                  const pumpY = isFlooded ? 280 : 180;
+                  const waterLevel = reservoirY + 20;
+                  
+                  // Calcul de la hauteur dynamique
+                  const heightScale = Math.min(Math.max(inputData.hasp * 15, 30), 120);
+                  const actualPumpY = isFlooded ? waterLevel + heightScale : waterLevel - heightScale;
+                  
+                  return (
+                    <>
+                      {/* Réservoir */}
+                      <rect 
+                        x="50" 
+                        y={reservoirY} 
+                        width="180" 
+                        height={reservoirHeight} 
+                        fill="#e5e7eb" 
+                        stroke="#6b7280" 
+                        strokeWidth="2"
+                      />
+                      
+                      {/* Niveau d'eau */}
+                      <rect 
+                        x="55" 
+                        y={waterLevel} 
+                        width="170" 
+                        height={reservoirHeight - 25} 
+                        fill="#3b82f6" 
+                        opacity="0.6"
+                      />
+                      
+                      {/* Étiquette du réservoir */}
+                      <text x="140" y={reservoirY - 10} textAnchor="middle" className="text-sm font-medium" fill="#1f2937">
+                        Réservoir
+                      </text>
+                      
+                      {/* Ligne d'eau */}
+                      <line x1="50" y1={waterLevel} x2="230" y2={waterLevel} stroke="#1d4ed8" strokeWidth="2" strokeDasharray="5,5" />
+                      <text x="240" y={waterLevel + 5} className="text-xs font-medium" fill="#1d4ed8">
+                        Niveau d'eau
+                      </text>
+                      
+                      {/* Tuyauterie d'aspiration */}
+                      <line 
+                        x1="230" 
+                        y1={waterLevel} 
+                        x2="350" 
+                        y2={actualPumpY + 25} 
+                        stroke="#4b5563" 
+                        strokeWidth="6"
+                      />
+                      <circle cx="230" cy={waterLevel} r="3" fill="#4b5563" />
+                      
+                      {/* Pompe - Position dynamique */}
+                      <rect 
+                        x="350" 
+                        y={actualPumpY} 
+                        width="70" 
+                        height="50" 
+                        fill="#10b981" 
+                        stroke="#059669" 
+                        strokeWidth="2"
+                        rx="5"
+                      />
+                      <text x="385" y={actualPumpY + 30} textAnchor="middle" className="text-xs font-bold" fill="white">
+                        POMPE
+                      </text>
+                      
+                      {/* Tuyauterie de refoulement */}
+                      <line 
+                        x1="420" 
+                        y1={actualPumpY + 25} 
+                        x2="500" 
+                        y2={actualPumpY + 25} 
+                        stroke="#4b5563" 
+                        strokeWidth="6"
+                      />
+                      <line 
+                        x1="500" 
+                        y1={actualPumpY + 25} 
+                        x2="500" 
+                        y2="120" 
+                        stroke="#4b5563" 
+                        strokeWidth="6"
+                      />
+                      
+                      {/* Sortie */}
+                      <rect x="495" y="115" width="10" height="10" fill="#10b981" />
+                      <text x="510" y="125" className="text-xs font-medium" fill="#10b981">
+                        Sortie
+                      </text>
+                      
+                      {/* Cotes dynamiques - Hauteur d'aspiration */}
+                      <defs>
+                        <marker id="arrowRed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                          <polygon points="0 0, 8 3, 0 6" fill="#ef4444" />
+                        </marker>
+                        <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                          <polygon points="0 0, 8 3, 0 6" fill="#059669" />
+                        </marker>
+                      </defs>
+                      
+                      {/* Cote hauteur */}
+                      <line 
+                        x1="30" 
+                        y1={waterLevel} 
+                        x2="30" 
+                        y2={actualPumpY + 25} 
+                        stroke="#ef4444" 
+                        strokeWidth="1"
+                        markerEnd="url(#arrowRed)"
+                      />
+                      <line 
+                        x1="30" 
+                        y1={actualPumpY + 25} 
+                        x2="30" 
+                        y2={waterLevel} 
+                        stroke="#ef4444" 
+                        strokeWidth="1"
+                        markerEnd="url(#arrowRed)"
+                      />
+                      
+                      <text 
+                        x="15" 
+                        y={(waterLevel + actualPumpY + 25) / 2} 
+                        textAnchor="middle" 
+                        className="text-xs font-bold" 
+                        fill="#ef4444"
+                      >
+                        {inputData.hasp.toFixed(1)}m
+                      </text>
+                      
+                      <text 
+                        x="15" 
+                        y={(waterLevel + actualPumpY + 25) / 2 + 15} 
+                        textAnchor="middle" 
+                        className="text-xs" 
+                        fill="#ef4444"
+                      >
+                        {isFlooded ? '(en charge)' : '(dépression)'}
+                      </text>
+                      
+                      {/* Flèche de débit */}
+                      <line 
+                        x1="280" 
+                        y1={waterLevel + 10} 
+                        x2="320" 
+                        y2={actualPumpY + 15} 
+                        stroke="#059669" 
+                        strokeWidth="3"
+                        markerEnd="url(#arrowGreen)"
+                      />
+                      <text 
+                        x="300" 
+                        y={(waterLevel + actualPumpY) / 2} 
+                        textAnchor="middle" 
+                        className="text-xs font-bold" 
+                        fill="#059669"
+                      >
+                        {inputData.flow_rate} m³/h
+                      </text>
+                      
+                      {/* Informations techniques */}
+                      <rect x="450" y="30" width="140" height="100" fill="white" stroke="#d1d5db" strokeWidth="1" rx="5" />
+                      <text x="460" y="45" className="text-xs font-bold" fill="#1f2937">Paramètres:</text>
+                      <text x="460" y="60" className="text-xs" fill="#4b5563">⌀ {inputData.pipe_diameter}mm</text>
+                      <text x="460" y="75" className="text-xs" fill="#4b5563">L: {inputData.pipe_length}m</text>
+                      <text x="460" y="90" className="text-xs" fill="#4b5563">T: {inputData.temperature}°C</text>
+                      <text x="460" y="105" className="text-xs" fill="#4b5563">
+                        NPSH req: {inputData.npsh_required}m
+                      </text>
+                      {result && (
+                        <text x="460" y="120" className="text-xs font-bold" fill="#10b981">
+                          V: {result.velocity?.toFixed(2)}m/s
+                        </text>
+                      )}
+                      
+                      {/* Indicateur de risque */}
+                      {result && (
+                        <circle 
+                          cx="570" 
+                          cy="50" 
+                          r="8" 
+                          fill={result.cavitation_risk ? "#ef4444" : "#10b981"}
+                        />
+                      )}
+                      {result && (
+                        <text 
+                          x="570" 
+                          y="55" 
+                          textAnchor="middle" 
+                          className="text-xs font-bold" 
+                          fill="white"
+                        >
+                          {result.cavitation_risk ? "!" : "✓"}
+                        </text>
+                      )}
+                    </>
+                  );
+                })()}
               </svg>
             </div>
             
             <div className="mt-4 text-sm text-gray-600 text-center">
-              <p>Schéma d'installation pour calcul NPSHd</p>
+              <p className="font-medium">
+                Schéma dynamique - Position de la pompe ajustée selon le type d'aspiration et la hauteur
+              </p>
               <p className="text-xs mt-1">
-                Type: {inputData.suction_type === 'flooded' ? 'Aspiration en charge' : 'Aspiration en dépression'}
+                {inputData.suction_type === 'flooded' ? 
+                  '🔵 Configuration "en charge" : Pompe sous le niveau d\'eau' : 
+                  '🔴 Configuration "dépression" : Pompe au-dessus du niveau d\'eau'
+                }
               </p>
             </div>
           </div>
