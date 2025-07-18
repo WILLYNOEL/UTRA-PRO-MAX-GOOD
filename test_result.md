@@ -237,10 +237,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Hydraulic Calculation Engine"
-    - "API Endpoints"
-    - "Fluid Properties Database"
-    - "Power and Electrical Calculations"
+    - "Professional Engineering UI"
+    - "Real-time Calculations" 
+    - "Interactive Charts"
+    - "Calculation History"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
