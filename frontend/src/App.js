@@ -75,19 +75,6 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Altitude (m)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.altitude}
-                  onChange={(e) => handleInputChange('altitude', parseFloat(e.target.value) || 0)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">Calcul automatique de la pression atmosphérique</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Type d'Aspiration
                 </label>
                 <select
