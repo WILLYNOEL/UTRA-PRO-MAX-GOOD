@@ -2978,7 +2978,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x2="20" 
         y2={actualPumpY + 40} 
         stroke="#ef4444" 
-        strokeWidth="4"
+        strokeWidth="2"
         markerEnd="url(#arrowRed)"
       />
       <line 
@@ -2987,7 +2987,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x2="20" 
         y2={waterLevel} 
         stroke="#ef4444" 
-        strokeWidth="4"
+        strokeWidth="2"
         markerEnd="url(#arrowRed)"
       />
       
@@ -3038,7 +3038,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x2="720" 
         y2="140" 
         stroke="#10b981" 
-        strokeWidth="4"
+        strokeWidth="2"
         markerEnd="url(#arrowGreen)"
       />
       <line 
@@ -3047,7 +3047,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x2="720" 
         y2={actualPumpY + 40} 
         stroke="#10b981" 
-        strokeWidth="4"
+        strokeWidth="2"
         markerEnd="url(#arrowGreen)"
       />
       
