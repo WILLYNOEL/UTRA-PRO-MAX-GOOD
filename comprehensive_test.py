@@ -6,7 +6,7 @@ Comprehensive Fluid and Edge Case Testing
 import requests
 import json
 
-BACKEND_URL = "https://c45825d0-0597-4727-aeac-d5653371b51c.preview.emergentagent.com/api"
+BACKEND_URL = "https://bc3e480f-b07d-4f4c-9965-462069354fb5.preview.emergentagent.com/api"
 
 def test_all_fluids_npshd():
     """Test NPSHd calculations for all fluid types"""
