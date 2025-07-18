@@ -2212,14 +2212,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    NPSH Requis (m)
+                    ⭐ NPSH Requis (m)
                   </label>
                   <input
                     type="number"
                     step="0.1"
-                    value={inputData.npsh_required}
+                    value={inputData.npsh_required || ''}
                     onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value) || 0)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                    placeholder="NPSH requis de la pompe"
                   />
                 </div>
               </div>
