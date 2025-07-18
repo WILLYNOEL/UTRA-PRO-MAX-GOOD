@@ -1158,6 +1158,16 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
+  const handleInputChange = (field, value) => {
+    const newData = { ...inputData, [field]: value };
+    setInputData(newData);
+    
+    // Calcul automatique si activé
+    if (autoCalculate) {
+      calculateExpertAnalysis(newData);
+    }
+  };
+
   const resetAllFields = () => {
     setInputData({
       // Paramètres hydrauliques principaux
