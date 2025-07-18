@@ -1880,15 +1880,19 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
           )}
 
-          {/* Singularités */}
+          {/* Singularités Complètes */}
           {(activeSection === 'all' || activeSection === 'hydraulic') && (
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold mb-4 text-orange-600 flex items-center">
-                🔧 Singularités
+                🔧 Singularités Complètes
               </h3>
               <div className="space-y-4">
-                <div className="text-sm font-medium text-gray-700 mb-2">Aspiration</div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="text-sm font-medium text-gray-700 mb-3 bg-blue-50 p-3 rounded-lg">
+                  💧 ASPIRATION (Attention : impact critique sur NPSHd)
+                </div>
+                
+                {/* Coudes aspiration */}
+                <div className="grid grid-cols-4 gap-2">
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">Coudes 90°</label>
                     <input
@@ -1896,7 +1900,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       min="0"
                       value={inputData.suction_elbow_90}
                       onChange={(e) => handleInputChange('suction_elbow_90', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1906,7 +1910,17 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       min="0"
                       value={inputData.suction_elbow_45}
                       onChange={(e) => handleInputChange('suction_elbow_45', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 30°</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_elbow_30}
+                      onChange={(e) => handleInputChange('suction_elbow_30', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -1916,13 +1930,105 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       min="0"
                       value={inputData.suction_strainer}
                       onChange={(e) => handleInputChange('suction_strainer', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
                 
-                <div className="text-sm font-medium text-gray-700 mb-2">Refoulement</div>
-                <div className="grid grid-cols-3 gap-2">
+                {/* Tés et raccords aspiration */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Té (passage)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_tee_flow}
+                      onChange={(e) => handleInputChange('suction_tee_flow', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Té (dérivation)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_tee_branch}
+                      onChange={(e) => handleInputChange('suction_tee_branch', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Réduction grad.</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_reducer_gradual}
+                      onChange={(e) => handleInputChange('suction_reducer_gradual', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Réduction brusque</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_reducer_sudden}
+                      onChange={(e) => handleInputChange('suction_reducer_sudden', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                {/* Vannes aspiration */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">V. à opercule</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_gate_valve}
+                      onChange={(e) => handleInputChange('suction_gate_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">V. à boisseau</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_ball_valve}
+                      onChange={(e) => handleInputChange('suction_ball_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Clapet A.R.</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_check_valve}
+                      onChange={(e) => handleInputChange('suction_check_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Clapet de pied</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_foot_valve}
+                      onChange={(e) => handleInputChange('suction_foot_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="text-sm font-medium text-gray-700 mb-3 bg-green-50 p-3 rounded-lg">
+                  🔄 REFOULEMENT (Impact sur HMT total)
+                </div>
+                
+                {/* Coudes refoulement */}
+                <div className="grid grid-cols-4 gap-2">
                   <div>
                     <label className="block text-xs text-gray-600 mb-1">Coudes 90°</label>
                     <input
@@ -1930,29 +2036,135 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       min="0"
                       value={inputData.discharge_elbow_90}
                       onChange={(e) => handleInputChange('discharge_elbow_90', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Vannes</label>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 45°</label>
                     <input
                       type="number"
                       min="0"
-                      value={inputData.discharge_valve}
-                      onChange={(e) => handleInputChange('discharge_valve', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={inputData.discharge_elbow_45}
+                      onChange={(e) => handleInputChange('discharge_elbow_45', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-600 mb-1">Clapets</label>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 30°</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_elbow_30}
+                      onChange={(e) => handleInputChange('discharge_elbow_30', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Té (passage)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_tee_flow}
+                      onChange={(e) => handleInputChange('discharge_tee_flow', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                {/* Vannes refoulement */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">V. à opercule</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_gate_valve}
+                      onChange={(e) => handleInputChange('discharge_gate_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">V. à boisseau</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_ball_valve}
+                      onChange={(e) => handleInputChange('discharge_ball_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">V. papillon</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_butterfly_valve}
+                      onChange={(e) => handleInputChange('discharge_butterfly_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Clapet A.R.</label>
                     <input
                       type="number"
                       min="0"
                       value={inputData.discharge_check_valve}
                       onChange={(e) => handleInputChange('discharge_check_valve', parseInt(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+                </div>
+                
+                {/* Accessoires refoulement */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Réduction grad.</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_reducer_gradual}
+                      onChange={(e) => handleInputChange('discharge_reducer_gradual', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Débitmètre</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_flow_meter}
+                      onChange={(e) => handleInputChange('discharge_flow_meter', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Manomètre</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_pressure_gauge}
+                      onChange={(e) => handleInputChange('discharge_pressure_gauge', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Filtre</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_strainer}
+                      onChange={(e) => handleInputChange('discharge_strainer', parseInt(e.target.value) || 0)}
+                      className="w-full p-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                {/* Indicateur de pertes de charge */}
+                <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
+                  <p className="text-xs text-amber-800">
+                    <strong>💡 Conseil Expert :</strong> Chaque singularité augmente les pertes de charge. 
+                    Limitez les raccords sur l'aspiration pour préserver le NPSHd.
+                  </p>
                 </div>
               </div>
             </div>
