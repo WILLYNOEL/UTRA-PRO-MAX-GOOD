@@ -1051,25 +1051,92 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     """
     
     # Détermination du type d'aspiration
-    suction_type = "flooded" if input_data.suction_height > 0 else "suction_lift"
+    suction_type = input_data.suction_type
     hasp = abs(input_data.suction_height)
     
-    # Construction des raccords
+    # Construction des raccords ASPIRATION
     suction_fittings = []
+    
+    # Coudes
+    if input_data.suction_elbow_90 > 0:
+        suction_fittings.append({"fitting_type": "elbow_90", "quantity": input_data.suction_elbow_90})
+    if input_data.suction_elbow_45 > 0:
+        suction_fittings.append({"fitting_type": "elbow_45", "quantity": input_data.suction_elbow_45})
+    if input_data.suction_elbow_30 > 0:
+        suction_fittings.append({"fitting_type": "elbow_30", "quantity": input_data.suction_elbow_30})
+    
+    # Tés
+    if input_data.suction_tee_flow > 0:
+        suction_fittings.append({"fitting_type": "tee_flow", "quantity": input_data.suction_tee_flow})
+    if input_data.suction_tee_branch > 0:
+        suction_fittings.append({"fitting_type": "tee_branch", "quantity": input_data.suction_tee_branch})
+    
+    # Réductions
+    if input_data.suction_reducer_gradual > 0:
+        suction_fittings.append({"fitting_type": "reducer_gradual", "quantity": input_data.suction_reducer_gradual})
+    if input_data.suction_reducer_sudden > 0:
+        suction_fittings.append({"fitting_type": "reducer_sudden", "quantity": input_data.suction_reducer_sudden})
+    
+    # Vannes
+    if input_data.suction_gate_valve > 0:
+        suction_fittings.append({"fitting_type": "gate_valve", "quantity": input_data.suction_gate_valve})
+    if input_data.suction_globe_valve > 0:
+        suction_fittings.append({"fitting_type": "globe_valve", "quantity": input_data.suction_globe_valve})
+    if input_data.suction_ball_valve > 0:
+        suction_fittings.append({"fitting_type": "ball_valve", "quantity": input_data.suction_ball_valve})
+    if input_data.suction_butterfly_valve > 0:
+        suction_fittings.append({"fitting_type": "butterfly_valve", "quantity": input_data.suction_butterfly_valve})
+    
+    # Accessoires
+    if input_data.suction_check_valve > 0:
+        suction_fittings.append({"fitting_type": "check_valve", "quantity": input_data.suction_check_valve})
+    if input_data.suction_strainer > 0:
+        suction_fittings.append({"fitting_type": "strainer", "quantity": input_data.suction_strainer})
+    if input_data.suction_foot_valve > 0:
+        suction_fittings.append({"fitting_type": "foot_valve", "quantity": input_data.suction_foot_valve})
+    
+    # Construction des raccords REFOULEMENT
     discharge_fittings = []
     
-    if input_data.elbow_90_qty > 0:
-        suction_fittings.append({"fitting_type": "elbow_90", "quantity": input_data.elbow_90_qty})
-        discharge_fittings.append({"fitting_type": "elbow_90", "quantity": max(1, input_data.elbow_90_qty // 2)})
+    # Coudes
+    if input_data.discharge_elbow_90 > 0:
+        discharge_fittings.append({"fitting_type": "elbow_90", "quantity": input_data.discharge_elbow_90})
+    if input_data.discharge_elbow_45 > 0:
+        discharge_fittings.append({"fitting_type": "elbow_45", "quantity": input_data.discharge_elbow_45})
+    if input_data.discharge_elbow_30 > 0:
+        discharge_fittings.append({"fitting_type": "elbow_30", "quantity": input_data.discharge_elbow_30})
     
-    if input_data.elbow_45_qty > 0:
-        suction_fittings.append({"fitting_type": "elbow_45", "quantity": input_data.elbow_45_qty})
+    # Tés
+    if input_data.discharge_tee_flow > 0:
+        discharge_fittings.append({"fitting_type": "tee_flow", "quantity": input_data.discharge_tee_flow})
+    if input_data.discharge_tee_branch > 0:
+        discharge_fittings.append({"fitting_type": "tee_branch", "quantity": input_data.discharge_tee_branch})
     
-    if input_data.valve_qty > 0:
-        discharge_fittings.append({"fitting_type": "valve", "quantity": input_data.valve_qty})
+    # Réductions
+    if input_data.discharge_reducer_gradual > 0:
+        discharge_fittings.append({"fitting_type": "reducer_gradual", "quantity": input_data.discharge_reducer_gradual})
+    if input_data.discharge_reducer_sudden > 0:
+        discharge_fittings.append({"fitting_type": "reducer_sudden", "quantity": input_data.discharge_reducer_sudden})
     
-    if input_data.check_valve_qty > 0:
-        suction_fittings.append({"fitting_type": "check_valve", "quantity": input_data.check_valve_qty})
+    # Vannes
+    if input_data.discharge_gate_valve > 0:
+        discharge_fittings.append({"fitting_type": "gate_valve", "quantity": input_data.discharge_gate_valve})
+    if input_data.discharge_globe_valve > 0:
+        discharge_fittings.append({"fitting_type": "globe_valve", "quantity": input_data.discharge_globe_valve})
+    if input_data.discharge_ball_valve > 0:
+        discharge_fittings.append({"fitting_type": "ball_valve", "quantity": input_data.discharge_ball_valve})
+    if input_data.discharge_butterfly_valve > 0:
+        discharge_fittings.append({"fitting_type": "butterfly_valve", "quantity": input_data.discharge_butterfly_valve})
+    
+    # Accessoires
+    if input_data.discharge_check_valve > 0:
+        discharge_fittings.append({"fitting_type": "check_valve", "quantity": input_data.discharge_check_valve})
+    if input_data.discharge_strainer > 0:
+        discharge_fittings.append({"fitting_type": "strainer", "quantity": input_data.discharge_strainer})
+    if input_data.discharge_flow_meter > 0:
+        discharge_fittings.append({"fitting_type": "flow_meter", "quantity": input_data.discharge_flow_meter})
+    if input_data.discharge_pressure_gauge > 0:
+        discharge_fittings.append({"fitting_type": "pressure_gauge", "quantity": input_data.discharge_pressure_gauge})
     
     # Calcul NPSHd
     npshd_input = NPSHdCalculationInput(
@@ -1086,13 +1153,13 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     )
     npshd_result = calculate_npshd_enhanced(npshd_input)
     
-    # Calcul HMT
+    # Calcul HMT avec pression utile
     hmt_input = HMTCalculationInput(
         installation_type=input_data.installation_type,
         suction_type=suction_type,
         hasp=hasp,
         discharge_height=input_data.discharge_height,
-        useful_pressure=input_data.useful_pressure,
+        useful_pressure=input_data.useful_pressure,  # Pression utile intégrée
         suction_pipe_diameter=input_data.suction_pipe_diameter,
         discharge_pipe_diameter=input_data.discharge_pipe_diameter,
         suction_pipe_length=input_data.suction_length,
@@ -1135,6 +1202,10 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     hydraulic_power = perf_result.power_calculations.get("hydraulic_power", 0)
     energy_consumption = hydraulic_power / input_data.flow_rate if input_data.flow_rate > 0 else 0
     
+    # Coût énergétique annuel
+    annual_energy_consumption = hydraulic_power * input_data.operating_hours
+    annual_energy_cost = annual_energy_consumption * input_data.electricity_cost
+    
     # Recommandations d'expert
     expert_recommendations = []
     
@@ -1143,75 +1214,100 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         expert_recommendations.append({
             "type": "critical",
             "priority": 1,
-            "title": "CAVITATION DÉTECTÉE",
+            "title": "🚨 CAVITATION CRITIQUE",
             "description": f"NPSHd ({npshd_result.npshd:.2f}m) ≤ NPSH requis ({input_data.npsh_required:.2f}m)",
-            "impact": "Destruction rapide de la pompe, bruit, vibrations",
+            "impact": "DESTRUCTION DE LA POMPE - Arrêt immédiat requis",
             "solutions": [
-                "Réduire la hauteur d'aspiration",
-                "Augmenter diamètre aspiration",
-                "Diminuer longueur aspiration",
-                "Réduire singularités aspiration"
+                f"Réduire hauteur d'aspiration de {hasp:.1f}m à {max(0, hasp - abs(npshd_result.npsh_margin) - 0.5):.1f}m",
+                f"Augmenter diamètre aspiration de {input_data.suction_pipe_diameter:.0f}mm à {input_data.suction_pipe_diameter * 1.3:.0f}mm",
+                f"Réduire longueur aspiration de {input_data.suction_length:.0f}m à {input_data.suction_length * 0.7:.0f}m",
+                "Supprimer raccords non essentiels sur aspiration",
+                "Installer pompe en charge si possible"
             ],
-            "urgency": "IMMÉDIATE"
+            "urgency": "IMMÉDIATE",
+            "cost_impact": "ÉLEVÉ"
         })
     
-    # Analyse de performance
-    if overall_efficiency < 60:
+    # Analyse de performance énergétique
+    if overall_efficiency < 65:
+        potential_savings = (75 - overall_efficiency) * 0.01 * annual_energy_cost
         expert_recommendations.append({
-            "type": "efficiency",
+            "type": "energy",
             "priority": 2,
-            "title": "RENDEMENT FAIBLE",
-            "description": f"Rendement global de {overall_efficiency:.1f}% très faible",
-            "impact": "Surconsommation énergétique, coûts d'exploitation élevés",
+            "title": "⚡ EFFICACITÉ ÉNERGÉTIQUE FAIBLE",
+            "description": f"Rendement global {overall_efficiency:.1f}% - Potentiel d'économie de {potential_savings:.0f}€/an",
+            "impact": f"Surconsommation: {potential_savings * 10:.0f}€ sur 10 ans",
             "solutions": [
-                "Choisir une pompe plus efficace",
-                "Optimiser le point de fonctionnement",
-                "Installer un variateur de vitesse",
-                "Vérifier l'état de la pompe"
+                "Pompe haute efficacité (gain 5-10%)",
+                "Moteur haut rendement Premium (gain 2-5%)",
+                "Variateur de vitesse (gain 10-30%)",
+                "Optimisation point de fonctionnement",
+                "Maintenance préventive régulière"
             ],
-            "urgency": "HAUTE"
+            "urgency": "MOYENNE",
+            "cost_impact": "RENTABLE"
         })
     
-    # Analyse hydraulique
+    # Analyse hydraulique avancée
     if npshd_result.velocity > 3.0:
         expert_recommendations.append({
             "type": "hydraulic",
             "priority": 3,
-            "title": "VITESSE EXCESSIVE",
-            "description": f"Vitesse de {npshd_result.velocity:.2f} m/s cause érosion et bruit",
-            "impact": "Usure accélérée, bruit, vibrations",
+            "title": "🌊 VITESSE EXCESSIVE",
+            "description": f"Vitesse {npshd_result.velocity:.2f}m/s > 3m/s - Risque d'érosion et cavitation",
+            "impact": "Usure prématurée, bruit, vibrations, perte de performance",
             "solutions": [
-                "Augmenter diamètre tuyauterie",
-                "Réduire débit si possible",
-                "Matériaux résistants à l'érosion",
-                "Dispositifs anti-vibration"
+                f"Diamètre aspiration: {input_data.suction_pipe_diameter:.0f}mm → {input_data.suction_pipe_diameter * math.sqrt(npshd_result.velocity / 2.5):.0f}mm",
+                f"Diamètre refoulement: {input_data.discharge_pipe_diameter:.0f}mm → {input_data.discharge_pipe_diameter * math.sqrt(npshd_result.velocity / 3.0):.0f}mm",
+                "Matériaux anti-érosion (inox, fonte)",
+                "Supports anti-vibratoires",
+                "Réduction débit si possible"
             ],
-            "urgency": "MOYENNE"
+            "urgency": "MOYENNE",
+            "cost_impact": "MODÉRÉ"
         })
     
-    # Analyse électrique
-    if perf_result.starting_current > 150:
+    # Analyse des singularités
+    total_singularities = sum([
+        input_data.suction_elbow_90, input_data.suction_elbow_45, input_data.suction_elbow_30,
+        input_data.suction_tee_flow, input_data.suction_tee_branch,
+        input_data.suction_reducer_gradual, input_data.suction_reducer_sudden,
+        input_data.suction_gate_valve, input_data.suction_globe_valve, input_data.suction_ball_valve,
+        input_data.suction_butterfly_valve, input_data.suction_check_valve, input_data.suction_strainer,
+        input_data.suction_foot_valve,
+        input_data.discharge_elbow_90, input_data.discharge_elbow_45, input_data.discharge_elbow_30,
+        input_data.discharge_tee_flow, input_data.discharge_tee_branch,
+        input_data.discharge_reducer_gradual, input_data.discharge_reducer_sudden,
+        input_data.discharge_gate_valve, input_data.discharge_globe_valve, input_data.discharge_ball_valve,
+        input_data.discharge_butterfly_valve, input_data.discharge_check_valve, input_data.discharge_strainer,
+        input_data.discharge_flow_meter, input_data.discharge_pressure_gauge
+    ])
+    
+    if total_singularities > 15:
         expert_recommendations.append({
-            "type": "electrical",
+            "type": "complexity",
             "priority": 4,
-            "title": "COURANT DE DÉMARRAGE ÉLEVÉ",
-            "description": f"Courant de démarrage de {perf_result.starting_current:.1f}A",
-            "impact": "Chutes de tension, contraintes réseau",
+            "title": "🔧 INSTALLATION COMPLEXE",
+            "description": f"{total_singularities} singularités - Pertes de charge élevées",
+            "impact": "Réduction du rendement, maintenance accrue, coûts d'exploitation",
             "solutions": [
-                "Démarreur progressif",
-                "Variateur de vitesse",
-                "Démarrage étoile-triangle",
-                "Renforcement alimentation"
+                "Simplification du circuit hydraulique",
+                "Réduction nombre de raccords",
+                "Tuyauterie rectiligne privilégiée",
+                "Raccords à rayon large",
+                "Maintenance préventive renforcée"
             ],
-            "urgency": "FAIBLE"
+            "urgency": "FAIBLE",
+            "cost_impact": "LONG TERME"
         })
     
     # Potentiel d'optimisation
     optimization_potential = {
-        "energy_savings": max(0, 75 - overall_efficiency),  # Potentiel d'économie d'énergie
+        "energy_savings": max(0, 80 - overall_efficiency),  # Potentiel d'économie d'énergie
         "npsh_margin": npshd_result.npsh_margin,
         "velocity_optimization": max(0, npshd_result.velocity - 2.0),  # Réduction de vitesse possible
-        "head_loss_reduction": max(0, total_head_loss - (total_head_loss * 0.7))  # Réduction pertes possible
+        "head_loss_reduction": max(0, total_head_loss - (total_head_loss * 0.7)),  # Réduction pertes possible
+        "annual_cost_savings": potential_savings if overall_efficiency < 65 else 0
     }
     
     # Courbes de performance étendues
@@ -1248,12 +1344,15 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "total_head_loss": hmt_result.total_head_loss,
             "suction_velocity": hmt_result.suction_velocity,
             "discharge_velocity": hmt_result.discharge_velocity,
+            "useful_pressure_head": hmt_result.useful_pressure_head,
             "warnings": hmt_result.warnings
         },
         performance_analysis={
             "overall_efficiency": perf_result.overall_efficiency,
             "pump_efficiency": perf_result.pump_efficiency,
             "motor_efficiency": perf_result.motor_efficiency,
+            "hydraulic_power": hydraulic_power,
+            "electrical_power": perf_result.power_calculations.get("absorbed_power", 0),
             "nominal_current": perf_result.nominal_current,
             "starting_current": perf_result.starting_current,
             "power_calculations": perf_result.power_calculations,
@@ -1266,7 +1365,11 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "starting_method": input_data.starting_method,
             "cable_length": input_data.cable_length,
             "cable_section": perf_result.recommended_cable_section,
-            "energy_consumption": energy_consumption
+            "annual_energy_cost": annual_energy_cost,
+            "daily_energy_cost": annual_energy_cost / 365,
+            "energy_consumption_per_m3": energy_consumption,
+            "operating_hours": input_data.operating_hours,
+            "electricity_cost": input_data.electricity_cost
         },
         overall_efficiency=overall_efficiency,
         total_head_loss=total_head_loss,
