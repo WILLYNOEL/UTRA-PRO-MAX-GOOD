@@ -1859,6 +1859,409 @@ class HydraulicPumpTester:
                         f"Unexpected error: {str(e)}")
             return False
 
+    def test_npshd_required_field_acceptance(self):
+        """Test that npsh_required field is properly accepted and used in NPSHd calculations"""
+        print("\n🔧 Testing NPSHd Required Field Acceptance...")
+        
+        test_cases = [
+            {
+                "name": "Standard NPSH Required",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 30.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 150.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 20.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0  # Test case 1 from review request
+                }
+            },
+            {
+                "name": "High NPSH Required",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 6.0,
+                    "flow_rate": 80.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 80.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 100.0,
+                    "suction_fittings": [],
+                    "npsh_required": 4.0  # Test case 2 from review request
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that npsh_required is properly accepted and returned
+                    returned_npsh_required = result.get("npsh_required", 0)
+                    expected_npsh_required = case["data"]["npsh_required"]
+                    
+                    if abs(returned_npsh_required - expected_npsh_required) > 0.01:
+                        self.log_test(f"NPSH Required Field - {case['name']}", False, 
+                                    f"Expected {expected_npsh_required:.2f} m, got {returned_npsh_required:.2f} m")
+                        all_passed = False
+                        continue
+                    
+                    # Check that input data is preserved
+                    input_data = result.get("input_data", {})
+                    if input_data.get("npsh_required") != expected_npsh_required:
+                        self.log_test(f"NPSH Required Input Preservation - {case['name']}", False, 
+                                    "NPSH required not preserved in input_data")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"NPSH Required Field - {case['name']}", True, 
+                                f"NPSH required properly accepted: {returned_npsh_required:.2f} m")
+                else:
+                    self.log_test(f"NPSH Required Field - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"NPSH Required Field - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_npshd_vs_npsh_required_comparison(self):
+        """Test automatic comparison between NPSHd and NPSH required"""
+        print("\n⚖️ Testing NPSHd vs NPSH Required Comparison...")
+        
+        test_cases = [
+            {
+                "name": "No Cavitation Case",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 30.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 150.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 20.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0
+                },
+                "expected_cavitation": False
+            },
+            {
+                "name": "Cavitation Risk Case",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 6.0,
+                    "flow_rate": 80.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 80.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 100.0,
+                    "suction_fittings": [],
+                    "npsh_required": 4.0
+                },
+                "expected_cavitation": True
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Get comparison values
+                    npshd = result.get("npshd", 0)
+                    npsh_required = result.get("npsh_required", 0)
+                    npsh_margin = result.get("npsh_margin", 0)
+                    cavitation_risk = result.get("cavitation_risk", False)
+                    
+                    # Verify margin calculation: margin = NPSHd - NPSHr
+                    expected_margin = npshd - npsh_required
+                    if abs(npsh_margin - expected_margin) > 0.01:
+                        self.log_test(f"NPSH Margin Calculation - {case['name']}", False, 
+                                    f"Expected margin {expected_margin:.2f} m, got {npsh_margin:.2f} m")
+                        all_passed = False
+                        continue
+                    
+                    # Verify cavitation risk logic: risk = NPSHd <= NPSHr
+                    expected_risk = npshd <= npsh_required
+                    if cavitation_risk != expected_risk:
+                        self.log_test(f"Cavitation Risk Logic - {case['name']}", False, 
+                                    f"Expected risk {expected_risk}, got {cavitation_risk}")
+                        all_passed = False
+                        continue
+                    
+                    # Check against expected result from test case
+                    if cavitation_risk != case["expected_cavitation"]:
+                        self.log_test(f"Expected Cavitation Result - {case['name']}", False, 
+                                    f"Expected cavitation {case['expected_cavitation']}, got {cavitation_risk}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"NPSHd vs NPSH Required - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f} m, NPSHr: {npsh_required:.2f} m, Margin: {npsh_margin:.2f} m, Risk: {cavitation_risk}")
+                else:
+                    self.log_test(f"NPSHd vs NPSH Required - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"NPSHd vs NPSH Required - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_cavitation_risk_detection(self):
+        """Test that cavitation_risk is correctly calculated and returned"""
+        print("\n🚨 Testing Cavitation Risk Detection...")
+        
+        test_cases = [
+            {
+                "name": "Safe Operation - No Cavitation",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,  # Good flooded suction
+                    "flow_rate": 25.0,  # Moderate flow
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 150.0,  # Large diameter
+                    "pipe_material": "pvc",
+                    "pipe_length": 15.0,  # Short length
+                    "suction_fittings": [],
+                    "npsh_required": 2.5  # Low requirement
+                },
+                "expected_cavitation": False
+            },
+            {
+                "name": "High Risk - Probable Cavitation",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 7.0,  # High suction lift
+                    "flow_rate": 100.0,  # High flow
+                    "fluid_type": "water",
+                    "temperature": 60.0,  # High temperature (higher vapor pressure)
+                    "pipe_diameter": 75.0,  # Small diameter
+                    "pipe_material": "steel",  # Rough material
+                    "pipe_length": 150.0,  # Long length
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 3},
+                        {"fitting_type": "check_valve", "quantity": 1}
+                    ],
+                    "npsh_required": 5.0  # High requirement
+                },
+                "expected_cavitation": True
+            },
+            {
+                "name": "Borderline Case",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 4.0,
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 40.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 50.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 1}
+                    ],
+                    "npsh_required": 3.5
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that cavitation_risk field exists
+                    if "cavitation_risk" not in result:
+                        self.log_test(f"Cavitation Risk Field - {case['name']}", False, 
+                                    "Missing cavitation_risk field in response")
+                        all_passed = False
+                        continue
+                    
+                    cavitation_risk = result.get("cavitation_risk", False)
+                    npshd = result.get("npshd", 0)
+                    npsh_required = result.get("npsh_required", 0)
+                    
+                    # Verify cavitation risk is boolean
+                    if not isinstance(cavitation_risk, bool):
+                        self.log_test(f"Cavitation Risk Type - {case['name']}", False, 
+                                    f"cavitation_risk should be boolean, got {type(cavitation_risk)}")
+                        all_passed = False
+                        continue
+                    
+                    # Check expected result if provided
+                    if "expected_cavitation" in case:
+                        if cavitation_risk != case["expected_cavitation"]:
+                            self.log_test(f"Cavitation Risk Detection - {case['name']}", False, 
+                                        f"Expected {case['expected_cavitation']}, got {cavitation_risk} (NPSHd: {npshd:.2f}, NPSHr: {npsh_required:.2f})")
+                            all_passed = False
+                            continue
+                    
+                    # Verify logic consistency: cavitation_risk should be True when NPSHd <= NPSHr
+                    logical_risk = npshd <= npsh_required
+                    if cavitation_risk != logical_risk:
+                        self.log_test(f"Cavitation Risk Logic - {case['name']}", False, 
+                                    f"Logic inconsistency: NPSHd={npshd:.2f}, NPSHr={npsh_required:.2f}, Risk={cavitation_risk}, Expected={logical_risk}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Cavitation Risk Detection - {case['name']}", True, 
+                                f"Risk: {cavitation_risk}, NPSHd: {npshd:.2f} m, NPSHr: {npsh_required:.2f} m")
+                else:
+                    self.log_test(f"Cavitation Risk Detection - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Cavitation Risk Detection - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_cavitation_alerts_and_recommendations(self):
+        """Test that appropriate alerts and corrective recommendations are generated for cavitation"""
+        print("\n💡 Testing Cavitation Alerts and Recommendations...")
+        
+        test_cases = [
+            {
+                "name": "No Cavitation - Good Conditions",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 30.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 150.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 20.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0
+                },
+                "should_have_cavitation_alerts": False,
+                "should_have_recommendations": False
+            },
+            {
+                "name": "Cavitation Risk - Multiple Issues",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 6.0,
+                    "flow_rate": 80.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 80.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 100.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 2},
+                        {"fitting_type": "tee_branch", "quantity": 1}
+                    ],
+                    "npsh_required": 4.0
+                },
+                "should_have_cavitation_alerts": True,
+                "should_have_recommendations": True
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    warnings = result.get("warnings", [])
+                    recommendations = result.get("recommendations", [])
+                    cavitation_risk = result.get("cavitation_risk", False)
+                    
+                    # Check for cavitation alerts in warnings
+                    cavitation_alerts = [w for w in warnings if "CAVITATION" in w.upper() or "RISQUE" in w.upper()]
+                    
+                    if case["should_have_cavitation_alerts"]:
+                        if not cavitation_alerts:
+                            self.log_test(f"Cavitation Alerts - {case['name']}", False, 
+                                        "Expected cavitation alerts but none found")
+                            all_passed = False
+                            continue
+                        
+                        # Check for specific cavitation warning messages
+                        expected_messages = ["RISQUE DE CAVITATION", "NPSHd calculé", "NPSH requis"]
+                        found_messages = 0
+                        for msg in expected_messages:
+                            if any(msg in w for w in warnings):
+                                found_messages += 1
+                        
+                        if found_messages < 2:  # At least 2 of the expected messages
+                            self.log_test(f"Cavitation Alert Content - {case['name']}", False, 
+                                        f"Missing expected cavitation warning messages. Found: {found_messages}/3")
+                            all_passed = False
+                            continue
+                    else:
+                        if cavitation_alerts:
+                            self.log_test(f"Cavitation Alerts - {case['name']}", False, 
+                                        f"Unexpected cavitation alerts found: {cavitation_alerts}")
+                            all_passed = False
+                            continue
+                    
+                    # Check for corrective recommendations
+                    if case["should_have_recommendations"]:
+                        if not recommendations:
+                            self.log_test(f"Cavitation Recommendations - {case['name']}", False, 
+                                        "Expected corrective recommendations but none found")
+                            all_passed = False
+                            continue
+                        
+                        # Check for specific types of recommendations
+                        expected_recommendation_types = [
+                            "hauteur d'aspiration",  # Reduce suction height
+                            "diamètre",              # Increase diameter
+                            "longueur",              # Reduce length
+                            "raccords",              # Reduce fittings
+                            "matériau",              # Use smoother material
+                            "température",           # Lower temperature
+                            "pompe"                  # Pump positioning
+                        ]
+                        
+                        found_recommendation_types = 0
+                        for rec_type in expected_recommendation_types:
+                            if any(rec_type.lower() in r.lower() for r in recommendations):
+                                found_recommendation_types += 1
+                        
+                        if found_recommendation_types < 3:  # At least 3 types of recommendations
+                            self.log_test(f"Recommendation Variety - {case['name']}", False, 
+                                        f"Expected diverse recommendations. Found {found_recommendation_types}/7 types")
+                            all_passed = False
+                            continue
+                    else:
+                        # For no cavitation cases, recommendations should be minimal or absent
+                        cavitation_recommendations = [r for r in recommendations if "CAVITATION" in r.upper() or "CORRECTIONS" in r.upper()]
+                        if cavitation_recommendations:
+                            self.log_test(f"Cavitation Recommendations - {case['name']}", False, 
+                                        f"Unexpected cavitation recommendations: {cavitation_recommendations}")
+                            all_passed = False
+                            continue
+                    
+                    self.log_test(f"Cavitation Alerts and Recommendations - {case['name']}", True, 
+                                f"Alerts: {len(cavitation_alerts)}, Recommendations: {len(recommendations)}, Risk: {cavitation_risk}")
+                else:
+                    self.log_test(f"Cavitation Alerts and Recommendations - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Cavitation Alerts and Recommendations - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
