@@ -1771,6 +1771,28 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
               <span>🔄</span>
               <span>Réinitialiser</span>
             </button>
+            
+            {/* Bouton Export PDF */}
+            <button
+              onClick={() => exportToPDF()}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center space-x-2"
+              title="Exporter en PDF"
+              disabled={!results}
+            >
+              <span>📄</span>
+              <span>PDF</span>
+            </button>
+            
+            {/* Bouton Export Excel */}
+            <button
+              onClick={() => exportToExcel()}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center space-x-2"
+              title="Exporter en Excel"
+              disabled={!results}
+            >
+              <span>📊</span>
+              <span>Excel</span>
+            </button>
           </div>
           
           <div className="flex space-x-2">
