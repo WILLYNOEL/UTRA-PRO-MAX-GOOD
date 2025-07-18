@@ -376,11 +376,11 @@ def calculate_friction_factor(reynolds_number: float, roughness: float = 0.00004
         return 0.25 / (math.log10(term1 + term2) ** 2)
 
 def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
-    """Enhanced NPSHd calculation for Tab 1"""
+    """Enhanced NPSHd calculation for Tab 1 using the correct formula"""
     warnings = []
     
-    # Calculate atmospheric pressure from altitude
-    atmospheric_pressure = calculate_atmospheric_pressure(input_data.altitude)
+    # Atmospheric pressure constant at sea level
+    atmospheric_pressure = 101325  # Pa
     
     # Get fluid properties
     fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
@@ -410,14 +410,24 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
     # Total head loss
     total_head_loss = linear_head_loss + singular_head_loss
     
-    # Calculate NPSHd
-    patm_head = atmospheric_pressure / (fluid_props.density * 9.81)  # Atmospheric pressure in meters
-    vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)  # Vapor pressure in meters
+    # Calculate NPSHd using the correct formula:
+    # NPSHd = Patm - ρ*g*H_aspiration - Pertes de charges totales - Pression de vapeur saturante
     
+    # Convert atmospheric pressure to meters of fluid column
+    patm_head = atmospheric_pressure / (fluid_props.density * 9.81)
+    
+    # Convert vapor pressure to meters of fluid column
+    vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)
+    
+    # Calculate NPSHd according to the formula
     if input_data.suction_type == "flooded":
-        npshd = patm_head - vapor_pressure_head + abs(input_data.hasp) - total_head_loss
+        # For flooded suction, H_aspiration is negative (fluid above pump)
+        npshd = patm_head - fluid_props.density * 9.81 * (-abs(input_data.hasp)) / (fluid_props.density * 9.81) - total_head_loss - vapor_pressure_head
+        npshd = patm_head + abs(input_data.hasp) - total_head_loss - vapor_pressure_head
     else:  # suction_lift
-        npshd = patm_head - vapor_pressure_head - abs(input_data.hasp) - total_head_loss
+        # For suction lift, H_aspiration is positive (pump above fluid)
+        npshd = patm_head - fluid_props.density * 9.81 * abs(input_data.hasp) / (fluid_props.density * 9.81) - total_head_loss - vapor_pressure_head
+        npshd = patm_head - abs(input_data.hasp) - total_head_loss - vapor_pressure_head
     
     # Warnings
     if velocity > 3.0:
@@ -428,8 +438,8 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
         warnings.append("ATTENTION: NPSHd négatif - conditions d'aspiration impossibles")
     if npshd < 2:
         warnings.append("ATTENTION: NPSHd très faible - risque de cavitation élevé")
-    if input_data.altitude > 1000:
-        warnings.append(f"Altitude élevée ({input_data.altitude}m) - pression atmosphérique réduite")
+    if total_head_loss > 2:
+        warnings.append(f"Pertes de charge élevées ({total_head_loss:.2f} m) - vérifier le dimensionnement")
     
     return NPSHdResult(
         input_data=input_data,
