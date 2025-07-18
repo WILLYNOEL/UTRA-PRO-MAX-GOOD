@@ -1197,6 +1197,11 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
   const resetAllFields = () => {
     setInputData({
+      // Informations projet
+      engineer_name: '',
+      engineer_firstname: '',
+      company_name: '',
+      
       // Paramètres hydrauliques principaux
       flow_rate: 0,
       fluid_type: 'water',
@@ -1257,8 +1262,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       discharge_pressure_gauge: 1, // Manomètre usuel
       
       // Paramètres électriques
-      pump_efficiency: 0,
-      motor_efficiency: 0,
+      pump_efficiency: 75, // Valeur par défaut réaliste
+      motor_efficiency: 85, // Valeur par défaut réaliste
       voltage: 400,
       power_factor: 0.8, // Valeur de référence
       starting_method: 'star_delta',
