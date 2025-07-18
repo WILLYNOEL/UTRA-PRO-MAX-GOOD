@@ -1719,6 +1719,20 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </select>
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Type d'Aspiration
+                  </label>
+                  <select
+                    value={inputData.suction_type}
+                    onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="flooded">Aspiration en charge</option>
+                    <option value="suction_lift">Aspiration en dépression</option>
+                  </select>
+                </div>
+                
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1732,7 +1746,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {inputData.suction_height > 0 ? 'En charge' : 'Dépression'}
+                      {inputData.suction_type === 'flooded' ? 'En charge (positif)' : 'Dépression (hauteur)'}
                     </p>
                   </div>
                   
@@ -1748,6 +1762,22 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pression Utile (bar)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={inputData.useful_pressure}
+                    onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pression supplémentaire requise (processus, pression résiduelle)
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
