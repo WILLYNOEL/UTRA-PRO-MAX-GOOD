@@ -1499,10 +1499,15 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             </div>
           )}
           
-          {/* Graphique des courbes de performance */}
+          {/* Graphiques des courbes de performance */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Courbes de Performance</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Courbes de Performance Hydraulique</h3>
             <canvas ref={chartRef} className="w-full h-96"></canvas>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Courbe de Puissance Absorbée</h3>
+            <canvas ref={powerChartRef} className="w-full h-64"></canvas>
           </div>
         </>
       )}
