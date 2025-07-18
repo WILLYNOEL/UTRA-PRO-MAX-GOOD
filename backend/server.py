@@ -190,7 +190,7 @@ class PerformanceAnalysisInput(BaseModel):
 class NPSHdResult(BaseModel):
     input_data: NPSHdCalculationInput
     fluid_properties: FluidProperties
-    atmospheric_pressure: float  # Pa (calculated from altitude)
+    atmospheric_pressure: float  # Pa (constant at sea level)
     velocity: float  # m/s
     reynolds_number: float
     friction_factor: float
