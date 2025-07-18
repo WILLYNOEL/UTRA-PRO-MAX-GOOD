@@ -3886,6 +3886,11 @@ class HydraulicPumpTester:
             self.test_expert_analysis_integration,  # NEW: Test expert analysis integration
             self.test_expert_analysis_comprehensive,  # NEW: Test complete expert analysis revision
             self.test_expert_analysis_final_comprehensive,  # FINAL: Test all user-requested improvements
+            # NEW EXPERT TAB ENHANCEMENT TESTS (from current review request)
+            self.test_expert_analysis_enhanced_recommendations,  # NEW: Test enhanced expert recommendations with 7 categories
+            self.test_hydraulic_data_display_enhanced,  # NEW: Test enhanced hydraulic data display
+            self.test_configuration_specific_recommendations_enhanced,  # NEW: Test enhanced configuration-specific recommendations
+            self.test_expert_analysis_test_cases_enhanced,  # NEW: Test enhanced expert analysis test cases
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
