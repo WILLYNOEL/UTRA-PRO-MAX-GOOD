@@ -279,6 +279,10 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <span>Facteur de friction:</span>
                   <span className="font-medium">{result.friction_factor?.toFixed(4)}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Pression vapeur:</span>
+                  <span className="font-medium">{(result.fluid_properties.vapor_pressure / 1000).toFixed(1)} kPa</span>
+                </div>
               </div>
             </div>
             
