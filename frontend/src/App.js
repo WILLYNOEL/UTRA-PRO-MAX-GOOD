@@ -3481,11 +3481,11 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
           💧
         </text>
       </g>
-      <text x="720" y="125" className="text-xs font-bold" fill="#10b981">
-        🎯 SORTIE REFOULEMENT
+      <text x="720" y="120" className="text-xs font-bold" fill="#10b981">
+        🎯 SORTIE
       </text>
-      <text x="720" y="138" className="text-xs" fill="#6b7280">
-        H={inputData.discharge_height}m • P={inputData.useful_pressure}bar
+      <text x="720" y="132" className="text-xs" fill="#6b7280">
+        H={inputData.discharge_height}m
       </text>
       
       {/* Cotes dynamiques renforcées */}
