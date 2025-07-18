@@ -2379,6 +2379,16 @@ function App() {
                 🟨 Performance
               </button>
               <button
+                onClick={() => setActiveTab('expert')}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  activeTab === 'expert'
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800'
+                }`}
+              >
+                🟣 Expert
+              </button>
+              <button
                 onClick={() => setActiveTab('history')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   activeTab === 'history'
