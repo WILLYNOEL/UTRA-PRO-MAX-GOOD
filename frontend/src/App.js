@@ -818,33 +818,16 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             data: curves.hmt,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            yAxisID: 'y'
-          },
-          {
-            label: 'NPSH (m)',
-            data: curves.npsh,
-            borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            yAxisID: 'y'
-          },
-          {
-            label: 'Rendement (%)',
-            data: curves.efficiency,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            yAxisID: 'y1'
-          },
-          {
-            label: 'Puissance (kW)',
-            data: curves.power,
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            yAxisID: 'y2'
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.4
           }
         ]
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         interaction: {
           mode: 'index',
           intersect: false,
@@ -854,43 +837,48 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             display: true,
             title: {
               display: true,
-              text: 'Débit (m³/h)'
+              text: 'Débit (m³/h)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
             }
           },
           y: {
-            type: 'linear',
             display: true,
-            position: 'left',
             title: {
               display: true,
-              text: 'HMT & NPSH (m)'
-            }
-          },
-          y1: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-            title: {
-              display: true,
-              text: 'Rendement (%)'
+              text: 'HMT (m)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
             },
             grid: {
-              drawOnChartArea: false,
-            },
-          },
-          y2: {
-            type: 'linear',
-            display: false,
-            position: 'right',
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
           }
         },
         plugins: {
           legend: {
             position: 'top',
+            labels: {
+              font: {
+                size: 12,
+                weight: 'bold'
+              }
+            }
           },
           title: {
             display: true,
-            text: 'Courbes de Performance de la Pompe'
+            text: 'Courbe de Performance: Débit en fonction de la HMT',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
           }
         }
       }
