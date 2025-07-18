@@ -636,12 +636,12 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         "efficiency": efficiency_points,
         "power": power_points,
         "head_loss": head_loss_points,
-        "best_operating_point": {
-            "flow": best_flow,
-            "hmt": h0 - a * best_flow - b * (best_flow**2),
-            "efficiency": best_efficiency,
-            "power": (best_flow * (h0 - a * best_flow - b * (best_flow**2))) / (best_efficiency * 367)
-        }
+        "best_operating_point": [
+            best_flow,
+            h0 - a * best_flow - b * (best_flow**2),
+            best_efficiency,
+            (best_flow * (h0 - a * best_flow - b * (best_flow**2))) / (best_efficiency * 367)
+        ]
     }
 
 def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
