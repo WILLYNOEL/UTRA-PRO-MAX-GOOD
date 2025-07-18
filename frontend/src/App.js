@@ -1192,19 +1192,19 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const resetAllFields = () => {
     setInputData({
       // Paramètres hydrauliques principaux
-      flow_rate: 50,
+      flow_rate: 0,
       fluid_type: 'water',
-      temperature: 20,
+      temperature: 0,
       
       // Géométrie installation
       suction_type: 'flooded',
-      suction_pipe_diameter: 100,
-      discharge_pipe_diameter: 80,
-      suction_height: 3.0,
-      discharge_height: 25.0,
-      suction_length: 10,
-      discharge_length: 50,
-      total_length: 60,
+      suction_pipe_diameter: 0,
+      discharge_pipe_diameter: 0,
+      suction_height: 0,
+      discharge_height: 0,
+      suction_length: 0,
+      discharge_length: 0,
+      total_length: 0,
       
       // Pression utile
       useful_pressure: 0,
@@ -1213,7 +1213,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       suction_material: 'pvc',
       discharge_material: 'pvc',
       
-      // Singularités ASPIRATION (remise à zéro)
+      // Singularités ASPIRATION (tous à zéro)
       suction_elbow_90: 0,
       suction_elbow_45: 0,
       suction_elbow_30: 0,
@@ -1231,7 +1231,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       suction_strainer: 0,
       suction_foot_valve: 0,
       
-      // Singularités REFOULEMENT (remise à zéro)
+      // Singularités REFOULEMENT (tous à zéro)
       discharge_elbow_90: 0,
       discharge_elbow_45: 0,
       discharge_elbow_30: 0,
@@ -1251,26 +1251,26 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       discharge_pressure_gauge: 0,
       
       // Paramètres électriques
-      pump_efficiency: 80,
-      motor_efficiency: 90,
+      pump_efficiency: 0,
+      motor_efficiency: 0,
       voltage: 400,
-      power_factor: 0.8,
+      power_factor: 0,
       starting_method: 'star_delta',
-      cable_length: 50,
+      cable_length: 0,
       cable_material: 'copper',
       cable_section: null,
       
       // Paramètres avancés
-      npsh_required: 3.5,
+      npsh_required: 0,
       installation_type: 'surface',
       pump_type: 'centrifugal',
-      operating_hours: 8760,
-      electricity_cost: 0.12,
+      operating_hours: 0,
+      electricity_cost: 0,
       
       // Conditions environnementales
       altitude: 0,
-      ambient_temperature: 25,
-      humidity: 60
+      ambient_temperature: 0,
+      humidity: 0
     });
     
     // Réinitialiser les résultats
