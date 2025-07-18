@@ -789,6 +789,8 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
   const [loading, setLoading] = useState(false);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const powerChartRef = useRef(null);
+  const powerChartInstance = useRef(null);
 
   const handleInputChange = (field, value) => {
     setInputData(prev => ({ ...prev, [field]: value }));
