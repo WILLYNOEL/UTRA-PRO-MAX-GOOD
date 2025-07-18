@@ -818,6 +818,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     }
 
     const curves = data.performance_curves;
+    const bestPoint = curves.best_operating_point;
     
     chartInstance.current = new Chart(ctx, {
       type: 'line',
@@ -830,9 +831,43 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             borderWidth: 3,
-            pointRadius: 4,
+            pointRadius: 2,
             pointHoverRadius: 6,
-            tension: 0.4
+            tension: 0.4,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Rendement (%)',
+            data: curves.efficiency,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            yAxisID: 'y1'
+          },
+          {
+            label: 'Puissance (kW)',
+            data: curves.power,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            yAxisID: 'y2'
+          },
+          {
+            label: 'Pertes de charge (m)',
+            data: curves.head_loss,
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointHoverRadius: 6,
+            tension: 0.4,
+            yAxisID: 'y'
           }
         ]
       },
@@ -859,10 +894,12 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             }
           },
           y: {
+            type: 'linear',
             display: true,
+            position: 'left',
             title: {
               display: true,
-              text: 'HMT (m)',
+              text: 'HMT & Pertes de charge (m)',
               font: {
                 size: 14,
                 weight: 'bold'
@@ -871,6 +908,27 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             grid: {
               color: 'rgba(0, 0, 0, 0.1)'
             }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Rendement (%)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              drawOnChartArea: false,
+            },
+          },
+          y2: {
+            type: 'linear',
+            display: false,
+            position: 'right',
           }
         },
         plugins: {
@@ -885,10 +943,28 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
           },
           title: {
             display: true,
-            text: 'Courbe de Performance: Débit en fonction de la HMT',
+            text: 'Courbes de Performance Complètes',
             font: {
               size: 16,
               weight: 'bold'
+            }
+          },
+          annotation: {
+            annotations: {
+              bestPoint: {
+                type: 'point',
+                xValue: bestPoint.flow,
+                yValue: bestPoint.hmt,
+                backgroundColor: '#dc2626',
+                borderColor: '#dc2626',
+                borderWidth: 3,
+                radius: 8,
+                label: {
+                  content: 'Meilleur point',
+                  enabled: true,
+                  position: 'top'
+                }
+              }
             }
           }
         }
