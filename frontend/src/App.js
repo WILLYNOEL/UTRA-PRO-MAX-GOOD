@@ -96,7 +96,18 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   value={inputData.hasp}
                   onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  style={{ MozAppearance: 'textfield', WebkitAppearance: 'none' }}
                 />
+                <style jsx>{`
+                  input[type="number"]::-webkit-outer-spin-button,
+                  input[type="number"]::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                  }
+                  input[type="number"] {
+                    -moz-appearance: textfield;
+                  }
+                `}</style>
                 <p className="text-xs text-gray-500 mt-1">
                   {inputData.suction_type === 'flooded' ? 'Hauteur de fluide au-dessus de la pompe' : 'Hauteur de dénivelé à aspirer'}
                 </p>
