@@ -1151,25 +1151,26 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     humidity: 0
   });
 
-  // Table de correspondance DN/mm
+  // Table de correspondance DN/mm (codes DN normalisés)
   const dnSizes = [
-    { dn: 'DN3/4', mm: 20, label: 'DN3/4 (20mm)' },
-    { dn: 'DN1', mm: 25, label: 'DN1 (25mm)' },
-    { dn: 'DN1.1/4', mm: 32, label: 'DN1.1/4 (32mm)' },
-    { dn: 'DN1.1/2', mm: 40, label: 'DN1.1/2 (40mm)' },
-    { dn: 'DN2', mm: 50, label: 'DN2 (50mm)' },
-    { dn: 'DN2.1/2', mm: 65, label: 'DN2.1/2 (65mm)' },
-    { dn: 'DN3', mm: 80, label: 'DN3 (80mm)' },
-    { dn: 'DN4', mm: 100, label: 'DN4 (100mm)' },
-    { dn: 'DN5', mm: 125, label: 'DN5 (125mm)' },
-    { dn: 'DN6', mm: 150, label: 'DN6 (150mm)' },
-    { dn: 'DN8', mm: 200, label: 'DN8 (200mm)' },
-    { dn: 'DN10', mm: 250, label: 'DN10 (250mm)' },
-    { dn: 'DN12', mm: 300, label: 'DN12 (300mm)' },
-    { dn: 'DN14', mm: 350, label: 'DN14 (350mm)' },
-    { dn: 'DN16', mm: 400, label: 'DN16 (400mm)' },
-    { dn: 'DN18', mm: 450, label: 'DN18 (450mm)' },
-    { dn: 'DN20', mm: 500, label: 'DN20 (500mm)' }
+    { dn: 'DN15', mm: 15, label: 'DN15 (15mm)' },
+    { dn: 'DN20', mm: 20, label: 'DN20 (20mm)' },
+    { dn: 'DN25', mm: 25, label: 'DN25 (25mm)' },
+    { dn: 'DN32', mm: 32, label: 'DN32 (32mm)' },
+    { dn: 'DN40', mm: 40, label: 'DN40 (40mm)' },
+    { dn: 'DN50', mm: 50, label: 'DN50 (50mm)' },
+    { dn: 'DN65', mm: 65, label: 'DN65 (65mm)' },
+    { dn: 'DN80', mm: 80, label: 'DN80 (80mm)' },
+    { dn: 'DN100', mm: 100, label: 'DN100 (100mm)' },
+    { dn: 'DN125', mm: 125, label: 'DN125 (125mm)' },
+    { dn: 'DN150', mm: 150, label: 'DN150 (150mm)' },
+    { dn: 'DN200', mm: 200, label: 'DN200 (200mm)' },
+    { dn: 'DN250', mm: 250, label: 'DN250 (250mm)' },
+    { dn: 'DN300', mm: 300, label: 'DN300 (300mm)' },
+    { dn: 'DN350', mm: 350, label: 'DN350 (350mm)' },
+    { dn: 'DN400', mm: 400, label: 'DN400 (400mm)' },
+    { dn: 'DN450', mm: 450, label: 'DN450 (450mm)' },
+    { dn: 'DN500', mm: 500, label: 'DN500 (500mm)' }
   ];
 
   const [results, setResults] = useState(null);
