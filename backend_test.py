@@ -1377,6 +1377,162 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_user_interface_modifications(self):
+        """Test specific user interface modifications requested"""
+        print("\n🎯 Testing User Interface Modifications...")
+        
+        # Test data from user request
+        test_data = {
+            "flow_rate": 50.0,  # m³/h
+            "hmt": 30.0,  # m
+            "pipe_diameter": 100.0,  # mm
+            "required_npsh": 3.0,
+            "calculated_npshd": 8.0,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80.0,  # %
+            "motor_efficiency": 90.0,  # %
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        all_passed = True
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # 1. Test NPSH Removal from Performance
+                npsh_fields = ["npshd", "npsh_available", "npsh_required", "calculated_npshd", "required_npsh"]
+                found_npsh_fields = []
+                
+                # Check top level
+                for field in npsh_fields:
+                    if field in result:
+                        found_npsh_fields.append(f"top_level.{field}")
+                
+                # Check power_calculations
+                power_calcs = result.get("power_calculations", {})
+                for field in npsh_fields:
+                    if field in power_calcs:
+                        found_npsh_fields.append(f"power_calculations.{field}")
+                
+                # Check performance_curves
+                perf_curves = result.get("performance_curves", {})
+                for field in npsh_fields:
+                    if field in perf_curves:
+                        found_npsh_fields.append(f"performance_curves.{field}")
+                
+                if found_npsh_fields:
+                    self.log_test("NPSH Removal from Performance", False, 
+                                f"Found NPSH fields: {found_npsh_fields}")
+                    all_passed = False
+                else:
+                    self.log_test("NPSH Removal from Performance", True, 
+                                "✅ NPSH fields successfully removed from Performance endpoint")
+                
+                # 2. Test Velocity and Alerts Integration
+                velocity = result.get("velocity", None)
+                reynolds_number = result.get("reynolds_number", None)
+                alerts = result.get("alerts", None)
+                
+                if velocity is None:
+                    self.log_test("Velocity Data Integration", False, "Missing velocity field")
+                    all_passed = False
+                elif velocity <= 0:
+                    self.log_test("Velocity Data Integration", False, f"Invalid velocity: {velocity}")
+                    all_passed = False
+                else:
+                    self.log_test("Velocity Data Integration", True, f"✅ Velocity: {velocity:.2f} m/s")
+                
+                if reynolds_number is None:
+                    self.log_test("Reynolds Number Integration", False, "Missing reynolds_number field")
+                    all_passed = False
+                elif reynolds_number <= 0:
+                    self.log_test("Reynolds Number Integration", False, f"Invalid Reynolds number: {reynolds_number}")
+                    all_passed = False
+                else:
+                    self.log_test("Reynolds Number Integration", True, f"✅ Reynolds: {reynolds_number:.0f}")
+                
+                if alerts is None:
+                    self.log_test("Alerts Integration", False, "Missing alerts field")
+                    all_passed = False
+                elif not isinstance(alerts, list):
+                    self.log_test("Alerts Integration", False, f"Alerts should be a list, got: {type(alerts)}")
+                    all_passed = False
+                else:
+                    self.log_test("Alerts Integration", True, f"✅ Alerts system integrated ({len(alerts)} alerts)")
+                
+                # 3. Test Precise Intersection Point
+                performance_curves = result.get("performance_curves", {})
+                best_operating_point = performance_curves.get("best_operating_point", {})
+                
+                if not best_operating_point:
+                    self.log_test("Precise Intersection Point", False, "Missing best_operating_point")
+                    all_passed = False
+                else:
+                    op_flow = best_operating_point.get("flow", 0)
+                    op_hmt = best_operating_point.get("hmt", 0)
+                    
+                    # Check exact match with input values
+                    flow_match = abs(op_flow - test_data["flow_rate"]) < 0.1
+                    hmt_match = abs(op_hmt - test_data["hmt"]) < 0.1
+                    
+                    if not flow_match:
+                        self.log_test("Intersection Point - Flow", False, 
+                                    f"Expected {test_data['flow_rate']:.1f}, got {op_flow:.1f}")
+                        all_passed = False
+                    else:
+                        self.log_test("Intersection Point - Flow", True, f"✅ Exact match: {op_flow:.1f} m³/h")
+                    
+                    if not hmt_match:
+                        self.log_test("Intersection Point - HMT", False, 
+                                    f"Expected {test_data['hmt']:.1f}, got {op_hmt:.1f}")
+                        all_passed = False
+                    else:
+                        self.log_test("Intersection Point - HMT", True, f"✅ Exact match: {op_hmt:.1f} m")
+                
+                # 4. Test General Functionality
+                required_fields = [
+                    "pump_efficiency", "motor_efficiency", "overall_efficiency",
+                    "velocity", "reynolds_number", "nominal_current", "starting_current",
+                    "recommended_cable_section", "power_calculations", "electrical_data",
+                    "performance_curves", "recommendations", "warnings", "alerts"
+                ]
+                
+                missing_fields = [field for field in required_fields if field not in result]
+                if missing_fields:
+                    self.log_test("General Functionality", False, f"Missing fields: {missing_fields}")
+                    all_passed = False
+                else:
+                    self.log_test("General Functionality", True, "✅ All required fields present")
+                
+                # Test power calculations are reasonable
+                power_calcs = result.get("power_calculations", {})
+                hydraulic_power = power_calcs.get("hydraulic_power", 0)
+                absorbed_power = power_calcs.get("absorbed_power", 0)
+                
+                if hydraulic_power <= 0 or absorbed_power <= hydraulic_power:
+                    self.log_test("Power Calculations Logic", False, 
+                                f"Invalid power relationship: P2={hydraulic_power:.3f}, P1={absorbed_power:.3f}")
+                    all_passed = False
+                else:
+                    self.log_test("Power Calculations Logic", True, 
+                                f"✅ P2={hydraulic_power:.3f} kW, P1={absorbed_power:.3f} kW")
+                
+            else:
+                self.log_test("User Interface Modifications", False, f"API call failed: {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("User Interface Modifications", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
