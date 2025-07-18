@@ -285,7 +285,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Corrected Power Formulas"
+    - "Corrected Global Efficiency Formula"
+    - "Operating Point Precision"
+    - "Darcy Formula Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
