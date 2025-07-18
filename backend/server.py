@@ -29,6 +29,55 @@ api_router = APIRouter(prefix="/api")
 # FLUID PROPERTIES DATABASE
 # ============================================================================
 
+PIPE_MATERIALS = {
+    "pvc": {
+        "name": "PVC",
+        "roughness": 0.0015,  # mm
+        "description": "Polychlorure de vinyle"
+    },
+    "pehd": {
+        "name": "PEHD",
+        "roughness": 0.007,  # mm
+        "description": "Polyéthylène haute densité"
+    },
+    "steel": {
+        "name": "Acier",
+        "roughness": 0.045,  # mm
+        "description": "Acier commercial"
+    },
+    "steel_galvanized": {
+        "name": "Acier galvanisé",
+        "roughness": 0.15,  # mm
+        "description": "Acier galvanisé"
+    },
+    "cast_iron": {
+        "name": "Fonte",
+        "roughness": 0.25,  # mm
+        "description": "Fonte"
+    },
+    "concrete": {
+        "name": "Béton",
+        "roughness": 0.3,  # mm
+        "description": "Béton lissé"
+    }
+}
+
+FITTING_COEFFICIENTS = {
+    "elbow_90": {"name": "Coude 90°", "k": 0.9},
+    "elbow_45": {"name": "Coude 45°", "k": 0.4},
+    "tee_through": {"name": "Té passage direct", "k": 0.6},
+    "tee_branch": {"name": "Té dérivation", "k": 1.8},
+    "gate_valve_open": {"name": "Vanne guillotine ouverte", "k": 0.15},
+    "gate_valve_half": {"name": "Vanne guillotine mi-ouverte", "k": 5.6},
+    "ball_valve": {"name": "Vanne à boule", "k": 0.05},
+    "check_valve": {"name": "Clapet anti-retour", "k": 2.0},
+    "reducer": {"name": "Réducteur", "k": 0.5},
+    "enlarger": {"name": "Élargisseur", "k": 1.0},
+    "entrance_sharp": {"name": "Entrée vive", "k": 0.5},
+    "entrance_smooth": {"name": "Entrée arrondie", "k": 0.1},
+    "exit": {"name": "Sortie", "k": 1.0}
+}
+
 FLUID_PROPERTIES = {
     "water": {
         "name": "Water",
