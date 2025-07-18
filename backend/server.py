@@ -539,54 +539,40 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     )
 
 def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[str, List[float]]:
-    """Generate performance curves for different flow rates"""
+    """Generate performance curves - Débit en fonction de HMT"""
     flow_points = []
     hmt_points = []
-    npsh_points = []
-    efficiency_points = []
-    power_points = []
     
     base_flow = input_data.flow_rate
     base_hmt = input_data.hmt
-    base_efficiency = input_data.pump_efficiency
     
-    # Calculate hydraulic power
-    if input_data.hydraulic_power:
-        base_hydraulic_power = input_data.hydraulic_power
-    else:
-        base_hydraulic_power = (base_flow / 3600) * base_hmt * 1000 * 9.81 / 1000  # kW
-    
+    # Generate curve points from 0% to 150% of nominal flow
     for i in range(0, 151, 10):  # 0% to 150% of nominal flow
         flow_ratio = i / 100
         flow = base_flow * flow_ratio
         
-        # Typical pump curve characteristics
-        hmt = base_hmt * (1.2 - 0.8 * flow_ratio + 0.6 * flow_ratio**2)
-        npsh = 2 + (flow_ratio * 3)  # Simplified NPSH curve
+        # Typical pump curve: HMT decreases with increasing flow
+        # Quadratic curve: HMT = H0 - a*Q - b*Q²
+        # At nominal point: HMT = base_hmt, Q = base_flow
+        # At Q=0: HMT = 1.2 * base_hmt (shut-off head)
+        # At Q=1.5*base_flow: HMT = 0.5 * base_hmt
         
-        # Efficiency curve (parabolic with peak around 100%)
-        efficiency = base_efficiency * (1 - 0.5 * (flow_ratio - 1)**2)
-        efficiency = max(0, min(100, efficiency))
+        # Coefficients for quadratic curve
+        h0 = base_hmt * 1.2  # Shut-off head
+        a = 0.2 * base_hmt / base_flow if base_flow > 0 else 0
+        b = 0.5 * base_hmt / (base_flow**2) if base_flow > 0 else 0
         
-        # Power curve
-        if flow_ratio > 0:
-            hydraulic_power = (flow / 3600) * hmt * 1000 * 9.81 / 1000  # kW
-            power = hydraulic_power / (efficiency / 100) if efficiency > 0 else 0
+        if flow == 0:
+            hmt = h0
         else:
-            power = 0
+            hmt = h0 - a * flow - b * (flow**2)
         
         flow_points.append(flow)
         hmt_points.append(max(0, hmt))
-        npsh_points.append(max(0, npsh))
-        efficiency_points.append(max(0, efficiency))
-        power_points.append(max(0, power))
     
     return {
         "flow": flow_points,
-        "hmt": hmt_points,
-        "npsh": npsh_points,
-        "efficiency": efficiency_points,
-        "power": power_points
+        "hmt": hmt_points
     }
 
 def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
