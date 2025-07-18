@@ -80,7 +80,7 @@ FITTING_COEFFICIENTS = {
 
 FLUID_PROPERTIES = {
     "water": {
-        "name": "Water",
+        "name": "Eau",
         "density_20c": 1000,  # kg/m³
         "viscosity_20c": 0.001,  # Pa·s
         "vapor_pressure_20c": 2340,  # Pa
@@ -91,7 +91,7 @@ FLUID_PROPERTIES = {
         }
     },
     "oil": {
-        "name": "Hydraulic Oil",
+        "name": "Huile Hydraulique",
         "density_20c": 850,
         "viscosity_20c": 0.05,
         "vapor_pressure_20c": 100,
@@ -102,7 +102,7 @@ FLUID_PROPERTIES = {
         }
     },
     "acid": {
-        "name": "Acid Solution",
+        "name": "Solution Acide",
         "density_20c": 1200,
         "viscosity_20c": 0.002,
         "vapor_pressure_20c": 3000,
@@ -113,7 +113,7 @@ FLUID_PROPERTIES = {
         }
     },
     "glycol": {
-        "name": "Ethylene Glycol",
+        "name": "Éthylène Glycol",
         "density_20c": 1113,
         "viscosity_20c": 0.0161,
         "vapor_pressure_20c": 10,
