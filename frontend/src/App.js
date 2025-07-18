@@ -3295,12 +3295,12 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         LÉGENDE TECHNIQUE - CONFIGURATION {statusText}:
       </text>
       
-      <line x1="30" y1="755" x2="50" y2="755" stroke={aspirationColor} strokeWidth="4" markerEnd="url(#arrowRed)" />
+      <line x1="30" y1="755" x2="50" y2="755" stroke={aspirationColor} strokeWidth="2" markerEnd="url(#arrowRed)" />
       <text x="55" y="760" className="text-xs font-medium" fill={aspirationColor}>
         {isFlooded ? 'Charge gravitaire' : 'Aspiration dépression'}
       </text>
       
-      <line x1="200" y1="755" x2="220" y2="755" stroke="#3b82f6" strokeWidth="6" markerEnd="url(#arrowBlue)" />
+      <line x1="200" y1="755" x2="220" y2="755" stroke="#3b82f6" strokeWidth="3" markerEnd="url(#arrowBlue)" />
       <text x="225" y="760" className="text-xs font-medium" fill="#3b82f6">
         Sens d'écoulement
       </text>
