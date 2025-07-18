@@ -2262,6 +2262,422 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_expert_analysis_endpoint(self):
+        """Test the new expert analysis endpoint with comprehensive data"""
+        print("\n🎯 Testing Expert Analysis Endpoint...")
+        
+        # Test data from review request
+        expert_test_data = {
+            "flow_rate": 60,
+            "fluid_type": "water",
+            "temperature": 20,
+            "suction_pipe_diameter": 100,
+            "discharge_pipe_diameter": 80,
+            "suction_height": 3.0,
+            "discharge_height": 25.0,
+            "suction_length": 10,
+            "discharge_length": 50,
+            "total_length": 60,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "elbow_90_qty": 2,
+            "elbow_45_qty": 1,
+            "valve_qty": 1,
+            "check_valve_qty": 1,
+            "pump_efficiency": 80,
+            "motor_efficiency": 90,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50,
+            "cable_material": "copper",
+            "npsh_required": 3.5,
+            "useful_pressure": 0,
+            "installation_type": "surface"
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check main structure
+                required_sections = [
+                    "input_data", "npshd_analysis", "hmt_analysis", 
+                    "performance_analysis", "electrical_analysis",
+                    "overall_efficiency", "total_head_loss", "system_stability",
+                    "energy_consumption", "expert_recommendations", 
+                    "optimization_potential", "performance_curves", "system_curves"
+                ]
+                
+                missing_sections = [section for section in required_sections if section not in result]
+                if missing_sections:
+                    self.log_test("Expert Analysis - Structure", False, f"Missing sections: {missing_sections}")
+                    return False
+                
+                # Check NPSHd analysis integration
+                npshd_analysis = result.get("npshd_analysis", {})
+                required_npshd_fields = ["npshd", "npsh_required", "npsh_margin", "cavitation_risk", "velocity", "reynolds_number"]
+                missing_npshd = [field for field in required_npshd_fields if field not in npshd_analysis]
+                if missing_npshd:
+                    self.log_test("Expert Analysis - NPSHd Integration", False, f"Missing NPSHd fields: {missing_npshd}")
+                    return False
+                
+                # Check HMT analysis integration
+                hmt_analysis = result.get("hmt_analysis", {})
+                required_hmt_fields = ["hmt", "static_head", "total_head_loss", "suction_velocity", "discharge_velocity"]
+                missing_hmt = [field for field in required_hmt_fields if field not in hmt_analysis]
+                if missing_hmt:
+                    self.log_test("Expert Analysis - HMT Integration", False, f"Missing HMT fields: {missing_hmt}")
+                    return False
+                
+                # Check Performance analysis integration
+                performance_analysis = result.get("performance_analysis", {})
+                required_perf_fields = ["overall_efficiency", "pump_efficiency", "motor_efficiency", "nominal_current", "power_calculations"]
+                missing_perf = [field for field in required_perf_fields if field not in performance_analysis]
+                if missing_perf:
+                    self.log_test("Expert Analysis - Performance Integration", False, f"Missing Performance fields: {missing_perf}")
+                    return False
+                
+                # Check expert recommendations
+                expert_recommendations = result.get("expert_recommendations", [])
+                if not isinstance(expert_recommendations, list):
+                    self.log_test("Expert Analysis - Recommendations", False, "Expert recommendations should be a list")
+                    return False
+                
+                # Check that recommendations have proper structure
+                for i, rec in enumerate(expert_recommendations):
+                    required_rec_fields = ["type", "priority", "title", "description", "impact", "solutions", "urgency"]
+                    missing_rec_fields = [field for field in required_rec_fields if field not in rec]
+                    if missing_rec_fields:
+                        self.log_test("Expert Analysis - Recommendation Structure", False, 
+                                    f"Recommendation {i} missing fields: {missing_rec_fields}")
+                        return False
+                
+                # Check system stability calculation
+                system_stability = result.get("system_stability", None)
+                if system_stability is None:
+                    self.log_test("Expert Analysis - System Stability", False, "Missing system_stability field")
+                    return False
+                
+                # Check energy consumption calculation
+                energy_consumption = result.get("energy_consumption", 0)
+                if energy_consumption <= 0:
+                    self.log_test("Expert Analysis - Energy Consumption", False, "Energy consumption should be positive")
+                    return False
+                
+                # Check performance curves integration
+                performance_curves = result.get("performance_curves", {})
+                required_curve_fields = ["flow", "hmt", "efficiency", "power"]
+                missing_curves = [field for field in required_curve_fields if field not in performance_curves]
+                if missing_curves:
+                    self.log_test("Expert Analysis - Performance Curves", False, f"Missing curve fields: {missing_curves}")
+                    return False
+                
+                # Check system curves
+                system_curves = result.get("system_curves", {})
+                required_system_fields = ["flow_points", "system_curve", "operating_point"]
+                missing_system = [field for field in required_system_fields if field not in system_curves]
+                if missing_system:
+                    self.log_test("Expert Analysis - System Curves", False, f"Missing system curve fields: {missing_system}")
+                    return False
+                
+                # Validate numerical results
+                overall_efficiency = result.get("overall_efficiency", 0)
+                total_head_loss = result.get("total_head_loss", 0)
+                
+                if overall_efficiency <= 0 or overall_efficiency > 100:
+                    self.log_test("Expert Analysis - Overall Efficiency", False, f"Invalid overall efficiency: {overall_efficiency}%")
+                    return False
+                
+                if total_head_loss <= 0:
+                    self.log_test("Expert Analysis - Total Head Loss", False, f"Invalid total head loss: {total_head_loss} m")
+                    return False
+                
+                self.log_test("Expert Analysis Endpoint", True, 
+                            f"Complete analysis: Efficiency={overall_efficiency:.1f}%, Head Loss={total_head_loss:.2f}m, "
+                            f"Recommendations={len(expert_recommendations)}, Stability={system_stability}")
+                return True
+            else:
+                self.log_test("Expert Analysis Endpoint", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Expert Analysis Endpoint", False, f"Error: {str(e)}")
+            return False
+    
+    def test_expert_recommendations_generation(self):
+        """Test that expert recommendations are properly generated based on analysis"""
+        print("\n🎯 Testing Expert Recommendations Generation...")
+        
+        # Test case designed to trigger multiple recommendation types
+        test_data = {
+            "flow_rate": 100,  # High flow to trigger velocity warnings
+            "fluid_type": "water",
+            "temperature": 20,
+            "suction_pipe_diameter": 80,  # Small diameter for high velocity
+            "discharge_pipe_diameter": 75,
+            "suction_height": -4.0,  # Suction lift to trigger cavitation risk
+            "discharge_height": 50.0,  # High discharge
+            "suction_length": 20,
+            "discharge_length": 100,
+            "total_length": 120,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "elbow_90_qty": 4,  # Many fittings
+            "elbow_45_qty": 2,
+            "valve_qty": 2,
+            "check_valve_qty": 1,
+            "pump_efficiency": 65,  # Low efficiency
+            "motor_efficiency": 85,  # Moderate efficiency
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "direct_on_line",  # High starting current
+            "cable_length": 100,
+            "cable_material": "copper",
+            "npsh_required": 4.5,  # High NPSH requirement
+            "useful_pressure": 2.0,  # Additional pressure requirement
+            "installation_type": "surface"
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                expert_recommendations = result.get("expert_recommendations", [])
+                
+                # Should have multiple recommendations for this challenging scenario
+                if len(expert_recommendations) < 2:
+                    self.log_test("Expert Recommendations - Quantity", False, 
+                                f"Expected multiple recommendations, got {len(expert_recommendations)}")
+                    return False
+                
+                # Check for different recommendation types
+                recommendation_types = [rec.get("type", "") for rec in expert_recommendations]
+                expected_types = ["critical", "efficiency", "hydraulic", "electrical"]
+                
+                # Should have at least some of these types
+                found_types = [t for t in expected_types if t in recommendation_types]
+                if len(found_types) < 2:
+                    self.log_test("Expert Recommendations - Types", False, 
+                                f"Expected diverse recommendation types, found: {found_types}")
+                    return False
+                
+                # Check priority ordering (critical should be priority 1)
+                priorities = [rec.get("priority", 999) for rec in expert_recommendations]
+                if min(priorities) != 1:
+                    self.log_test("Expert Recommendations - Priority", False, 
+                                "Should have at least one critical (priority 1) recommendation")
+                    return False
+                
+                # Check that solutions are provided
+                for i, rec in enumerate(expert_recommendations):
+                    solutions = rec.get("solutions", [])
+                    if not solutions or len(solutions) < 2:
+                        self.log_test("Expert Recommendations - Solutions", False, 
+                                    f"Recommendation {i} should have multiple solutions")
+                        return False
+                
+                # Check optimization potential
+                optimization_potential = result.get("optimization_potential", {})
+                required_opt_fields = ["energy_savings", "npsh_margin", "velocity_optimization", "head_loss_reduction"]
+                missing_opt = [field for field in required_opt_fields if field not in optimization_potential]
+                if missing_opt:
+                    self.log_test("Expert Recommendations - Optimization Potential", False, 
+                                f"Missing optimization fields: {missing_opt}")
+                    return False
+                
+                self.log_test("Expert Recommendations Generation", True, 
+                            f"Generated {len(expert_recommendations)} recommendations with types: {set(recommendation_types)}")
+                return True
+            else:
+                self.log_test("Expert Recommendations Generation", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Expert Recommendations Generation", False, f"Error: {str(e)}")
+            return False
+    
+    def test_expert_analysis_integration(self):
+        """Test that expert analysis properly integrates all calculation modules"""
+        print("\n🎯 Testing Expert Analysis Integration...")
+        
+        # Use the exact test data from review request
+        test_data = {
+            "flow_rate": 60,
+            "fluid_type": "water",
+            "temperature": 20,
+            "suction_pipe_diameter": 100,
+            "discharge_pipe_diameter": 80,
+            "suction_height": 3.0,
+            "discharge_height": 25.0,
+            "suction_length": 10,
+            "discharge_length": 50,
+            "total_length": 60,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "elbow_90_qty": 2,
+            "elbow_45_qty": 1,
+            "valve_qty": 1,
+            "check_valve_qty": 1,
+            "pump_efficiency": 80,
+            "motor_efficiency": 90,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50,
+            "cable_material": "copper",
+            "npsh_required": 3.5,
+            "useful_pressure": 0,
+            "installation_type": "surface"
+        }
+        
+        try:
+            # Get expert analysis
+            expert_response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if expert_response.status_code != 200:
+                self.log_test("Expert Analysis Integration", False, f"Expert analysis failed: {expert_response.status_code}")
+                return False
+            
+            expert_result = expert_response.json()
+            
+            # Test individual endpoints to compare integration
+            # Test NPSHd endpoint
+            npshd_data = {
+                "suction_type": "flooded",  # suction_height > 0
+                "hasp": 3.0,
+                "flow_rate": 60,
+                "fluid_type": "water",
+                "temperature": 20,
+                "pipe_diameter": 100,
+                "pipe_material": "pvc",
+                "pipe_length": 10,
+                "suction_fittings": [
+                    {"fitting_type": "elbow_90", "quantity": 2},
+                    {"fitting_type": "elbow_45", "quantity": 1},
+                    {"fitting_type": "check_valve", "quantity": 1}
+                ],
+                "npsh_required": 3.5
+            }
+            
+            npshd_response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=npshd_data, timeout=10)
+            if npshd_response.status_code != 200:
+                self.log_test("Expert Analysis Integration - NPSHd", False, "NPSHd endpoint failed")
+                return False
+            
+            npshd_result = npshd_response.json()
+            
+            # Compare NPSHd results
+            expert_npshd = expert_result["npshd_analysis"]
+            standalone_npshd = npshd_result["npshd"]
+            expert_npshd_value = expert_npshd["npshd"]
+            
+            if abs(expert_npshd_value - standalone_npshd) > 0.1:
+                self.log_test("Expert Analysis Integration - NPSHd Consistency", False, 
+                            f"NPSHd mismatch: Expert={expert_npshd_value:.2f}, Standalone={standalone_npshd:.2f}")
+                return False
+            
+            # Test HMT endpoint
+            hmt_data = {
+                "installation_type": "surface",
+                "suction_type": "flooded",
+                "hasp": 3.0,
+                "discharge_height": 25.0,
+                "useful_pressure": 0,
+                "suction_pipe_diameter": 100,
+                "discharge_pipe_diameter": 80,
+                "suction_pipe_length": 10,
+                "discharge_pipe_length": 50,
+                "suction_pipe_material": "pvc",
+                "discharge_pipe_material": "pvc",
+                "suction_fittings": [
+                    {"fitting_type": "elbow_90", "quantity": 2},
+                    {"fitting_type": "elbow_45", "quantity": 1},
+                    {"fitting_type": "check_valve", "quantity": 1}
+                ],
+                "discharge_fittings": [
+                    {"fitting_type": "valve", "quantity": 1}
+                ],
+                "fluid_type": "water",
+                "temperature": 20,
+                "flow_rate": 60
+            }
+            
+            hmt_response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_data, timeout=10)
+            if hmt_response.status_code != 200:
+                self.log_test("Expert Analysis Integration - HMT", False, "HMT endpoint failed")
+                return False
+            
+            hmt_result = hmt_response.json()
+            
+            # Compare HMT results
+            expert_hmt = expert_result["hmt_analysis"]
+            standalone_hmt = hmt_result["hmt"]
+            expert_hmt_value = expert_hmt["hmt"]
+            
+            if abs(expert_hmt_value - standalone_hmt) > 0.1:
+                self.log_test("Expert Analysis Integration - HMT Consistency", False, 
+                            f"HMT mismatch: Expert={expert_hmt_value:.2f}, Standalone={standalone_hmt:.2f}")
+                return False
+            
+            # Test Performance endpoint
+            perf_data = {
+                "flow_rate": 60,
+                "hmt": expert_hmt_value,  # Use calculated HMT
+                "pipe_diameter": 100,
+                "fluid_type": "water",
+                "pipe_material": "pvc",
+                "pump_efficiency": 80,
+                "motor_efficiency": 90,
+                "starting_method": "star_delta",
+                "power_factor": 0.8,
+                "cable_length": 50,
+                "cable_material": "copper",
+                "voltage": 400
+            }
+            
+            perf_response = requests.post(f"{BACKEND_URL}/calculate-performance", json=perf_data, timeout=10)
+            if perf_response.status_code != 200:
+                self.log_test("Expert Analysis Integration - Performance", False, "Performance endpoint failed")
+                return False
+            
+            perf_result = perf_response.json()
+            
+            # Compare Performance results
+            expert_perf = expert_result["performance_analysis"]
+            standalone_efficiency = perf_result["overall_efficiency"]
+            expert_efficiency = expert_perf["overall_efficiency"]
+            
+            if abs(expert_efficiency - standalone_efficiency) > 0.1:
+                self.log_test("Expert Analysis Integration - Performance Consistency", False, 
+                            f"Efficiency mismatch: Expert={expert_efficiency:.1f}%, Standalone={standalone_efficiency:.1f}%")
+                return False
+            
+            # Check that expert analysis provides additional insights
+            expert_recommendations = expert_result.get("expert_recommendations", [])
+            optimization_potential = expert_result.get("optimization_potential", {})
+            system_curves = expert_result.get("system_curves", {})
+            
+            if not expert_recommendations:
+                self.log_test("Expert Analysis Integration - Added Value", False, "No expert recommendations generated")
+                return False
+            
+            if not optimization_potential:
+                self.log_test("Expert Analysis Integration - Optimization", False, "No optimization potential calculated")
+                return False
+            
+            if not system_curves:
+                self.log_test("Expert Analysis Integration - System Curves", False, "No system curves generated")
+                return False
+            
+            self.log_test("Expert Analysis Integration", True, 
+                        f"All modules integrated: NPSHd={expert_npshd_value:.2f}m, HMT={expert_hmt_value:.2f}m, "
+                        f"Efficiency={expert_efficiency:.1f}%, Recommendations={len(expert_recommendations)}")
+            return True
+            
+        except Exception as e:
+            self.log_test("Expert Analysis Integration", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
