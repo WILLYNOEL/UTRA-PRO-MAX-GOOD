@@ -1234,27 +1234,19 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <h4 className="font-medium text-gray-700 border-b pb-2">Comparaison NPSH</h4>
+                <h4 className="font-medium text-gray-700 border-b pb-2">Données Hydrauliques</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span>NPSHd calculé:</span>
-                    <span className="font-medium">{result.npsh_comparison?.npshd_calculated?.toFixed(2)} m</span>
+                    <span>Vitesse:</span>
+                    <span className="font-medium">{result.velocity?.toFixed(2)} m/s</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>NPSH requis:</span>
-                    <span className="font-medium">{result.npsh_comparison?.npsh_required?.toFixed(2)} m</span>
+                    <span>Nombre de Reynolds:</span>
+                    <span className="font-medium">{result.reynolds_number?.toFixed(0)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Marge de sécurité:</span>
-                    <span className={`font-medium ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
-                      {result.npsh_comparison?.safety_margin?.toFixed(2)} m
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2">
-                    <span className="font-semibold">Risque cavitation:</span>
-                    <span className={`font-bold ${result.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
-                      {result.cavitation_risk ? 'OUI' : 'NON'}
-                    </span>
+                    <span>Régime d'écoulement:</span>
+                    <span className="font-medium">{result.reynolds_number > 4000 ? 'Turbulent' : result.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'}</span>
                   </div>
                 </div>
               </div>
@@ -1277,6 +1269,18 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
                 </div>
               </div>
             </div>
+            
+            {/* Affichage des alertes */}
+            {result.alerts && result.alerts.length > 0 && (
+              <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-medium text-orange-800 mb-2">🔔 Alertes Techniques</h4>
+                <ul className="text-sm text-orange-700 space-y-1">
+                  {result.alerts.map((alert, index) => (
+                    <li key={index}>• {alert}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
