@@ -1066,15 +1066,15 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
   );
 };
 
-// Component pour Tab Expert - Analyse Complète
+// Component pour Tab Expert - Analyse Complète Professionnelle
 const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
-    // Paramètres hydrauliques
+    // Paramètres hydrauliques principaux
     flow_rate: 50,
     fluid_type: 'water',
     temperature: 20,
     
-    // Géométrie
+    // Géométrie installation
     suction_pipe_diameter: 100,
     discharge_pipe_diameter: 80,
     suction_height: 3.0,
@@ -1083,18 +1083,27 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     discharge_length: 50,
     total_length: 60,
     
-    // Matériaux
+    // Matériaux et équipements
     suction_material: 'pvc',
     discharge_material: 'pvc',
     
-    // Singularités
-    elbow_90_qty: 2,
-    elbow_45_qty: 1,
-    tee_qty: 0,
-    valve_qty: 1,
-    check_valve_qty: 1,
+    // Singularités détaillées
+    suction_elbow_90: 2,
+    suction_elbow_45: 1,
+    suction_tee: 0,
+    suction_reducer: 0,
+    suction_valve: 0,
+    suction_check_valve: 1,
+    suction_strainer: 1,
     
-    // Électrique
+    discharge_elbow_90: 3,
+    discharge_elbow_45: 1,
+    discharge_tee: 1,
+    discharge_reducer: 1,
+    discharge_valve: 2,
+    discharge_check_valve: 1,
+    
+    // Paramètres électriques
     pump_efficiency: 80,
     motor_efficiency: 90,
     voltage: 400,
@@ -1102,16 +1111,28 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     starting_method: 'star_delta',
     cable_length: 50,
     cable_material: 'copper',
+    cable_section: null,
     
-    // Expert
+    // Paramètres avancés
     npsh_required: 3.5,
     useful_pressure: 0,
-    installation_type: 'surface'
+    installation_type: 'surface',
+    pump_type: 'centrifugal',
+    operating_hours: 8760, // heures/an
+    electricity_cost: 0.12, // €/kWh
+    
+    // Conditions environnementales
+    altitude: 0,
+    ambient_temperature: 25,
+    humidity: 60
   });
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [autoCalculate, setAutoCalculate] = useState(true);
+  const [activeSection, setActiveSection] = useState('all');
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
 
   const handleInputChange = (field, value) => {
     const newData = { ...inputData, [field]: value };
@@ -1128,24 +1149,34 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     
     setLoading(true);
     try {
-      // Appel à une API expert qui combine tous les calculs
       const response = await axios.post(`${API}/expert-analysis`, {
         ...data,
         // Formatage des raccords
         suction_fittings: [
-          { fitting_type: 'elbow_90', quantity: data.elbow_90_qty },
-          { fitting_type: 'elbow_45', quantity: data.elbow_45_qty },
-          { fitting_type: 'tee', quantity: data.tee_qty },
-          { fitting_type: 'valve', quantity: data.valve_qty },
-          { fitting_type: 'check_valve', quantity: data.check_valve_qty }
+          { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
+          { fitting_type: 'elbow_45', quantity: data.suction_elbow_45 },
+          { fitting_type: 'tee', quantity: data.suction_tee },
+          { fitting_type: 'reducer', quantity: data.suction_reducer },
+          { fitting_type: 'valve', quantity: data.suction_valve },
+          { fitting_type: 'check_valve', quantity: data.suction_check_valve },
+          { fitting_type: 'strainer', quantity: data.suction_strainer }
         ].filter(f => f.quantity > 0),
         discharge_fittings: [
-          { fitting_type: 'elbow_90', quantity: Math.floor(data.elbow_90_qty / 2) },
-          { fitting_type: 'valve', quantity: 1 }
-        ].filter(f => f.quantity > 0)
+          { fitting_type: 'elbow_90', quantity: data.discharge_elbow_90 },
+          { fitting_type: 'elbow_45', quantity: data.discharge_elbow_45 },
+          { fitting_type: 'tee', quantity: data.discharge_tee },
+          { fitting_type: 'reducer', quantity: data.discharge_reducer },
+          { fitting_type: 'valve', quantity: data.discharge_valve },
+          { fitting_type: 'check_valve', quantity: data.discharge_check_valve }
+        ].filter(f => f.quantity > 0),
+        elbow_90_qty: data.suction_elbow_90 + data.discharge_elbow_90,
+        elbow_45_qty: data.suction_elbow_45 + data.discharge_elbow_45,
+        valve_qty: data.suction_valve + data.discharge_valve,
+        check_valve_qty: data.suction_check_valve + data.discharge_check_valve
       });
       
       setResults(response.data);
+      updateExpertCharts(response.data);
     } catch (error) {
       console.error('Erreur analyse expert:', error);
       // Fallback avec calculs séparés
@@ -1169,8 +1200,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
           pipe_material: data.suction_material,
           pipe_length: data.suction_length,
           suction_fittings: [
-            { fitting_type: 'elbow_90', quantity: data.elbow_90_qty },
-            { fitting_type: 'check_valve', quantity: data.check_valve_qty }
+            { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
+            { fitting_type: 'check_valve', quantity: data.suction_check_valve }
           ].filter(f => f.quantity > 0),
           npsh_required: data.npsh_required
         }),
@@ -1187,12 +1218,12 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
           suction_pipe_material: data.suction_material,
           discharge_pipe_material: data.discharge_material,
           suction_fittings: [
-            { fitting_type: 'elbow_90', quantity: data.elbow_90_qty },
-            { fitting_type: 'check_valve', quantity: data.check_valve_qty }
+            { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
+            { fitting_type: 'check_valve', quantity: data.suction_check_valve }
           ].filter(f => f.quantity > 0),
           discharge_fittings: [
-            { fitting_type: 'elbow_90', quantity: Math.floor(data.elbow_90_qty / 2) },
-            { fitting_type: 'valve', quantity: 1 }
+            { fitting_type: 'elbow_90', quantity: data.discharge_elbow_90 },
+            { fitting_type: 'valve', quantity: data.discharge_valve }
           ].filter(f => f.quantity > 0),
           fluid_type: data.fluid_type,
           temperature: data.temperature,
@@ -1214,20 +1245,82 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
         })
       ]);
 
+      // Calculs avancés d'expert
+      const hydraulicPower = ((data.flow_rate * hmtResponse.data.hmt) / (data.pump_efficiency * 367)) * 100;
+      const electricalPower = hydraulicPower / (data.motor_efficiency / 100);
+      const overallEfficiency = (data.pump_efficiency / 100) * (data.motor_efficiency / 100) * 100;
+      const annualEnergyCost = (electricalPower * data.operating_hours * data.electricity_cost) / 1000;
+      
       // Combinaison des résultats
       const combinedResults = {
-        npshd: npshResponse.data,
-        hmt: hmtResponse.data,
-        performance: perfResponse.data,
-        expert_analysis: {
-          overall_efficiency: (data.pump_efficiency / 100) * (data.motor_efficiency / 100) * 100,
-          total_head_loss: (npshResponse.data.total_head_loss || 0) + (hmtResponse.data.total_head_loss || 0),
-          system_flow_rate: data.flow_rate,
-          expert_recommendations: generateExpertRecommendations(data, npshResponse.data, hmtResponse.data, perfResponse.data)
+        npshd_analysis: {
+          npshd: npshResponse.data.npshd,
+          npsh_required: npshResponse.data.npsh_required,
+          npsh_margin: npshResponse.data.npsh_margin,
+          cavitation_risk: npshResponse.data.cavitation_risk,
+          velocity: npshResponse.data.velocity,
+          reynolds_number: npshResponse.data.reynolds_number,
+          total_head_loss: npshResponse.data.total_head_loss,
+          warnings: npshResponse.data.warnings,
+          recommendations: npshResponse.data.recommendations
+        },
+        hmt_analysis: {
+          hmt: hmtResponse.data.hmt,
+          static_head: hmtResponse.data.static_head,
+          total_head_loss: hmtResponse.data.total_head_loss,
+          suction_velocity: hmtResponse.data.suction_velocity,
+          discharge_velocity: hmtResponse.data.discharge_velocity,
+          useful_pressure_head: hmtResponse.data.useful_pressure_head,
+          warnings: hmtResponse.data.warnings
+        },
+        performance_analysis: {
+          overall_efficiency: overallEfficiency,
+          pump_efficiency: data.pump_efficiency,
+          motor_efficiency: data.motor_efficiency,
+          hydraulic_power: hydraulicPower,
+          electrical_power: electricalPower,
+          nominal_current: perfResponse.data.nominal_current,
+          starting_current: perfResponse.data.starting_current,
+          power_calculations: perfResponse.data.power_calculations,
+          warnings: perfResponse.data.warnings,
+          alerts: perfResponse.data.alerts
+        },
+        electrical_analysis: {
+          voltage: data.voltage,
+          power_factor: data.power_factor,
+          starting_method: data.starting_method,
+          cable_length: data.cable_length,
+          cable_section: perfResponse.data.recommended_cable_section,
+          annual_energy_cost: annualEnergyCost,
+          daily_energy_cost: annualEnergyCost / 365,
+          energy_consumption_per_m3: electricalPower / data.flow_rate
+        },
+        overall_efficiency: overallEfficiency,
+        total_head_loss: (npshResponse.data.total_head_loss || 0) + (hmtResponse.data.total_head_loss || 0),
+        system_stability: !npshResponse.data.cavitation_risk && overallEfficiency > 60,
+        energy_consumption: electricalPower / data.flow_rate,
+        expert_recommendations: generateExpertRecommendations(data, npshResponse.data, hmtResponse.data, perfResponse.data),
+        optimization_potential: {
+          energy_savings: Math.max(0, 80 - overallEfficiency),
+          npsh_margin: npshResponse.data.npsh_margin,
+          velocity_optimization: Math.max(0, npshResponse.data.velocity - 2.0),
+          head_loss_reduction: Math.max(0, (npshResponse.data.total_head_loss + hmtResponse.data.total_head_loss) * 0.3)
+        },
+        performance_curves: perfResponse.data.performance_curves || {},
+        system_curves: {
+          flow_points: Array.from({length: 20}, (_, i) => i * 5),
+          system_curve: Array.from({length: 20}, (_, i) => (i * 5)**2 * 0.01),
+          operating_point: {
+            flow: data.flow_rate,
+            head: hmtResponse.data.hmt,
+            efficiency: overallEfficiency,
+            power: electricalPower
+          }
         }
       };
 
       setResults(combinedResults);
+      updateExpertCharts(combinedResults);
     } catch (error) {
       console.error('Erreur calculs fallback:', error);
     }
@@ -1236,51 +1329,262 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const generateExpertRecommendations = (input, npshd, hmt, perf) => {
     const recommendations = [];
     
-    // Analyse hydraulique
+    // Analyse critique de cavitation
     if (npshd.cavitation_risk) {
       recommendations.push({
         type: 'critical',
-        title: 'CAVITATION DÉTECTÉE',
-        message: 'Risque de cavitation imminent - Action immédiate requise',
+        priority: 1,
+        title: '🚨 CAVITATION CRITIQUE',
+        description: `NPSHd (${npshd.npshd.toFixed(2)}m) ≤ NPSH requis (${input.npsh_required.toFixed(2)}m)`,
+        impact: 'DESTRUCTION DE LA POMPE - Arrêt immédiat requis',
         solutions: [
-          'Réduire la hauteur d\'aspiration',
-          'Augmenter le diamètre de la tuyauterie d\'aspiration',
-          'Minimiser les singularités sur l\'aspiration'
-        ]
+          `Réduire hauteur d'aspiration de ${Math.abs(input.suction_height).toFixed(1)}m à ${Math.max(0, Math.abs(input.suction_height) - Math.abs(npshd.npsh_margin) - 0.5).toFixed(1)}m`,
+          `Augmenter diamètre aspiration de ${input.suction_pipe_diameter}mm à ${Math.ceil(input.suction_pipe_diameter * 1.3)}mm`,
+          `Réduire longueur aspiration de ${input.suction_length}m à ${Math.max(5, input.suction_length * 0.7).toFixed(1)}m`,
+          'Supprimer raccords non essentiels sur aspiration',
+          'Installer pompe en charge si possible'
+        ],
+        urgency: 'IMMÉDIATE',
+        cost_impact: 'ÉLEVÉ'
       });
     }
     
-    // Analyse de vitesse
-    const velocity = npshd.velocity || 0;
-    if (velocity > 3) {
-      recommendations.push({
-        type: 'warning',
-        title: 'VITESSE EXCESSIVE',
-        message: `Vitesse de ${velocity.toFixed(2)} m/s - risque d'érosion et de bruit`,
-        solutions: [
-          'Augmenter le diamètre pour réduire la vitesse',
-          'Utiliser des matériaux résistants à l\'érosion',
-          'Prévoir des dispositifs anti-vibration'
-        ]
-      });
-    }
-    
-    // Analyse énergétique
+    // Analyse de performance énergétique
     const efficiency = (input.pump_efficiency / 100) * (input.motor_efficiency / 100) * 100;
     if (efficiency < 65) {
+      const potential_savings = (75 - efficiency) * 0.01 * input.operating_hours * input.electricity_cost;
       recommendations.push({
-        type: 'optimization',
-        title: 'RENDEMENT FAIBLE',
-        message: `Rendement global de ${efficiency.toFixed(1)}% - potentiel d'économie d'énergie`,
+        type: 'energy',
+        priority: 2,
+        title: '⚡ EFFICACITÉ ÉNERGÉTIQUE FAIBLE',
+        description: `Rendement global ${efficiency.toFixed(1)}% - Potentiel d'économie de ${potential_savings.toFixed(0)}€/an`,
+        impact: `Surconsommation: ${(potential_savings * 10).toFixed(0)}€ sur 10 ans`,
         solutions: [
-          'Choisir une pompe plus efficace',
-          'Optimiser le point de fonctionnement',
-          'Utiliser un variateur de vitesse'
-        ]
+          'Pompe haute efficacité (gain 5-10%)',
+          'Moteur haut rendement Premium (gain 2-5%)',
+          'Variateur de vitesse (gain 10-30%)',
+          'Optimisation point de fonctionnement',
+          'Maintenance préventive régulière'
+        ],
+        urgency: 'MOYENNE',
+        cost_impact: 'RENTABLE'
+      });
+    }
+    
+    // Analyse hydraulique avancée
+    if (npshd.velocity > 3.0) {
+      recommendations.push({
+        type: 'hydraulic',
+        priority: 3,
+        title: '🌊 VITESSE EXCESSIVE',
+        description: `Vitesse ${npshd.velocity.toFixed(2)}m/s > 3m/s - Risque d'érosion et cavitation`,
+        impact: 'Usure prématurée, bruit, vibrations, perte de performance',
+        solutions: [
+          `Diamètre aspiration: ${input.suction_pipe_diameter}mm → ${Math.ceil(input.suction_pipe_diameter * Math.sqrt(npshd.velocity / 2.5))}mm`,
+          `Diamètre refoulement: ${input.discharge_pipe_diameter}mm → ${Math.ceil(input.discharge_pipe_diameter * Math.sqrt(npshd.velocity / 3.0))}mm`,
+          'Matériaux anti-érosion (inox, fonte)',
+          'Supports anti-vibratoires',
+          'Réduction débit si possible'
+        ],
+        urgency: 'MOYENNE',
+        cost_impact: 'MODÉRÉ'
+      });
+    }
+    
+    // Analyse électrique
+    if (perf.starting_current > 150) {
+      recommendations.push({
+        type: 'electrical',
+        priority: 4,
+        title: '🔌 COURANT DE DÉMARRAGE ÉLEVÉ',
+        description: `Courant démarrage ${perf.starting_current.toFixed(1)}A - Impact réseau`,
+        impact: 'Chutes de tension, perturbations réseau, contraintes transformateur',
+        solutions: [
+          'Démarreur progressif (réduction 50-70%)',
+          'Variateur de vitesse (réduction 80%)',
+          'Démarrage étoile-triangle (réduction 33%)',
+          'Renforcement alimentation électrique',
+          'Compensation d\'énergie réactive'
+        ],
+        urgency: 'FAIBLE',
+        cost_impact: 'VARIABLE'
+      });
+    }
+    
+    // Analyse de fiabilité
+    const total_singularities = Object.keys(input).filter(k => k.includes('_elbow_') || k.includes('_valve') || k.includes('_tee')).reduce((sum, key) => sum + (input[key] || 0), 0);
+    if (total_singularities > 8) {
+      recommendations.push({
+        type: 'reliability',
+        priority: 5,
+        title: '🔧 COMPLEXITÉ EXCESSIVE',
+        description: `${total_singularities} singularités - Risque de pannes multiples`,
+        impact: 'Maintenance accrue, points de défaillance multiples, pertes de charge',
+        solutions: [
+          'Simplification du circuit hydraulique',
+          'Réduction nombre de raccords',
+          'Tuyauterie rectiligne privilégiée',
+          'Raccords haute qualité',
+          'Plan de maintenance préventive'
+        ],
+        urgency: 'FAIBLE',
+        cost_impact: 'LONG TERME'
       });
     }
     
     return recommendations;
+  };
+
+  const updateExpertCharts = (data) => {
+    if (!chartRef.current || !data.performance_curves) return;
+
+    const ctx = chartRef.current.getContext('2d');
+    
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const curves = data.performance_curves;
+    const systemCurve = data.system_curves;
+    
+    chartInstance.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: curves.flow || systemCurve.flow_points,
+        datasets: [
+          {
+            label: 'Courbe HMT Pompe',
+            data: curves.hmt || [],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Courbe Système',
+            data: systemCurve.system_curve || [],
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Rendement Pompe',
+            data: curves.efficiency || [],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y1'
+          },
+          {
+            label: 'Puissance Absorbée',
+            data: curves.power || [],
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y2'
+          },
+          {
+            label: 'Point de Fonctionnement',
+            data: [{
+              x: systemCurve.operating_point?.flow || inputData.flow_rate,
+              y: systemCurve.operating_point?.head || 0
+            }],
+            borderColor: '#000000',
+            backgroundColor: '#000000',
+            borderWidth: 4,
+            pointRadius: 12,
+            pointHoverRadius: 16,
+            showLine: false,
+            yAxisID: 'y'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Débit (m³/h)',
+              font: { size: 14, weight: 'bold' }
+            },
+            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+          },
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: 'HMT (m)',
+              font: { size: 14, weight: 'bold' }
+            },
+            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Rendement (%)',
+              font: { size: 14, weight: 'bold' }
+            },
+            min: 0,
+            max: 100,
+            grid: { drawOnChartArea: false }
+          },
+          y2: {
+            type: 'linear',
+            display: false,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Puissance (kW)',
+              font: { size: 14, weight: 'bold' }
+            },
+            grid: { drawOnChartArea: false }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: { size: 12, weight: 'bold' },
+              usePointStyle: true
+            }
+          },
+          title: {
+            display: true,
+            text: 'Analyse Experte - Courbes de Performance et Système',
+            font: { size: 16, weight: 'bold' }
+          }
+        }
+      }
+    });
   };
 
   // Calcul initial
@@ -1292,135 +1596,552 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-lg">
-        <h2 className="text-2xl font-bold mb-2">🧠 Analyse Expert Hydraulique</h2>
-        <p className="text-purple-100">
-          Calculs avancés en temps réel avec recommandations d'expert
+      {/* Header Expert */}
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold mb-2">🧠 ANALYSE HYDRAULIQUE EXPERTE</h2>
+        <p className="text-purple-100 mb-4">
+          Calculs avancés temps réel • Diagnostics automatiques • Recommandations professionnelles
         </p>
-        <div className="mt-4 flex items-center space-x-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={autoCalculate}
-              onChange={(e) => setAutoCalculate(e.target.checked)}
-              className="rounded"
-            />
-            <span className="text-sm">Calcul automatique</span>
-          </label>
-          {!autoCalculate && (
-            <button
-              onClick={() => calculateExpertAnalysis()}
-              className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50"
-            >
-              Calculer
-            </button>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={autoCalculate}
+                onChange={(e) => setAutoCalculate(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Calcul automatique</span>
+            </label>
+            {!autoCalculate && (
+              <button
+                onClick={() => calculateExpertAnalysis()}
+                className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+                disabled={loading}
+              >
+                {loading ? 'Calcul...' : 'Calculer'}
+              </button>
+            )}
+          </div>
+          
+          <div className="flex space-x-2">
+            {['all', 'hydraulic', 'electrical', 'analysis'].map(section => (
+              <button
+                key={section}
+                onClick={() => setActiveSection(section)}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  activeSection === section 
+                    ? 'bg-white text-purple-600' 
+                    : 'bg-purple-500 text-white hover:bg-purple-400'
+                }`}
+              >
+                {section === 'all' ? 'Tout' : 
+                 section === 'hydraulic' ? 'Hydraulique' : 
+                 section === 'electrical' ? 'Électrique' : 'Analyse'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Panneau de saisie */}
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Panneau de saisie - Colonne 1 */}
+        <div className="xl:col-span-1 space-y-6">
           {/* Paramètres hydrauliques */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-blue-600">💧 Paramètres Hydrauliques</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Débit (m³/h)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.flow_rate}
-                  onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Température (°C)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.temperature}
-                  onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 20)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fluide
-                </label>
-                <select
-                  value={inputData.fluid_type}
-                  onChange={(e) => handleInputChange('fluid_type', e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {fluids.map(fluid => (
-                    <option key={fluid.id} value={fluid.id}>{fluid.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NPSH Requis (m)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={inputData.npsh_required}
-                  onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value) || 0)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+          {(activeSection === 'all' || activeSection === 'hydraulic') && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 text-blue-600 flex items-center">
+                💧 Paramètres Hydrauliques
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Débit (m³/h)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.flow_rate}
+                      onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Température (°C)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.temperature}
+                      onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 20)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fluide
+                  </label>
+                  <select
+                    value={inputData.fluid_type}
+                    onChange={(e) => handleInputChange('fluid_type', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {fluids.map(fluid => (
+                      <option key={fluid.id} value={fluid.id}>{fluid.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Hauteur Asp. (m)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={inputData.suction_height}
+                      onChange={(e) => handleInputChange('suction_height', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {inputData.suction_height > 0 ? 'En charge' : 'Dépression'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Hauteur Ref. (m)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={inputData.discharge_height}
+                      onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      ⌀ Aspiration (mm)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.suction_pipe_diameter}
+                      onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      ⌀ Refoulement (mm)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.discharge_pipe_diameter}
+                      onChange={(e) => handleInputChange('discharge_pipe_diameter', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Long. Asp. (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.suction_length}
+                      onChange={(e) => handleInputChange('suction_length', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Long. Ref. (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.discharge_length}
+                      onChange={(e) => handleInputChange('discharge_length', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Matériau Asp.
+                    </label>
+                    <select
+                      value={inputData.suction_material}
+                      onChange={(e) => handleInputChange('suction_material', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {pipeMaterials.map(material => (
+                        <option key={material.id} value={material.id}>{material.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Matériau Ref.
+                    </label>
+                    <select
+                      value={inputData.discharge_material}
+                      onChange={(e) => handleInputChange('discharge_material', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {pipeMaterials.map(material => (
+                        <option key={material.id} value={material.id}>{material.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    NPSH Requis (m)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={inputData.npsh_required}
+                    onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Singularités */}
+          {(activeSection === 'all' || activeSection === 'hydraulic') && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 text-orange-600 flex items-center">
+                🔧 Singularités
+              </h3>
+              <div className="space-y-4">
+                <div className="text-sm font-medium text-gray-700 mb-2">Aspiration</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 90°</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_elbow_90}
+                      onChange={(e) => handleInputChange('suction_elbow_90', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 45°</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_elbow_45}
+                      onChange={(e) => handleInputChange('suction_elbow_45', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Crépine</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.suction_strainer}
+                      onChange={(e) => handleInputChange('suction_strainer', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="text-sm font-medium text-gray-700 mb-2">Refoulement</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Coudes 90°</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_elbow_90}
+                      onChange={(e) => handleInputChange('discharge_elbow_90', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Vannes</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_valve}
+                      onChange={(e) => handleInputChange('discharge_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Clapets</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={inputData.discharge_check_valve}
+                      onChange={(e) => handleInputChange('discharge_check_valve', parseInt(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Paramètres électriques */}
+          {(activeSection === 'all' || activeSection === 'electrical') && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 text-yellow-600 flex items-center">
+                ⚡ Paramètres Électriques
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rendement Pompe (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="40"
+                      max="95"
+                      value={inputData.pump_efficiency}
+                      onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Rendement Moteur (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="70"
+                      max="98"
+                      value={inputData.motor_efficiency}
+                      onChange={(e) => handleInputChange('motor_efficiency', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tension (V)
+                    </label>
+                    <select
+                      value={inputData.voltage}
+                      onChange={(e) => handleInputChange('voltage', parseInt(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value={230}>230V (Monophasé)</option>
+                      <option value={400}>400V (Triphasé)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cos φ
+                    </label>
+                    <input
+                      type="number"
+                      min="0.6"
+                      max="1"
+                      step="0.01"
+                      value={inputData.power_factor}
+                      onChange={(e) => handleInputChange('power_factor', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Démarrage
+                  </label>
+                  <select
+                    value={inputData.starting_method}
+                    onChange={(e) => handleInputChange('starting_method', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="star_delta">Étoile-Triangle</option>
+                    <option value="direct_on_line">Direct</option>
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Longueur Câble (m)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.cable_length}
+                      onChange={(e) => handleInputChange('cable_length', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Matériau Câble
+                    </label>
+                    <select
+                      value={inputData.cable_material}
+                      onChange={(e) => handleInputChange('cable_material', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="copper">Cuivre</option>
+                      <option value="aluminum">Aluminium</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fonctionnement (h/an)
+                    </label>
+                    <input
+                      type="number"
+                      value={inputData.operating_hours}
+                      onChange={(e) => handleInputChange('operating_hours', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Coût kWh (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={inputData.electricity_cost}
+                      onChange={(e) => handleInputChange('electricity_cost', parseFloat(e.target.value) || 0)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Panneau de résultats */}
-        <div className="space-y-6">
+        {/* Panneau de résultats et graphiques - Colonnes 2 et 3 */}
+        <div className="xl:col-span-2 space-y-6">
           {loading && (
             <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 mt-2">Calcul en cours...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4 font-medium">Analyse en cours...</p>
             </div>
           )}
           
+          {/* Résultats instantanés */}
           {results && (
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4 text-green-600">📊 Résultats Instantanés</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">NPSHd Calculé:</span>
-                  <span className="font-bold text-lg text-blue-600">
-                    {results.npshd?.npshd?.toFixed(2) || 'N/A'} m
-                  </span>
+              <h3 className="text-lg font-semibold mb-4 text-green-600 flex items-center">
+                📊 Résultats Temps Réel
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {results.npshd_analysis?.npshd?.toFixed(2) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">NPSHd (m)</div>
+                  <div className={`text-xs mt-1 ${results.npshd_analysis?.cavitation_risk ? 'text-red-600' : 'text-green-600'}`}>
+                    {results.npshd_analysis?.cavitation_risk ? '⚠️ Risque' : '✅ Sûr'}
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">HMT Total:</span>
-                  <span className="font-bold text-lg text-green-600">
-                    {results.hmt?.hmt?.toFixed(2) || 'N/A'} m
-                  </span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {results.hmt_analysis?.hmt?.toFixed(2) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">HMT (m)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Statique: {results.hmt_analysis?.static_head?.toFixed(1) || 'N/A'}m
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Rendement Global:</span>
-                  <span className="font-bold text-lg text-purple-600">
-                    {results.expert_analysis?.overall_efficiency?.toFixed(1) || 'N/A'}%
-                  </span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {results.overall_efficiency?.toFixed(1) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Rendement (%)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Global: {results.performance_analysis?.pump_efficiency?.toFixed(0) || 'N/A'} × {results.performance_analysis?.motor_efficiency?.toFixed(0) || 'N/A'}
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Vitesse:</span>
-                  <span className="font-bold text-lg text-orange-600">
-                    {results.npshd?.velocity?.toFixed(2) || 'N/A'} m/s
-                  </span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Vitesse (m/s)</div>
+                  <div className={`text-xs mt-1 ${(results.npshd_analysis?.velocity || 0) > 3 ? 'text-red-600' : 'text-green-600'}`}>
+                    {(results.npshd_analysis?.velocity || 0) > 3 ? '⚠️ Élevée' : '✅ Normale'}
+                  </div>
                 </div>
               </div>
+              
+              {/* Ligne de résultats additionnels */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-indigo-600">
+                    {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">P2 (kW)</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-red-600">
+                    {results.performance_analysis?.electrical_power?.toFixed(1) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">P1 (kW)</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-yellow-600">
+                    {results.performance_analysis?.nominal_current?.toFixed(1) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Courant (A)</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">
+                    {results.electrical_analysis?.annual_energy_cost?.toFixed(0) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Coût/an (€)</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Graphiques de performance */}
+          {results && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                📈 Courbes de Performance Expert
+              </h3>
+              <canvas ref={chartRef} className="w-full h-96"></canvas>
             </div>
           )}
         </div>
@@ -1437,32 +2158,54 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       )}
 
       {/* Recommandations d'expert */}
-      {results && results.expert_analysis?.expert_recommendations && (
+      {results && results.expert_recommendations && results.expert_recommendations.length > 0 && (
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-900">🎯 Recommandations d'Expert</h3>
           <div className="space-y-4">
-            {results.expert_analysis.expert_recommendations.map((rec, index) => (
+            {results.expert_recommendations.map((rec, index) => (
               <div key={index} className={`p-4 rounded-lg border-l-4 ${
                 rec.type === 'critical' ? 'border-red-500 bg-red-50' :
-                rec.type === 'warning' ? 'border-yellow-500 bg-yellow-50' :
-                'border-blue-500 bg-blue-50'
+                rec.type === 'energy' ? 'border-green-500 bg-green-50' :
+                rec.type === 'hydraulic' ? 'border-blue-500 bg-blue-50' :
+                rec.type === 'electrical' ? 'border-yellow-500 bg-yellow-50' :
+                'border-gray-500 bg-gray-50'
               }`}>
-                <h4 className={`font-bold ${
-                  rec.type === 'critical' ? 'text-red-800' :
-                  rec.type === 'warning' ? 'text-yellow-800' :
-                  'text-blue-800'
-                }`}>
-                  {rec.title}
-                </h4>
-                <p className="text-sm text-gray-600 mt-1">{rec.message}</p>
-                <ul className="mt-2 text-sm space-y-1">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className={`font-bold text-sm ${
+                    rec.type === 'critical' ? 'text-red-800' :
+                    rec.type === 'energy' ? 'text-green-800' :
+                    rec.type === 'hydraulic' ? 'text-blue-800' :
+                    rec.type === 'electrical' ? 'text-yellow-800' :
+                    'text-gray-800'
+                  }`}>
+                    {rec.title}
+                  </h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    rec.urgency === 'IMMÉDIATE' ? 'bg-red-100 text-red-800' :
+                    rec.urgency === 'HAUTE' ? 'bg-orange-100 text-orange-800' :
+                    rec.urgency === 'MOYENNE' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {rec.urgency}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700 mb-2">{rec.description}</p>
+                <p className="text-xs text-gray-600 mb-3 font-medium">Impact: {rec.impact}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {rec.solutions.map((solution, i) => (
-                    <li key={i} className="flex items-start">
-                      <span className="text-green-600 mr-2">•</span>
+                    <div key={i} className="flex items-start text-sm">
+                      <span className="text-green-600 mr-2 mt-1">•</span>
                       <span>{solution}</span>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
+                {rec.cost_impact && (
+                  <div className="mt-3 pt-2 border-t border-gray-200">
+                    <span className="text-xs font-medium text-gray-600">
+                      Impact économique: {rec.cost_impact}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
