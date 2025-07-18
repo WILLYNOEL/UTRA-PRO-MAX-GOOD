@@ -3205,10 +3205,10 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
           💧
         </text>
       </g>
-      <text x="720" y="135" className="text-sm font-bold" fill="#10b981">
+      <text x="720" y="125" className="text-xs font-bold" fill="#10b981">
         🎯 SORTIE REFOULEMENT
       </text>
-      <text x="720" y="150" className="text-xs" fill="#6b7280">
+      <text x="720" y="138" className="text-xs" fill="#6b7280">
         H={inputData.discharge_height}m • P={inputData.useful_pressure}bar
       </text>
       
