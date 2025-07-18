@@ -482,6 +482,78 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
     if total_fittings > 5:
         warnings.append("ALERTE: Nombre excessif de raccords - réduire les raccords pour diminuer les pertes de charge")
     
+    # NPSH Comparison and Cavitation Analysis
+    npsh_required = input_data.npsh_required
+    npsh_margin = npshd - npsh_required
+    cavitation_risk = npshd <= npsh_required
+    
+    # Initialize recommendations list
+    recommendations = []
+    
+    # Cavitation risk analysis and recommendations
+    if cavitation_risk:
+        warnings.append("🚨 RISQUE DE CAVITATION DÉTECTÉ!")
+        warnings.append(f"NPSHd calculé ({npshd:.2f} m) ≤ NPSH requis ({npsh_required:.2f} m)")
+        warnings.append(f"Marge de sécurité: {npsh_margin:.2f} m (NÉGATIVE)")
+        
+        # Detailed corrective recommendations
+        recommendations.append("🔧 CORRECTIONS POUR ÉLIMINER LA CAVITATION:")
+        
+        # 1. Reduce suction height
+        if input_data.suction_type == "suction_lift" and input_data.hasp > 0:
+            new_hasp = input_data.hasp - abs(npsh_margin) - 0.5
+            if new_hasp > 0:
+                recommendations.append(f"• Réduire la hauteur d'aspiration de {input_data.hasp:.1f}m à {new_hasp:.1f}m")
+            else:
+                recommendations.append(f"• Passer en aspiration en charge (pompe sous le niveau du liquide)")
+        
+        # 2. Increase pipe diameter
+        current_velocity = velocity
+        if current_velocity > 1.5:
+            # Calculate required diameter for velocity <= 1.5 m/s
+            pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
+            required_area = (input_data.flow_rate / 3600) / 1.5
+            required_diameter = math.sqrt(4 * required_area / math.pi) * 1000
+            recommendations.append(f"• Augmenter le diamètre de {input_data.pipe_diameter:.0f}mm à {required_diameter:.0f}mm")
+        
+        # 3. Reduce pipe length
+        if input_data.pipe_length > 20:
+            max_length = input_data.pipe_length * 0.7  # Reduce by 30%
+            recommendations.append(f"• Réduire la longueur de tuyauterie de {input_data.pipe_length:.1f}m à {max_length:.1f}m")
+        
+        # 4. Reduce fittings
+        if total_fittings > 2:
+            recommendations.append(f"• Réduire le nombre de raccords de {total_fittings} à maximum 2")
+        
+        # 5. Use smoother pipe material
+        rough_materials = ["concrete", "cast_iron", "steel_galvanized"]
+        if input_data.pipe_material in rough_materials:
+            recommendations.append(f"• Utiliser un matériau plus lisse (PVC ou PEHD) au lieu de {PIPE_MATERIALS[input_data.pipe_material]['name']}")
+        
+        # 6. Lower fluid temperature
+        if input_data.temperature > 20:
+            recommendations.append(f"• Réduire la température du fluide de {input_data.temperature}°C à 20°C si possible")
+        
+        # 7. Change pump location
+        recommendations.append("• Repositionner la pompe plus près du réservoir")
+        recommendations.append("• Installer la pompe en charge (niveau pompe < niveau liquide)")
+    
+    else:
+        # No cavitation risk
+        if npsh_margin < 0.5:
+            warnings.append("⚠️ ATTENTION: Marge de sécurité NPSH faible")
+            warnings.append(f"NPSHd calculé ({npshd:.2f} m) > NPSH requis ({npsh_required:.2f} m)")
+            warnings.append(f"Marge de sécurité: {npsh_margin:.2f} m (RECOMMANDÉ: > 0.5 m)")
+            recommendations.append("• Améliorer la marge de sécurité en réduisant les pertes de charge")
+        elif npsh_margin < 1.0:
+            warnings.append("✅ NPSH acceptable avec marge de sécurité limitée")
+            warnings.append(f"NPSHd calculé ({npshd:.2f} m) > NPSH requis ({npsh_required:.2f} m)")
+            warnings.append(f"Marge de sécurité: {npsh_margin:.2f} m (RECOMMANDÉ: > 1.0 m)")
+        else:
+            warnings.append("✅ NPSH excellent - Aucun risque de cavitation")
+            warnings.append(f"NPSHd calculé ({npshd:.2f} m) >> NPSH requis ({npsh_required:.2f} m)")
+            warnings.append(f"Marge de sécurité: {npsh_margin:.2f} m (EXCELLENTE)")
+    
     return NPSHdResult(
         input_data=input_data,
         fluid_properties=fluid_props,
@@ -493,6 +565,10 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
         singular_head_loss=singular_head_loss,
         total_head_loss=total_head_loss,
         npshd=npshd,
+        npsh_required=npsh_required,
+        npsh_margin=npsh_margin,
+        cavitation_risk=cavitation_risk,
+        recommendations=recommendations,
         warnings=warnings
     )
 
