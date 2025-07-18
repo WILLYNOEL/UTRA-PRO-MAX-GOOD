@@ -244,6 +244,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: User Interface Modifications working perfectly! Comprehensive validation of all user-requested backend modifications with 97.6% success rate (40/41 tests passed). ✅ NPSH REMOVAL: NPSHd and NPSHr fields completely removed from /api/calculate-performance endpoint. ✅ VELOCITY AND ALERTS: Velocity data (1.77 m/s), Reynolds number (176,839), and alert system successfully integrated. ✅ PRECISE INTERSECTION: Operating point matches input values exactly (Flow=50.0 m³/h, HMT=30.0m). ✅ GENERAL FUNCTIONALITY: All endpoints working correctly, power calculations accurate (P2=5.109 kW, P1=5.677 kW). User's test data (Flow=50 m³/h, HMT=30m, Diameter=100mm, Water, Pump=80%, Motor=90%) produces expected results. Backend modifications fully meet all user requirements."
+        - working: true
+          agent: "testing"
+          comment: "🚨 URGENT ISSUE RESOLVED: Tested the specific user-reported Performance tab error with exact test data. ✅ API NO ERROR: /api/calculate-performance endpoint returns HTTP 200 successfully. ✅ NPSH FIELDS ABSENT: NPSH values completely removed from response results (only present in input_data echo as null values). ✅ VELOCITY AND ALERTS PRESENT: Velocity (1.77 m/s), Reynolds number (176,839), and alerts system (1 alert) working correctly. ✅ PERFORMANCE CURVES GENERATED: 16-point curves with proper HMT vs flow data, best operating point matches input exactly (50.0 m³/h, 30.0 m). ✅ POWER CALCULATIONS: Correct formulas producing P2=5.109 kW, P1=5.677 kW. The Performance tab issue has been resolved - all user requirements are working perfectly. Backend testing shows 98.0% success rate (48/49 tests passed)."
 
 frontend:
   - task: "Professional Engineering UI"
