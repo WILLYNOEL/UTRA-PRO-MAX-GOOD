@@ -172,8 +172,8 @@ class PerformanceAnalysisInput(BaseModel):
     flow_rate: float  # m³/h
     hmt: float  # m
     pipe_diameter: float  # mm
-    required_npsh: float  # m (from pump datasheet)
-    calculated_npshd: float  # m (from Tab 1)
+    required_npsh: Optional[float] = None  # m (from pump datasheet) - Made optional
+    calculated_npshd: Optional[float] = None  # m (from Tab 1) - Made optional
     fluid_type: str
     pipe_material: str
     pump_efficiency: float  # %
