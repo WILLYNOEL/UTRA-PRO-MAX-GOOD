@@ -126,7 +126,7 @@ FLUID_PROPERTIES = {
 }
 
 # ============================================================================
-# PYDANTIC MODELS
+# ENHANCED PYDANTIC MODELS FOR THREE TABS
 # ============================================================================
 
 class FluidProperties(BaseModel):
@@ -135,6 +135,90 @@ class FluidProperties(BaseModel):
     viscosity: float  # Pa·s
     vapor_pressure: float  # Pa
 
+class FittingInput(BaseModel):
+    fitting_type: str
+    quantity: int = 1
+
+class NPSHrCalculationInput(BaseModel):
+    patm: float = 101325  # Pa (atmospheric pressure)
+    hasp: float  # m (suction height - positive = flooded / negative = suction lift)
+    flow_rate: float  # m³/h
+    fluid_type: str
+    temperature: float = 20  # °C
+    pipe_diameter: float  # mm
+    pipe_material: str
+    pipe_length: float  # m (suction side)
+    suction_fittings: List[FittingInput] = []
+
+class HMTCalculationInput(BaseModel):
+    hasp: float  # m (suction height)
+    discharge_height: float  # m
+    suction_pipe_diameter: float  # mm
+    discharge_pipe_diameter: float  # mm
+    suction_pipe_length: float  # m
+    discharge_pipe_length: float  # m
+    suction_pipe_material: str
+    discharge_pipe_material: str
+    suction_fittings: List[FittingInput] = []
+    discharge_fittings: List[FittingInput] = []
+    fluid_type: str
+    temperature: float = 20  # °C
+    flow_rate: float  # m³/h
+
+class PerformanceAnalysisInput(BaseModel):
+    flow_rate: float  # m³/h
+    hmt: float  # m
+    pipe_diameter: float  # mm
+    required_npsh: float  # m (from pump datasheet)
+    calculated_npshr: float  # m (from Tab 1)
+    fluid_type: str
+    pipe_material: str
+    pump_efficiency: float  # %
+    absorbed_power: Optional[float] = None  # kW (P1)
+    hydraulic_power: Optional[float] = None  # kW (P2)
+    starting_method: str = "star_delta"  # or "direct_on_line"
+    power_factor: float = 0.8  # cos φ
+    cable_length: float  # m
+    cable_material: str = "copper"  # or "aluminum"
+    cable_section: Optional[float] = None  # mm²
+    voltage: int = 400  # V
+
+class NPSHrResult(BaseModel):
+    input_data: NPSHrCalculationInput
+    fluid_properties: FluidProperties
+    velocity: float  # m/s
+    reynolds_number: float
+    friction_factor: float
+    linear_head_loss: float  # m
+    singular_head_loss: float  # m
+    total_head_loss: float  # m
+    npshr: float  # m
+    warnings: List[str]
+
+class HMTResult(BaseModel):
+    input_data: HMTCalculationInput
+    fluid_properties: FluidProperties
+    suction_velocity: float  # m/s
+    discharge_velocity: float  # m/s
+    suction_head_loss: float  # m
+    discharge_head_loss: float  # m
+    total_head_loss: float  # m
+    static_head: float  # m
+    hmt: float  # m
+    warnings: List[str]
+
+class PerformanceAnalysisResult(BaseModel):
+    input_data: PerformanceAnalysisInput
+    npsh_comparison: Dict[str, float]  # npshr vs required_npsh
+    cavitation_risk: bool
+    overall_efficiency: float  # %
+    nominal_current: float  # A
+    recommended_cable_section: float  # mm²
+    power_calculations: Dict[str, float]
+    electrical_data: Dict[str, Any]
+    warnings: List[str]
+
+# Legacy models for backward compatibility
 class CalculationInput(BaseModel):
     flow_rate: float  # m³/h
     suction_height: float  # m (positive for suction, negative for flooded)
