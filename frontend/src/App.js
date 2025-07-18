@@ -1358,7 +1358,6 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               </div>
             </div>
           )}
-        </div>
           
           {/* Graphique des courbes de performance */}
           <div className="bg-white rounded-lg shadow-lg p-6">
