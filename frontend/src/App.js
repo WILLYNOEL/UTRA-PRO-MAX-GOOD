@@ -1295,104 +1295,294 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }
   };
 
-  // Fonction d'export PDF
+  // Fonction d'export PDF améliorée
   const exportToPDF = () => {
     if (!results) {
       alert('Aucun résultat à exporter. Veuillez d\'abord effectuer un calcul.');
       return;
     }
 
-    // Créer le contenu HTML pour le PDF
+    // Créer le contenu HTML pour le PDF avec en-tête professionnel
     const htmlContent = `
+      <!DOCTYPE html>
       <html>
         <head>
           <title>Rapport d'Analyse Expert - Pompage</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-            .section { margin-bottom: 20px; }
-            .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
-            .parameter { display: flex; justify-content: space-between; margin: 5px 0; }
-            .parameter strong { color: #555; }
-            .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0; border-radius: 5px; }
-            .critical { background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin: 10px 0; border-radius: 5px; }
-            .success { background-color: #d4edda; border: 1px solid #c3e6cb; padding: 10px; margin: 10px 0; border-radius: 5px; }
+            @media print {
+              body { margin: 0; padding: 0; }
+              .no-print { display: none; }
+            }
+            body { 
+              font-family: 'Arial', sans-serif; 
+              margin: 10mm;
+              line-height: 1.4;
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              border-bottom: 3px solid #2563eb; 
+              padding-bottom: 15px; 
+              margin-bottom: 25px; 
+              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+              padding: 20px;
+              border-radius: 8px;
+            }
+            .header h1 {
+              color: #1e40af;
+              margin: 0 0 10px 0;
+              font-size: 24px;
+              font-weight: bold;
+            }
+            .header-info {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-top: 15px;
+              padding-top: 15px;
+              border-top: 1px solid #cbd5e1;
+            }
+            .engineer-info {
+              text-align: left;
+              font-size: 14px;
+            }
+            .company-info {
+              text-align: right;
+              font-size: 14px;
+            }
+            .date-info {
+              text-align: center;
+              font-size: 12px;
+              color: #64748b;
+            }
+            .section { 
+              margin-bottom: 25px; 
+              page-break-inside: avoid;
+            }
+            .section h2 { 
+              color: #1e40af; 
+              border-bottom: 2px solid #3b82f6; 
+              padding-bottom: 8px; 
+              margin-bottom: 15px;
+              font-size: 18px;
+            }
+            .parameter-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              margin-bottom: 15px;
+            }
+            .parameter { 
+              display: flex; 
+              justify-content: space-between; 
+              margin: 8px 0;
+              padding: 5px 10px;
+              background: #f8fafc;
+              border-radius: 4px;
+              border-left: 4px solid #e2e8f0;
+            }
+            .parameter strong { 
+              color: #1e40af; 
+              font-weight: 600;
+            }
+            .warning { 
+              background-color: #fef3c7; 
+              border: 1px solid #f59e0b; 
+              padding: 15px; 
+              margin: 15px 0; 
+              border-radius: 8px;
+              border-left: 4px solid #f59e0b;
+            }
+            .critical { 
+              background-color: #fef2f2; 
+              border: 1px solid #ef4444; 
+              padding: 15px; 
+              margin: 15px 0; 
+              border-radius: 8px;
+              border-left: 4px solid #ef4444;
+            }
+            .success { 
+              background-color: #f0fdf4; 
+              border: 1px solid #22c55e; 
+              padding: 15px; 
+              margin: 15px 0; 
+              border-radius: 8px;
+              border-left: 4px solid #22c55e;
+            }
+            .key-results {
+              background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            .result-highlight {
+              display: inline-block;
+              background: #2563eb;
+              color: white;
+              padding: 5px 12px;
+              border-radius: 20px;
+              font-weight: bold;
+              margin: 5px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #e2e8f0;
+              text-align: center;
+              font-size: 12px;
+              color: #64748b;
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>Rapport d'Analyse Expert - Système de Pompage</h1>
-            <p>Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+            <h1>📊 RAPPORT D'ANALYSE EXPERT - SYSTÈME DE POMPAGE</h1>
+            
+            <div class="header-info">
+              <div class="engineer-info">
+                <strong>👤 Ingénieur:</strong><br>
+                ${inputData.engineer_firstname} ${inputData.engineer_name}<br>
+                <em>Spécialiste Hydraulique</em>
+              </div>
+              
+              <div class="date-info">
+                <strong>📅 Date d'analyse:</strong><br>
+                ${new Date().toLocaleDateString('fr-FR', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}<br>
+                ${new Date().toLocaleTimeString('fr-FR')}
+              </div>
+              
+              <div class="company-info">
+                <strong>🏢 Client:</strong><br>
+                ${inputData.company_name}<br>
+                <em>Étude de faisabilité</em>
+              </div>
+            </div>
+          </div>
+          
+          <div class="key-results">
+            <h2 style="margin-top: 0;">🎯 RÉSULTATS CLÉS</h2>
+            <span class="result-highlight">NPSHd: ${results.npshd_analysis?.npshd?.toFixed(2)} m</span>
+            <span class="result-highlight">HMT: ${results.hmt_analysis?.hmt?.toFixed(2)} m</span>
+            <span class="result-highlight">Rendement: ${results.overall_efficiency?.toFixed(1)}%</span>
+            <span class="result-highlight">P. Électrique: ${results.performance_analysis?.electrical_power?.toFixed(1)} kW</span>
           </div>
           
           <div class="section">
-            <h2>Paramètres d'Entrée</h2>
-            <div class="parameter"><span>Débit:</span><strong>${inputData.flow_rate} m³/h</strong></div>
-            <div class="parameter"><span>Fluide:</span><strong>${inputData.fluid_type}</strong></div>
-            <div class="parameter"><span>Température:</span><strong>${inputData.temperature}°C</strong></div>
-            <div class="parameter"><span>Diamètre aspiration:</span><strong>${inputData.suction_pipe_diameter} mm</strong></div>
-            <div class="parameter"><span>Diamètre refoulement:</span><strong>${inputData.discharge_pipe_diameter} mm</strong></div>
+            <h2>📋 PARAMÈTRES D'ENTRÉE</h2>
+            <div class="parameter-grid">
+              <div class="parameter"><span>Débit:</span><strong>${inputData.flow_rate} m³/h</strong></div>
+              <div class="parameter"><span>Fluide:</span><strong>${fluids.find(f => f.id === inputData.fluid_type)?.name || inputData.fluid_type}</strong></div>
+              <div class="parameter"><span>Température:</span><strong>${inputData.temperature}°C</strong></div>
+              <div class="parameter"><span>Type d'aspiration:</span><strong>${inputData.suction_type === 'flooded' ? 'En charge' : 'Dépression'}</strong></div>
+              <div class="parameter"><span>Diamètre aspiration:</span><strong>DN${dnSizes.find(d => d.mm == inputData.suction_pipe_diameter)?.dn.replace('DN', '') || inputData.suction_pipe_diameter} (${inputData.suction_pipe_diameter} mm)</strong></div>
+              <div class="parameter"><span>Diamètre refoulement:</span><strong>DN${dnSizes.find(d => d.mm == inputData.discharge_pipe_diameter)?.dn.replace('DN', '') || inputData.discharge_pipe_diameter} (${inputData.discharge_pipe_diameter} mm)</strong></div>
+              <div class="parameter"><span>Hauteur aspiration:</span><strong>${inputData.suction_height} m</strong></div>
+              <div class="parameter"><span>Hauteur refoulement:</span><strong>${inputData.discharge_height} m</strong></div>
+            </div>
           </div>
 
           <div class="section">
-            <h2>Résultats NPSHd</h2>
+            <h2>💧 ANALYSE NPSHd</h2>
             ${results.npshd_analysis ? `
-              <div class="parameter"><span>NPSHd calculé:</span><strong>${results.npshd_analysis.npshd?.toFixed(2)} m</strong></div>
-              <div class="parameter"><span>NPSH requis:</span><strong>${results.npshd_analysis.npsh_required?.toFixed(2)} m</strong></div>
-              <div class="parameter"><span>Marge de sécurité:</span><strong>${results.npshd_analysis.npsh_margin?.toFixed(2)} m</strong></div>
+              <div class="parameter-grid">
+                <div class="parameter"><span>NPSHd calculé:</span><strong>${results.npshd_analysis.npshd?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>NPSH requis:</span><strong>${results.npshd_analysis.npsh_required?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Marge de sécurité:</span><strong>${results.npshd_analysis.npsh_margin?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Vitesse aspiration:</span><strong>${results.npshd_analysis.velocity?.toFixed(2)} m/s</strong></div>
+                <div class="parameter"><span>Reynolds:</span><strong>${results.npshd_analysis.reynolds_number?.toFixed(0)}</strong></div>
+                <div class="parameter"><span>Régime:</span><strong>${results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
+                          results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'}</strong></div>
+              </div>
               ${results.npshd_analysis.cavitation_risk ? 
-                '<div class="critical"><strong>⚠️ RISQUE DE CAVITATION DÉTECTÉ</strong></div>' : 
-                '<div class="success"><strong>✅ Aucun risque de cavitation</strong></div>'
+                '<div class="critical"><strong>🚨 RISQUE DE CAVITATION DÉTECTÉ</strong><br>Action immédiate requise pour éviter la destruction de la pompe.</div>' : 
+                '<div class="success"><strong>✅ AUCUN RISQUE DE CAVITATION</strong><br>La pompe fonctionnera en sécurité avec les paramètres actuels.</div>'
               }
             ` : '<p>Données NPSHd non disponibles</p>'}
           </div>
 
           <div class="section">
-            <h2>Résultats HMT</h2>
+            <h2>⚡ ANALYSE HMT</h2>
             ${results.hmt_analysis ? `
-              <div class="parameter"><span>HMT calculée:</span><strong>${results.hmt_analysis.hmt?.toFixed(2)} m</strong></div>
-              <div class="parameter"><span>Hauteur statique:</span><strong>${results.hmt_analysis.static_head?.toFixed(2)} m</strong></div>
-              <div class="parameter"><span>Pertes de charge totales:</span><strong>${results.hmt_analysis.total_head_loss?.toFixed(2)} m</strong></div>
+              <div class="parameter-grid">
+                <div class="parameter"><span>HMT totale:</span><strong>${results.hmt_analysis.hmt?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Hauteur statique:</span><strong>${results.hmt_analysis.static_head?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Pertes aspiration:</span><strong>${results.npshd_analysis?.total_head_loss?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Pertes refoulement:</span><strong>${results.hmt_analysis.total_head_loss?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Pertes totales:</span><strong>${results.total_head_loss?.toFixed(2)} m</strong></div>
+                <div class="parameter"><span>Pression utile:</span><strong>${inputData.useful_pressure} bar</strong></div>
+              </div>
             ` : '<p>Données HMT non disponibles</p>'}
           </div>
 
           <div class="section">
-            <h2>Performance Énergétique</h2>
+            <h2>🔌 PERFORMANCE ÉNERGÉTIQUE</h2>
             ${results.performance_analysis ? `
-              <div class="parameter"><span>Rendement global:</span><strong>${results.performance_analysis.overall_efficiency?.toFixed(1)}%</strong></div>
-              <div class="parameter"><span>Puissance hydraulique:</span><strong>${results.performance_analysis.hydraulic_power?.toFixed(2)} kW</strong></div>
-              <div class="parameter"><span>Puissance électrique:</span><strong>${results.performance_analysis.electrical_power?.toFixed(2)} kW</strong></div>
+              <div class="parameter-grid">
+                <div class="parameter"><span>Rendement pompe:</span><strong>${inputData.pump_efficiency}%</strong></div>
+                <div class="parameter"><span>Rendement moteur:</span><strong>${inputData.motor_efficiency}%</strong></div>
+                <div class="parameter"><span>Rendement global:</span><strong>${results.overall_efficiency?.toFixed(1)}%</strong></div>
+                <div class="parameter"><span>Puissance hydraulique:</span><strong>${results.performance_analysis.hydraulic_power?.toFixed(2)} kW</strong></div>
+                <div class="parameter"><span>Puissance électrique:</span><strong>${results.performance_analysis.electrical_power?.toFixed(2)} kW</strong></div>
+                <div class="parameter"><span>Coût annuel (4000h):</span><strong>${(results.performance_analysis.electrical_power * 4000 * 96 / 1000).toFixed(0)} FCFA</strong></div>
+              </div>
             ` : '<p>Données de performance non disponibles</p>'}
           </div>
 
           ${results.expert_recommendations && results.expert_recommendations.length > 0 ? `
             <div class="section">
-              <h2>Recommandations</h2>
-              ${results.expert_recommendations.map(rec => `
+              <h2>💡 RECOMMANDATIONS D'EXPERT</h2>
+              ${results.expert_recommendations.slice(0, 3).map(rec => `
                 <div class="${rec.type === 'critical' ? 'critical' : 'warning'}">
-                  <h3>${rec.title}</h3>
+                  <h3 style="margin-top: 0;">${rec.title}</h3>
                   <p><strong>Description:</strong> ${rec.description}</p>
                   <p><strong>Impact:</strong> ${rec.impact}</p>
                   ${rec.solutions ? `
-                    <p><strong>Solutions:</strong></p>
-                    <ul>
-                      ${rec.solutions.map(sol => `<li>${sol}</li>`).join('')}
+                    <p><strong>Solutions recommandées:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                      ${rec.solutions.slice(0, 3).map(sol => `<li>${sol}</li>`).join('')}
                     </ul>
                   ` : ''}
+                  <p><strong>Urgence:</strong> ${rec.urgency || 'Moyenne'} • <strong>Impact coût:</strong> ${rec.cost_impact || 'À évaluer'}</p>
                 </div>
               `).join('')}
             </div>
           ` : ''}
+
+          <div class="footer">
+            <p><strong>📋 Rapport généré par:</strong> ${inputData.engineer_firstname} ${inputData.engineer_name} | 
+               <strong>🏢 Client:</strong> ${inputData.company_name} | 
+               <strong>📅 Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+            <p style="margin-top: 10px;">
+              <em>Ce rapport a été généré automatiquement par le système d'analyse hydraulique expert.<br>
+              Pour toute question technique, contactez l'ingénieur responsable de l'étude.</em>
+            </p>
+          </div>
         </body>
       </html>
     `;
 
-    // Créer un blob et télécharger
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    // Créer un blob et télécharger le PDF
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `rapport-pompage-${new Date().toISOString().split('T')[0]}.html`;
+    link.download = `Rapport-Pompage-${inputData.company_name?.replace(/\s+/g, '-') || 'Client'}-${new Date().toISOString().split('T')[0]}.html`;
+    
+    // Ouvrir dans un nouvel onglet pour impression PDF
+    const printWindow = window.open(url, '_blank');
+    if (printWindow) {
+      printWindow.onload = function() {
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
+      };
+    }
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
