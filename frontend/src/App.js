@@ -1328,25 +1328,28 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
           {/* Meilleur point de fonctionnement */}
           {result.performance_curves && result.performance_curves.best_operating_point && (
             <div className="mt-6 pt-4 border-t">
-              <h4 className="font-medium text-gray-700 mb-3">🎯 Meilleur Point de Fonctionnement</h4>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-700 mb-3">🎯 Point de Fonctionnement (Valeurs Saisies)</h4>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="text-center">
-                    <div className="font-bold text-green-800">{result.performance_curves.best_operating_point.flow?.toFixed(1)}</div>
-                    <div className="text-green-600">Débit (m³/h)</div>
+                    <div className="font-bold text-blue-800">{inputData.flow_rate}</div>
+                    <div className="text-blue-600">Débit (m³/h)</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-green-800">{result.performance_curves.best_operating_point.hmt?.toFixed(1)}</div>
-                    <div className="text-green-600">HMT (m)</div>
+                    <div className="font-bold text-blue-800">{inputData.hmt}</div>
+                    <div className="text-blue-600">HMT (m)</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-green-800">{result.performance_curves.best_operating_point.efficiency?.toFixed(1)}</div>
-                    <div className="text-green-600">Rendement (%)</div>
+                    <div className="font-bold text-blue-800">{inputData.pump_efficiency}</div>
+                    <div className="text-blue-600">Rendement (%)</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-green-800">{result.performance_curves.best_operating_point.power?.toFixed(2)}</div>
-                    <div className="text-green-600">Puissance (kW)</div>
+                    <div className="font-bold text-blue-800">{result.performance_curves.best_operating_point.power?.toFixed(2)}</div>
+                    <div className="text-blue-600">Puissance (kW)</div>
                   </div>
+                </div>
+                <div className="mt-3 text-center text-xs text-blue-600">
+                  Calculé avec formule P2 = ((Q × HMT) / (η × 367)) × 100 et pertes Darcy-Weisbach
                 </div>
               </div>
             </div>
