@@ -2703,6 +2703,10 @@ class HydraulicPumpTester:
             self.test_npshd_vs_npsh_required_comparison,  # NEW: Test NPSHd vs NPSHr comparison
             self.test_cavitation_risk_detection,  # NEW: Test cavitation risk detection
             self.test_cavitation_alerts_and_recommendations,  # NEW: Test cavitation alerts and recommendations
+            # NEW EXPERT ANALYSIS TESTS (from review request)
+            self.test_expert_analysis_endpoint,  # NEW: Test expert analysis endpoint
+            self.test_expert_recommendations_generation,  # NEW: Test expert recommendations
+            self.test_expert_analysis_integration,  # NEW: Test expert analysis integration
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
