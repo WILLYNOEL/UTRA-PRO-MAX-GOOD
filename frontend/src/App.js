@@ -2295,15 +2295,18 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Coût kWh (€)
+                      Prix kWh (€)
                     </label>
                     <input
                       type="number"
-                      step="0.01"
+                      step="0.001"
                       value={inputData.electricity_cost}
                       onChange={(e) => handleInputChange('electricity_cost', parseFloat(e.target.value) || 0)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Prix unitaire de l'électricité (tarif industriel/domestique)
+                    </p>
                   </div>
                 </div>
               </div>
