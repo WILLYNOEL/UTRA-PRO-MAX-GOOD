@@ -224,25 +224,61 @@ class ExpertAnalysisInput(BaseModel):
     fluid_type: str
     temperature: float = 20  # °C
     
+    # Type d'aspiration
+    suction_type: str = "flooded"  # "flooded" ou "suction_lift"
+    
     # Géométrie
     suction_pipe_diameter: float  # mm
     discharge_pipe_diameter: float  # mm
-    suction_height: float  # m (positive = en charge, negative = aspiration)
+    suction_height: float  # m
     discharge_height: float  # m
     suction_length: float  # m
     discharge_length: float  # m
     total_length: float  # m
     
+    # Pression utile
+    useful_pressure: float = 0  # bar
+    
     # Matériaux
     suction_material: str
     discharge_material: str
     
-    # Singularités
-    elbow_90_qty: int = 0
-    elbow_45_qty: int = 0
-    tee_qty: int = 0
-    valve_qty: int = 0
-    check_valve_qty: int = 0
+    # Singularités détaillées ASPIRATION
+    suction_elbow_90: int = 0
+    suction_elbow_45: int = 0
+    suction_elbow_30: int = 0
+    suction_tee_flow: int = 0
+    suction_tee_branch: int = 0
+    suction_reducer_gradual: int = 0
+    suction_reducer_sudden: int = 0
+    suction_enlarger_gradual: int = 0
+    suction_enlarger_sudden: int = 0
+    suction_gate_valve: int = 0
+    suction_globe_valve: int = 0
+    suction_ball_valve: int = 0
+    suction_butterfly_valve: int = 0
+    suction_check_valve: int = 0
+    suction_strainer: int = 0
+    suction_foot_valve: int = 0
+    
+    # Singularités détaillées REFOULEMENT
+    discharge_elbow_90: int = 0
+    discharge_elbow_45: int = 0
+    discharge_elbow_30: int = 0
+    discharge_tee_flow: int = 0
+    discharge_tee_branch: int = 0
+    discharge_reducer_gradual: int = 0
+    discharge_reducer_sudden: int = 0
+    discharge_enlarger_gradual: int = 0
+    discharge_enlarger_sudden: int = 0
+    discharge_gate_valve: int = 0
+    discharge_globe_valve: int = 0
+    discharge_ball_valve: int = 0
+    discharge_butterfly_valve: int = 0
+    discharge_check_valve: int = 0
+    discharge_strainer: int = 0
+    discharge_flow_meter: int = 0
+    discharge_pressure_gauge: int = 0
     
     # Électrique
     pump_efficiency: float  # %
@@ -255,8 +291,15 @@ class ExpertAnalysisInput(BaseModel):
     
     # Expert
     npsh_required: float  # m
-    useful_pressure: float = 0  # bar
     installation_type: str = "surface"
+    pump_type: str = "centrifugal"
+    operating_hours: float = 8760  # h/an
+    electricity_cost: float = 0.12  # €/kWh
+    
+    # Conditions environnementales
+    altitude: float = 0
+    ambient_temperature: float = 25
+    humidity: float = 60
 
 class ExpertAnalysisResult(BaseModel):
     input_data: ExpertAnalysisInput
