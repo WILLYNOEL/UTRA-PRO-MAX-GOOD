@@ -3128,7 +3128,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         <circle cx="0" cy="0" r="8" fill="none" stroke="#ffffff" strokeWidth="2" />
         <path d="M -6 -6 L 6 6 M -6 6 L 6 -6" stroke="#ffffff" strokeWidth="1" />
       </g>
-      <text x="270" y={waterLevel + 35} textAnchor="middle" className="text-sm font-medium" fill="#6b7280">
+      <text x="270" y={waterLevel + 25} textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
         🔧 Crépine
       </text>
       
@@ -3155,10 +3155,10 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         <path d="M 45 35 Q 55 35 55 45 Q 45 45 45 35" fill="white" opacity="0.7" />
         
         {/* Étiquettes pompe */}
-        <text x="50" y="20" textAnchor="middle" className="text-sm font-bold" fill="white">
+        <text x="50" y="15" textAnchor="middle" className="text-xs font-bold" fill="white">
           🔄 POMPE
         </text>
-        <text x="50" y="65" textAnchor="middle" className="text-xs font-medium" fill="white">
+        <text x="50" y="70" textAnchor="middle" className="text-xs font-medium" fill="white">
           η={inputData.pump_efficiency}%
         </text>
         
@@ -3171,7 +3171,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </g>
       
       {/* Étiquette de pompe avec spécifications */}
-      <text x="500" y={actualPumpY + 100} textAnchor="middle" className="text-sm font-bold" fill="#047857">
+      <text x="500" y={actualPumpY + 100} textAnchor="middle" className="text-xs font-bold" fill="#047857">
         {inputData.pump_type || 'CENTRIFUGE'} • {inputData.installation_type?.toUpperCase() || 'SURFACE'}
       </text>
       
