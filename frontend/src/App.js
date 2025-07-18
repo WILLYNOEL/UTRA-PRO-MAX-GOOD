@@ -3081,14 +3081,14 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         REFOULEMENT
       </text>
       
-      {/* Flèches de débit avec dimensions */}
+      {/* Flèches de débit avec dimensions optimisées */}
       <line 
         x1="320" 
         y1={waterLevel + 20} 
         x2="420" 
         y2={actualPumpY + 20} 
         stroke="#3b82f6" 
-        strokeWidth="8"
+        strokeWidth="4"
         markerEnd="url(#arrowBlue)"
         opacity="0.9"
       />
@@ -3096,7 +3096,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x="370" 
         y={(waterLevel + actualPumpY + 40) / 2 - 20} 
         textAnchor="middle" 
-        className="text-lg font-bold" 
+        className="text-sm font-bold" 
         fill="#3b82f6"
       >
         Q = {inputData.flow_rate} m³/h
@@ -3105,7 +3105,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x="370" 
         y={(waterLevel + actualPumpY + 40) / 2 - 5} 
         textAnchor="middle" 
-        className="text-sm" 
+        className="text-xs" 
         fill="#3b82f6"
       >
         V = {results.npshd_analysis?.velocity?.toFixed(2) || 'N/A'} m/s
@@ -3127,7 +3127,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x2="630" 
         y2={actualPumpY + 40} 
         stroke="#3b82f6" 
-        strokeWidth="8"
+        strokeWidth="4"
         markerEnd="url(#arrowBlue)"
         opacity="0.9"
       />
@@ -3135,7 +3135,7 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         x="600" 
         y={actualPumpY + 65} 
         textAnchor="middle" 
-        className="text-sm font-bold" 
+        className="text-xs font-bold" 
         fill="#3b82f6"
       >
         {results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'} m/s
