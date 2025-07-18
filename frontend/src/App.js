@@ -770,8 +770,6 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     flow_rate: 50,
     hmt: 25,
     pipe_diameter: 100,
-    required_npsh: 3.5,
-    calculated_npshd: 4.2,
     fluid_type: 'water',
     pipe_material: 'pvc',
     pump_efficiency: 75,
