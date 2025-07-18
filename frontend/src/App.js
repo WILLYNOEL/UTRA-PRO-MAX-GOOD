@@ -1070,30 +1070,30 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
 const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
     // Paramètres hydrauliques principaux
-    flow_rate: 50,
+    flow_rate: 0,
     fluid_type: 'water',
-    temperature: 20,
+    temperature: 0,
     
     // Géométrie installation
-    suction_type: 'flooded', // 'flooded' ou 'suction_lift'
-    suction_pipe_diameter: 100,
-    discharge_pipe_diameter: 80,
-    suction_height: 3.0,
-    discharge_height: 25.0,
-    suction_length: 10,
-    discharge_length: 50,
-    total_length: 60,
+    suction_type: 'flooded',
+    suction_pipe_diameter: 0,
+    discharge_pipe_diameter: 0,
+    suction_height: 0,
+    discharge_height: 0,
+    suction_length: 0,
+    discharge_length: 0,
+    total_length: 0,
     
     // Pression utile
-    useful_pressure: 0, // bar
+    useful_pressure: 0,
     
     // Matériaux et équipements
     suction_material: 'pvc',
     discharge_material: 'pvc',
     
-    // Singularités détaillées ASPIRATION
-    suction_elbow_90: 2,
-    suction_elbow_45: 1,
+    // Singularités ASPIRATION
+    suction_elbow_90: 0,
+    suction_elbow_45: 0,
     suction_elbow_30: 0,
     suction_tee_flow: 0,
     suction_tee_branch: 0,
@@ -1105,51 +1105,72 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     suction_globe_valve: 0,
     suction_ball_valve: 0,
     suction_butterfly_valve: 0,
-    suction_check_valve: 1,
-    suction_strainer: 1,
+    suction_check_valve: 0,
+    suction_strainer: 0,
     suction_foot_valve: 0,
     
-    // Singularités détaillées REFOULEMENT
-    discharge_elbow_90: 3,
-    discharge_elbow_45: 1,
+    // Singularités REFOULEMENT
+    discharge_elbow_90: 0,
+    discharge_elbow_45: 0,
     discharge_elbow_30: 0,
-    discharge_tee_flow: 1,
+    discharge_tee_flow: 0,
     discharge_tee_branch: 0,
-    discharge_reducer_gradual: 1,
+    discharge_reducer_gradual: 0,
     discharge_reducer_sudden: 0,
     discharge_enlarger_gradual: 0,
     discharge_enlarger_sudden: 0,
-    discharge_gate_valve: 1,
+    discharge_gate_valve: 0,
     discharge_globe_valve: 0,
-    discharge_ball_valve: 1,
+    discharge_ball_valve: 0,
     discharge_butterfly_valve: 0,
-    discharge_check_valve: 1,
+    discharge_check_valve: 0,
     discharge_strainer: 0,
     discharge_flow_meter: 0,
-    discharge_pressure_gauge: 1,
+    discharge_pressure_gauge: 0,
     
     // Paramètres électriques
-    pump_efficiency: 80,
-    motor_efficiency: 90,
+    pump_efficiency: 0,
+    motor_efficiency: 0,
     voltage: 400,
-    power_factor: 0.8,
+    power_factor: 0,
     starting_method: 'star_delta',
-    cable_length: 50,
+    cable_length: 0,
     cable_material: 'copper',
     cable_section: null,
     
     // Paramètres avancés
-    npsh_required: 3.5,
+    npsh_required: 0,
     installation_type: 'surface',
     pump_type: 'centrifugal',
-    operating_hours: 8760, // heures/an
-    electricity_cost: 0.12, // €/kWh - Prix du kWh
+    operating_hours: 0,
+    electricity_cost: 0,
     
     // Conditions environnementales
     altitude: 0,
-    ambient_temperature: 25,
-    humidity: 60
+    ambient_temperature: 0,
+    humidity: 0
   });
+
+  // Table de correspondance DN/mm
+  const dnSizes = [
+    { dn: 'DN3/4', mm: 20, label: 'DN3/4 (20mm)' },
+    { dn: 'DN1', mm: 25, label: 'DN1 (25mm)' },
+    { dn: 'DN1.1/4', mm: 32, label: 'DN1.1/4 (32mm)' },
+    { dn: 'DN1.1/2', mm: 40, label: 'DN1.1/2 (40mm)' },
+    { dn: 'DN2', mm: 50, label: 'DN2 (50mm)' },
+    { dn: 'DN2.1/2', mm: 65, label: 'DN2.1/2 (65mm)' },
+    { dn: 'DN3', mm: 80, label: 'DN3 (80mm)' },
+    { dn: 'DN4', mm: 100, label: 'DN4 (100mm)' },
+    { dn: 'DN5', mm: 125, label: 'DN5 (125mm)' },
+    { dn: 'DN6', mm: 150, label: 'DN6 (150mm)' },
+    { dn: 'DN8', mm: 200, label: 'DN8 (200mm)' },
+    { dn: 'DN10', mm: 250, label: 'DN10 (250mm)' },
+    { dn: 'DN12', mm: 300, label: 'DN12 (300mm)' },
+    { dn: 'DN14', mm: 350, label: 'DN14 (350mm)' },
+    { dn: 'DN16', mm: 400, label: 'DN16 (400mm)' },
+    { dn: 'DN18', mm: 450, label: 'DN18 (450mm)' },
+    { dn: 'DN20', mm: 500, label: 'DN20 (500mm)' }
+  ];
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
