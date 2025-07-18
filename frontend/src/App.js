@@ -1158,13 +1158,97 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  const handleInputChange = (field, value) => {
-    const newData = { ...inputData, [field]: value };
-    setInputData(newData);
+  const resetAllFields = () => {
+    setInputData({
+      // Paramètres hydrauliques principaux
+      flow_rate: 50,
+      fluid_type: 'water',
+      temperature: 20,
+      
+      // Géométrie installation
+      suction_type: 'flooded',
+      suction_pipe_diameter: 100,
+      discharge_pipe_diameter: 80,
+      suction_height: 3.0,
+      discharge_height: 25.0,
+      suction_length: 10,
+      discharge_length: 50,
+      total_length: 60,
+      
+      // Pression utile
+      useful_pressure: 0,
+      
+      // Matériaux et équipements
+      suction_material: 'pvc',
+      discharge_material: 'pvc',
+      
+      // Singularités ASPIRATION (remise à zéro)
+      suction_elbow_90: 0,
+      suction_elbow_45: 0,
+      suction_elbow_30: 0,
+      suction_tee_flow: 0,
+      suction_tee_branch: 0,
+      suction_reducer_gradual: 0,
+      suction_reducer_sudden: 0,
+      suction_enlarger_gradual: 0,
+      suction_enlarger_sudden: 0,
+      suction_gate_valve: 0,
+      suction_globe_valve: 0,
+      suction_ball_valve: 0,
+      suction_butterfly_valve: 0,
+      suction_check_valve: 0,
+      suction_strainer: 0,
+      suction_foot_valve: 0,
+      
+      // Singularités REFOULEMENT (remise à zéro)
+      discharge_elbow_90: 0,
+      discharge_elbow_45: 0,
+      discharge_elbow_30: 0,
+      discharge_tee_flow: 0,
+      discharge_tee_branch: 0,
+      discharge_reducer_gradual: 0,
+      discharge_reducer_sudden: 0,
+      discharge_enlarger_gradual: 0,
+      discharge_enlarger_sudden: 0,
+      discharge_gate_valve: 0,
+      discharge_globe_valve: 0,
+      discharge_ball_valve: 0,
+      discharge_butterfly_valve: 0,
+      discharge_check_valve: 0,
+      discharge_strainer: 0,
+      discharge_flow_meter: 0,
+      discharge_pressure_gauge: 0,
+      
+      // Paramètres électriques
+      pump_efficiency: 80,
+      motor_efficiency: 90,
+      voltage: 400,
+      power_factor: 0.8,
+      starting_method: 'star_delta',
+      cable_length: 50,
+      cable_material: 'copper',
+      cable_section: null,
+      
+      // Paramètres avancés
+      npsh_required: 3.5,
+      installation_type: 'surface',
+      pump_type: 'centrifugal',
+      operating_hours: 8760,
+      electricity_cost: 0.12,
+      
+      // Conditions environnementales
+      altitude: 0,
+      ambient_temperature: 25,
+      humidity: 60
+    });
     
-    // Calcul automatique si activé
-    if (autoCalculate) {
-      calculateExpertAnalysis(newData);
+    // Réinitialiser les résultats
+    setResults(null);
+    
+    // Détruire les graphiques existants
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+      chartInstance.current = null;
     }
   };
 
