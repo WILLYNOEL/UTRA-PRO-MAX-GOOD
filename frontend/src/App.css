@@ -19,6 +19,17 @@ body {
   background-color: #f9fafb;
 }
 
+/* Hide number input arrows */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -159,6 +170,28 @@ canvas {
 
 .status-error {
   color: #ef4444;
+}
+
+/* Best operating point highlight */
+.best-operating-point {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  position: relative;
+}
+
+.best-operating-point::before {
+  content: '🎯';
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  background: #10b981;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 50%;
+  font-size: 12px;
 }
 
 /* Responsive design improvements */
