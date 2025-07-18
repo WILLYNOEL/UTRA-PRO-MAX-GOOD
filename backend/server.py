@@ -279,8 +279,253 @@ class PumpHistoryCreate(BaseModel):
     calculation_result: CalculationResult
 
 # ============================================================================
-# HYDRAULIC CALCULATION FUNCTIONS
+# ENHANCED HYDRAULIC CALCULATION FUNCTIONS FOR THREE TABS
 # ============================================================================
+
+def calculate_singular_head_loss(velocity: float, fittings: List[FittingInput]) -> float:
+    """Calculate singular head losses from fittings"""
+    total_k = 0
+    for fitting in fittings:
+        if fitting.fitting_type in FITTING_COEFFICIENTS:
+            k_value = FITTING_COEFFICIENTS[fitting.fitting_type]["k"]
+            total_k += k_value * fitting.quantity
+    
+    return total_k * (velocity**2) / (2 * 9.81)  # Head loss in meters
+
+def calculate_linear_head_loss_enhanced(velocity: float, pipe_length: float, 
+                                      pipe_diameter: float, pipe_material: str,
+                                      reynolds_number: float) -> float:
+    """Enhanced linear head loss calculation using pipe material roughness"""
+    if pipe_material not in PIPE_MATERIALS:
+        roughness = 0.045  # Default steel roughness
+    else:
+        roughness = PIPE_MATERIALS[pipe_material]["roughness"]
+    
+    diameter_m = pipe_diameter / 1000  # Convert mm to m
+    relative_roughness = roughness / pipe_diameter  # Relative roughness
+    
+    # Calculate friction factor using Colebrook-White equation (Swamee-Jain approximation)
+    if reynolds_number < 2300:
+        # Laminar flow
+        friction_factor = 64 / reynolds_number
+    else:
+        # Turbulent flow
+        term1 = (relative_roughness / 3.7) ** 1.11
+        term2 = 6.9 / reynolds_number
+        friction_factor = 0.25 / (math.log10(term1 + term2) ** 2)
+    
+    # Darcy-Weisbach equation for head loss
+    return friction_factor * (pipe_length / diameter_m) * (velocity**2) / (2 * 9.81)
+
+def calculate_npshr_enhanced(input_data: NPSHrCalculationInput) -> NPSHrResult:
+    """Enhanced NPSHr calculation for Tab 1"""
+    warnings = []
+    
+    # Get fluid properties
+    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
+    
+    # Calculate velocity
+    pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
+    velocity = (input_data.flow_rate / 3600) / pipe_area
+    
+    # Reynolds number
+    reynolds_number = calculate_reynolds_number(
+        velocity, input_data.pipe_diameter / 1000, 
+        fluid_props.density, fluid_props.viscosity
+    )
+    
+    # Calculate friction factor
+    friction_factor = calculate_friction_factor(reynolds_number)
+    
+    # Linear head loss
+    linear_head_loss = calculate_linear_head_loss_enhanced(
+        velocity, input_data.pipe_length, input_data.pipe_diameter,
+        input_data.pipe_material, reynolds_number
+    )
+    
+    # Singular head loss
+    singular_head_loss = calculate_singular_head_loss(velocity, input_data.suction_fittings)
+    
+    # Total head loss
+    total_head_loss = linear_head_loss + singular_head_loss
+    
+    # Calculate NPSHr
+    patm_head = input_data.patm / (fluid_props.density * 9.81)  # Atmospheric pressure in meters
+    vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)  # Vapor pressure in meters
+    
+    npshr = patm_head - vapor_pressure_head - abs(input_data.hasp) - total_head_loss
+    
+    # Warnings
+    if velocity > 3.0:
+        warnings.append(f"Vitesse élevée ({velocity:.2f} m/s) - risque d'usure")
+    if velocity < 0.5:
+        warnings.append(f"Vitesse faible ({velocity:.2f} m/s) - risque de sédimentation")
+    if npshr < 0:
+        warnings.append("ATTENTION: NPSHr négatif - conditions d'aspiration impossibles")
+    if npshr < 2:
+        warnings.append("ATTENTION: NPSHr très faible - risque de cavitation élevé")
+    
+    return NPSHrResult(
+        input_data=input_data,
+        fluid_properties=fluid_props,
+        velocity=velocity,
+        reynolds_number=reynolds_number,
+        friction_factor=friction_factor,
+        linear_head_loss=linear_head_loss,
+        singular_head_loss=singular_head_loss,
+        total_head_loss=total_head_loss,
+        npshr=npshr,
+        warnings=warnings
+    )
+
+def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
+    """Enhanced HMT calculation for Tab 2"""
+    warnings = []
+    
+    # Get fluid properties
+    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
+    
+    # Calculate velocities
+    suction_area = math.pi * (input_data.suction_pipe_diameter / 1000 / 2) ** 2
+    discharge_area = math.pi * (input_data.discharge_pipe_diameter / 1000 / 2) ** 2
+    
+    suction_velocity = (input_data.flow_rate / 3600) / suction_area
+    discharge_velocity = (input_data.flow_rate / 3600) / discharge_area
+    
+    # Calculate Reynolds numbers
+    suction_reynolds = calculate_reynolds_number(
+        suction_velocity, input_data.suction_pipe_diameter / 1000,
+        fluid_props.density, fluid_props.viscosity
+    )
+    discharge_reynolds = calculate_reynolds_number(
+        discharge_velocity, input_data.discharge_pipe_diameter / 1000,
+        fluid_props.density, fluid_props.viscosity
+    )
+    
+    # Calculate head losses
+    suction_linear_loss = calculate_linear_head_loss_enhanced(
+        suction_velocity, input_data.suction_pipe_length, 
+        input_data.suction_pipe_diameter, input_data.suction_pipe_material,
+        suction_reynolds
+    )
+    
+    discharge_linear_loss = calculate_linear_head_loss_enhanced(
+        discharge_velocity, input_data.discharge_pipe_length,
+        input_data.discharge_pipe_diameter, input_data.discharge_pipe_material,
+        discharge_reynolds
+    )
+    
+    suction_singular_loss = calculate_singular_head_loss(suction_velocity, input_data.suction_fittings)
+    discharge_singular_loss = calculate_singular_head_loss(discharge_velocity, input_data.discharge_fittings)
+    
+    # Total head losses
+    suction_head_loss = suction_linear_loss + suction_singular_loss
+    discharge_head_loss = discharge_linear_loss + discharge_singular_loss
+    total_head_loss = suction_head_loss + discharge_head_loss
+    
+    # Static head
+    static_head = input_data.discharge_height - input_data.hasp
+    
+    # Total HMT
+    hmt = static_head + total_head_loss
+    
+    # Warnings
+    if suction_velocity > 3.0:
+        warnings.append(f"Vitesse d'aspiration élevée ({suction_velocity:.2f} m/s)")
+    if discharge_velocity > 5.0:
+        warnings.append(f"Vitesse de refoulement élevée ({discharge_velocity:.2f} m/s)")
+    if hmt > 200:
+        warnings.append(f"HMT très élevée ({hmt:.1f} m) - vérifier le dimensionnement")
+    
+    return HMTResult(
+        input_data=input_data,
+        fluid_properties=fluid_props,
+        suction_velocity=suction_velocity,
+        discharge_velocity=discharge_velocity,
+        suction_head_loss=suction_head_loss,
+        discharge_head_loss=discharge_head_loss,
+        total_head_loss=total_head_loss,
+        static_head=static_head,
+        hmt=hmt,
+        warnings=warnings
+    )
+
+def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
+    """Performance analysis calculation for Tab 3"""
+    warnings = []
+    
+    # NPSH comparison
+    npsh_comparison = {
+        "npshr_calculated": input_data.calculated_npshr,
+        "npsh_required": input_data.required_npsh,
+        "safety_margin": input_data.calculated_npshr - input_data.required_npsh
+    }
+    
+    cavitation_risk = input_data.calculated_npshr <= input_data.required_npsh
+    
+    # Power calculations
+    if input_data.hydraulic_power and input_data.absorbed_power:
+        overall_efficiency = (input_data.hydraulic_power / input_data.absorbed_power) * 100
+        power_to_use = input_data.absorbed_power
+    elif input_data.hydraulic_power:
+        overall_efficiency = input_data.pump_efficiency
+        power_to_use = input_data.hydraulic_power / (input_data.pump_efficiency / 100)
+    else:
+        # Calculate hydraulic power from flow and head
+        flow_m3s = input_data.flow_rate / 3600
+        hydraulic_power = (flow_m3s * input_data.hmt * 1000 * 9.81) / 1000  # kW
+        overall_efficiency = input_data.pump_efficiency
+        power_to_use = hydraulic_power / (input_data.pump_efficiency / 100)
+    
+    # Electrical calculations
+    if input_data.voltage == 230:
+        # Single phase
+        nominal_current = (power_to_use * 1000) / (input_data.voltage * input_data.power_factor)
+    else:
+        # Three phase
+        nominal_current = (power_to_use * 1000) / (input_data.voltage * 1.732 * input_data.power_factor)
+    
+    # Cable section calculation
+    if input_data.cable_section:
+        recommended_cable_section = input_data.cable_section
+    else:
+        recommended_cable_section = calculate_cable_section(
+            nominal_current, input_data.cable_length, input_data.voltage
+        )
+    
+    # Starting method analysis
+    starting_current_multiplier = 7.0 if input_data.starting_method == "direct_on_line" else 2.0
+    starting_current = nominal_current * starting_current_multiplier
+    
+    # Warnings
+    if cavitation_risk:
+        warnings.append("RISQUE DE CAVITATION: NPSHr calculé ≤ NPSH requis")
+    if overall_efficiency < 60:
+        warnings.append(f"Rendement faible ({overall_efficiency:.1f}%) - vérifier le dimensionnement")
+    if starting_current > 150:
+        warnings.append(f"Courant de démarrage élevé ({starting_current:.1f} A)")
+    
+    return PerformanceAnalysisResult(
+        input_data=input_data,
+        npsh_comparison=npsh_comparison,
+        cavitation_risk=cavitation_risk,
+        overall_efficiency=overall_efficiency,
+        nominal_current=nominal_current,
+        recommended_cable_section=recommended_cable_section,
+        power_calculations={
+            "hydraulic_power": input_data.hydraulic_power or (input_data.flow_rate/3600 * input_data.hmt * 1000 * 9.81)/1000,
+            "absorbed_power": power_to_use,
+            "efficiency": overall_efficiency
+        },
+        electrical_data={
+            "voltage": input_data.voltage,
+            "power_factor": input_data.power_factor,
+            "starting_method": input_data.starting_method,
+            "starting_current": starting_current,
+            "cable_material": input_data.cable_material
+        },
+        warnings=warnings
+    )
 
 def get_fluid_properties(fluid_type: str, temperature: float) -> FluidProperties:
     """Calculate temperature-dependent fluid properties"""
