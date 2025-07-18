@@ -1299,19 +1299,19 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }
   };
 
-  // Fonction d'export PDF améliorée
+  // Fonction d'export PDF avec logo ECO PUMP AFRIK
   const exportToPDF = () => {
     if (!results) {
       alert('Aucun résultat à exporter. Veuillez d\'abord effectuer un calcul.');
       return;
     }
 
-    // Créer le contenu HTML pour le PDF avec en-tête professionnel
+    // Créer le contenu HTML pour le PDF avec logo et en-tête professionnel
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Rapport d'Analyse Expert - Pompage</title>
+          <title>Rapport d'Analyse Expert - ECO PUMP AFRIK</title>
           <meta charset="UTF-8">
           <style>
             @media print {
@@ -1325,40 +1325,91 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
               color: #333;
             }
             .header { 
-              text-align: center; 
-              border-bottom: 3px solid #2563eb; 
-              padding-bottom: 15px; 
-              margin-bottom: 25px; 
-              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-              padding: 20px;
-              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              border-bottom: 4px solid #0ea5e9; 
+              padding-bottom: 20px; 
+              margin-bottom: 30px; 
+              background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              padding: 25px;
+              border-radius: 12px;
             }
-            .header h1 {
+            .logo-section {
+              display: flex;
+              align-items: center;
+              gap: 20px;
+            }
+            .logo-container {
+              width: 120px;
+              height: 120px;
+              background: white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+              border: 3px solid #0ea5e9;
+            }
+            .logo-svg {
+              width: 80px;
+              height: 80px;
+            }
+            .company-info {
+              text-align: left;
+            }
+            .company-name {
+              font-size: 28px;
+              font-weight: bold;
+              color: #0ea5e9;
+              margin: 0;
+              line-height: 1;
+            }
+            .company-subtitle {
+              font-size: 14px;
+              color: #0369a1;
+              margin: 5px 0;
+            }
+            .report-title {
+              text-align: center;
+              margin: 15px 0;
+            }
+            .report-title h1 {
               color: #1e40af;
-              margin: 0 0 10px 0;
+              margin: 0;
               font-size: 24px;
               font-weight: bold;
             }
-            .header-info {
+            .header-details {
               display: flex;
               justify-content: space-between;
-              align-items: center;
-              margin-top: 15px;
-              padding-top: 15px;
-              border-top: 1px solid #cbd5e1;
+              align-items: flex-start;
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 2px solid #0ea5e9;
             }
             .engineer-info {
               text-align: left;
               font-size: 14px;
-            }
-            .company-info {
-              text-align: right;
-              font-size: 14px;
+              flex: 1;
             }
             .date-info {
               text-align: center;
               font-size: 12px;
               color: #64748b;
+              flex: 1;
+            }
+            .client-info {
+              text-align: right;
+              font-size: 14px;
+              flex: 1;
+            }
+            .contact-info {
+              background: #f8fafc;
+              padding: 10px;
+              border-radius: 8px;
+              margin-top: 10px;
+              font-size: 12px;
             }
             .section { 
               margin-bottom: 25px; 
@@ -1366,7 +1417,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
             }
             .section h2 { 
               color: #1e40af; 
-              border-bottom: 2px solid #3b82f6; 
+              border-bottom: 2px solid #0ea5e9; 
               padding-bottom: 8px; 
               margin-bottom: 15px;
               font-size: 18px;
@@ -1381,9 +1432,9 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
               display: flex; 
               justify-content: space-between; 
               margin: 8px 0;
-              padding: 5px 10px;
+              padding: 8px 12px;
               background: #f8fafc;
-              border-radius: 4px;
+              border-radius: 6px;
               border-left: 4px solid #e2e8f0;
             }
             .parameter strong { 
@@ -1417,63 +1468,121 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
             .key-results {
               background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
               padding: 20px;
-              border-radius: 8px;
+              border-radius: 12px;
               margin: 20px 0;
+              border: 2px solid #0ea5e9;
             }
             .result-highlight {
               display: inline-block;
-              background: #2563eb;
+              background: #0ea5e9;
               color: white;
-              padding: 5px 12px;
+              padding: 6px 14px;
               border-radius: 20px;
               font-weight: bold;
               margin: 5px;
+              font-size: 14px;
             }
             .footer {
               margin-top: 40px;
               padding-top: 20px;
-              border-top: 2px solid #e2e8f0;
+              border-top: 3px solid #0ea5e9;
               text-align: center;
               font-size: 12px;
               color: #64748b;
+              background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              padding: 20px;
+              border-radius: 8px;
+            }
+            .footer-logo {
+              display: inline-block;
+              margin-bottom: 10px;
             }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>📊 RAPPORT D'ANALYSE EXPERT - SYSTÈME DE POMPAGE</h1>
-            
-            <div class="header-info">
-              <div class="engineer-info">
-                <strong>👤 Ingénieur:</strong><br>
-                ${inputData.engineer_firstname} ${inputData.engineer_name}<br>
-                <em>Spécialiste Hydraulique</em>
-              </div>
-              
-              <div class="date-info">
-                <strong>📅 Date d'analyse:</strong><br>
-                ${new Date().toLocaleDateString('fr-FR', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}<br>
-                ${new Date().toLocaleTimeString('fr-FR')}
+            <div class="logo-section">
+              <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Logo ECO PUMP AFRIK stylisé -->
+                  <defs>
+                    <linearGradient id="dropGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#0369a1;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  
+                  <!-- Goutte principale -->
+                  <path d="M100 30 C130 50, 150 80, 150 110 C150 140, 125 160, 100 160 C75 160, 50 140, 50 110 C50 80, 70 50, 100 30 Z" 
+                        fill="url(#dropGradient)" stroke="white" stroke-width="2"/>
+                  
+                  <!-- Goutte intérieure -->
+                  <ellipse cx="100" cy="110" rx="25" ry="30" fill="white" opacity="0.9"/>
+                  
+                  <!-- Effet de mouvement -->
+                  <path d="M75 170 Q100 180, 125 170 Q140 175, 155 180" 
+                        stroke="#0ea5e9" stroke-width="3" fill="none" opacity="0.7"/>
+                  
+                  <!-- Texte stylisé -->
+                  <text x="100" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#0ea5e9">
+                    ECO PUMP
+                  </text>
+                </svg>
               </div>
               
               <div class="company-info">
-                <strong>🏢 Client:</strong><br>
-                ${inputData.company_name}<br>
-                <em>Étude de faisabilité</em>
+                <h1 class="company-name">ECO PUMP AFRIK</h1>
+                <p class="company-subtitle">Solutions de Pompage Durable</p>
+                <p class="company-subtitle">Expertise Hydraulique • Conseil Technique</p>
+              </div>
+            </div>
+            
+            <div class="report-title">
+              <h1>📊 RAPPORT D'ANALYSE EXPERT</h1>
+              <p style="color: #0369a1; margin: 5px 0;">Système de Pompage Centrifuge</p>
+            </div>
+          </div>
+          
+          <div class="header-details">
+            <div class="engineer-info">
+              <strong style="color: #0ea5e9;">👤 INGÉNIEUR RESPONSABLE</strong><br>
+              <strong>${inputData.engineer_firstname} ${inputData.engineer_name}</strong><br>
+              <em>Spécialiste Hydraulique</em>
+              <div class="contact-info">
+                <div style="margin: 3px 0;">📞 ${inputData.engineer_phone || 'Non renseigné'}</div>
+                <div style="margin: 3px 0;">📧 ${inputData.engineer_email || 'Non renseigné'}</div>
+              </div>
+            </div>
+            
+            <div class="date-info">
+              <strong style="color: #0ea5e9;">📅 DATE D'ANALYSE</strong><br>
+              <strong>${new Date().toLocaleDateString('fr-FR', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</strong><br>
+              ${new Date().toLocaleTimeString('fr-FR')}<br>
+              <em style="margin-top: 5px; display: block;">Rapport N°: ${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}</em>
+            </div>
+            
+            <div class="client-info">
+              <strong style="color: #0ea5e9;">🏢 SOCIÉTÉ CLIENTE</strong><br>
+              <strong>${inputData.company_name || 'Non renseigné'}</strong><br>
+              <em>Étude de Faisabilité Technique</em>
+              <div class="contact-info">
+                <div style="margin: 3px 0;">📋 Analyse Hydraulique</div>
+                <div style="margin: 3px 0;">⚡ Dimensionnement Électrique</div>
               </div>
             </div>
           </div>
           
           <div class="key-results">
-            <h2 style="margin-top: 0;">🎯 RÉSULTATS CLÉS</h2>
+            <h2 style="margin-top: 0; color: #0ea5e9;">🎯 RÉSULTATS CLÉS DE L'ANALYSE</h2>
             <span class="result-highlight">NPSHd: ${results.npshd_analysis?.npshd?.toFixed(2)} m</span>
             <span class="result-highlight">HMT: ${results.hmt_analysis?.hmt?.toFixed(2)} m</span>
             <span class="result-highlight">Rendement: ${results.overall_efficiency?.toFixed(1)}%</span>
             <span class="result-highlight">P. Électrique: ${results.performance_analysis?.electrical_power?.toFixed(1)} kW</span>
+            <span class="result-highlight">Coût annuel: ${(results.performance_analysis?.electrical_power * 4000 * 96 / 1000).toFixed(0)} FCFA</span>
           </div>
           
           <div class="section">
@@ -1558,12 +1667,18 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
           ` : ''}
 
           <div class="footer">
-            <p><strong>📋 Rapport généré par:</strong> ${inputData.engineer_firstname} ${inputData.engineer_name} | 
-               <strong>🏢 Client:</strong> ${inputData.company_name} | 
+            <div class="footer-logo">
+              <strong style="color: #0ea5e9; font-size: 16px;">ECO PUMP AFRIK</strong>
+            </div>
+            <p><strong>📋 Rapport généré par:</strong> ${inputData.engineer_firstname} ${inputData.engineer_name}</p>
+            <p><strong>📞 Contact:</strong> ${inputData.engineer_phone || 'Non renseigné'} • 
+               <strong>📧 Email:</strong> ${inputData.engineer_email || 'Non renseigné'}</p>
+            <p><strong>🏢 Client:</strong> ${inputData.company_name || 'Non renseigné'} • 
                <strong>📅 Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
-            <p style="margin-top: 10px;">
-              <em>Ce rapport a été généré automatiquement par le système d'analyse hydraulique expert.<br>
-              Pour toute question technique, contactez l'ingénieur responsable de l'étude.</em>
+            <p style="margin-top: 15px; font-style: italic; color: #0369a1;">
+              <strong>ECO PUMP AFRIK - Solutions de Pompage Durable</strong><br>
+              Expertise Hydraulique • Conseil Technique • Dimensionnement Électrique<br>
+              Ce rapport a été généré automatiquement par notre système d'analyse hydraulique expert.
             </p>
           </div>
         </body>
@@ -1575,7 +1690,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Rapport-Pompage-${inputData.company_name?.replace(/\s+/g, '-') || 'Client'}-${new Date().toISOString().split('T')[0]}.html`;
+    link.download = `ECO-PUMP-AFRIK-Rapport-${inputData.company_name?.replace(/\s+/g, '-') || 'Client'}-${new Date().toISOString().split('T')[0]}.html`;
     
     // Ouvrir dans un nouvel onglet pour impression PDF
     const printWindow = window.open(url, '_blank');
