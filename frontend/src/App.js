@@ -820,54 +820,66 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     const curves = data.performance_curves;
     const bestPoint = curves.best_operating_point;
     
+    // Normalize data for superposition - scale everything to similar ranges
+    const maxHmt = Math.max(...curves.hmt);
+    const maxEfficiency = Math.max(...curves.efficiency);
+    const maxPower = Math.max(...curves.power);
+    const maxHeadLoss = Math.max(...curves.head_loss);
+    
+    // Scale all curves to 0-100 range for superposition
+    const normalizedHmt = curves.hmt.map(val => (val / maxHmt) * 100);
+    const normalizedEfficiency = curves.efficiency; // Already in %
+    const normalizedPower = curves.power.map(val => (val / maxPower) * 100);
+    const normalizedHeadLoss = curves.head_loss.map(val => (val / maxHeadLoss) * 100);
+    
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
         labels: curves.flow,
         datasets: [
           {
-            label: 'HMT (m)',
-            data: curves.hmt,
+            label: `HMT (max: ${maxHmt.toFixed(1)}m)`,
+            data: normalizedHmt,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             borderWidth: 3,
-            pointRadius: 2,
-            pointHoverRadius: 6,
+            pointRadius: 0,
+            pointHoverRadius: 8,
             tension: 0.4,
-            yAxisID: 'y'
+            fill: false
           },
           {
-            label: 'Rendement (%)',
-            data: curves.efficiency,
+            label: `Rendement (max: ${maxEfficiency.toFixed(1)}%)`,
+            data: normalizedEfficiency,
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 2,
-            pointRadius: 2,
-            pointHoverRadius: 6,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
             tension: 0.4,
-            yAxisID: 'y1'
+            fill: false
           },
           {
-            label: 'Puissance (kW)',
-            data: curves.power,
+            label: `Puissance (max: ${maxPower.toFixed(1)}kW)`,
+            data: normalizedPower,
             borderColor: '#f59e0b',
             backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            borderWidth: 2,
-            pointRadius: 2,
-            pointHoverRadius: 6,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
             tension: 0.4,
-            yAxisID: 'y2'
+            fill: false
           },
           {
-            label: 'Pertes de charge (m)',
-            data: curves.head_loss,
+            label: `Pertes de charge (max: ${maxHeadLoss.toFixed(1)}m)`,
+            data: normalizedHeadLoss,
             borderColor: '#ef4444',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            borderWidth: 2,
-            pointRadius: 2,
-            pointHoverRadius: 6,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 8,
             tension: 0.4,
-            yAxisID: 'y'
+            fill: false
           }
         ]
       },
@@ -894,41 +906,20 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             }
           },
           y: {
-            type: 'linear',
             display: true,
-            position: 'left',
             title: {
               display: true,
-              text: 'HMT & Pertes de charge (m)',
+              text: 'Valeurs Normalisées (%)',
               font: {
                 size: 14,
                 weight: 'bold'
               }
             },
+            min: 0,
+            max: 100,
             grid: {
               color: 'rgba(0, 0, 0, 0.1)'
             }
-          },
-          y1: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-            title: {
-              display: true,
-              text: 'Rendement (%)',
-              font: {
-                size: 14,
-                weight: 'bold'
-              }
-            },
-            grid: {
-              drawOnChartArea: false,
-            },
-          },
-          y2: {
-            type: 'linear',
-            display: false,
-            position: 'right',
           }
         },
         plugins: {
@@ -938,32 +929,34 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               font: {
                 size: 12,
                 weight: 'bold'
-              }
+              },
+              usePointStyle: true
             }
           },
           title: {
             display: true,
-            text: 'Courbes de Performance Complètes',
+            text: 'Courbes de Performance Superposées',
             font: {
               size: 16,
               weight: 'bold'
             }
           },
-          annotation: {
-            annotations: {
-              bestPoint: {
-                type: 'point',
-                xValue: bestPoint.flow,
-                yValue: bestPoint.hmt,
-                backgroundColor: '#dc2626',
-                borderColor: '#dc2626',
-                borderWidth: 3,
-                radius: 8,
-                label: {
-                  content: 'Meilleur point',
-                  enabled: true,
-                  position: 'top'
+          tooltip: {
+            callbacks: {
+              afterLabel: function(context) {
+                const datasetLabel = context.dataset.label;
+                const flowValue = curves.flow[context.dataIndex];
+                
+                if (datasetLabel.includes('HMT')) {
+                  return `Valeur réelle: ${curves.hmt[context.dataIndex].toFixed(2)} m`;
+                } else if (datasetLabel.includes('Rendement')) {
+                  return `Valeur réelle: ${curves.efficiency[context.dataIndex].toFixed(1)} %`;
+                } else if (datasetLabel.includes('Puissance')) {
+                  return `Valeur réelle: ${curves.power[context.dataIndex].toFixed(2)} kW`;
+                } else if (datasetLabel.includes('Pertes')) {
+                  return `Valeur réelle: ${curves.head_loss[context.dataIndex].toFixed(3)} m`;
                 }
+                return '';
               }
             }
           }
