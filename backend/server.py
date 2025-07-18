@@ -499,17 +499,10 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
     
     # Calculate velocities
-    suction_area = math.pi * (input_data.suction_pipe_diameter / 1000 / 2) ** 2
     discharge_area = math.pi * (input_data.discharge_pipe_diameter / 1000 / 2) ** 2
-    
-    suction_velocity = (input_data.flow_rate / 3600) / suction_area
     discharge_velocity = (input_data.flow_rate / 3600) / discharge_area
     
     # Calculate Reynolds numbers
-    suction_reynolds = calculate_reynolds_number(
-        suction_velocity, input_data.suction_pipe_diameter / 1000,
-        fluid_props.density, fluid_props.viscosity
-    )
     discharge_reynolds = calculate_reynolds_number(
         discharge_velocity, input_data.discharge_pipe_diameter / 1000,
         fluid_props.density, fluid_props.viscosity
@@ -517,6 +510,12 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     
     # Calculate head losses
     if input_data.installation_type == "surface":
+        suction_area = math.pi * (input_data.suction_pipe_diameter / 1000 / 2) ** 2
+        suction_velocity = (input_data.flow_rate / 3600) / suction_area
+        suction_reynolds = calculate_reynolds_number(
+            suction_velocity, input_data.suction_pipe_diameter / 1000,
+            fluid_props.density, fluid_props.viscosity
+        )
         suction_linear_loss = calculate_linear_head_loss_enhanced(
             suction_velocity, input_data.suction_pipe_length, 
             input_data.suction_pipe_diameter, input_data.suction_pipe_material,
@@ -524,7 +523,8 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
         )
         suction_singular_loss = calculate_singular_head_loss(suction_velocity, input_data.suction_fittings)
         suction_head_loss = suction_linear_loss + suction_singular_loss
-    else:  # submersible
+    else:  # submersible - no suction calculations
+        suction_velocity = None
         suction_head_loss = 0
     
     discharge_linear_loss = calculate_linear_head_loss_enhanced(
@@ -536,7 +536,7 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     discharge_head_loss = discharge_linear_loss + discharge_singular_loss
     
     # Total head losses
-    total_head_loss = suction_head_loss + discharge_head_loss
+    total_head_loss = (suction_head_loss or 0) + discharge_head_loss
     
     # Static head
     if input_data.installation_type == "surface":
@@ -550,8 +550,8 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     # Total HMT
     hmt = static_head + total_head_loss + useful_pressure_head
     
-    # Warnings
-    if suction_velocity > 3.0:
+    # Warnings - Only check suction velocity if it exists
+    if suction_velocity is not None and suction_velocity > 3.0:
         warnings.append(f"Vitesse d'aspiration élevée ({suction_velocity:.2f} m/s)")
     if discharge_velocity > 5.0:
         warnings.append(f"Vitesse de refoulement élevée ({discharge_velocity:.2f} m/s)")
