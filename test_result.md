@@ -314,9 +314,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Corrected Global Efficiency Formula"
-    - "Operating Point Precision"
-    - "Darcy Formula Integration"
+    - "User Interface Modifications"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
