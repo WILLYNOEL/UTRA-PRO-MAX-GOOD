@@ -1195,7 +1195,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       // Paramètres hydrauliques principaux
       flow_rate: 0,
       fluid_type: 'water',
-      temperature: 0,
+      temperature: 20, // Valeur de référence
       
       // Géométrie installation
       suction_type: 'flooded',
@@ -1214,8 +1214,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       suction_material: 'pvc',
       discharge_material: 'pvc',
       
-      // Singularités ASPIRATION (tous à zéro)
-      suction_elbow_90: 0,
+      // Singularités ASPIRATION (quantités usuelles)
+      suction_elbow_90: 1, // Au moins 1 coude usuel
       suction_elbow_45: 0,
       suction_elbow_30: 0,
       suction_tee_flow: 0,
@@ -1229,11 +1229,11 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       suction_ball_valve: 0,
       suction_butterfly_valve: 0,
       suction_check_valve: 0,
-      suction_strainer: 0,
+      suction_strainer: 1, // Crépine usuelle
       suction_foot_valve: 0,
       
-      // Singularités REFOULEMENT (tous à zéro)
-      discharge_elbow_90: 0,
+      // Singularités REFOULEMENT (quantités usuelles)
+      discharge_elbow_90: 2, // Coudes usuels
       discharge_elbow_45: 0,
       discharge_elbow_30: 0,
       discharge_tee_flow: 0,
@@ -1242,36 +1242,37 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       discharge_reducer_sudden: 0,
       discharge_enlarger_gradual: 0,
       discharge_enlarger_sudden: 0,
-      discharge_gate_valve: 0,
+      discharge_gate_valve: 1, // Vanne d'arrêt usuelle
       discharge_globe_valve: 0,
       discharge_ball_valve: 0,
       discharge_butterfly_valve: 0,
-      discharge_check_valve: 0,
+      discharge_check_valve: 1, // Clapet anti-retour usuel
       discharge_strainer: 0,
       discharge_flow_meter: 0,
-      discharge_pressure_gauge: 0,
+      discharge_pressure_gauge: 1, // Manomètre usuel
       
       // Paramètres électriques
       pump_efficiency: 0,
       motor_efficiency: 0,
       voltage: 400,
-      power_factor: 0,
+      power_factor: 0.8, // Valeur de référence
       starting_method: 'star_delta',
       cable_length: 0,
       cable_material: 'copper',
       cable_section: null,
+      voltage_drop: 0, // Nouvelle valeur pour chute de tension
       
       // Paramètres avancés
       npsh_required: 0,
       installation_type: 'surface',
       pump_type: 'centrifugal',
-      operating_hours: 0,
-      electricity_cost: 0,
+      operating_hours: 4000, // Valeur de référence (h/an)
+      electricity_cost: 96, // Prix de référence en FCFA
       
       // Conditions environnementales
       altitude: 0,
-      ambient_temperature: 0,
-      humidity: 0
+      ambient_temperature: 25, // Valeur de référence
+      humidity: 60 // Valeur de référence
     });
     
     // Réinitialiser les résultats
