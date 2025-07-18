@@ -301,20 +301,26 @@ class BackendReviewTester:
         print("\n🏊 Testing Submersible Installation - Suction Info Removal...")
         
         # Test data from user request: Installation type: "submersible", flow rate: 60 m³/h, discharge height: 25 m
+        # Note: Even for submersible, the API requires all fields but should ignore suction calculations
         submersible_data = {
             "installation_type": "submersible",
+            "suction_type": "flooded",  # Required by API but should be ignored
+            "hasp": 0.0,  # Required by API but should be ignored for submersible
             "discharge_height": 25.0,
             "useful_pressure": 1.0,
+            "suction_pipe_diameter": 100.0,  # Required by API but should be ignored
             "discharge_pipe_diameter": 100.0,
+            "suction_pipe_length": 0.0,  # Required by API but should be ignored
             "discharge_pipe_length": 50.0,
+            "suction_pipe_material": "pvc",  # Required by API but should be ignored
             "discharge_pipe_material": "pvc",
+            "suction_fittings": [],  # Required by API but should be ignored
             "discharge_fittings": [
                 {"fitting_type": "elbow_90", "quantity": 2}
             ],
             "fluid_type": "water",
             "temperature": 20.0,
             "flow_rate": 60.0
-            # Note: No suction-related fields for submersible
         }
         
         try:
