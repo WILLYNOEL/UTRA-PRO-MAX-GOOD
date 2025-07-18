@@ -2588,29 +2588,31 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rendement Pompe (%)
+                      ⭐ Rendement Pompe (%)
                     </label>
                     <input
                       type="number"
                       min="40"
                       max="95"
-                      value={inputData.pump_efficiency}
+                      value={inputData.pump_efficiency || ''}
                       onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="75"
                     />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rendement Moteur (%)
+                      ⭐ Rendement Moteur (%)
                     </label>
                     <input
                       type="number"
                       min="70"
                       max="98"
-                      value={inputData.motor_efficiency}
+                      value={inputData.motor_efficiency || ''}
                       onChange={(e) => handleInputChange('motor_efficiency', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                      placeholder="85"
                     />
                   </div>
                 </div>
