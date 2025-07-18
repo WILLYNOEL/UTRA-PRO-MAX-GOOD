@@ -187,6 +187,27 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+  - task: "Corrected Global Efficiency Formula"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+  - task: "Operating Point Precision"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+  - task: "Darcy Formula Integration"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
