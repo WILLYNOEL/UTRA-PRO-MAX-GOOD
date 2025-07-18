@@ -178,8 +178,9 @@ class HydraulicPumpTester:
                 
                 # Check that fluid properties are temperature-adjusted
                 fluid_props = result.get("fluid_properties", {})
-                if fluid_props.get("name") != "Hydraulic Oil":
-                    self.log_test("Oil Calculation - Temperature", False, "Wrong fluid name")
+                expected_names = ["Hydraulic Oil", "Huile Hydraulique"]  # Accept both English and French
+                if fluid_props.get("name") not in expected_names:
+                    self.log_test("Oil Calculation - Temperature", False, f"Unexpected fluid name: {fluid_props.get('name')}")
                     return False
                 
                 # Oil density should be temperature-adjusted (lower at higher temp)
