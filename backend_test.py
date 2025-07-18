@@ -544,10 +544,514 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_updated_npshd_formula(self):
+        """Test the updated NPSHd formula: NPSHd = Patm - ρ*g*H_aspiration - Pertes de charges totales - Pression de vapeur saturante"""
+        print("\n🔬 Testing Updated NPSHd Formula...")
+        
+        test_cases = [
+            {
+                "name": "Water Flooded Suction",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,  # 2m flooded (positive value)
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 30.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 2},
+                        {"fitting_type": "entrance_sharp", "quantity": 1}
+                    ]
+                }
+            },
+            {
+                "name": "Water Suction Lift",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 3.0,  # 3m suction lift
+                    "flow_rate": 40.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 50.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 1},
+                        {"fitting_type": "check_valve", "quantity": 1}
+                    ]
+                }
+            },
+            {
+                "name": "Oil High Temperature",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 1.5,
+                    "flow_rate": 30.0,
+                    "fluid_type": "oil",
+                    "temperature": 60.0,  # High temperature
+                    "pipe_diameter": 80.0,
+                    "pipe_material": "steel",
+                    "pipe_length": 40.0,
+                    "suction_fittings": []
+                }
+            },
+            {
+                "name": "Acid Solution",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 2.5,
+                    "flow_rate": 25.0,
+                    "fluid_type": "acid",
+                    "temperature": 25.0,
+                    "pipe_diameter": 75.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 35.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_45", "quantity": 1}
+                    ]
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Verify formula components
+                    atmospheric_pressure = result.get("atmospheric_pressure", 0)
+                    npshd = result.get("npshd", 0)
+                    total_head_loss = result.get("total_head_loss", 0)
+                    fluid_props = result.get("fluid_properties", {})
+                    
+                    # Check atmospheric pressure is constant at 101325 Pa
+                    if abs(atmospheric_pressure - 101325) > 1:
+                        self.log_test(f"NPSHd Formula - {case['name']} - Atmospheric Pressure", False, 
+                                    f"Expected 101325 Pa, got {atmospheric_pressure} Pa")
+                        all_passed = False
+                        continue
+                    
+                    # Verify NPSHd calculation makes sense
+                    if case["data"]["suction_type"] == "flooded":
+                        # For flooded suction, NPSHd should be higher
+                        if npshd < 5:  # Should be reasonably high for flooded
+                            self.log_test(f"NPSHd Formula - {case['name']}", False, 
+                                        f"NPSHd too low for flooded suction: {npshd:.2f} m")
+                            all_passed = False
+                            continue
+                    else:  # suction_lift
+                        # For suction lift, NPSHd should be lower
+                        if npshd < 0:
+                            # This might be acceptable for high suction lift
+                            warnings = result.get("warnings", [])
+                            if not any("NPSHd négatif" in w for w in warnings):
+                                self.log_test(f"NPSHd Formula - {case['name']}", False, 
+                                            "Missing warning for negative NPSHd")
+                                all_passed = False
+                                continue
+                    
+                    # Check that all required fields are present
+                    required_fields = ["velocity", "reynolds_number", "friction_factor", 
+                                     "linear_head_loss", "singular_head_loss", "total_head_loss", "npshd"]
+                    missing_fields = [f for f in required_fields if f not in result]
+                    if missing_fields:
+                        self.log_test(f"NPSHd Formula - {case['name']}", False, 
+                                    f"Missing fields: {missing_fields}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"NPSHd Formula - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f} m, Head Loss: {total_head_loss:.2f} m, Fluid: {fluid_props.get('name', 'Unknown')}")
+                else:
+                    self.log_test(f"NPSHd Formula - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"NPSHd Formula - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_updated_power_formulas(self):
+        """Test the updated power formulas: P2 = (débit × HMT) / (rendement pompe × 367) and P1 = P2 / rendement moteur"""
+        print("\n⚡ Testing Updated Power Formulas...")
+        
+        test_cases = [
+            {
+                "name": "Standard Water Pump",
+                "data": {
+                    "flow_rate": 50.0,  # m³/h
+                    "hmt": 25.0,  # m
+                    "pipe_diameter": 100.0,
+                    "required_npsh": 3.0,
+                    "calculated_npshd": 8.0,
+                    "fluid_type": "water",
+                    "pipe_material": "pvc",
+                    "pump_efficiency": 75.0,  # %
+                    "motor_efficiency": 90.0,  # %
+                    "starting_method": "star_delta",
+                    "power_factor": 0.8,
+                    "cable_length": 50.0,
+                    "voltage": 400
+                }
+            },
+            {
+                "name": "High Efficiency Pump",
+                "data": {
+                    "flow_rate": 100.0,
+                    "hmt": 40.0,
+                    "pipe_diameter": 150.0,
+                    "required_npsh": 4.0,
+                    "calculated_npshd": 10.0,
+                    "fluid_type": "water",
+                    "pipe_material": "pvc",
+                    "pump_efficiency": 85.0,  # High efficiency
+                    "motor_efficiency": 95.0,  # High efficiency
+                    "starting_method": "direct_on_line",
+                    "power_factor": 0.85,
+                    "cable_length": 75.0,
+                    "voltage": 400
+                }
+            },
+            {
+                "name": "Oil Pump with Provided Powers",
+                "data": {
+                    "flow_rate": 30.0,
+                    "hmt": 35.0,
+                    "pipe_diameter": 80.0,
+                    "required_npsh": 2.5,
+                    "calculated_npshd": 6.0,
+                    "fluid_type": "oil",
+                    "pipe_material": "steel",
+                    "pump_efficiency": 70.0,
+                    "motor_efficiency": 88.0,
+                    "hydraulic_power": 3.5,  # Provided value
+                    "absorbed_power": 5.5,   # Provided value
+                    "starting_method": "star_delta",
+                    "power_factor": 0.8,
+                    "cable_length": 100.0,
+                    "voltage": 230
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-performance", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    power_calcs = result.get("power_calculations", {})
+                    hydraulic_power = power_calcs.get("hydraulic_power", 0)
+                    absorbed_power = power_calcs.get("absorbed_power", 0)
+                    
+                    # Test the power formulas
+                    flow_rate = case["data"]["flow_rate"]
+                    hmt = case["data"]["hmt"]
+                    pump_eff = case["data"]["pump_efficiency"]
+                    motor_eff = case["data"]["motor_efficiency"]
+                    
+                    if "hydraulic_power" not in case["data"]:
+                        # Calculate expected hydraulic power: P2 = (débit × HMT) / (rendement pompe × 367)
+                        expected_p2 = (flow_rate * hmt) / (pump_eff * 367)
+                        
+                        if abs(hydraulic_power - expected_p2) > 0.1:
+                            self.log_test(f"Power Formula P2 - {case['name']}", False, 
+                                        f"Expected P2: {expected_p2:.3f} kW, got {hydraulic_power:.3f} kW")
+                            all_passed = False
+                            continue
+                    
+                    if "absorbed_power" not in case["data"]:
+                        # Calculate expected absorbed power: P1 = P2 / rendement moteur
+                        expected_p1 = hydraulic_power / (motor_eff / 100)
+                        
+                        if abs(absorbed_power - expected_p1) > 0.1:
+                            self.log_test(f"Power Formula P1 - {case['name']}", False, 
+                                        f"Expected P1: {expected_p1:.3f} kW, got {absorbed_power:.3f} kW")
+                            all_passed = False
+                            continue
+                    
+                    # Check that absorbed power > hydraulic power
+                    if absorbed_power <= hydraulic_power:
+                        self.log_test(f"Power Logic - {case['name']}", False, 
+                                    f"Absorbed power ({absorbed_power:.3f}) should be > hydraulic power ({hydraulic_power:.3f})")
+                        all_passed = False
+                        continue
+                    
+                    # Check electrical calculations
+                    nominal_current = result.get("nominal_current", 0)
+                    voltage = case["data"]["voltage"]
+                    power_factor = case["data"]["power_factor"]
+                    
+                    if voltage == 230:
+                        # Single phase: I = P / (V * cos φ)
+                        expected_current = (absorbed_power * 1000) / (voltage * power_factor)
+                    else:
+                        # Three phase: I = P / (V * √3 * cos φ)
+                        expected_current = (absorbed_power * 1000) / (voltage * 1.732 * power_factor)
+                    
+                    if abs(nominal_current - expected_current) > 0.5:
+                        self.log_test(f"Current Calculation - {case['name']}", False, 
+                                    f"Expected current: {expected_current:.2f} A, got {nominal_current:.2f} A")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Power Formulas - {case['name']}", True, 
+                                f"P2: {hydraulic_power:.3f} kW, P1: {absorbed_power:.3f} kW, I: {nominal_current:.2f} A")
+                else:
+                    self.log_test(f"Power Formulas - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Power Formulas - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_performance_curves_flow_vs_hmt(self):
+        """Test that performance curves return only flow vs HMT data"""
+        print("\n📈 Testing Performance Curves (Flow vs HMT)...")
+        
+        test_data = {
+            "flow_rate": 75.0,
+            "hmt": 30.0,
+            "pipe_diameter": 125.0,
+            "required_npsh": 3.5,
+            "calculated_npshd": 8.5,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80.0,
+            "motor_efficiency": 92.0,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 60.0,
+            "voltage": 400
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                
+                performance_curves = result.get("performance_curves", {})
+                
+                # Check that we have flow and hmt data
+                if "flow" not in performance_curves or "hmt" not in performance_curves:
+                    self.log_test("Performance Curves Structure", False, "Missing flow or hmt data")
+                    return False
+                
+                flow_points = performance_curves["flow"]
+                hmt_points = performance_curves["hmt"]
+                
+                # Check that both arrays have the same length
+                if len(flow_points) != len(hmt_points):
+                    self.log_test("Performance Curves Data", False, 
+                                f"Flow points ({len(flow_points)}) != HMT points ({len(hmt_points)})")
+                    return False
+                
+                # Check that we have reasonable number of points
+                if len(flow_points) < 10:
+                    self.log_test("Performance Curves Points", False, f"Too few points: {len(flow_points)}")
+                    return False
+                
+                # Check curve characteristics (typical pump curve)
+                base_flow = test_data["flow_rate"]
+                base_hmt = test_data["hmt"]
+                
+                # Find points at 0%, 100%, and 150% flow
+                zero_flow_hmt = hmt_points[0] if flow_points[0] == 0 else None
+                nominal_hmt = None
+                max_flow_hmt = hmt_points[-1] if len(hmt_points) > 0 else None
+                
+                # Find nominal point (closest to base flow)
+                for i, flow in enumerate(flow_points):
+                    if abs(flow - base_flow) < 1:
+                        nominal_hmt = hmt_points[i]
+                        break
+                
+                # Check typical pump curve behavior
+                if zero_flow_hmt and nominal_hmt:
+                    if zero_flow_hmt <= nominal_hmt:
+                        self.log_test("Performance Curves Behavior", False, 
+                                    f"Shut-off head ({zero_flow_hmt:.1f}) should be > nominal HMT ({nominal_hmt:.1f})")
+                        return False
+                
+                # Check that HMT generally decreases with increasing flow
+                decreasing_trend = True
+                for i in range(1, len(hmt_points)):
+                    if hmt_points[i] > hmt_points[i-1] + 1:  # Allow small variations
+                        decreasing_trend = False
+                        break
+                
+                if not decreasing_trend:
+                    self.log_test("Performance Curves Trend", False, "HMT should generally decrease with increasing flow")
+                    return False
+                
+                # Check that we don't have other curve types (efficiency, power, etc.)
+                unexpected_keys = [k for k in performance_curves.keys() if k not in ["flow", "hmt"]]
+                if unexpected_keys:
+                    self.log_test("Performance Curves Content", False, 
+                                f"Should only have flow and hmt, found: {unexpected_keys}")
+                    return False
+                
+                self.log_test("Performance Curves", True, 
+                            f"Generated {len(flow_points)} points, Shut-off: {zero_flow_hmt:.1f}m, Nominal: {nominal_hmt:.1f}m")
+                return True
+            else:
+                self.log_test("Performance Curves", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Performance Curves", False, f"Error: {str(e)}")
+            return False
+    
+    def test_api_endpoints_comprehensive(self):
+        """Test all API endpoints with the new formulas"""
+        print("\n🔗 Testing All API Endpoints...")
+        
+        endpoints_passed = 0
+        total_endpoints = 0
+        
+        # Test /calculate-npshd endpoint
+        total_endpoints += 1
+        npshd_data = {
+            "suction_type": "flooded",
+            "hasp": 2.0,
+            "flow_rate": 50.0,
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "pipe_diameter": 100.0,
+            "pipe_material": "pvc",
+            "pipe_length": 30.0,
+            "suction_fittings": []
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=npshd_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                if "npshd" in result and "atmospheric_pressure" in result:
+                    self.log_test("API Endpoint - /calculate-npshd", True, f"NPSHd: {result['npshd']:.2f} m")
+                    endpoints_passed += 1
+                else:
+                    self.log_test("API Endpoint - /calculate-npshd", False, "Missing required fields")
+            else:
+                self.log_test("API Endpoint - /calculate-npshd", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("API Endpoint - /calculate-npshd", False, f"Error: {str(e)}")
+        
+        # Test /calculate-hmt endpoint
+        total_endpoints += 1
+        hmt_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 2.0,
+            "discharge_height": 15.0,
+            "useful_pressure": 2.0,
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "suction_pipe_length": 30.0,
+            "discharge_pipe_length": 100.0,
+            "suction_pipe_material": "pvc",
+            "discharge_pipe_material": "pvc",
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "flow_rate": 50.0
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                if "hmt" in result and "total_head_loss" in result:
+                    self.log_test("API Endpoint - /calculate-hmt", True, f"HMT: {result['hmt']:.2f} m")
+                    endpoints_passed += 1
+                else:
+                    self.log_test("API Endpoint - /calculate-hmt", False, "Missing required fields")
+            else:
+                self.log_test("API Endpoint - /calculate-hmt", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("API Endpoint - /calculate-hmt", False, f"Error: {str(e)}")
+        
+        # Test /calculate-performance endpoint
+        total_endpoints += 1
+        perf_data = {
+            "flow_rate": 50.0,
+            "hmt": 25.0,
+            "pipe_diameter": 100.0,
+            "required_npsh": 3.0,
+            "calculated_npshd": 8.0,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=perf_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                if "power_calculations" in result and "performance_curves" in result:
+                    power_calcs = result["power_calculations"]
+                    self.log_test("API Endpoint - /calculate-performance", True, 
+                                f"P2: {power_calcs.get('hydraulic_power', 0):.3f} kW")
+                    endpoints_passed += 1
+                else:
+                    self.log_test("API Endpoint - /calculate-performance", False, "Missing required fields")
+            else:
+                self.log_test("API Endpoint - /calculate-performance", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("API Endpoint - /calculate-performance", False, f"Error: {str(e)}")
+        
+        # Test legacy /calculate endpoint (should still work)
+        total_endpoints += 1
+        legacy_data = {
+            "flow_rate": 50.0,
+            "suction_height": 3.0,
+            "pipe_diameter": 100.0,
+            "pipe_length": 50.0,
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "voltage": 400,
+            "cable_length": 50.0
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate", json=legacy_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                if "hydraulic_power" in result and "absorbed_power" in result:
+                    self.log_test("API Endpoint - /calculate (legacy)", True, "Legacy endpoint working")
+                    endpoints_passed += 1
+                else:
+                    self.log_test("API Endpoint - /calculate (legacy)", False, "Missing required fields")
+            else:
+                self.log_test("API Endpoint - /calculate (legacy)", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("API Endpoint - /calculate (legacy)", False, f"Error: {str(e)}")
+        
+        success_rate = (endpoints_passed / total_endpoints) * 100 if total_endpoints > 0 else 0
+        overall_passed = success_rate >= 75
+        
+        self.log_test("API Endpoints Overall", overall_passed, 
+                    f"{endpoints_passed}/{total_endpoints} endpoints working ({success_rate:.1f}%)")
+        
+        return overall_passed
+
     def run_all_tests(self):
-        """Run all tests"""
+        """Run all tests including the new formula tests"""
         print("=" * 80)
-        print("HYDRAULIC PUMP CALCULATION API - COMPREHENSIVE BACKEND TESTING")
+        print("HYDRAULIC PUMP CALCULATION API - UPDATED FORMULAS TESTING")
         print("=" * 80)
         print()
         
@@ -558,9 +1062,13 @@ class HydraulicPumpTester:
         
         print()
         
-        # Run all tests
+        # Run all tests - prioritizing new formula tests
         tests = [
             self.test_fluids_api,
+            self.test_updated_npshd_formula,  # NEW: Test updated NPSHd formula
+            self.test_updated_power_formulas,  # NEW: Test updated power formulas
+            self.test_performance_curves_flow_vs_hmt,  # NEW: Test performance curves
+            self.test_api_endpoints_comprehensive,  # NEW: Test all endpoints
             self.test_standard_water_calculation,
             self.test_oil_calculation_high_temp,
             self.test_edge_cases,
