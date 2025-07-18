@@ -1283,6 +1283,190 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }
   };
 
+  // Fonction d'export PDF
+  const exportToPDF = () => {
+    if (!results) {
+      alert('Aucun résultat à exporter. Veuillez d\'abord effectuer un calcul.');
+      return;
+    }
+
+    // Créer le contenu HTML pour le PDF
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Rapport d'Analyse Expert - Pompage</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+            .section { margin-bottom: 20px; }
+            .section h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+            .parameter { display: flex; justify-content: space-between; margin: 5px 0; }
+            .parameter strong { color: #555; }
+            .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0; border-radius: 5px; }
+            .critical { background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin: 10px 0; border-radius: 5px; }
+            .success { background-color: #d4edda; border: 1px solid #c3e6cb; padding: 10px; margin: 10px 0; border-radius: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Rapport d'Analyse Expert - Système de Pompage</h1>
+            <p>Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+          </div>
+          
+          <div class="section">
+            <h2>Paramètres d'Entrée</h2>
+            <div class="parameter"><span>Débit:</span><strong>${inputData.flow_rate} m³/h</strong></div>
+            <div class="parameter"><span>Fluide:</span><strong>${inputData.fluid_type}</strong></div>
+            <div class="parameter"><span>Température:</span><strong>${inputData.temperature}°C</strong></div>
+            <div class="parameter"><span>Diamètre aspiration:</span><strong>${inputData.suction_pipe_diameter} mm</strong></div>
+            <div class="parameter"><span>Diamètre refoulement:</span><strong>${inputData.discharge_pipe_diameter} mm</strong></div>
+          </div>
+
+          <div class="section">
+            <h2>Résultats NPSHd</h2>
+            ${results.npshd_analysis ? `
+              <div class="parameter"><span>NPSHd calculé:</span><strong>${results.npshd_analysis.npshd?.toFixed(2)} m</strong></div>
+              <div class="parameter"><span>NPSH requis:</span><strong>${results.npshd_analysis.npsh_required?.toFixed(2)} m</strong></div>
+              <div class="parameter"><span>Marge de sécurité:</span><strong>${results.npshd_analysis.npsh_margin?.toFixed(2)} m</strong></div>
+              ${results.npshd_analysis.cavitation_risk ? 
+                '<div class="critical"><strong>⚠️ RISQUE DE CAVITATION DÉTECTÉ</strong></div>' : 
+                '<div class="success"><strong>✅ Aucun risque de cavitation</strong></div>'
+              }
+            ` : '<p>Données NPSHd non disponibles</p>'}
+          </div>
+
+          <div class="section">
+            <h2>Résultats HMT</h2>
+            ${results.hmt_analysis ? `
+              <div class="parameter"><span>HMT calculée:</span><strong>${results.hmt_analysis.hmt?.toFixed(2)} m</strong></div>
+              <div class="parameter"><span>Hauteur statique:</span><strong>${results.hmt_analysis.static_head?.toFixed(2)} m</strong></div>
+              <div class="parameter"><span>Pertes de charge totales:</span><strong>${results.hmt_analysis.total_head_loss?.toFixed(2)} m</strong></div>
+            ` : '<p>Données HMT non disponibles</p>'}
+          </div>
+
+          <div class="section">
+            <h2>Performance Énergétique</h2>
+            ${results.performance_analysis ? `
+              <div class="parameter"><span>Rendement global:</span><strong>${results.performance_analysis.overall_efficiency?.toFixed(1)}%</strong></div>
+              <div class="parameter"><span>Puissance hydraulique:</span><strong>${results.performance_analysis.hydraulic_power?.toFixed(2)} kW</strong></div>
+              <div class="parameter"><span>Puissance électrique:</span><strong>${results.performance_analysis.electrical_power?.toFixed(2)} kW</strong></div>
+            ` : '<p>Données de performance non disponibles</p>'}
+          </div>
+
+          ${results.expert_recommendations && results.expert_recommendations.length > 0 ? `
+            <div class="section">
+              <h2>Recommandations</h2>
+              ${results.expert_recommendations.map(rec => `
+                <div class="${rec.type === 'critical' ? 'critical' : 'warning'}">
+                  <h3>${rec.title}</h3>
+                  <p><strong>Description:</strong> ${rec.description}</p>
+                  <p><strong>Impact:</strong> ${rec.impact}</p>
+                  ${rec.solutions ? `
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                      ${rec.solutions.map(sol => `<li>${sol}</li>`).join('')}
+                    </ul>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </body>
+      </html>
+    `;
+
+    // Créer un blob et télécharger
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rapport-pompage-${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Fonction d'export Excel
+  const exportToExcel = () => {
+    if (!results) {
+      alert('Aucun résultat à exporter. Veuillez d\'abord effectuer un calcul.');
+      return;
+    }
+
+    // Créer les données CSV
+    const csvData = [];
+    
+    // En-tête
+    csvData.push(['Rapport d\'Analyse Expert - Système de Pompage']);
+    csvData.push(['Généré le', new Date().toLocaleDateString('fr-FR')]);
+    csvData.push([]);
+    
+    // Paramètres d'entrée
+    csvData.push(['PARAMÈTRES D\'ENTRÉE']);
+    csvData.push(['Débit (m³/h)', inputData.flow_rate]);
+    csvData.push(['Fluide', inputData.fluid_type]);
+    csvData.push(['Température (°C)', inputData.temperature]);
+    csvData.push(['Diamètre aspiration (mm)', inputData.suction_pipe_diameter]);
+    csvData.push(['Diamètre refoulement (mm)', inputData.discharge_pipe_diameter]);
+    csvData.push([]);
+    
+    // Résultats NPSHd
+    if (results.npshd_analysis) {
+      csvData.push(['RÉSULTATS NPSHd']);
+      csvData.push(['NPSHd calculé (m)', results.npshd_analysis.npshd?.toFixed(2)]);
+      csvData.push(['NPSH requis (m)', results.npshd_analysis.npsh_required?.toFixed(2)]);
+      csvData.push(['Marge de sécurité (m)', results.npshd_analysis.npsh_margin?.toFixed(2)]);
+      csvData.push(['Risque de cavitation', results.npshd_analysis.cavitation_risk ? 'OUI' : 'NON']);
+      csvData.push([]);
+    }
+    
+    // Résultats HMT
+    if (results.hmt_analysis) {
+      csvData.push(['RÉSULTATS HMT']);
+      csvData.push(['HMT calculée (m)', results.hmt_analysis.hmt?.toFixed(2)]);
+      csvData.push(['Hauteur statique (m)', results.hmt_analysis.static_head?.toFixed(2)]);
+      csvData.push(['Pertes de charge totales (m)', results.hmt_analysis.total_head_loss?.toFixed(2)]);
+      csvData.push([]);
+    }
+    
+    // Performance énergétique
+    if (results.performance_analysis) {
+      csvData.push(['PERFORMANCE ÉNERGÉTIQUE']);
+      csvData.push(['Rendement global (%)', results.performance_analysis.overall_efficiency?.toFixed(1)]);
+      csvData.push(['Puissance hydraulique (kW)', results.performance_analysis.hydraulic_power?.toFixed(2)]);
+      csvData.push(['Puissance électrique (kW)', results.performance_analysis.electrical_power?.toFixed(2)]);
+      csvData.push([]);
+    }
+    
+    // Recommandations
+    if (results.expert_recommendations && results.expert_recommendations.length > 0) {
+      csvData.push(['RECOMMANDATIONS']);
+      results.expert_recommendations.forEach((rec, index) => {
+        csvData.push([`${index + 1}. ${rec.title}`]);
+        csvData.push(['Description', rec.description]);
+        csvData.push(['Impact', rec.impact]);
+        csvData.push([]);
+      });
+    }
+    
+    // Convertir en CSV
+    const csvContent = csvData.map(row => 
+      row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+    
+    // Télécharger
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `donnees-pompage-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const calculateExpertAnalysis = async (data = inputData) => {
     if (!autoCalculate && data === inputData) return;
     
