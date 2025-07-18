@@ -26,7 +26,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # ============================================================================
-# FLUID PROPERTIES DATABASE
+# PIPE MATERIALS AND FITTINGS DATABASE
 # ============================================================================
 
 PIPE_MATERIALS = {
@@ -139,8 +139,9 @@ class FittingInput(BaseModel):
     fitting_type: str
     quantity: int = 1
 
-class NPSHrCalculationInput(BaseModel):
-    patm: float = 101325  # Pa (atmospheric pressure)
+class NPSHdCalculationInput(BaseModel):
+    altitude: float = 0  # m (altitude for automatic Patm calculation)
+    suction_type: str = "flooded"  # "flooded" or "suction_lift"
     hasp: float  # m (suction height - positive = flooded / negative = suction lift)
     flow_rate: float  # m³/h
     fluid_type: str
@@ -151,8 +152,11 @@ class NPSHrCalculationInput(BaseModel):
     suction_fittings: List[FittingInput] = []
 
 class HMTCalculationInput(BaseModel):
-    hasp: float  # m (suction height)
+    installation_type: str = "surface"  # "surface" or "submersible"
+    suction_type: str = "flooded"  # "flooded" or "suction_lift" (only for surface installation)
+    hasp: float  # m (suction height - only for surface installation)
     discharge_height: float  # m
+    useful_pressure: float = 0  # bar (required delivery pressure)
     suction_pipe_diameter: float  # mm
     discharge_pipe_diameter: float  # mm
     suction_pipe_length: float  # m
@@ -170,10 +174,11 @@ class PerformanceAnalysisInput(BaseModel):
     hmt: float  # m
     pipe_diameter: float  # mm
     required_npsh: float  # m (from pump datasheet)
-    calculated_npshr: float  # m (from Tab 1)
+    calculated_npshd: float  # m (from Tab 1)
     fluid_type: str
     pipe_material: str
     pump_efficiency: float  # %
+    motor_efficiency: float  # %
     absorbed_power: Optional[float] = None  # kW (P1)
     hydraulic_power: Optional[float] = None  # kW (P2)
     starting_method: str = "star_delta"  # or "direct_on_line"
@@ -183,16 +188,17 @@ class PerformanceAnalysisInput(BaseModel):
     cable_section: Optional[float] = None  # mm²
     voltage: int = 400  # V
 
-class NPSHrResult(BaseModel):
-    input_data: NPSHrCalculationInput
+class NPSHdResult(BaseModel):
+    input_data: NPSHdCalculationInput
     fluid_properties: FluidProperties
+    atmospheric_pressure: float  # Pa (calculated from altitude)
     velocity: float  # m/s
     reynolds_number: float
     friction_factor: float
     linear_head_loss: float  # m
     singular_head_loss: float  # m
     total_head_loss: float  # m
-    npshr: float  # m
+    npshd: float  # m
     warnings: List[str]
 
 class HMTResult(BaseModel):
@@ -204,18 +210,24 @@ class HMTResult(BaseModel):
     discharge_head_loss: float  # m
     total_head_loss: float  # m
     static_head: float  # m
+    useful_pressure_head: float  # m
     hmt: float  # m
     warnings: List[str]
 
 class PerformanceAnalysisResult(BaseModel):
     input_data: PerformanceAnalysisInput
-    npsh_comparison: Dict[str, float]  # npshr vs required_npsh
+    npsh_comparison: Dict[str, float]  # npshd vs required_npsh
     cavitation_risk: bool
+    pump_efficiency: float  # %
+    motor_efficiency: float  # %
     overall_efficiency: float  # %
     nominal_current: float  # A
+    starting_current: float  # A
     recommended_cable_section: float  # mm²
     power_calculations: Dict[str, float]
     electrical_data: Dict[str, Any]
+    performance_curves: Dict[str, List[float]]  # Flow points and corresponding values
+    recommendations: List[str]
     warnings: List[str]
 
 # Legacy models for backward compatibility
@@ -279,8 +291,14 @@ class PumpHistoryCreate(BaseModel):
     calculation_result: CalculationResult
 
 # ============================================================================
-# ENHANCED HYDRAULIC CALCULATION FUNCTIONS FOR THREE TABS
+# ENHANCED HYDRAULIC CALCULATION FUNCTIONS
 # ============================================================================
+
+def calculate_atmospheric_pressure(altitude: float) -> float:
+    """Calculate atmospheric pressure based on altitude (m)"""
+    # Barometric formula: P = P0 * (1 - 0.0065 * h / 288.15)^5.255
+    P0 = 101325  # Pa at sea level
+    return P0 * (1 - 0.0065 * altitude / 288.15) ** 5.255
 
 def calculate_singular_head_loss(velocity: float, fittings: List[FittingInput]) -> float:
     """Calculate singular head losses from fittings"""
@@ -316,216 +334,6 @@ def calculate_linear_head_loss_enhanced(velocity: float, pipe_length: float,
     
     # Darcy-Weisbach equation for head loss
     return friction_factor * (pipe_length / diameter_m) * (velocity**2) / (2 * 9.81)
-
-def calculate_npshr_enhanced(input_data: NPSHrCalculationInput) -> NPSHrResult:
-    """Enhanced NPSHr calculation for Tab 1"""
-    warnings = []
-    
-    # Get fluid properties
-    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
-    
-    # Calculate velocity
-    pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
-    velocity = (input_data.flow_rate / 3600) / pipe_area
-    
-    # Reynolds number
-    reynolds_number = calculate_reynolds_number(
-        velocity, input_data.pipe_diameter / 1000, 
-        fluid_props.density, fluid_props.viscosity
-    )
-    
-    # Calculate friction factor
-    friction_factor = calculate_friction_factor(reynolds_number)
-    
-    # Linear head loss
-    linear_head_loss = calculate_linear_head_loss_enhanced(
-        velocity, input_data.pipe_length, input_data.pipe_diameter,
-        input_data.pipe_material, reynolds_number
-    )
-    
-    # Singular head loss
-    singular_head_loss = calculate_singular_head_loss(velocity, input_data.suction_fittings)
-    
-    # Total head loss
-    total_head_loss = linear_head_loss + singular_head_loss
-    
-    # Calculate NPSHr
-    patm_head = input_data.patm / (fluid_props.density * 9.81)  # Atmospheric pressure in meters
-    vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)  # Vapor pressure in meters
-    
-    npshr = patm_head - vapor_pressure_head - abs(input_data.hasp) - total_head_loss
-    
-    # Warnings
-    if velocity > 3.0:
-        warnings.append(f"Vitesse élevée ({velocity:.2f} m/s) - risque d'usure")
-    if velocity < 0.5:
-        warnings.append(f"Vitesse faible ({velocity:.2f} m/s) - risque de sédimentation")
-    if npshr < 0:
-        warnings.append("ATTENTION: NPSHr négatif - conditions d'aspiration impossibles")
-    if npshr < 2:
-        warnings.append("ATTENTION: NPSHr très faible - risque de cavitation élevé")
-    
-    return NPSHrResult(
-        input_data=input_data,
-        fluid_properties=fluid_props,
-        velocity=velocity,
-        reynolds_number=reynolds_number,
-        friction_factor=friction_factor,
-        linear_head_loss=linear_head_loss,
-        singular_head_loss=singular_head_loss,
-        total_head_loss=total_head_loss,
-        npshr=npshr,
-        warnings=warnings
-    )
-
-def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
-    """Enhanced HMT calculation for Tab 2"""
-    warnings = []
-    
-    # Get fluid properties
-    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
-    
-    # Calculate velocities
-    suction_area = math.pi * (input_data.suction_pipe_diameter / 1000 / 2) ** 2
-    discharge_area = math.pi * (input_data.discharge_pipe_diameter / 1000 / 2) ** 2
-    
-    suction_velocity = (input_data.flow_rate / 3600) / suction_area
-    discharge_velocity = (input_data.flow_rate / 3600) / discharge_area
-    
-    # Calculate Reynolds numbers
-    suction_reynolds = calculate_reynolds_number(
-        suction_velocity, input_data.suction_pipe_diameter / 1000,
-        fluid_props.density, fluid_props.viscosity
-    )
-    discharge_reynolds = calculate_reynolds_number(
-        discharge_velocity, input_data.discharge_pipe_diameter / 1000,
-        fluid_props.density, fluid_props.viscosity
-    )
-    
-    # Calculate head losses
-    suction_linear_loss = calculate_linear_head_loss_enhanced(
-        suction_velocity, input_data.suction_pipe_length, 
-        input_data.suction_pipe_diameter, input_data.suction_pipe_material,
-        suction_reynolds
-    )
-    
-    discharge_linear_loss = calculate_linear_head_loss_enhanced(
-        discharge_velocity, input_data.discharge_pipe_length,
-        input_data.discharge_pipe_diameter, input_data.discharge_pipe_material,
-        discharge_reynolds
-    )
-    
-    suction_singular_loss = calculate_singular_head_loss(suction_velocity, input_data.suction_fittings)
-    discharge_singular_loss = calculate_singular_head_loss(discharge_velocity, input_data.discharge_fittings)
-    
-    # Total head losses
-    suction_head_loss = suction_linear_loss + suction_singular_loss
-    discharge_head_loss = discharge_linear_loss + discharge_singular_loss
-    total_head_loss = suction_head_loss + discharge_head_loss
-    
-    # Static head
-    static_head = input_data.discharge_height - input_data.hasp
-    
-    # Total HMT
-    hmt = static_head + total_head_loss
-    
-    # Warnings
-    if suction_velocity > 3.0:
-        warnings.append(f"Vitesse d'aspiration élevée ({suction_velocity:.2f} m/s)")
-    if discharge_velocity > 5.0:
-        warnings.append(f"Vitesse de refoulement élevée ({discharge_velocity:.2f} m/s)")
-    if hmt > 200:
-        warnings.append(f"HMT très élevée ({hmt:.1f} m) - vérifier le dimensionnement")
-    
-    return HMTResult(
-        input_data=input_data,
-        fluid_properties=fluid_props,
-        suction_velocity=suction_velocity,
-        discharge_velocity=discharge_velocity,
-        suction_head_loss=suction_head_loss,
-        discharge_head_loss=discharge_head_loss,
-        total_head_loss=total_head_loss,
-        static_head=static_head,
-        hmt=hmt,
-        warnings=warnings
-    )
-
-def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
-    """Performance analysis calculation for Tab 3"""
-    warnings = []
-    
-    # NPSH comparison
-    npsh_comparison = {
-        "npshr_calculated": input_data.calculated_npshr,
-        "npsh_required": input_data.required_npsh,
-        "safety_margin": input_data.calculated_npshr - input_data.required_npsh
-    }
-    
-    cavitation_risk = input_data.calculated_npshr <= input_data.required_npsh
-    
-    # Power calculations
-    if input_data.hydraulic_power and input_data.absorbed_power:
-        overall_efficiency = (input_data.hydraulic_power / input_data.absorbed_power) * 100
-        power_to_use = input_data.absorbed_power
-    elif input_data.hydraulic_power:
-        overall_efficiency = input_data.pump_efficiency
-        power_to_use = input_data.hydraulic_power / (input_data.pump_efficiency / 100)
-    else:
-        # Calculate hydraulic power from flow and head
-        flow_m3s = input_data.flow_rate / 3600
-        hydraulic_power = (flow_m3s * input_data.hmt * 1000 * 9.81) / 1000  # kW
-        overall_efficiency = input_data.pump_efficiency
-        power_to_use = hydraulic_power / (input_data.pump_efficiency / 100)
-    
-    # Electrical calculations
-    if input_data.voltage == 230:
-        # Single phase
-        nominal_current = (power_to_use * 1000) / (input_data.voltage * input_data.power_factor)
-    else:
-        # Three phase
-        nominal_current = (power_to_use * 1000) / (input_data.voltage * 1.732 * input_data.power_factor)
-    
-    # Cable section calculation
-    if input_data.cable_section:
-        recommended_cable_section = input_data.cable_section
-    else:
-        recommended_cable_section = calculate_cable_section(
-            nominal_current, input_data.cable_length, input_data.voltage
-        )
-    
-    # Starting method analysis
-    starting_current_multiplier = 7.0 if input_data.starting_method == "direct_on_line" else 2.0
-    starting_current = nominal_current * starting_current_multiplier
-    
-    # Warnings
-    if cavitation_risk:
-        warnings.append("RISQUE DE CAVITATION: NPSHr calculé ≤ NPSH requis")
-    if overall_efficiency < 60:
-        warnings.append(f"Rendement faible ({overall_efficiency:.1f}%) - vérifier le dimensionnement")
-    if starting_current > 150:
-        warnings.append(f"Courant de démarrage élevé ({starting_current:.1f} A)")
-    
-    return PerformanceAnalysisResult(
-        input_data=input_data,
-        npsh_comparison=npsh_comparison,
-        cavitation_risk=cavitation_risk,
-        overall_efficiency=overall_efficiency,
-        nominal_current=nominal_current,
-        recommended_cable_section=recommended_cable_section,
-        power_calculations={
-            "hydraulic_power": input_data.hydraulic_power or (input_data.flow_rate/3600 * input_data.hmt * 1000 * 9.81)/1000,
-            "absorbed_power": power_to_use,
-            "efficiency": overall_efficiency
-        },
-        electrical_data={
-            "voltage": input_data.voltage,
-            "power_factor": input_data.power_factor,
-            "starting_method": input_data.starting_method,
-            "starting_current": starting_current,
-            "cable_material": input_data.cable_material
-        },
-        warnings=warnings
-    )
 
 def get_fluid_properties(fluid_type: str, temperature: float) -> FluidProperties:
     """Calculate temperature-dependent fluid properties"""
@@ -568,92 +376,364 @@ def calculate_friction_factor(reynolds_number: float, roughness: float = 0.00004
         term2 = 6.9 / reynolds_number
         return 0.25 / (math.log10(term1 + term2) ** 2)
 
-def calculate_pressure_loss(velocity: float, pipe_length: float, pipe_diameter: float, 
-                          friction_factor: float, density: float) -> float:
-    """Calculate pressure loss using Darcy-Weisbach equation"""
-    diameter_m = pipe_diameter / 1000  # Convert mm to m
-    return friction_factor * (pipe_length / diameter_m) * (density * velocity**2 / 2)
-
-def calculate_npsh_required(flow_rate: float, suction_height: float) -> float:
-    """Calculate NPSH required (simplified model)"""
-    # Simplified NPSH calculation based on flow rate and suction conditions
-    flow_factor = (flow_rate / 100) ** 0.8  # Scaling factor
-    base_npsh = 2.0 + flow_factor  # Base NPSH requirement
+def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
+    """Enhanced NPSHd calculation for Tab 1"""
+    warnings = []
     
-    # Add safety margin for suction conditions
-    if suction_height > 0:
-        base_npsh += suction_height * 0.1
+    # Calculate atmospheric pressure from altitude
+    atmospheric_pressure = calculate_atmospheric_pressure(input_data.altitude)
     
-    return base_npsh
-
-def calculate_npsh_available(suction_height: float, atmospheric_pressure: float, 
-                           vapor_pressure: float, suction_losses: float, density: float) -> float:
-    """Calculate NPSH available"""
-    # Convert pressures to meters of fluid column
-    atm_pressure_m = atmospheric_pressure / (density * 9.81)
-    vapor_pressure_m = vapor_pressure / (density * 9.81)
-    suction_losses_m = suction_losses / (density * 9.81)
+    # Get fluid properties
+    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
     
-    return atm_pressure_m - vapor_pressure_m - abs(suction_height) - suction_losses_m
+    # Calculate velocity
+    pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
+    velocity = (input_data.flow_rate / 3600) / pipe_area
+    
+    # Reynolds number
+    reynolds_number = calculate_reynolds_number(
+        velocity, input_data.pipe_diameter / 1000, 
+        fluid_props.density, fluid_props.viscosity
+    )
+    
+    # Calculate friction factor
+    friction_factor = calculate_friction_factor(reynolds_number)
+    
+    # Linear head loss
+    linear_head_loss = calculate_linear_head_loss_enhanced(
+        velocity, input_data.pipe_length, input_data.pipe_diameter,
+        input_data.pipe_material, reynolds_number
+    )
+    
+    # Singular head loss
+    singular_head_loss = calculate_singular_head_loss(velocity, input_data.suction_fittings)
+    
+    # Total head loss
+    total_head_loss = linear_head_loss + singular_head_loss
+    
+    # Calculate NPSHd
+    patm_head = atmospheric_pressure / (fluid_props.density * 9.81)  # Atmospheric pressure in meters
+    vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)  # Vapor pressure in meters
+    
+    if input_data.suction_type == "flooded":
+        npshd = patm_head - vapor_pressure_head + abs(input_data.hasp) - total_head_loss
+    else:  # suction_lift
+        npshd = patm_head - vapor_pressure_head - abs(input_data.hasp) - total_head_loss
+    
+    # Warnings
+    if velocity > 3.0:
+        warnings.append(f"Vitesse élevée ({velocity:.2f} m/s) - risque d'usure")
+    if velocity < 0.5:
+        warnings.append(f"Vitesse faible ({velocity:.2f} m/s) - risque de sédimentation")
+    if npshd < 0:
+        warnings.append("ATTENTION: NPSHd négatif - conditions d'aspiration impossibles")
+    if npshd < 2:
+        warnings.append("ATTENTION: NPSHd très faible - risque de cavitation élevé")
+    if input_data.altitude > 1000:
+        warnings.append(f"Altitude élevée ({input_data.altitude}m) - pression atmosphérique réduite")
+    
+    return NPSHdResult(
+        input_data=input_data,
+        fluid_properties=fluid_props,
+        atmospheric_pressure=atmospheric_pressure,
+        velocity=velocity,
+        reynolds_number=reynolds_number,
+        friction_factor=friction_factor,
+        linear_head_loss=linear_head_loss,
+        singular_head_loss=singular_head_loss,
+        total_head_loss=total_head_loss,
+        npshd=npshd,
+        warnings=warnings
+    )
 
+def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
+    """Enhanced HMT calculation for Tab 2"""
+    warnings = []
+    
+    # Get fluid properties
+    fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
+    
+    # Calculate velocities
+    suction_area = math.pi * (input_data.suction_pipe_diameter / 1000 / 2) ** 2
+    discharge_area = math.pi * (input_data.discharge_pipe_diameter / 1000 / 2) ** 2
+    
+    suction_velocity = (input_data.flow_rate / 3600) / suction_area
+    discharge_velocity = (input_data.flow_rate / 3600) / discharge_area
+    
+    # Calculate Reynolds numbers
+    suction_reynolds = calculate_reynolds_number(
+        suction_velocity, input_data.suction_pipe_diameter / 1000,
+        fluid_props.density, fluid_props.viscosity
+    )
+    discharge_reynolds = calculate_reynolds_number(
+        discharge_velocity, input_data.discharge_pipe_diameter / 1000,
+        fluid_props.density, fluid_props.viscosity
+    )
+    
+    # Calculate head losses
+    if input_data.installation_type == "surface":
+        suction_linear_loss = calculate_linear_head_loss_enhanced(
+            suction_velocity, input_data.suction_pipe_length, 
+            input_data.suction_pipe_diameter, input_data.suction_pipe_material,
+            suction_reynolds
+        )
+        suction_singular_loss = calculate_singular_head_loss(suction_velocity, input_data.suction_fittings)
+        suction_head_loss = suction_linear_loss + suction_singular_loss
+    else:  # submersible
+        suction_head_loss = 0
+    
+    discharge_linear_loss = calculate_linear_head_loss_enhanced(
+        discharge_velocity, input_data.discharge_pipe_length,
+        input_data.discharge_pipe_diameter, input_data.discharge_pipe_material,
+        discharge_reynolds
+    )
+    discharge_singular_loss = calculate_singular_head_loss(discharge_velocity, input_data.discharge_fittings)
+    discharge_head_loss = discharge_linear_loss + discharge_singular_loss
+    
+    # Total head losses
+    total_head_loss = suction_head_loss + discharge_head_loss
+    
+    # Static head
+    if input_data.installation_type == "surface":
+        static_head = input_data.discharge_height - input_data.hasp
+    else:  # submersible
+        static_head = input_data.discharge_height
+    
+    # Useful pressure head
+    useful_pressure_head = (input_data.useful_pressure * 100000) / (fluid_props.density * 9.81)  # bar to m
+    
+    # Total HMT
+    hmt = static_head + total_head_loss + useful_pressure_head
+    
+    # Warnings
+    if suction_velocity > 3.0:
+        warnings.append(f"Vitesse d'aspiration élevée ({suction_velocity:.2f} m/s)")
+    if discharge_velocity > 5.0:
+        warnings.append(f"Vitesse de refoulement élevée ({discharge_velocity:.2f} m/s)")
+    if hmt > 200:
+        warnings.append(f"HMT très élevée ({hmt:.1f} m) - vérifier le dimensionnement")
+    if input_data.useful_pressure > 10:
+        warnings.append(f"Pression utile élevée ({input_data.useful_pressure} bar)")
+    
+    return HMTResult(
+        input_data=input_data,
+        fluid_properties=fluid_props,
+        suction_velocity=suction_velocity,
+        discharge_velocity=discharge_velocity,
+        suction_head_loss=suction_head_loss,
+        discharge_head_loss=discharge_head_loss,
+        total_head_loss=total_head_loss,
+        static_head=static_head,
+        useful_pressure_head=useful_pressure_head,
+        hmt=hmt,
+        warnings=warnings
+    )
+
+def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[str, List[float]]:
+    """Generate performance curves for different flow rates"""
+    flow_points = []
+    hmt_points = []
+    npsh_points = []
+    efficiency_points = []
+    power_points = []
+    
+    base_flow = input_data.flow_rate
+    base_hmt = input_data.hmt
+    base_efficiency = input_data.pump_efficiency
+    
+    # Calculate hydraulic power
+    if input_data.hydraulic_power:
+        base_hydraulic_power = input_data.hydraulic_power
+    else:
+        base_hydraulic_power = (base_flow / 3600) * base_hmt * 1000 * 9.81 / 1000  # kW
+    
+    for i in range(0, 151, 10):  # 0% to 150% of nominal flow
+        flow_ratio = i / 100
+        flow = base_flow * flow_ratio
+        
+        # Typical pump curve characteristics
+        hmt = base_hmt * (1.2 - 0.8 * flow_ratio + 0.6 * flow_ratio**2)
+        npsh = 2 + (flow_ratio * 3)  # Simplified NPSH curve
+        
+        # Efficiency curve (parabolic with peak around 100%)
+        efficiency = base_efficiency * (1 - 0.5 * (flow_ratio - 1)**2)
+        efficiency = max(0, min(100, efficiency))
+        
+        # Power curve
+        if flow_ratio > 0:
+            hydraulic_power = (flow / 3600) * hmt * 1000 * 9.81 / 1000  # kW
+            power = hydraulic_power / (efficiency / 100) if efficiency > 0 else 0
+        else:
+            power = 0
+        
+        flow_points.append(flow)
+        hmt_points.append(max(0, hmt))
+        npsh_points.append(max(0, npsh))
+        efficiency_points.append(max(0, efficiency))
+        power_points.append(max(0, power))
+    
+    return {
+        "flow": flow_points,
+        "hmt": hmt_points,
+        "npsh": npsh_points,
+        "efficiency": efficiency_points,
+        "power": power_points
+    }
+
+def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
+    """Performance analysis calculation for Tab 3"""
+    warnings = []
+    recommendations = []
+    
+    # NPSH comparison
+    npsh_comparison = {
+        "npshd_calculated": input_data.calculated_npshd,
+        "npsh_required": input_data.required_npsh,
+        "safety_margin": input_data.calculated_npshd - input_data.required_npsh
+    }
+    
+    cavitation_risk = input_data.calculated_npshd <= input_data.required_npsh
+    
+    # Power calculations
+    if input_data.hydraulic_power and input_data.absorbed_power:
+        hydraulic_power = input_data.hydraulic_power
+        absorbed_power = input_data.absorbed_power
+        overall_efficiency = (hydraulic_power / absorbed_power) * 100
+    elif input_data.hydraulic_power:
+        hydraulic_power = input_data.hydraulic_power
+        overall_efficiency = input_data.pump_efficiency * input_data.motor_efficiency / 100
+        absorbed_power = hydraulic_power / (overall_efficiency / 100)
+    else:
+        # Calculate hydraulic power from flow and head
+        flow_m3s = input_data.flow_rate / 3600
+        hydraulic_power = (flow_m3s * input_data.hmt * 1000 * 9.81) / 1000  # kW
+        overall_efficiency = input_data.pump_efficiency * input_data.motor_efficiency / 100
+        absorbed_power = hydraulic_power / (overall_efficiency / 100)
+    
+    # Electrical calculations adapted for starting method
+    if input_data.voltage == 230:
+        # Single phase
+        nominal_current = (absorbed_power * 1000) / (input_data.voltage * input_data.power_factor)
+        if input_data.starting_method == "direct_on_line":
+            starting_current = nominal_current * 7.0
+        else:  # star_delta
+            starting_current = nominal_current * 2.0
+    else:
+        # Three phase
+        nominal_current = (absorbed_power * 1000) / (input_data.voltage * 1.732 * input_data.power_factor)
+        if input_data.starting_method == "direct_on_line":
+            starting_current = nominal_current * 6.0
+        else:  # star_delta
+            starting_current = nominal_current * 2.0
+    
+    # Cable section calculation
+    if input_data.cable_section:
+        recommended_cable_section = input_data.cable_section
+    else:
+        # Basic cable sizing
+        if input_data.voltage == 230:
+            current_density = 6  # A/mm²
+        else:
+            current_density = 8  # A/mm²
+        
+        base_section = nominal_current / current_density
+        length_factor = 1 + (input_data.cable_length / 100) * 0.2
+        required_section = base_section * length_factor
+        
+        # Round to standard cable sections
+        standard_sections = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
+        recommended_cable_section = next((s for s in standard_sections if s >= required_section), 300)
+    
+    # Generate performance curves
+    performance_curves = generate_performance_curves(input_data)
+    
+    # Warnings and recommendations
+    if cavitation_risk:
+        warnings.append("RISQUE DE CAVITATION: NPSHd calculé ≤ NPSH requis")
+        recommendations.append("Réduire les pertes de charge à l'aspiration ou augmenter la hauteur d'aspiration")
+    
+    if overall_efficiency < 60:
+        warnings.append(f"Rendement global faible ({overall_efficiency:.1f}%)")
+        recommendations.append("Vérifier le dimensionnement de la pompe et du moteur")
+    
+    if input_data.pump_efficiency < 70:
+        warnings.append(f"Rendement pompe faible ({input_data.pump_efficiency:.1f}%)")
+        recommendations.append("Considérer une pompe plus efficace")
+    
+    if input_data.motor_efficiency < 85:
+        warnings.append(f"Rendement moteur faible ({input_data.motor_efficiency:.1f}%)")
+        recommendations.append("Considérer un moteur plus efficace")
+    
+    if starting_current > 150:
+        warnings.append(f"Courant de démarrage élevé ({starting_current:.1f} A)")
+        recommendations.append("Considérer un démarreur progressif ou étoile-triangle")
+    
+    if absorbed_power > 100:
+        warnings.append(f"Puissance absorbée élevée ({absorbed_power:.1f} kW)")
+        recommendations.append("Vérifier le dimensionnement du système")
+    
+    if npsh_comparison["safety_margin"] < 0.5:
+        recommendations.append("Augmenter la marge de sécurité NPSH pour éviter la cavitation")
+    
+    return PerformanceAnalysisResult(
+        input_data=input_data,
+        npsh_comparison=npsh_comparison,
+        cavitation_risk=cavitation_risk,
+        pump_efficiency=input_data.pump_efficiency,
+        motor_efficiency=input_data.motor_efficiency,
+        overall_efficiency=overall_efficiency,
+        nominal_current=nominal_current,
+        starting_current=starting_current,
+        recommended_cable_section=recommended_cable_section,
+        power_calculations={
+            "hydraulic_power": hydraulic_power,
+            "absorbed_power": absorbed_power,
+            "overall_efficiency": overall_efficiency
+        },
+        electrical_data={
+            "voltage": input_data.voltage,
+            "power_factor": input_data.power_factor,
+            "starting_method": input_data.starting_method,
+            "starting_current": starting_current,
+            "cable_material": input_data.cable_material
+        },
+        performance_curves=performance_curves,
+        recommendations=recommendations,
+        warnings=warnings
+    )
+
+# Legacy functions for backward compatibility
 def calculate_cable_section(current: float, cable_length: float, voltage: int) -> float:
     """Calculate required cable section"""
-    # Simplified cable sizing based on current density and voltage drop
     if voltage == 230:
-        # Single phase - higher current density needed
         base_section = current / 6  # A/mm²
     else:  # 400V
-        # Three phase - lower current density
         base_section = current / 8  # A/mm²
     
-    # Add correction for cable length (voltage drop consideration)
     length_factor = 1 + (cable_length / 100) * 0.2
     required_section = base_section * length_factor
     
-    # Round to standard cable sections
     standard_sections = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
     for section in standard_sections:
         if section >= required_section:
             return section
     
-    return 300  # Maximum standard section
-
-def determine_starting_method(power: float, voltage: int) -> str:
-    """Determine motor starting method based on power"""
-    if voltage == 230:
-        return "Direct start" if power < 3 else "Soft starter"
-    else:  # 400V
-        if power < 5:
-            return "Direct start"
-        elif power < 15:
-            return "Star-delta"
-        else:
-            return "Soft starter"
-
-# ============================================================================
-# MAIN CALCULATION FUNCTION
-# ============================================================================
+    return 300
 
 def perform_hydraulic_calculation(input_data: CalculationInput) -> CalculationResult:
-    """Main hydraulic calculation function"""
+    """Legacy hydraulic calculation function"""
     warnings = []
     
     # Get fluid properties
     fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
     
     # Convert units
-    flow_rate_m3s = input_data.flow_rate / 3600  # m³/h to m³/s
-    pipe_diameter_m = input_data.pipe_diameter / 1000  # mm to m
-    pipe_area = math.pi * (pipe_diameter_m / 2) ** 2  # m²
+    flow_rate_m3s = input_data.flow_rate / 3600
+    pipe_diameter_m = input_data.pipe_diameter / 1000
+    pipe_area = math.pi * (pipe_diameter_m / 2) ** 2
     
     # Calculate flow velocity
-    flow_velocity = flow_rate_m3s / pipe_area  # m/s
-    
-    # Check velocity limits
-    if flow_velocity > 3.0:
-        warnings.append(f"High velocity ({flow_velocity:.2f} m/s) may cause excessive wear")
-    elif flow_velocity < 0.5:
-        warnings.append(f"Low velocity ({flow_velocity:.2f} m/s) may cause settling")
+    flow_velocity = flow_rate_m3s / pipe_area
     
     # Calculate Reynolds number
     reynolds_number = calculate_reynolds_number(
@@ -664,52 +744,36 @@ def perform_hydraulic_calculation(input_data: CalculationInput) -> CalculationRe
     friction_factor = calculate_friction_factor(reynolds_number)
     
     # Calculate pressure losses
-    linear_pressure_loss = calculate_pressure_loss(
-        flow_velocity, input_data.pipe_length, input_data.pipe_diameter,
-        friction_factor, fluid_props.density
-    )
-    
-    # Add fitting losses (estimate 20% of linear losses)
+    linear_pressure_loss = friction_factor * (input_data.pipe_length / pipe_diameter_m) * (fluid_props.density * flow_velocity**2 / 2)
     total_pressure_loss = linear_pressure_loss * 1.2
     
-    # Calculate HMT (Total Manometric Head)
+    # Calculate HMT
     static_head = input_data.suction_height if input_data.suction_height > 0 else 0
     pressure_head = total_pressure_loss / (fluid_props.density * 9.81)
     hmt_meters = static_head + pressure_head
     hmt_bar = hmt_meters * fluid_props.density * 9.81 / 100000
     
     # Calculate NPSH
-    npsh_required = calculate_npsh_required(input_data.flow_rate, input_data.suction_height)
-    
-    if input_data.npsh_available:
-        npsh_available_calc = input_data.npsh_available
-    else:
-        npsh_available_calc = calculate_npsh_available(
-            input_data.suction_height, 101325, fluid_props.vapor_pressure,
-            total_pressure_loss * 0.1, fluid_props.density
-        )
-    
+    npsh_required = 2.0 + (input_data.flow_rate / 100) ** 0.8
+    npsh_available_calc = 10.3 - abs(input_data.suction_height) - (total_pressure_loss / (fluid_props.density * 9.81))
     cavitation_risk = npsh_available_calc <= npsh_required
-    if cavitation_risk:
-        warnings.append("CAVITATION RISK: NPSHd ≤ NPSHr - Check suction conditions!")
     
     # Calculate power
-    hydraulic_power = (flow_rate_m3s * hmt_meters * fluid_props.density * 9.81) / 1000  # kW
+    hydraulic_power = (flow_rate_m3s * hmt_meters * fluid_props.density * 9.81) / 1000
     total_efficiency = (input_data.pump_efficiency * input_data.motor_efficiency) / 10000
     absorbed_power = hydraulic_power / total_efficiency
     
     # Calculate electrical parameters
     if input_data.voltage == 230:
-        nominal_current = (absorbed_power * 1000) / (input_data.voltage * 0.8)  # Single phase
-    else:  # 400V
-        nominal_current = (absorbed_power * 1000) / (input_data.voltage * 1.732 * 0.8)  # Three phase
+        nominal_current = (absorbed_power * 1000) / (input_data.voltage * 0.8)
+    else:
+        nominal_current = (absorbed_power * 1000) / (input_data.voltage * 1.732 * 0.8)
     
     cable_section = calculate_cable_section(nominal_current, input_data.cable_length, input_data.voltage)
-    starting_method = determine_starting_method(absorbed_power, input_data.voltage)
+    starting_method = "Direct start" if absorbed_power < 3 else "Star-delta"
     
-    # Power warnings
-    if absorbed_power > 100:
-        warnings.append(f"High power consumption ({absorbed_power:.1f} kW) - verify motor sizing")
+    if cavitation_risk:
+        warnings.append("RISQUE DE CAVITATION: NPSHd ≤ NPSHr")
     
     return CalculationResult(
         input_data=input_data,
@@ -771,11 +835,11 @@ async def get_fittings():
         ]
     }
 
-@api_router.post("/calculate-npshr")
-async def calculate_npshr_endpoint(input_data: NPSHrCalculationInput):
-    """Calcul NPSHr - Onglet 1"""
+@api_router.post("/calculate-npshd")
+async def calculate_npshd_endpoint(input_data: NPSHdCalculationInput):
+    """Calcul NPSHd - Onglet 1"""
     try:
-        result = calculate_npshr_enhanced(input_data)
+        result = calculate_npshd_enhanced(input_data)
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
