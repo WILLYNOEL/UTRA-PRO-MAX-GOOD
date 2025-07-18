@@ -820,17 +820,8 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
     const curves = data.performance_curves;
     const bestPoint = curves.best_operating_point;
     
-    // Normalize data for superposition - scale everything to similar ranges
-    const maxHmt = Math.max(...curves.hmt);
-    const maxEfficiency = Math.max(...curves.efficiency);
-    const maxPower = Math.max(...curves.power);
-    const maxHeadLoss = Math.max(...curves.head_loss);
-    
-    // Scale all curves to 0-100 range for superposition
-    const normalizedHmt = curves.hmt.map(val => (val / maxHmt) * 100);
-    const normalizedEfficiency = curves.efficiency; // Already in %
-    const normalizedPower = curves.power.map(val => (val / maxPower) * 100);
-    const normalizedHeadLoss = curves.head_loss.map(val => (val / maxHeadLoss) * 100);
+    // Trouver l'index du point de fonctionnement dans les courbes
+    const operatingPointIndex = curves.flow.findIndex(f => Math.abs(f - bestPoint.flow) < 0.1);
     
     chartInstance.current = new Chart(ctx, {
       type: 'line',
@@ -838,48 +829,56 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
         labels: curves.flow,
         datasets: [
           {
-            label: `HMT (max: ${maxHmt.toFixed(1)}m)`,
-            data: normalizedHmt,
+            label: 'HMT Pompe (m)',
+            data: curves.hmt,
             borderColor: '#3b82f6',
             backgroundColor: 'rgba(59, 130, 246, 0.1)',
             borderWidth: 3,
             pointRadius: 0,
             pointHoverRadius: 8,
             tension: 0.4,
-            fill: false
+            fill: false,
+            yAxisID: 'y'
           },
           {
-            label: `Rendement (max: ${maxEfficiency.toFixed(1)}%)`,
-            data: normalizedEfficiency,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 3,
-            pointRadius: 0,
-            pointHoverRadius: 8,
-            tension: 0.4,
-            fill: false
-          },
-          {
-            label: `Puissance (max: ${maxPower.toFixed(1)}kW)`,
-            data: normalizedPower,
-            borderColor: '#f59e0b',
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-            borderWidth: 3,
-            pointRadius: 0,
-            pointHoverRadius: 8,
-            tension: 0.4,
-            fill: false
-          },
-          {
-            label: `Pertes de charge (max: ${maxHeadLoss.toFixed(1)}m)`,
-            data: normalizedHeadLoss,
+            label: 'Pertes de Charge Réseau (m)',
+            data: curves.head_loss,
             borderColor: '#ef4444',
             backgroundColor: 'rgba(239, 68, 68, 0.1)',
             borderWidth: 3,
             pointRadius: 0,
             pointHoverRadius: 8,
             tension: 0.4,
-            fill: false
+            fill: false,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Rendement (%)',
+            data: curves.efficiency,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 8,
+            tension: 0.4,
+            fill: false,
+            yAxisID: 'y1'
+          },
+          {
+            label: 'Point de Fonctionnement',
+            data: curves.flow.map((f, index) => {
+              if (Math.abs(f - bestPoint.flow) < 0.1) {
+                return curves.hmt[index];
+              }
+              return null;
+            }),
+            borderColor: '#000000',
+            backgroundColor: '#000000',
+            borderWidth: 4,
+            pointRadius: 8,
+            pointHoverRadius: 12,
+            showLine: false,
+            yAxisID: 'y'
           }
         ]
       },
@@ -906,10 +905,28 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             }
           },
           y: {
+            type: 'linear',
             display: true,
+            position: 'left',
             title: {
               display: true,
-              text: 'Valeurs Normalisées (%)',
+              text: 'HMT (m)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)'
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Rendement (%)',
               font: {
                 size: 14,
                 weight: 'bold'
@@ -918,8 +935,8 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             min: 0,
             max: 100,
             grid: {
-              color: 'rgba(0, 0, 0, 0.1)'
-            }
+              drawOnChartArea: false,
+            },
           }
         },
         plugins: {
@@ -935,7 +952,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
           },
           title: {
             display: true,
-            text: 'Courbes de Performance Superposées',
+            text: 'Courbes de Performance Hydraulique Q/H',
             font: {
               size: 16,
               weight: 'bold'
@@ -944,17 +961,17 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
           tooltip: {
             callbacks: {
               afterLabel: function(context) {
-                const datasetLabel = context.dataset.label;
                 const flowValue = curves.flow[context.dataIndex];
+                const datasetLabel = context.dataset.label;
                 
                 if (datasetLabel.includes('HMT')) {
-                  return `Valeur réelle: ${curves.hmt[context.dataIndex].toFixed(2)} m`;
-                } else if (datasetLabel.includes('Rendement')) {
-                  return `Valeur réelle: ${curves.efficiency[context.dataIndex].toFixed(1)} %`;
-                } else if (datasetLabel.includes('Puissance')) {
-                  return `Valeur réelle: ${curves.power[context.dataIndex].toFixed(2)} kW`;
+                  return `Point de croisement: Q=${bestPoint.flow}m³/h, H=${bestPoint.hmt}m`;
                 } else if (datasetLabel.includes('Pertes')) {
-                  return `Valeur réelle: ${curves.head_loss[context.dataIndex].toFixed(3)} m`;
+                  return `Point de croisement: Q=${bestPoint.flow}m³/h, H=${bestPoint.hmt}m`;
+                } else if (datasetLabel.includes('Rendement')) {
+                  return `Rendement au point de fonctionnement: ${bestPoint.efficiency?.toFixed(1)}%`;
+                } else if (datasetLabel.includes('Point')) {
+                  return `Point de fonctionnement saisi: Q=${bestPoint.flow}m³/h, H=${bestPoint.hmt}m`;
                 }
                 return '';
               }
