@@ -3148,6 +3148,713 @@ class HydraulicPumpTester:
             self.log_test("Expert Analysis Final Comprehensive", False, f"Error: {str(e)}")
             return False
 
+    def test_expert_analysis_enhanced_recommendations(self):
+        """Test Enhanced Expert Recommendations with 7 categories and various configurations"""
+        print("\n🎯 Testing Enhanced Expert Recommendations...")
+        
+        test_cases = [
+            {
+                "name": "Normal Operation - Flooded Configuration",
+                "data": {
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 2.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 30.0,
+                    "discharge_length": 100.0,
+                    "total_length": 130.0,
+                    "useful_pressure": 0.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.2,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "High Velocity Scenario - Small Diameter",
+                "data": {
+                    "flow_rate": 100.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,  # Small diameter for high velocity
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 1.5,
+                    "discharge_height": 20.0,
+                    "suction_length": 25.0,
+                    "discharge_length": 80.0,
+                    "total_length": 105.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "steel",
+                    "suction_elbow_90": 1,
+                    "discharge_elbow_90": 4,
+                    "discharge_gate_valve": 2,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "direct_on_line",
+                    "cable_length": 75.0,
+                    "cable_material": "copper",
+                    "npsh_required": 4.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 6000.0,
+                    "electricity_cost": 0.15,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Cavitation Risk Scenario - Suction Lift",
+                "data": {
+                    "flow_rate": 75.0,
+                    "fluid_type": "water",
+                    "temperature": 60.0,  # High temperature
+                    "suction_type": "suction_lift",  # Suction lift configuration
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 6.0,  # High suction lift
+                    "discharge_height": 25.0,
+                    "suction_length": 80.0,  # Long suction line
+                    "discharge_length": 120.0,
+                    "total_length": 200.0,
+                    "useful_pressure": 2.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "suction_elbow_90": 3,
+                    "suction_check_valve": 1,
+                    "suction_foot_valve": 1,
+                    "discharge_elbow_90": 5,
+                    "discharge_gate_valve": 1,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 70.0,
+                    "motor_efficiency": 85.0,
+                    "voltage": 400,
+                    "power_factor": 0.75,
+                    "starting_method": "star_delta",
+                    "cable_length": 100.0,
+                    "cable_material": "aluminum",
+                    "npsh_required": 5.0,  # High NPSH required
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 4000.0,
+                    "electricity_cost": 0.18,
+                    "altitude": 0.0,
+                    "ambient_temperature": 30.0,
+                    "humidity": 70.0
+                }
+            },
+            {
+                "name": "Complex Installation - Multiple Fittings",
+                "data": {
+                    "flow_rate": 60.0,
+                    "fluid_type": "oil",
+                    "temperature": 80.0,  # High temperature
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 125.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 30.0,
+                    "suction_length": 50.0,
+                    "discharge_length": 150.0,
+                    "total_length": 200.0,
+                    "useful_pressure": 3.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel_galvanized",
+                    "suction_elbow_90": 4,
+                    "suction_elbow_45": 2,
+                    "suction_tee_flow": 1,
+                    "suction_gate_valve": 1,
+                    "suction_ball_valve": 1,
+                    "discharge_elbow_90": 6,
+                    "discharge_elbow_45": 3,
+                    "discharge_tee_branch": 2,
+                    "discharge_gate_valve": 2,
+                    "discharge_check_valve": 2,
+                    "discharge_flow_meter": 1,
+                    "discharge_pressure_gauge": 1,
+                    "pump_efficiency": 65.0,  # Lower efficiency
+                    "motor_efficiency": 82.0,
+                    "voltage": 400,
+                    "power_factor": 0.7,
+                    "starting_method": "direct_on_line",
+                    "cable_length": 150.0,
+                    "cable_material": "aluminum",
+                    "npsh_required": 3.8,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.20,
+                    "altitude": 500.0,  # Altitude effect
+                    "ambient_temperature": 35.0,
+                    "humidity": 80.0
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check for complete analysis structure
+                    required_sections = [
+                        "npshd_analysis", "hmt_analysis", "performance_analysis", 
+                        "electrical_analysis", "overall_efficiency", "total_head_loss",
+                        "system_stability", "energy_consumption", "expert_recommendations",
+                        "optimization_potential", "performance_curves", "system_curves"
+                    ]
+                    
+                    missing_sections = [s for s in required_sections if s not in result]
+                    if missing_sections:
+                        self.log_test(f"Expert Analysis Structure - {case['name']}", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # Check expert recommendations structure and categories
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not expert_recommendations:
+                        self.log_test(f"Expert Recommendations - {case['name']}", False, 
+                                    "No expert recommendations generated")
+                        all_passed = False
+                        continue
+                    
+                    # Check for 7 categories of recommendations
+                    expected_categories = ["critical", "installation", "velocity", "head_loss", 
+                                         "materials", "electrical", "maintenance"]
+                    found_categories = set()
+                    
+                    for rec in expert_recommendations:
+                        if "type" in rec:
+                            found_categories.add(rec["type"])
+                        
+                        # Check recommendation structure
+                        required_rec_fields = ["type", "priority", "title", "description", 
+                                             "impact", "solutions", "urgency"]
+                        missing_rec_fields = [f for f in required_rec_fields if f not in rec]
+                        if missing_rec_fields:
+                            self.log_test(f"Recommendation Structure - {case['name']}", False, 
+                                        f"Missing fields in recommendation: {missing_rec_fields}")
+                            all_passed = False
+                            break
+                    
+                    # Check hydraulic data display
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    
+                    # Verify flow rate (débit) is included
+                    if "flow_rate" not in result.get("input_data", {}):
+                        self.log_test(f"Flow Rate Display - {case['name']}", False, 
+                                    "Flow rate not preserved in input_data")
+                        all_passed = False
+                        continue
+                    
+                    # Check flow regime calculation (Reynolds number)
+                    if "reynolds_number" not in npshd_analysis:
+                        self.log_test(f"Flow Regime Calculation - {case['name']}", False, 
+                                    "Reynolds number missing from npshd_analysis")
+                        all_passed = False
+                        continue
+                    
+                    reynolds = npshd_analysis.get("reynolds_number", 0)
+                    flow_regime = "laminar" if reynolds < 2300 else "turbulent"
+                    
+                    # Configuration-specific recommendations check
+                    suction_type = case["data"]["suction_type"]
+                    config_specific_found = False
+                    
+                    for rec in expert_recommendations:
+                        if suction_type == "flooded" and "charge" in rec.get("description", "").lower():
+                            config_specific_found = True
+                            break
+                        elif suction_type == "suction_lift" and "aspiration" in rec.get("description", "").lower():
+                            config_specific_found = True
+                            break
+                    
+                    self.log_test(f"Expert Analysis Enhanced - {case['name']}", True, 
+                                f"Generated {len(expert_recommendations)} recommendations, "
+                                f"Flow regime: {flow_regime}, Config: {suction_type}")
+                else:
+                    self.log_test(f"Expert Analysis Enhanced - {case['name']}", False, 
+                                f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Expert Analysis Enhanced - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_hydraulic_data_display_enhanced(self):
+        """Test hydraulic data display with flow rate and flow regime calculations"""
+        print("\n💧 Testing Enhanced Hydraulic Data Display...")
+        
+        test_data = {
+            "flow_rate": 75.0,  # m³/h - should be prominently displayed
+            "fluid_type": "water",
+            "temperature": 25.0,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 100.0,
+            "suction_height": 2.5,
+            "discharge_height": 20.0,
+            "suction_length": 40.0,
+            "discharge_length": 120.0,
+            "total_length": 160.0,
+            "useful_pressure": 1.5,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "suction_elbow_90": 2,
+            "discharge_elbow_90": 4,
+            "discharge_check_valve": 1,
+            "pump_efficiency": 78.0,
+            "motor_efficiency": 88.0,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 60.0,
+            "cable_material": "copper",
+            "npsh_required": 3.2,
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 8760.0,
+            "electricity_cost": 0.12,
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check flow rate (débit) is properly included
+                input_data = result.get("input_data", {})
+                if "flow_rate" not in input_data:
+                    self.log_test("Flow Rate Display", False, "Flow rate missing from input_data")
+                    return False
+                
+                displayed_flow = input_data.get("flow_rate", 0)
+                if abs(displayed_flow - test_data["flow_rate"]) > 0.1:
+                    self.log_test("Flow Rate Accuracy", False, 
+                                f"Expected {test_data['flow_rate']}, got {displayed_flow}")
+                    return False
+                
+                # Check flow regime calculation
+                npshd_analysis = result.get("npshd_analysis", {})
+                reynolds_number = npshd_analysis.get("reynolds_number", 0)
+                
+                if reynolds_number <= 0:
+                    self.log_test("Reynolds Number Calculation", False, "Reynolds number is zero or negative")
+                    return False
+                
+                # Determine flow regime
+                if reynolds_number < 2300:
+                    flow_regime = "laminar"
+                elif reynolds_number > 4000:
+                    flow_regime = "turbulent"
+                else:
+                    flow_regime = "transitional"
+                
+                # Check velocity calculation
+                velocity = npshd_analysis.get("velocity", 0)
+                if velocity <= 0:
+                    self.log_test("Velocity Calculation", False, "Velocity is zero or negative")
+                    return False
+                
+                # Verify hydraulic parameters are correctly returned
+                hmt_analysis = result.get("hmt_analysis", {})
+                required_hydraulic_params = ["hmt", "static_head", "total_head_loss", 
+                                           "suction_velocity", "discharge_velocity"]
+                
+                missing_params = [p for p in required_hydraulic_params if p not in hmt_analysis]
+                if missing_params:
+                    self.log_test("Hydraulic Parameters", False, f"Missing parameters: {missing_params}")
+                    return False
+                
+                self.log_test("Enhanced Hydraulic Data Display", True, 
+                            f"Flow: {displayed_flow:.1f} m³/h, Reynolds: {reynolds_number:.0f} ({flow_regime}), "
+                            f"Velocity: {velocity:.2f} m/s")
+                return True
+            else:
+                self.log_test("Enhanced Hydraulic Data Display", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Enhanced Hydraulic Data Display", False, f"Error: {str(e)}")
+            return False
+    
+    def test_configuration_specific_recommendations_enhanced(self):
+        """Test configuration-specific recommendations for flooded vs suction_lift"""
+        print("\n⚙️ Testing Enhanced Configuration-Specific Recommendations...")
+        
+        test_cases = [
+            {
+                "name": "Flooded Configuration (En Charge)",
+                "data": {
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",  # En charge
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 3.0,  # Positive = flooded
+                    "discharge_height": 18.0,
+                    "suction_length": 25.0,
+                    "discharge_length": 100.0,
+                    "total_length": 125.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 1,
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12
+                }
+            },
+            {
+                "name": "Suction Lift Configuration (Aspiration)",
+                "data": {
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "suction_lift",  # Aspiration
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 4.0,  # Suction lift height
+                    "discharge_height": 18.0,
+                    "suction_length": 30.0,
+                    "discharge_length": 100.0,
+                    "total_length": 130.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 1,
+                    "suction_check_valve": 1,  # Required for suction lift
+                    "suction_foot_valve": 1,   # Required for suction lift
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not expert_recommendations:
+                        self.log_test(f"Configuration Recommendations - {case['name']}", False, 
+                                    "No recommendations generated")
+                        all_passed = False
+                        continue
+                    
+                    # Check for configuration-specific recommendations
+                    suction_type = case["data"]["suction_type"]
+                    config_specific_found = False
+                    installation_recommendations = []
+                    
+                    for rec in expert_recommendations:
+                        rec_type = rec.get("type", "")
+                        description = rec.get("description", "").lower()
+                        solutions = rec.get("solutions", [])
+                        
+                        if rec_type == "installation":
+                            installation_recommendations.extend(solutions)
+                        
+                        # Check for configuration-specific content
+                        if suction_type == "flooded":
+                            if any(keyword in description for keyword in ["charge", "flooded", "submerg"]):
+                                config_specific_found = True
+                        elif suction_type == "suction_lift":
+                            if any(keyword in description for keyword in ["aspiration", "suction", "lift", "dépression"]):
+                                config_specific_found = True
+                    
+                    # Check material compatibility recommendations
+                    material_recommendations = []
+                    for rec in expert_recommendations:
+                        if rec.get("type") == "materials":
+                            material_recommendations.extend(rec.get("solutions", []))
+                    
+                    # Verify different NPSHd calculations for different configurations
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    npshd_value = npshd_analysis.get("npshd", 0)
+                    
+                    # Flooded should generally have higher NPSHd than suction lift
+                    if suction_type == "flooded" and npshd_value < 5:
+                        self.log_test(f"NPSHd Configuration Logic - {case['name']}", False, 
+                                    f"NPSHd too low for flooded configuration: {npshd_value:.2f} m")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Enhanced Configuration Recommendations - {case['name']}", True, 
+                                f"NPSHd: {npshd_value:.2f} m, Config-specific: {config_specific_found}, "
+                                f"Recommendations: {len(expert_recommendations)}")
+                else:
+                    self.log_test(f"Enhanced Configuration Recommendations - {case['name']}", False, 
+                                f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Enhanced Configuration Recommendations - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_expert_analysis_test_cases_enhanced(self):
+        """Test the 4 specific test cases from the review request"""
+        print("\n🧪 Testing Enhanced Expert Analysis Specific Test Cases...")
+        
+        test_cases = [
+            {
+                "name": "Test Case 1: Normal Operation",
+                "data": {
+                    "flow_rate": 50.0,  # m³/h
+                    "fluid_type": "water",
+                    "temperature": 20.0,  # °C
+                    "suction_type": "flooded",  # Flooded configuration
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 2.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 30.0,
+                    "discharge_length": 80.0,
+                    "total_length": 110.0,
+                    "useful_pressure": 0.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12
+                }
+            },
+            {
+                "name": "Test Case 2: High Velocity Scenario",
+                "data": {
+                    "flow_rate": 100.0,  # m³/h - High flow
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,  # Small diameter = high velocity
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 1.5,
+                    "discharge_height": 20.0,
+                    "suction_length": 25.0,
+                    "discharge_length": 100.0,
+                    "total_length": 125.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "steel",
+                    "suction_elbow_90": 1,
+                    "discharge_elbow_90": 4,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "npsh_required": 4.0,
+                    "installation_type": "surface",
+                    "operating_hours": 6000.0,
+                    "electricity_cost": 0.15
+                }
+            },
+            {
+                "name": "Test Case 3: Cavitation Risk Scenario",
+                "data": {
+                    "flow_rate": 75.0,
+                    "fluid_type": "water",
+                    "temperature": 70.0,  # High temperature
+                    "suction_type": "suction_lift",  # Suction lift
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 7.0,  # High suction lift
+                    "discharge_height": 25.0,
+                    "suction_length": 60.0,
+                    "discharge_length": 120.0,
+                    "total_length": 180.0,
+                    "useful_pressure": 2.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "suction_elbow_90": 3,
+                    "suction_check_valve": 1,
+                    "discharge_elbow_90": 5,
+                    "pump_efficiency": 70.0,
+                    "motor_efficiency": 85.0,
+                    "voltage": 400,
+                    "npsh_required": 5.0,  # High NPSH required
+                    "installation_type": "surface",
+                    "operating_hours": 4000.0,
+                    "electricity_cost": 0.18
+                }
+            },
+            {
+                "name": "Test Case 4: Complex Installation",
+                "data": {
+                    "flow_rate": 60.0,
+                    "fluid_type": "oil",  # Different fluid
+                    "temperature": 80.0,  # High temperature
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 125.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 30.0,
+                    "suction_length": 50.0,
+                    "discharge_length": 150.0,
+                    "total_length": 200.0,
+                    "useful_pressure": 3.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel_galvanized",
+                    # Multiple fittings
+                    "suction_elbow_90": 4,
+                    "suction_elbow_45": 2,
+                    "suction_gate_valve": 1,
+                    "discharge_elbow_90": 6,
+                    "discharge_elbow_45": 3,
+                    "discharge_tee_branch": 2,
+                    "discharge_gate_valve": 2,
+                    "discharge_check_valve": 2,
+                    "discharge_flow_meter": 1,
+                    "pump_efficiency": 65.0,  # Lower efficiency
+                    "motor_efficiency": 82.0,
+                    "voltage": 400,
+                    "npsh_required": 3.8,
+                    "installation_type": "surface",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.20
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Validate comprehensive hydraulic advice
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if len(expert_recommendations) < 3:
+                        self.log_test(f"Enhanced Expert Test Case - {case['name']}", False, 
+                                    f"Insufficient recommendations: {len(expert_recommendations)}")
+                        all_passed = False
+                        continue
+                    
+                    # Check for 7 categories of recommendations
+                    recommendation_types = set(rec.get("type", "") for rec in expert_recommendations)
+                    expected_types = {"critical", "installation", "velocity", "head_loss", 
+                                    "materials", "electrical", "maintenance"}
+                    
+                    # At least 4 different types should be present for comprehensive advice
+                    if len(recommendation_types.intersection(expected_types)) < 4:
+                        self.log_test(f"Enhanced Expert Recommendation Diversity - {case['name']}", False, 
+                                    f"Limited recommendation types: {recommendation_types}")
+                        all_passed = False
+                        continue
+                    
+                    # Check hydraulic analysis completeness
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    performance_analysis = result.get("performance_analysis", {})
+                    
+                    # Verify key hydraulic parameters
+                    required_npshd_fields = ["npshd", "npsh_required", "npsh_margin", 
+                                           "cavitation_risk", "velocity", "reynolds_number"]
+                    missing_npshd = [f for f in required_npshd_fields if f not in npshd_analysis]
+                    
+                    if missing_npshd:
+                        self.log_test(f"Enhanced NPSHd Analysis Completeness - {case['name']}", False, 
+                                    f"Missing fields: {missing_npshd}")
+                        all_passed = False
+                        continue
+                    
+                    # Check scenario-specific validations
+                    if "High Velocity" in case["name"]:
+                        velocity = npshd_analysis.get("velocity", 0)
+                        if velocity < 3.0:  # Should be high velocity
+                            self.log_test(f"Enhanced High Velocity Validation - {case['name']}", False, 
+                                        f"Expected high velocity, got {velocity:.2f} m/s")
+                            all_passed = False
+                            continue
+                    
+                    elif "Cavitation Risk" in case["name"]:
+                        cavitation_risk = npshd_analysis.get("cavitation_risk", False)
+                        if not cavitation_risk:
+                            self.log_test(f"Enhanced Cavitation Risk Validation - {case['name']}", False, 
+                                        "Expected cavitation risk but none detected")
+                            all_passed = False
+                            continue
+                    
+                    elif "Complex Installation" in case["name"]:
+                        # Should have recommendations about complexity
+                        complexity_mentioned = any("complex" in rec.get("description", "").lower() or 
+                                                 "singularités" in rec.get("description", "").lower()
+                                                 for rec in expert_recommendations)
+                    
+                    # Check material compatibility for high temperature cases
+                    if case["data"]["temperature"] > 60:
+                        material_warnings = any("température" in rec.get("description", "").lower() or
+                                              "matériau" in rec.get("description", "").lower()
+                                              for rec in expert_recommendations)
+                    
+                    self.log_test(f"Enhanced Expert Test Case - {case['name']}", True, 
+                                f"Generated {len(expert_recommendations)} recommendations, "
+                                f"Types: {len(recommendation_types)}, "
+                                f"NPSHd: {npshd_analysis.get('npshd', 0):.2f} m")
+                else:
+                    self.log_test(f"Enhanced Expert Test Case - {case['name']}", False, 
+                                f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Enhanced Expert Test Case - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
