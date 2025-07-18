@@ -720,15 +720,16 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     """Performance analysis calculation for Tab 3 with corrected power formulas"""
     warnings = []
     recommendations = []
+    alerts = []
     
-    # NPSH comparison
-    npsh_comparison = {
-        "npshd_calculated": input_data.calculated_npshd,
-        "npsh_required": input_data.required_npsh,
-        "safety_margin": input_data.calculated_npshd - input_data.required_npsh
-    }
+    # Calculate velocity and Reynolds number
+    diameter_m = input_data.pipe_diameter / 1000  # Convert mm to m
+    pipe_area = math.pi * (diameter_m / 2) ** 2  # m²
+    velocity = (input_data.flow_rate / 3600) / pipe_area  # m/s
     
-    cavitation_risk = input_data.calculated_npshd <= input_data.required_npsh
+    # Get fluid properties
+    fluid_props = get_fluid_properties(input_data.fluid_type, 20)  # Default temperature
+    reynolds_number = calculate_reynolds_number(velocity, diameter_m, fluid_props.density, fluid_props.viscosity)
     
     # Power calculations using the corrected formulas
     if input_data.hydraulic_power:
@@ -790,11 +791,21 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     # Generate performance curves (débit en fonction de HMT)
     performance_curves = generate_performance_curves(input_data)
     
-    # Warnings and recommendations
-    if cavitation_risk:
-        warnings.append("RISQUE DE CAVITATION: NPSHd calculé ≤ NPSH requis")
-        recommendations.append("Réduire les pertes de charge à l'aspiration ou augmenter la hauteur d'aspiration")
+    # Velocity alerts
+    if velocity > 3.0:
+        alerts.append(f"Vitesse élevée ({velocity:.2f} m/s) - Risque d'érosion")
+        recommendations.append("Considérer un diamètre de tuyauterie plus grand")
+    elif velocity < 0.5:
+        alerts.append(f"Vitesse faible ({velocity:.2f} m/s) - Risque de sédimentation")
+        recommendations.append("Considérer un diamètre de tuyauterie plus petit")
     
+    # Reynolds number alerts
+    if reynolds_number < 2300:
+        alerts.append("Écoulement laminaire détecté")
+    elif reynolds_number > 4000:
+        alerts.append("Écoulement turbulent détecté")
+    
+    # Warnings and recommendations
     if overall_efficiency < 60:
         warnings.append(f"Rendement global faible ({overall_efficiency:.1f}%)")
         recommendations.append("Vérifier le dimensionnement de la pompe et du moteur")
@@ -815,20 +826,17 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         warnings.append(f"Puissance absorbée élevée ({absorbed_power:.1f} kW)")
         recommendations.append("Vérifier le dimensionnement du système")
     
-    if npsh_comparison["safety_margin"] < 0.5:
-        recommendations.append("Augmenter la marge de sécurité NPSH pour éviter la cavitation")
-    
     # Power formula verification
     if hydraulic_power > absorbed_power:
         warnings.append("ERREUR: Puissance hydraulique > puissance absorbée - vérifier les valeurs")
     
     return PerformanceAnalysisResult(
         input_data=input_data,
-        npsh_comparison=npsh_comparison,
-        cavitation_risk=cavitation_risk,
         pump_efficiency=input_data.pump_efficiency,
         motor_efficiency=actual_motor_efficiency,
         overall_efficiency=overall_efficiency,
+        velocity=velocity,
+        reynolds_number=reynolds_number,
         nominal_current=nominal_current,
         starting_current=starting_current,
         recommended_cable_section=recommended_cable_section,
@@ -841,12 +849,13 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
             "voltage": input_data.voltage,
             "power_factor": input_data.power_factor,
             "starting_method": input_data.starting_method,
-            "starting_current": starting_current,
-            "cable_material": input_data.cable_material
+            "cable_length": input_data.cable_length,
+            "cable_material": getattr(input_data, 'cable_material', 'copper')
         },
         performance_curves=performance_curves,
         recommendations=recommendations,
-        warnings=warnings
+        warnings=warnings,
+        alerts=alerts
     )
 
 # Legacy functions for backward compatibility
