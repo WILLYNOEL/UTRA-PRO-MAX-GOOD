@@ -218,6 +218,69 @@ class HMTResult(BaseModel):
     hmt: float  # m
     warnings: List[str]
 
+class ExpertAnalysisInput(BaseModel):
+    # Paramètres hydrauliques
+    flow_rate: float  # m³/h
+    fluid_type: str
+    temperature: float = 20  # °C
+    
+    # Géométrie
+    suction_pipe_diameter: float  # mm
+    discharge_pipe_diameter: float  # mm
+    suction_height: float  # m (positive = en charge, negative = aspiration)
+    discharge_height: float  # m
+    suction_length: float  # m
+    discharge_length: float  # m
+    total_length: float  # m
+    
+    # Matériaux
+    suction_material: str
+    discharge_material: str
+    
+    # Singularités
+    elbow_90_qty: int = 0
+    elbow_45_qty: int = 0
+    tee_qty: int = 0
+    valve_qty: int = 0
+    check_valve_qty: int = 0
+    
+    # Électrique
+    pump_efficiency: float  # %
+    motor_efficiency: float  # %
+    voltage: int = 400  # V
+    power_factor: float = 0.8
+    starting_method: str = "star_delta"
+    cable_length: float  # m
+    cable_material: str = "copper"
+    
+    # Expert
+    npsh_required: float  # m
+    useful_pressure: float = 0  # bar
+    installation_type: str = "surface"
+
+class ExpertAnalysisResult(BaseModel):
+    input_data: ExpertAnalysisInput
+    
+    # Résultats combinés
+    npshd_analysis: Dict[str, Any]
+    hmt_analysis: Dict[str, Any]
+    performance_analysis: Dict[str, Any]
+    electrical_analysis: Dict[str, Any]
+    
+    # Analyse globale
+    overall_efficiency: float  # %
+    total_head_loss: float  # m
+    system_stability: bool
+    energy_consumption: float  # kWh/m³
+    
+    # Recommandations d'expert
+    expert_recommendations: List[Dict[str, Any]]
+    optimization_potential: Dict[str, Any]
+    
+    # Données pour graphiques
+    performance_curves: Dict[str, Any]
+    system_curves: Dict[str, Any]
+
 class PerformanceAnalysisResult(BaseModel):
     input_data: PerformanceAnalysisInput
     # Removed NPSH fields as requested
