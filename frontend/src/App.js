@@ -3051,13 +3051,13 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       
       {/* Titre dynamique avec configuration */}
       <rect x="20" y="20" width="600" height="80" fill="white" stroke={aspirationColor} strokeWidth="4" rx="15" filter="url(#shadow)"/>
-      <text x="320" y="50" textAnchor="middle" className="text-xl font-bold" fill={aspirationColor}>
+      <text x="320" y="45" textAnchor="middle" className="text-lg font-bold" fill={aspirationColor}>
         {statusIcon} CONFIGURATION {statusText}
       </text>
-      <text x="320" y="70" textAnchor="middle" className="text-sm" fill="#6b7280">
+      <text x="320" y="65" textAnchor="middle" className="text-sm" fill="#6b7280">
         {currentConfig.description}
       </text>
-      <text x="320" y="90" textAnchor="middle" className="text-sm font-medium" fill="#4b5563">
+      <text x="320" y="85" textAnchor="middle" className="text-sm font-medium" fill="#4b5563">
         Q={inputData.flow_rate} m³/h • H={Math.abs(inputData.suction_height)}m • T={inputData.temperature}°C
       </text>
       
