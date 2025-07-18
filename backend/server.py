@@ -576,7 +576,7 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
     }
 
 def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
-    """Performance analysis calculation for Tab 3"""
+    """Performance analysis calculation for Tab 3 with corrected power formulas"""
     warnings = []
     recommendations = []
     
@@ -589,21 +589,28 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     
     cavitation_risk = input_data.calculated_npshd <= input_data.required_npsh
     
-    # Power calculations
-    if input_data.hydraulic_power and input_data.absorbed_power:
+    # Power calculations using the correct formulas
+    if input_data.hydraulic_power:
+        # Use provided hydraulic power
         hydraulic_power = input_data.hydraulic_power
-        absorbed_power = input_data.absorbed_power
-        overall_efficiency = (hydraulic_power / absorbed_power) * 100
-    elif input_data.hydraulic_power:
-        hydraulic_power = input_data.hydraulic_power
-        overall_efficiency = input_data.pump_efficiency * input_data.motor_efficiency / 100
-        absorbed_power = hydraulic_power / (overall_efficiency / 100)
     else:
-        # Calculate hydraulic power from flow and head
-        flow_m3s = input_data.flow_rate / 3600
-        hydraulic_power = (flow_m3s * input_data.hmt * 1000 * 9.81) / 1000  # kW
-        overall_efficiency = input_data.pump_efficiency * input_data.motor_efficiency / 100
-        absorbed_power = hydraulic_power / (overall_efficiency / 100)
+        # Calculate hydraulic power using the correct formula:
+        # P2 = (débit x HMT) / (rendement pompe x 367)
+        hydraulic_power = (input_data.flow_rate * input_data.hmt) / (input_data.pump_efficiency * 367)
+    
+    if input_data.absorbed_power:
+        # Use provided absorbed power
+        absorbed_power = input_data.absorbed_power
+        # Calculate actual motor efficiency
+        actual_motor_efficiency = (hydraulic_power / absorbed_power) * 100
+    else:
+        # Calculate absorbed power using the correct formula:
+        # P1 = P2 / rendement moteur
+        absorbed_power = hydraulic_power / (input_data.motor_efficiency / 100)
+        actual_motor_efficiency = input_data.motor_efficiency
+    
+    # Overall efficiency
+    overall_efficiency = (hydraulic_power / absorbed_power) * 100
     
     # Electrical calculations adapted for starting method
     if input_data.voltage == 230:
@@ -639,7 +646,7 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         standard_sections = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240, 300]
         recommended_cable_section = next((s for s in standard_sections if s >= required_section), 300)
     
-    # Generate performance curves
+    # Generate performance curves (débit en fonction de HMT)
     performance_curves = generate_performance_curves(input_data)
     
     # Warnings and recommendations
@@ -670,12 +677,16 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     if npsh_comparison["safety_margin"] < 0.5:
         recommendations.append("Augmenter la marge de sécurité NPSH pour éviter la cavitation")
     
+    # Power formula verification
+    if hydraulic_power > absorbed_power:
+        warnings.append("ERREUR: Puissance hydraulique > puissance absorbée - vérifier les valeurs")
+    
     return PerformanceAnalysisResult(
         input_data=input_data,
         npsh_comparison=npsh_comparison,
         cavitation_risk=cavitation_risk,
         pump_efficiency=input_data.pump_efficiency,
-        motor_efficiency=input_data.motor_efficiency,
+        motor_efficiency=actual_motor_efficiency,
         overall_efficiency=overall_efficiency,
         nominal_current=nominal_current,
         starting_current=starting_current,
