@@ -1206,10 +1206,10 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     annual_energy_consumption = hydraulic_power * input_data.operating_hours
     annual_energy_cost = annual_energy_consumption * input_data.electricity_cost
     
-    # Recommandations d'expert
+    # Recommandations d'expert enrichies
     expert_recommendations = []
     
-    # Analyse critique
+    # Analyse critique de cavitation
     if npshd_result.cavitation_risk:
         expert_recommendations.append({
             "type": "critical",
@@ -1222,11 +1222,178 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
                 f"Augmenter diamètre aspiration de {input_data.suction_pipe_diameter:.0f}mm à {input_data.suction_pipe_diameter * 1.3:.0f}mm",
                 f"Réduire longueur aspiration de {input_data.suction_length:.0f}m à {input_data.suction_length * 0.7:.0f}m",
                 "Supprimer raccords non essentiels sur aspiration",
-                "Installer pompe en charge si possible"
+                "Installer pompe en charge si possible",
+                "Augmenter température pour réduire pression vapeur",
+                "Installer pompe plus proche du réservoir"
             ],
             "urgency": "IMMÉDIATE",
             "cost_impact": "ÉLEVÉ"
         })
+    
+    # Recommandations d'installation hydraulique spécifiques
+    installation_recommendations = []
+    
+    # Recommandations selon le type d'aspiration
+    if suction_type == "suction_lift":
+        installation_recommendations.extend([
+            "Configuration aspiration en dépression détectée",
+            "Installer crépine foot valve pour maintenir l'amorçage",
+            "Prévoir système d'amorçage automatique",
+            "Éviter les points hauts sur la ligne d'aspiration",
+            "Installer clapet anti-retour sur aspiration",
+            "Hauteur aspiration maximale: 7m en pratique",
+            "Prévoir purgeur d'air en point haut"
+        ])
+    else:  # flooded
+        installation_recommendations.extend([
+            "Configuration aspiration en charge optimale",
+            "Vanne d'arrêt sur aspiration pour maintenance",
+            "Prévoir by-pass pour continuité de service",
+            "Éviter réduction de section sur aspiration",
+            "Installer manomètre aspiration pour surveillance"
+        ])
+    
+    # Recommandations pour les vitesses d'écoulement
+    velocity_recommendations = []
+    if npshd_result.velocity > 3.0:
+        velocity_recommendations.extend([
+            f"Vitesse aspiration excessive: {npshd_result.velocity:.2f} m/s",
+            f"Augmenter diamètre aspiration: {input_data.suction_pipe_diameter}mm → {input_data.suction_pipe_diameter * 1.2:.0f}mm",
+            "Utiliser courbes à grand rayon (3D minimum)",
+            "Installer supports anti-vibratoires",
+            "Prévoir isolation acoustique"
+        ])
+    elif npshd_result.velocity < 0.8:
+        velocity_recommendations.extend([
+            f"Vitesse aspiration faible: {npshd_result.velocity:.2f} m/s",
+            "Risque de sédimentation et dépôts",
+            "Prévoir nettoyage périodique des conduites",
+            "Considérer réduction de diamètre si possible"
+        ])
+    
+    # Recommandations pour les pertes de charge
+    head_loss_recommendations = []
+    if npshd_result.total_head_loss > 5.0:
+        head_loss_recommendations.extend([
+            f"Pertes de charge aspiration élevées: {npshd_result.total_head_loss:.2f} m",
+            "Optimiser tracé hydraulique (éviter coudes)",
+            "Utiliser raccords progressive au lieu de brusques",
+            "Vérifier état intérieur des conduites",
+            "Considérer matériau plus lisse",
+            "Réduire nombre de singularités"
+        ])
+    
+    # Recommandations matériaux selon le fluide
+    material_recommendations = []
+    if input_data.fluid_type == "acid":
+        material_recommendations.extend([
+            "Fluide acide détecté - Attention corrosion",
+            "Utiliser matériaux résistant aux acides (PVC, PP, 316L)",
+            "Prévoir inspection régulière des matériaux",
+            "Installer système de neutralisation si nécessaire"
+        ])
+    elif input_data.temperature > 60:
+        material_recommendations.extend([
+            f"Température élevée: {input_data.temperature}°C",
+            "Éviter PVC au-delà de 60°C",
+            "Prévoir dilatation thermique",
+            "Utiliser supports coulissants",
+            "Isolation thermique recommandée"
+        ])
+    
+    # Recommandations électriques d'installation
+    electrical_recommendations = []
+    if perf_result.starting_current > 150:
+        electrical_recommendations.extend([
+            f"Courant de démarrage élevé: {perf_result.starting_current:.0f}A",
+            "Démarreur progressif recommandé",
+            "Vérifier capacité du transformateur",
+            "Prévoir compensation d'énergie réactive",
+            "Installer protection thermique renforcée"
+        ])
+    
+    # Recommandations de maintenance préventive
+    maintenance_recommendations = [
+        "Maintenance préventive recommandée:",
+        "- Vérification alignement pompe-moteur (6 mois)",
+        "- Contrôle vibrations et bruit (mensuel)",
+        "- Inspection étanchéité (trimestriel)",
+        "- Analyse d'huile roulement (annuel)",
+        "- Vérification serrage boulonnage (6 mois)",
+        "- Contrôle isolement électrique (annuel)"
+    ]
+    
+    # Ajout des recommandations spécialisées
+    if len(installation_recommendations) > 0:
+        expert_recommendations.append({
+            "type": "installation",
+            "priority": 2,
+            "title": "🏗️ INSTALLATION HYDRAULIQUE",
+            "description": f"Optimisations spécifiques pour configuration {suction_type}",
+            "impact": "Amélioration fiabilité et performance",
+            "solutions": installation_recommendations,
+            "urgency": "MOYENNE",
+            "cost_impact": "MODÉRÉ"
+        })
+    
+    if len(velocity_recommendations) > 0:
+        expert_recommendations.append({
+            "type": "velocity",
+            "priority": 3,
+            "title": "🌊 OPTIMISATION VITESSES",
+            "description": "Ajustement des vitesses d'écoulement",
+            "impact": "Réduction usure et optimisation énergétique",
+            "solutions": velocity_recommendations,
+            "urgency": "MOYENNE",
+            "cost_impact": "MODÉRÉ"
+        })
+    
+    if len(head_loss_recommendations) > 0:
+        expert_recommendations.append({
+            "type": "head_loss",
+            "priority": 4,
+            "title": "⚡ RÉDUCTION PERTES DE CHARGE",
+            "description": "Optimisation circuit hydraulique",
+            "impact": "Économie d'énergie et performance",
+            "solutions": head_loss_recommendations,
+            "urgency": "FAIBLE",
+            "cost_impact": "RENTABLE"
+        })
+    
+    if len(material_recommendations) > 0:
+        expert_recommendations.append({
+            "type": "materials",
+            "priority": 5,
+            "title": "🔧 MATÉRIAUX ET TEMPÉRATURE",
+            "description": "Compatibilité matériaux/fluide/température",
+            "impact": "Durabilité et sécurité installation",
+            "solutions": material_recommendations,
+            "urgency": "MOYENNE",
+            "cost_impact": "VARIABLE"
+        })
+    
+    if len(electrical_recommendations) > 0:
+        expert_recommendations.append({
+            "type": "electrical",
+            "priority": 6,
+            "title": "🔌 OPTIMISATION ÉLECTRIQUE",
+            "description": "Améliorations système électrique",
+            "impact": "Fiabilité démarrage et protection",
+            "solutions": electrical_recommendations,
+            "urgency": "MOYENNE",
+            "cost_impact": "MODÉRÉ"
+        })
+    
+    expert_recommendations.append({
+        "type": "maintenance",
+        "priority": 7,
+        "title": "🔍 MAINTENANCE PRÉVENTIVE",
+        "description": "Plan de maintenance pour fiabilité optimale",
+        "impact": "Prolongation durée de vie équipement",
+        "solutions": maintenance_recommendations,
+        "urgency": "FAIBLE",
+        "cost_impact": "RENTABLE"
+    })
     
     # Analyse de performance énergétique
     if overall_efficiency < 65:
