@@ -9,7 +9,6 @@ const API = `${BACKEND_URL}/api`;
 // Component pour Tab 1 - Calcul NPSHd
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
-    altitude: 0,
     suction_type: 'flooded',
     hasp: 3.0,
     flow_rate: 50,
