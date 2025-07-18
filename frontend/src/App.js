@@ -2014,6 +2014,55 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Panneau de saisie - Colonne 1 */}
         <div className="xl:col-span-1 space-y-6">
+          {/* Informations du projet */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-indigo-600 flex items-center">
+              👤 Informations du Projet
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nom
+                  </label>
+                  <input
+                    type="text"
+                    value={inputData.engineer_name || ''}
+                    onChange={(e) => handleInputChange('engineer_name', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Nom de l'ingénieur"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Prénom
+                  </label>
+                  <input
+                    type="text"
+                    value={inputData.engineer_firstname || ''}
+                    onChange={(e) => handleInputChange('engineer_firstname', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Prénom de l'ingénieur"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Société cliente
+                </label>
+                <input
+                  type="text"
+                  value={inputData.company_name || ''}
+                  onChange={(e) => handleInputChange('company_name', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Nom de la société cliente"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Paramètres hydrauliques */}
           {(activeSection === 'all' || activeSection === 'hydraulic') && (
             <div className="bg-white rounded-lg shadow-lg p-6">
