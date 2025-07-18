@@ -2678,6 +2678,203 @@ class HydraulicPumpTester:
             self.log_test("Expert Analysis Integration", False, f"Error: {str(e)}")
             return False
 
+    def test_expert_analysis_comprehensive(self):
+        """Test the completely revised EXPERT tab with comprehensive test case"""
+        print("\n🎯 Testing Expert Analysis - Complete Revision...")
+        
+        # Test case from review request with all new fields
+        expert_test_data = {
+            "flow_rate": 75,
+            "fluid_type": "water",
+            "temperature": 25,
+            "suction_pipe_diameter": 100,
+            "discharge_pipe_diameter": 80,
+            "suction_height": 2.5,
+            "discharge_height": 28.0,
+            "suction_length": 12,
+            "discharge_length": 45,
+            "total_length": 57,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "suction_elbow_90": 2,
+            "suction_elbow_45": 1,
+            "suction_strainer": 1,
+            "discharge_elbow_90": 3,
+            "discharge_valve": 2,
+            "discharge_check_valve": 1,
+            "pump_efficiency": 78,
+            "motor_efficiency": 88,
+            "voltage": 400,
+            "power_factor": 0.85,
+            "starting_method": "star_delta",
+            "cable_length": 35,
+            "cable_material": "copper",
+            "npsh_required": 3.2,
+            "useful_pressure": 1.5,
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 6000,
+            "electricity_cost": 0.14,
+            "altitude": 200,
+            "ambient_temperature": 22,
+            "humidity": 65
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Test 1: All fields accepted
+                input_data = result.get("input_data", {})
+                if not input_data:
+                    self.log_test("Expert Analysis - Field Acceptance", False, "Missing input_data section")
+                    return False
+                
+                # Check key fields are preserved
+                key_fields = ["flow_rate", "fluid_type", "temperature", "suction_pipe_diameter", 
+                             "discharge_pipe_diameter", "pump_efficiency", "motor_efficiency", 
+                             "npsh_required", "useful_pressure", "installation_type"]
+                missing_fields = [f for f in key_fields if f not in input_data]
+                if missing_fields:
+                    self.log_test("Expert Analysis - Field Acceptance", False, f"Missing input fields: {missing_fields}")
+                    return False
+                
+                self.log_test("Expert Analysis - Field Acceptance", True, f"All {len(key_fields)} key fields accepted")
+                
+                # Test 2: Complete analysis structure
+                required_sections = [
+                    "npshd_analysis", "hmt_analysis", "performance_analysis", "electrical_analysis",
+                    "overall_efficiency", "total_head_loss", "system_stability", "energy_consumption",
+                    "expert_recommendations", "optimization_potential", "performance_curves", "system_curves"
+                ]
+                
+                missing_sections = [s for s in required_sections if s not in result]
+                if missing_sections:
+                    self.log_test("Expert Analysis - Complete Structure", False, f"Missing sections: {missing_sections}")
+                    return False
+                
+                self.log_test("Expert Analysis - Complete Structure", True, f"All {len(required_sections)} sections present")
+                
+                # Test 3: NPSHd integration
+                npshd_analysis = result.get("npshd_analysis", {})
+                npshd_fields = ["npshd", "npsh_required", "npsh_margin", "cavitation_risk", "velocity", "reynolds_number"]
+                missing_npshd = [f for f in npshd_fields if f not in npshd_analysis]
+                if missing_npshd:
+                    self.log_test("Expert Analysis - NPSHd Integration", False, f"Missing NPSHd fields: {missing_npshd}")
+                    return False
+                
+                npshd_value = npshd_analysis.get("npshd", 0)
+                npsh_required = npshd_analysis.get("npsh_required", 0)
+                cavitation_risk = npshd_analysis.get("cavitation_risk", False)
+                
+                self.log_test("Expert Analysis - NPSHd Integration", True, 
+                            f"NPSHd: {npshd_value:.2f}m, NPSHr: {npsh_required:.2f}m, Risk: {cavitation_risk}")
+                
+                # Test 4: HMT integration
+                hmt_analysis = result.get("hmt_analysis", {})
+                hmt_fields = ["hmt", "static_head", "total_head_loss", "suction_velocity", "discharge_velocity"]
+                missing_hmt = [f for f in hmt_fields if f not in hmt_analysis]
+                if missing_hmt:
+                    self.log_test("Expert Analysis - HMT Integration", False, f"Missing HMT fields: {missing_hmt}")
+                    return False
+                
+                hmt_value = hmt_analysis.get("hmt", 0)
+                static_head = hmt_analysis.get("static_head", 0)
+                
+                self.log_test("Expert Analysis - HMT Integration", True, 
+                            f"HMT: {hmt_value:.2f}m, Static Head: {static_head:.2f}m")
+                
+                # Test 5: Performance integration
+                performance_analysis = result.get("performance_analysis", {})
+                perf_fields = ["overall_efficiency", "pump_efficiency", "motor_efficiency", "nominal_current", "power_calculations"]
+                missing_perf = [f for f in perf_fields if f not in performance_analysis]
+                if missing_perf:
+                    self.log_test("Expert Analysis - Performance Integration", False, f"Missing performance fields: {missing_perf}")
+                    return False
+                
+                overall_efficiency = result.get("overall_efficiency", 0)
+                power_calcs = performance_analysis.get("power_calculations", {})
+                
+                self.log_test("Expert Analysis - Performance Integration", True, 
+                            f"Overall Efficiency: {overall_efficiency:.1f}%, Power: {power_calcs.get('hydraulic_power', 0):.2f}kW")
+                
+                # Test 6: Expert recommendations
+                expert_recommendations = result.get("expert_recommendations", [])
+                if not expert_recommendations:
+                    self.log_test("Expert Analysis - Recommendations", False, "No expert recommendations generated")
+                    return False
+                
+                # Check recommendation structure
+                for i, rec in enumerate(expert_recommendations):
+                    required_rec_fields = ["type", "priority", "title", "description", "impact", "solutions", "urgency"]
+                    missing_rec_fields = [f for f in required_rec_fields if f not in rec]
+                    if missing_rec_fields:
+                        self.log_test("Expert Analysis - Recommendation Structure", False, 
+                                    f"Recommendation {i+1} missing fields: {missing_rec_fields}")
+                        return False
+                
+                self.log_test("Expert Analysis - Recommendations", True, 
+                            f"{len(expert_recommendations)} detailed recommendations with priorities and impacts")
+                
+                # Test 7: Performance curves
+                performance_curves = result.get("performance_curves", {})
+                curve_fields = ["flow", "hmt", "efficiency", "power", "best_operating_point"]
+                missing_curves = [f for f in curve_fields if f not in performance_curves]
+                if missing_curves:
+                    self.log_test("Expert Analysis - Performance Curves", False, f"Missing curves: {missing_curves}")
+                    return False
+                
+                best_op_point = performance_curves.get("best_operating_point", {})
+                if "flow" not in best_op_point or "hmt" not in best_op_point:
+                    self.log_test("Expert Analysis - Operating Point", False, "Missing operating point data")
+                    return False
+                
+                self.log_test("Expert Analysis - Performance Curves", True, 
+                            f"All curves generated, Operating point: {best_op_point.get('flow', 0):.1f} m³/h")
+                
+                # Test 8: System stability analysis
+                system_stability = result.get("system_stability", None)
+                if system_stability is None:
+                    self.log_test("Expert Analysis - System Stability", False, "Missing system stability analysis")
+                    return False
+                
+                energy_consumption = result.get("energy_consumption", 0)
+                total_head_loss = result.get("total_head_loss", 0)
+                
+                self.log_test("Expert Analysis - System Stability", True, 
+                            f"Stability: {system_stability}, Energy: {energy_consumption:.3f} kWh/m³, Head Loss: {total_head_loss:.2f}m")
+                
+                # Test 9: Optimization potential
+                optimization_potential = result.get("optimization_potential", {})
+                opt_fields = ["energy_savings", "npsh_margin", "velocity_optimization", "head_loss_reduction"]
+                missing_opt = [f for f in opt_fields if f not in optimization_potential]
+                if missing_opt:
+                    self.log_test("Expert Analysis - Optimization Potential", False, f"Missing optimization fields: {missing_opt}")
+                    return False
+                
+                self.log_test("Expert Analysis - Optimization Potential", True, 
+                            f"Energy savings potential: {optimization_potential.get('energy_savings', 0):.1f}%")
+                
+                # Overall success
+                self.log_test("Expert Analysis - Complete Test", True, 
+                            f"All expert analysis features working perfectly - Efficiency: {overall_efficiency:.1f}%, Stability: {system_stability}")
+                return True
+                
+            else:
+                self.log_test("Expert Analysis - Complete Test", False, f"HTTP Status: {response.status_code}")
+                if response.status_code == 422:
+                    try:
+                        error_detail = response.json()
+                        self.log_test("Expert Analysis - Validation Error", False, f"Validation error: {error_detail}")
+                    except:
+                        pass
+                return False
+                
+        except Exception as e:
+            self.log_test("Expert Analysis - Complete Test", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
