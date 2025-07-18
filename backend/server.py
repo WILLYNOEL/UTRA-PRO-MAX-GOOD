@@ -199,6 +199,10 @@ class NPSHdResult(BaseModel):
     singular_head_loss: float  # m
     total_head_loss: float  # m
     npshd: float  # m
+    npsh_required: float  # m
+    npsh_margin: float  # m (NPSHd - NPSHr)
+    cavitation_risk: bool
+    recommendations: List[str]  # Corrective actions for cavitation
     warnings: List[str]
 
 class HMTResult(BaseModel):
