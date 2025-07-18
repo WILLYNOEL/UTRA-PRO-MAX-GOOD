@@ -2904,6 +2904,7 @@ class HydraulicPumpTester:
             self.test_expert_analysis_endpoint,  # NEW: Test expert analysis endpoint
             self.test_expert_recommendations_generation,  # NEW: Test expert recommendations
             self.test_expert_analysis_integration,  # NEW: Test expert analysis integration
+            self.test_expert_analysis_comprehensive,  # NEW: Test complete expert analysis revision
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
