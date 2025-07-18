@@ -1073,6 +1073,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     engineer_name: '',
     engineer_firstname: '',
     company_name: '',
+    engineer_phone: '',
+    engineer_email: '',
     
     // Paramètres hydrauliques principaux
     flow_rate: 0,
