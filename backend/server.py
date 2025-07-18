@@ -376,7 +376,7 @@ def calculate_friction_factor(reynolds_number: float, roughness: float = 0.00004
         return 0.25 / (math.log10(term1 + term2) ** 2)
 
 def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
-    """Enhanced NPSHd calculation for Tab 1 using the correct formula"""
+    """Enhanced NPSHd calculation with corrected formulas based on suction type"""
     warnings = []
     
     # Atmospheric pressure constant at sea level
@@ -410,36 +410,70 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
     # Total head loss
     total_head_loss = linear_head_loss + singular_head_loss
     
-    # Calculate NPSHd using the correct formula:
-    # NPSHd = Patm - ρ*g*H_aspiration - Pertes de charges totales - Pression de vapeur saturante
-    
+    # Calculate NPSHd using the corrected formulas based on suction type
     # Convert atmospheric pressure to meters of fluid column
     patm_head = atmospheric_pressure / (fluid_props.density * 9.81)
     
     # Convert vapor pressure to meters of fluid column
     vapor_pressure_head = fluid_props.vapor_pressure / (fluid_props.density * 9.81)
     
-    # Calculate NPSHd according to the formula
+    # Calculate NPSHd according to the corrected formulas
     if input_data.suction_type == "flooded":
-        # For flooded suction, H_aspiration is negative (fluid above pump)
-        npshd = patm_head - fluid_props.density * 9.81 * (-abs(input_data.hasp)) / (fluid_props.density * 9.81) - total_head_loss - vapor_pressure_head
+        # En charge: NPSHd = Patm + ρ*g*H_aspiration - Pertes de charges totales - Pression de vapeur saturante
         npshd = patm_head + abs(input_data.hasp) - total_head_loss - vapor_pressure_head
     else:  # suction_lift
-        # For suction lift, H_aspiration is positive (pump above fluid)
-        npshd = patm_head - fluid_props.density * 9.81 * abs(input_data.hasp) / (fluid_props.density * 9.81) - total_head_loss - vapor_pressure_head
+        # En aspiration: NPSHd = Patm - ρ*g*H_aspiration - Pertes de charges totales - Pression de vapeur saturante
         npshd = patm_head - abs(input_data.hasp) - total_head_loss - vapor_pressure_head
     
-    # Warnings
+    # Enhanced warnings and alerts
     if velocity > 3.0:
-        warnings.append(f"Vitesse élevée ({velocity:.2f} m/s) - risque d'usure")
+        warnings.append(f"Vitesse élevée ({velocity:.2f} m/s) - RECOMMANDATION: Augmenter le diamètre de la tuyauterie")
     if velocity < 0.5:
         warnings.append(f"Vitesse faible ({velocity:.2f} m/s) - risque de sédimentation")
+    if velocity > 2.5:
+        warnings.append("ALERTE: Vitesse excessive - augmenter le diamètre de la tuyauterie pour réduire les pertes de charge")
+    
     if npshd < 0:
         warnings.append("ATTENTION: NPSHd négatif - conditions d'aspiration impossibles")
+        warnings.append("RECOMMANDATION: Réduire la hauteur d'aspiration et/ou la longueur de tuyauterie")
     if npshd < 2:
         warnings.append("ATTENTION: NPSHd très faible - risque de cavitation élevé")
-    if total_head_loss > 2:
-        warnings.append(f"Pertes de charge élevées ({total_head_loss:.2f} m) - vérifier le dimensionnement")
+        warnings.append("RECOMMANDATION: Vérifier le clapet anti-retour et réduire les pertes de charge")
+    
+    if total_head_loss > 3:
+        warnings.append(f"Pertes de charge élevées ({total_head_loss:.2f} m) - RECOMMANDATION: Augmenter le diamètre ou réduire la longueur")
+    
+    if input_data.hasp > 6 and input_data.suction_type == "suction_lift":
+        warnings.append("ALERTE: Hauteur d'aspiration excessive - réduire la hauteur d'aspiration")
+    
+    if input_data.pipe_length > 100:
+        warnings.append("ALERTE: Longueur de tuyauterie excessive - réduire la longueur pour diminuer les pertes de charge")
+    
+    # Temperature and material alerts
+    if input_data.temperature > 60:
+        material_warnings = {
+            "pvc": "ALERTE MATÉRIAU: PVC non recommandé au-dessus de 60°C - utiliser PEHD ou acier",
+            "pehd": "ATTENTION: PEHD près de sa limite de température - vérifier la résistance",
+            "steel": "Matériau acier adapté aux hautes températures",
+            "steel_galvanized": "Matériau acier galvanisé adapté aux hautes températures",
+            "cast_iron": "Matériau fonte adapté aux hautes températures",
+            "concrete": "Matériau béton adapté aux hautes températures"
+        }
+        if input_data.pipe_material in material_warnings:
+            warnings.append(material_warnings[input_data.pipe_material])
+    
+    if input_data.temperature > 80:
+        warnings.append("ALERTE TEMPÉRATURE: Température très élevée - vérifier la compatibilité de tous les matériaux")
+    
+    # Check valve alerts
+    has_check_valve = any(fitting.fitting_type == "check_valve" for fitting in input_data.suction_fittings)
+    if input_data.suction_type == "suction_lift" and not has_check_valve:
+        warnings.append("RECOMMANDATION: Ajouter un clapet anti-retour pour l'aspiration en dépression")
+    
+    # Fitting-specific alerts
+    total_fittings = sum(fitting.quantity for fitting in input_data.suction_fittings)
+    if total_fittings > 5:
+        warnings.append("ALERTE: Nombre excessif de raccords - réduire les raccords pour diminuer les pertes de charge")
     
     return NPSHdResult(
         input_data=input_data,
