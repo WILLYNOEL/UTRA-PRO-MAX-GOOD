@@ -225,7 +225,7 @@ class PerformanceAnalysisResult(BaseModel):
     recommended_cable_section: float  # mm²
     power_calculations: Dict[str, float]
     electrical_data: Dict[str, Any]
-    performance_curves: Dict[str, List[float]]  # Flow points and corresponding values
+    performance_curves: Dict[str, Any]  # Flow points and corresponding values
     recommendations: List[str]
     warnings: List[str]
 
