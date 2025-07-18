@@ -1550,6 +1550,7 @@ class HydraulicPumpTester:
         # Run all tests - prioritizing the specific corrections
         tests = [
             self.test_fluids_api,
+            self.test_user_interface_modifications,  # NEW: Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # NEW: Test corrected global efficiency
             self.test_operating_point_precision,  # NEW: Test operating point precision
             self.test_darcy_formula_integration,  # NEW: Test Darcy formula integration
