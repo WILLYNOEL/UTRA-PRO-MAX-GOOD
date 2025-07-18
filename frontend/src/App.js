@@ -2371,13 +2371,62 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 </div>
               </div>
               
-              {/* Ligne de résultats additionnels */}
+              {/* Ligne de résultats hydrauliques */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-red-600">
+                    {results.total_head_loss?.toFixed(2) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Pertes Totales (m)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Asp: {results.npshd_analysis?.total_head_loss?.toFixed(2) || 'N/A'}m
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-indigo-600">
+                    {results.npshd_analysis?.reynolds_number ? (
+                      results.npshd_analysis.reynolds_number > 4000 ? 'Turbulent' : 
+                      results.npshd_analysis.reynolds_number > 2300 ? 'Transitoire' : 'Laminaire'
+                    ) : 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Régime</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Re: {results.npshd_analysis?.reynolds_number?.toFixed(0) || 'N/A'}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-cyan-600">
+                    {inputData.useful_pressure?.toFixed(1) || '0.0'}
+                  </div>
+                  <div className="text-sm text-gray-600">Pression Utile (bar)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {(inputData.useful_pressure * 10.2)?.toFixed(1) || '0.0'}m CE
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-teal-600">
+                    {results.hmt_analysis?.suction_velocity?.toFixed(2) || results.hmt_analysis?.discharge_velocity?.toFixed(2) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Vitesse Ref. (m/s)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Refoulement
+                  </div>
+                </div>
+              </div>
+              
+              {/* Ligne de résultats électriques */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200">
                 <div className="text-center">
                   <div className="text-lg font-bold text-indigo-600">
                     {results.performance_analysis?.hydraulic_power?.toFixed(1) || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-600">P2 (kW)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Hydraulique
+                  </div>
                 </div>
                 
                 <div className="text-center">
@@ -2385,6 +2434,9 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     {results.performance_analysis?.electrical_power?.toFixed(1) || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-600">P1 (kW)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Électrique
+                  </div>
                 </div>
                 
                 <div className="text-center">
@@ -2392,6 +2444,9 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     {results.performance_analysis?.nominal_current?.toFixed(1) || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-600">Courant (A)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Nominal
+                  </div>
                 </div>
                 
                 <div className="text-center">
@@ -2399,6 +2454,36 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     {results.electrical_analysis?.annual_energy_cost?.toFixed(0) || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-600">Coût/an (€)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {inputData.electricity_cost?.toFixed(3) || 'N/A'} €/kWh
+                  </div>
+                </div>
+              </div>
+              
+              {/* Indicateurs de performance */}
+              <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
+                <div className="text-center">
+                  <div className={`text-lg font-bold ${results.system_stability ? 'text-green-600' : 'text-red-600'}`}>
+                    {results.system_stability ? '✅ STABLE' : '⚠️ INSTABLE'}
+                  </div>
+                  <div className="text-sm text-gray-600">Stabilité Système</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">
+                    {results.energy_consumption?.toFixed(3) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Conso. (kWh/m³)</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">
+                    {results.optimization_potential?.energy_savings?.toFixed(1) || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-600">Potentiel (%)</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Économie possible
+                  </div>
                 </div>
               </div>
             </div>
