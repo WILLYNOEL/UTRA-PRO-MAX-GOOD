@@ -2118,26 +2118,34 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ⌀ Aspiration (mm)
+                      ⭐ ⌀ Aspiration (DN)
                     </label>
-                    <input
-                      type="number"
-                      value={inputData.suction_pipe_diameter}
+                    <select
+                      value={inputData.suction_pipe_diameter || ''}
                       onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                    >
+                      <option value="">Sélectionnez un diamètre</option>
+                      {dnSizes.map(size => (
+                        <option key={size.mm} value={size.mm}>{size.label}</option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ⌀ Refoulement (mm)
+                      ⭐ ⌀ Refoulement (DN)
                     </label>
-                    <input
-                      type="number"
-                      value={inputData.discharge_pipe_diameter}
+                    <select
+                      value={inputData.discharge_pipe_diameter || ''}
                       onChange={(e) => handleInputChange('discharge_pipe_diameter', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
+                    >
+                      <option value="">Sélectionnez un diamètre</option>
+                      {dnSizes.map(size => (
+                        <option key={size.mm} value={size.mm}>{size.label}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 
