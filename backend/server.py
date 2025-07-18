@@ -1002,6 +1002,250 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         alerts=alerts
     )
 
+def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysisResult:
+    """
+    Analyse complète d'expert avec tous les calculs hydrauliques et électriques
+    """
+    
+    # Détermination du type d'aspiration
+    suction_type = "flooded" if input_data.suction_height > 0 else "suction_lift"
+    hasp = abs(input_data.suction_height)
+    
+    # Construction des raccords
+    suction_fittings = []
+    discharge_fittings = []
+    
+    if input_data.elbow_90_qty > 0:
+        suction_fittings.append({"fitting_type": "elbow_90", "quantity": input_data.elbow_90_qty})
+        discharge_fittings.append({"fitting_type": "elbow_90", "quantity": max(1, input_data.elbow_90_qty // 2)})
+    
+    if input_data.elbow_45_qty > 0:
+        suction_fittings.append({"fitting_type": "elbow_45", "quantity": input_data.elbow_45_qty})
+    
+    if input_data.valve_qty > 0:
+        discharge_fittings.append({"fitting_type": "valve", "quantity": input_data.valve_qty})
+    
+    if input_data.check_valve_qty > 0:
+        suction_fittings.append({"fitting_type": "check_valve", "quantity": input_data.check_valve_qty})
+    
+    # Calcul NPSHd
+    npshd_input = NPSHdCalculationInput(
+        suction_type=suction_type,
+        hasp=hasp,
+        flow_rate=input_data.flow_rate,
+        fluid_type=input_data.fluid_type,
+        temperature=input_data.temperature,
+        pipe_diameter=input_data.suction_pipe_diameter,
+        pipe_material=input_data.suction_material,
+        pipe_length=input_data.suction_length,
+        suction_fittings=[FittingInput(**f) for f in suction_fittings],
+        npsh_required=input_data.npsh_required
+    )
+    npshd_result = calculate_npshd_enhanced(npshd_input)
+    
+    # Calcul HMT
+    hmt_input = HMTCalculationInput(
+        installation_type=input_data.installation_type,
+        suction_type=suction_type,
+        hasp=hasp,
+        discharge_height=input_data.discharge_height,
+        useful_pressure=input_data.useful_pressure,
+        suction_pipe_diameter=input_data.suction_pipe_diameter,
+        discharge_pipe_diameter=input_data.discharge_pipe_diameter,
+        suction_pipe_length=input_data.suction_length,
+        discharge_pipe_length=input_data.discharge_length,
+        suction_pipe_material=input_data.suction_material,
+        discharge_pipe_material=input_data.discharge_material,
+        suction_fittings=[FittingInput(**f) for f in suction_fittings],
+        discharge_fittings=[FittingInput(**f) for f in discharge_fittings],
+        fluid_type=input_data.fluid_type,
+        temperature=input_data.temperature,
+        flow_rate=input_data.flow_rate
+    )
+    hmt_result = calculate_hmt_enhanced(hmt_input)
+    
+    # Calcul Performance
+    perf_input = PerformanceAnalysisInput(
+        flow_rate=input_data.flow_rate,
+        hmt=hmt_result.hmt,
+        pipe_diameter=input_data.suction_pipe_diameter,
+        fluid_type=input_data.fluid_type,
+        pipe_material=input_data.suction_material,
+        pump_efficiency=input_data.pump_efficiency,
+        motor_efficiency=input_data.motor_efficiency,
+        starting_method=input_data.starting_method,
+        power_factor=input_data.power_factor,
+        cable_length=input_data.cable_length,
+        cable_material=input_data.cable_material,
+        voltage=input_data.voltage
+    )
+    perf_result = calculate_performance_analysis(perf_input)
+    
+    # Analyse globale
+    overall_efficiency = perf_result.overall_efficiency
+    total_head_loss = npshd_result.total_head_loss + hmt_result.total_head_loss
+    
+    # Stabilité du système
+    system_stability = not npshd_result.cavitation_risk and overall_efficiency > 60
+    
+    # Consommation énergétique (kWh/m³)
+    hydraulic_power = perf_result.power_calculations.get("hydraulic_power", 0)
+    energy_consumption = hydraulic_power / input_data.flow_rate if input_data.flow_rate > 0 else 0
+    
+    # Recommandations d'expert
+    expert_recommendations = []
+    
+    # Analyse critique
+    if npshd_result.cavitation_risk:
+        expert_recommendations.append({
+            "type": "critical",
+            "priority": 1,
+            "title": "CAVITATION DÉTECTÉE",
+            "description": f"NPSHd ({npshd_result.npshd:.2f}m) ≤ NPSH requis ({input_data.npsh_required:.2f}m)",
+            "impact": "Destruction rapide de la pompe, bruit, vibrations",
+            "solutions": [
+                "Réduire la hauteur d'aspiration",
+                "Augmenter diamètre aspiration",
+                "Diminuer longueur aspiration",
+                "Réduire singularités aspiration"
+            ],
+            "urgency": "IMMÉDIATE"
+        })
+    
+    # Analyse de performance
+    if overall_efficiency < 60:
+        expert_recommendations.append({
+            "type": "efficiency",
+            "priority": 2,
+            "title": "RENDEMENT FAIBLE",
+            "description": f"Rendement global de {overall_efficiency:.1f}% très faible",
+            "impact": "Surconsommation énergétique, coûts d'exploitation élevés",
+            "solutions": [
+                "Choisir une pompe plus efficace",
+                "Optimiser le point de fonctionnement",
+                "Installer un variateur de vitesse",
+                "Vérifier l'état de la pompe"
+            ],
+            "urgency": "HAUTE"
+        })
+    
+    # Analyse hydraulique
+    if npshd_result.velocity > 3.0:
+        expert_recommendations.append({
+            "type": "hydraulic",
+            "priority": 3,
+            "title": "VITESSE EXCESSIVE",
+            "description": f"Vitesse de {npshd_result.velocity:.2f} m/s cause érosion et bruit",
+            "impact": "Usure accélérée, bruit, vibrations",
+            "solutions": [
+                "Augmenter diamètre tuyauterie",
+                "Réduire débit si possible",
+                "Matériaux résistants à l'érosion",
+                "Dispositifs anti-vibration"
+            ],
+            "urgency": "MOYENNE"
+        })
+    
+    # Analyse électrique
+    if perf_result.starting_current > 150:
+        expert_recommendations.append({
+            "type": "electrical",
+            "priority": 4,
+            "title": "COURANT DE DÉMARRAGE ÉLEVÉ",
+            "description": f"Courant de démarrage de {perf_result.starting_current:.1f}A",
+            "impact": "Chutes de tension, contraintes réseau",
+            "solutions": [
+                "Démarreur progressif",
+                "Variateur de vitesse",
+                "Démarrage étoile-triangle",
+                "Renforcement alimentation"
+            ],
+            "urgency": "FAIBLE"
+        })
+    
+    # Potentiel d'optimisation
+    optimization_potential = {
+        "energy_savings": max(0, 75 - overall_efficiency),  # Potentiel d'économie d'énergie
+        "npsh_margin": npshd_result.npsh_margin,
+        "velocity_optimization": max(0, npshd_result.velocity - 2.0),  # Réduction de vitesse possible
+        "head_loss_reduction": max(0, total_head_loss - (total_head_loss * 0.7))  # Réduction pertes possible
+    }
+    
+    # Courbes de performance étendues
+    performance_curves = generate_performance_curves(perf_input)
+    
+    # Courbes système
+    system_curves = {
+        "flow_points": performance_curves["flow"],
+        "system_curve": [flow**2 * (total_head_loss / input_data.flow_rate**2) for flow in performance_curves["flow"]],
+        "operating_point": {
+            "flow": input_data.flow_rate,
+            "head": hmt_result.hmt,
+            "efficiency": overall_efficiency,
+            "power": hydraulic_power
+        }
+    }
+    
+    return ExpertAnalysisResult(
+        input_data=input_data,
+        npshd_analysis={
+            "npshd": npshd_result.npshd,
+            "npsh_required": npshd_result.npsh_required,
+            "npsh_margin": npshd_result.npsh_margin,
+            "cavitation_risk": npshd_result.cavitation_risk,
+            "velocity": npshd_result.velocity,
+            "reynolds_number": npshd_result.reynolds_number,
+            "total_head_loss": npshd_result.total_head_loss,
+            "warnings": npshd_result.warnings,
+            "recommendations": npshd_result.recommendations
+        },
+        hmt_analysis={
+            "hmt": hmt_result.hmt,
+            "static_head": hmt_result.static_head,
+            "total_head_loss": hmt_result.total_head_loss,
+            "suction_velocity": hmt_result.suction_velocity,
+            "discharge_velocity": hmt_result.discharge_velocity,
+            "warnings": hmt_result.warnings
+        },
+        performance_analysis={
+            "overall_efficiency": perf_result.overall_efficiency,
+            "pump_efficiency": perf_result.pump_efficiency,
+            "motor_efficiency": perf_result.motor_efficiency,
+            "nominal_current": perf_result.nominal_current,
+            "starting_current": perf_result.starting_current,
+            "power_calculations": perf_result.power_calculations,
+            "warnings": perf_result.warnings,
+            "alerts": perf_result.alerts
+        },
+        electrical_analysis={
+            "voltage": input_data.voltage,
+            "power_factor": input_data.power_factor,
+            "starting_method": input_data.starting_method,
+            "cable_length": input_data.cable_length,
+            "cable_section": perf_result.recommended_cable_section,
+            "energy_consumption": energy_consumption
+        },
+        overall_efficiency=overall_efficiency,
+        total_head_loss=total_head_loss,
+        system_stability=system_stability,
+        energy_consumption=energy_consumption,
+        expert_recommendations=expert_recommendations,
+        optimization_potential=optimization_potential,
+        performance_curves=performance_curves,
+        system_curves=system_curves
+    )
+
+@api_router.post("/expert-analysis", response_model=ExpertAnalysisResult)
+async def expert_analysis(input_data: ExpertAnalysisInput):
+    """
+    Analyse complète d'expert avec tous les calculs hydrauliques et électriques
+    """
+    try:
+        result = calculate_expert_analysis(input_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur dans l'analyse expert: {str(e)}")
+
 # Legacy functions for backward compatibility
 def calculate_cable_section(current: float, cable_length: float, voltage: int) -> float:
     """Calculate required cable section"""
