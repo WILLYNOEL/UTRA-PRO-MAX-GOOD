@@ -2450,6 +2450,98 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </select>
                 </div>
                 
+                {/* Propriétés du fluide affichées automatiquement */}
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
+                    🧪 Propriétés du Fluide à {inputData.temperature}°C
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-white p-3 rounded border">
+                      <div className="font-medium text-gray-700">Masse Volumique</div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {(() => {
+                          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
+                          if (!selectedFluid) return 'N/A';
+                          
+                          // Calcul de la masse volumique selon la température
+                          let density = selectedFluid.density;
+                          if (inputData.fluid_type === 'water') {
+                            // Eau : densité varie avec la température
+                            density = 1000 - 0.2 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'oil') {
+                            // Huile : densité diminue avec la température
+                            density = 850 - 0.7 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'glycol') {
+                            // Glycol : densité varie moins
+                            density = 1050 - 0.3 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'acid') {
+                            // Acide : densité stable
+                            density = 1200 - 0.1 * (inputData.temperature - 20);
+                          }
+                          
+                          return Math.max(density, 700).toFixed(1);
+                        })()}
+                      </div>
+                      <div className="text-xs text-gray-500">kg/m³</div>
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded border">
+                      <div className="font-medium text-gray-700">Viscosité</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {(() => {
+                          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
+                          if (!selectedFluid) return 'N/A';
+                          
+                          // Calcul de la viscosité selon la température
+                          let viscosity = selectedFluid.viscosity;
+                          if (inputData.fluid_type === 'water') {
+                            // Eau : viscosité diminue avec la température
+                            viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
+                          } else if (inputData.fluid_type === 'oil') {
+                            // Huile : viscosité très sensible à la température
+                            viscosity = 0.1 * Math.exp(-0.05 * (inputData.temperature - 20));
+                          } else if (inputData.fluid_type === 'glycol') {
+                            // Glycol : viscosité élevée
+                            viscosity = 0.01 * Math.exp(-0.04 * (inputData.temperature - 20));
+                          } else if (inputData.fluid_type === 'acid') {
+                            // Acide : viscosité proche de l'eau
+                            viscosity = 0.0012 * Math.exp(-0.025 * (inputData.temperature - 20));
+                          }
+                          
+                          return Math.max(viscosity, 0.0001).toFixed(4);
+                        })()}
+                      </div>
+                      <div className="text-xs text-gray-500">Pa·s</div>
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded border">
+                      <div className="font-medium text-gray-700">Pression Vapeur</div>
+                      <div className="text-lg font-bold text-red-600">
+                        {(() => {
+                          // Calcul de la pression de vapeur saturante selon la température
+                          let vaporPressure = 0;
+                          if (inputData.fluid_type === 'water') {
+                            // Formule approximative pour l'eau : P = 611 * exp(17.27 * T / (T + 237.3))
+                            vaporPressure = 611 * Math.exp(17.27 * inputData.temperature / (inputData.temperature + 237.3));
+                          } else if (inputData.fluid_type === 'oil') {
+                            // Huile : pression de vapeur très faible
+                            vaporPressure = 10 * Math.exp(0.05 * (inputData.temperature - 20));
+                          } else if (inputData.fluid_type === 'glycol') {
+                            // Glycol : pression de vapeur modérée
+                            vaporPressure = 100 * Math.exp(0.08 * (inputData.temperature - 20));
+                          } else if (inputData.fluid_type === 'acid') {
+                            // Acide : pression de vapeur variable
+                            vaporPressure = 800 * Math.exp(0.06 * (inputData.temperature - 20));
+                          }
+                          
+                          return Math.max(vaporPressure, 1).toFixed(0);
+                        })()}
+                      </div>
+                      <div className="text-xs text-gray-500">Pa</div>
+                    </div>
+                  </div>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Type d'Aspiration
