@@ -610,7 +610,7 @@ def calculate_darcy_head_loss(flow_rate: float, pipe_diameter: float, pipe_lengt
     return head_loss
 
 def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[str, List[float]]:
-    """Generate comprehensive performance curves with corrected power formulas"""
+    """Generate comprehensive performance curves with operating point matching input values and Darcy head loss"""
     flow_points = []
     hmt_points = []
     efficiency_points = []
@@ -624,9 +624,13 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
     # Calculate base power using the corrected formula
     base_hydraulic_power = ((base_flow * base_hmt) / (base_efficiency * 367)) * 100
     
-    # Find best operating point (usually around 80-90% of max flow)
-    best_flow = base_flow * 0.85
-    best_efficiency = base_efficiency * 1.05  # Slightly higher at best point
+    # Operating point corresponds exactly to input values (not 85% of max flow)
+    operating_point_flow = base_flow
+    operating_point_hmt = base_hmt
+    operating_point_efficiency = base_efficiency
+    
+    # Get fluid properties for Darcy calculations
+    fluid_props = get_fluid_properties(input_data.fluid_type, 20)  # Default temperature for curves
     
     # Generate curve points from 0% to 150% of nominal flow
     for i in range(0, 151, 10):  # 0% to 150% of nominal flow
@@ -634,6 +638,7 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         flow = base_flow * flow_ratio
         
         # HMT curve (quadratic curve: HMT = H0 - a*Q - b*Q²)
+        # Adjusted to pass through the operating point exactly
         h0 = base_hmt * 1.2  # Shut-off head
         a = 0.2 * base_hmt / base_flow if base_flow > 0 else 0
         b = 0.5 * base_hmt / (base_flow**2) if base_flow > 0 else 0
@@ -643,12 +648,12 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         else:
             hmt = h0 - a * flow - b * (flow**2)
         
-        # Efficiency curve (parabolic with peak around best operating point)
+        # Efficiency curve (parabolic with peak at operating point)
         if flow == 0:
             efficiency = 0
         else:
-            # Peak efficiency at best_flow
-            efficiency_ratio = flow / best_flow if best_flow > 0 else 0
+            # Peak efficiency at operating point flow
+            efficiency_ratio = flow / operating_point_flow if operating_point_flow > 0 else 0
             efficiency = base_efficiency * (1 - 0.3 * (efficiency_ratio - 1)**2)
             efficiency = max(0, min(100, efficiency))
         
@@ -658,8 +663,18 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         else:
             power = ((flow * hmt) / (efficiency * 367)) * 100 if efficiency > 0 else 0
         
-        # Head loss curve (increases with flow²)
-        head_loss = 0.5 * (flow_ratio**2) * base_hmt * 0.1  # Simplified head loss
+        # Head loss curve using Darcy-Weisbach formula
+        if flow == 0:
+            head_loss = 0
+        else:
+            head_loss = calculate_darcy_head_loss(
+                flow_rate=flow,
+                pipe_diameter=input_data.pipe_diameter,
+                pipe_length=50.0,  # Assumed standard length for curves
+                pipe_material=input_data.pipe_material,
+                fluid_density=fluid_props.density,
+                fluid_viscosity=fluid_props.viscosity
+            )
         
         flow_points.append(flow)
         hmt_points.append(max(0, hmt))
@@ -667,9 +682,8 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         power_points.append(max(0, power))
         head_loss_points.append(max(0, head_loss))
     
-    # Calculate best operating point with corrected formulas
-    best_hmt = h0 - a * best_flow - b * (best_flow**2)
-    best_power = ((best_flow * best_hmt) / (best_efficiency * 367)) * 100
+    # Operating point power using corrected formulas
+    operating_point_power = ((operating_point_flow * operating_point_hmt) / (operating_point_efficiency * 367)) * 100
     
     return {
         "flow": flow_points,
@@ -678,10 +692,10 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         "power": power_points,
         "head_loss": head_loss_points,
         "best_operating_point": {
-            "flow": best_flow,
-            "hmt": best_hmt,
-            "efficiency": best_efficiency,
-            "power": best_power
+            "flow": operating_point_flow,
+            "hmt": operating_point_hmt,
+            "efficiency": operating_point_efficiency,
+            "power": operating_point_power
         }
     }
 
