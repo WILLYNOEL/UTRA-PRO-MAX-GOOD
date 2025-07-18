@@ -3369,20 +3369,20 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
         opacity="0.8"
       />
       
-      {/* Étiquettes du réservoir */}
-      <text x="160" y={currentConfig.reservoirY - 20} textAnchor="middle" className="text-sm font-bold" fill="#1f2937">
+      {/* Étiquettes du réservoir améliorées */}
+      <text x="160" y={currentConfig.reservoirY - 15} textAnchor="middle" className="text-sm font-bold" fill="#1f2937">
         🏛️ RÉSERVOIR
       </text>
-      <text x="160" y={currentConfig.reservoirY - 5} textAnchor="middle" className="text-xs" fill="#6b7280">
+      <text x="160" y={currentConfig.reservoirY - 2} textAnchor="middle" className="text-xs" fill="#6b7280">
         {fluids.find(f => f.id === inputData.fluid_type)?.name || 'Fluide'} - {inputData.temperature}°C
       </text>
       
       {/* Indication du niveau d'eau */}
       <text x="280" y={waterLevel + 5} className="text-xs font-bold" fill="#1d4ed8">
-        💧 Niveau d'eau
+        💧 Niveau
       </text>
-      <text x="280" y={waterLevel + 18} className="text-xs" fill="#6b7280">
-        Référence aspiration
+      <text x="280" y={waterLevel + 16} className="text-xs" fill="#6b7280">
+        Référence
       </text>
       
       {/* Tuyauterie d'aspiration avec épaisseur proportionnelle */}
