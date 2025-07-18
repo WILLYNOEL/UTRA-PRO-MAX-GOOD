@@ -573,7 +573,7 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     )
 
 def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[str, List[float]]:
-    """Generate comprehensive performance curves with best operating point"""
+    """Generate comprehensive performance curves with corrected power formulas"""
     flow_points = []
     hmt_points = []
     efficiency_points = []
@@ -584,8 +584,8 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
     base_hmt = input_data.hmt
     base_efficiency = input_data.pump_efficiency
     
-    # Calculate base power using the formula
-    base_hydraulic_power = (base_flow * base_hmt) / (base_efficiency * 367)
+    # Calculate base power using the corrected formula
+    base_hydraulic_power = ((base_flow * base_hmt) / (base_efficiency * 367)) * 100
     
     # Find best operating point (usually around 80-90% of max flow)
     best_flow = base_flow * 0.85
@@ -615,11 +615,11 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
             efficiency = base_efficiency * (1 - 0.3 * (efficiency_ratio - 1)**2)
             efficiency = max(0, min(100, efficiency))
         
-        # Power curve P = (Q * H) / (η * 367)
+        # Power curve using corrected formula: P = ((Q * H) / (η * 367)) * 100
         if flow == 0:
             power = 0
         else:
-            power = (flow * hmt) / (efficiency * 367) if efficiency > 0 else 0
+            power = ((flow * hmt) / (efficiency * 367)) * 100 if efficiency > 0 else 0
         
         # Head loss curve (increases with flow²)
         head_loss = 0.5 * (flow_ratio**2) * base_hmt * 0.1  # Simplified head loss
@@ -630,18 +630,22 @@ def generate_performance_curves(input_data: PerformanceAnalysisInput) -> Dict[st
         power_points.append(max(0, power))
         head_loss_points.append(max(0, head_loss))
     
+    # Calculate best operating point with corrected formulas
+    best_hmt = h0 - a * best_flow - b * (best_flow**2)
+    best_power = ((best_flow * best_hmt) / (best_efficiency * 367)) * 100
+    
     return {
         "flow": flow_points,
         "hmt": hmt_points,
         "efficiency": efficiency_points,
         "power": power_points,
         "head_loss": head_loss_points,
-        "best_operating_point": [
-            best_flow,
-            h0 - a * best_flow - b * (best_flow**2),
-            best_efficiency,
-            (best_flow * (h0 - a * best_flow - b * (best_flow**2))) / (best_efficiency * 367)
-        ]
+        "best_operating_point": {
+            "flow": best_flow,
+            "hmt": best_hmt,
+            "efficiency": best_efficiency,
+            "power": best_power
+        }
     }
 
 def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> PerformanceAnalysisResult:
