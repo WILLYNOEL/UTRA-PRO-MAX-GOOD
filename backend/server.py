@@ -734,16 +734,16 @@ def perform_hydraulic_calculation(input_data: CalculationInput) -> CalculationRe
     )
 
 # ============================================================================
-# API ENDPOINTS
+# ENHANCED API ENDPOINTS FOR THREE TABS
 # ============================================================================
 
 @api_router.get("/")
 async def root():
-    return {"message": "Hydraulic Pump Calculation API"}
+    return {"message": "API de Calcul Hydraulique pour Pompes Centrifuges"}
 
 @api_router.get("/fluids")
 async def get_available_fluids():
-    """Get list of available fluids"""
+    """Obtenir la liste des fluides disponibles"""
     return {
         "fluids": [
             {"id": key, "name": value["name"]} 
@@ -751,9 +751,57 @@ async def get_available_fluids():
         ]
     }
 
+@api_router.get("/pipe-materials")
+async def get_pipe_materials():
+    """Obtenir la liste des matériaux de tuyauterie"""
+    return {
+        "materials": [
+            {"id": key, "name": value["name"], "description": value["description"]}
+            for key, value in PIPE_MATERIALS.items()
+        ]
+    }
+
+@api_router.get("/fittings")
+async def get_fittings():
+    """Obtenir la liste des raccords disponibles"""
+    return {
+        "fittings": [
+            {"id": key, "name": value["name"], "k_coefficient": value["k"]}
+            for key, value in FITTING_COEFFICIENTS.items()
+        ]
+    }
+
+@api_router.post("/calculate-npshr")
+async def calculate_npshr_endpoint(input_data: NPSHrCalculationInput):
+    """Calcul NPSHr - Onglet 1"""
+    try:
+        result = calculate_npshr_enhanced(input_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/calculate-hmt")
+async def calculate_hmt_endpoint(input_data: HMTCalculationInput):
+    """Calcul HMT - Onglet 2"""
+    try:
+        result = calculate_hmt_enhanced(input_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/calculate-performance")
+async def calculate_performance_endpoint(input_data: PerformanceAnalysisInput):
+    """Analyse de performance - Onglet 3"""
+    try:
+        result = calculate_performance_analysis(input_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Legacy endpoint for backward compatibility
 @api_router.post("/calculate")
 async def calculate_pump_performance(input_data: CalculationInput):
-    """Perform hydraulic calculations"""
+    """Calcul de performance de pompe (compatibilité ancienne version)"""
     try:
         result = perform_hydraulic_calculation(input_data)
         return result
