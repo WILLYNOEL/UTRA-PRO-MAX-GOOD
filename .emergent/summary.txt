@@ -1,35 +1,30 @@
 <analysis>
-The previous AI engineer successfully evolved a hydraulic pump calculation MVP into a robust, multi-tabbed application using React, FastAPI, and MongoDB. The process was highly iterative, driven by continuous user feedback focusing on engineering accuracy and user experience. Key phases included refining hydraulic/electrical calculations, integrating dynamic performance curves, implementing alert systems, and localizing to French. Architectural decisions favored a clear frontend-backend separation with Pydantic for data validation. The engineer consistently enhanced the Expert tab, incorporating complex inputs, dynamic schemas, detailed advice, and report generation features like PDF/Excel export with branding. Challenges involved data synchronization and precise UI/UX adjustments. The trajectory ends with the AI engineer addressing new, significant feature requests, notably for advanced fluid properties, new informational tabs, and comprehensive audit functionalities.
+The previous AI engineer effectively transformed a hydraulic pump calculation MVP into a comprehensive, multi-tabbed application using React, FastAPI, and MongoDB. The development was highly iterative, responding to continuous user feedback to enhance engineering accuracy and user experience. Key achievements include refining hydraulic/electrical calculations, integrating dynamic performance curves, implementing alert systems, and localizing the application to French. A significant focus was on the Expert tab, which now supports complex inputs, dynamic schemas, detailed advice, and professional report generation (PDF/Excel with branding). The engineer meticulously addressed input field behaviors, extended fluid lists, and introduced major new sections for FORMULAS, CHEMICAL COMPATIBILITY, and AUDIT. The trajectory concludes with the engineer actively working on integrating the rich chemical compatibility data into the Expert recommendations, aiming to suggest optimal materials and components.
 </analysis>
 
 <product_requirements>
-The primary goal is an interactive application for hydraulic centrifugal pump calculations, assisting professionals in sizing, performance evaluation, and operational control, featuring graphical data visualization and detailed calculations.
+The application's core objective is to provide an interactive platform for hydraulic centrifugal pump calculations, aiding professionals in sizing, performance evaluation, and operational control through graphical visualization and detailed computation.
 
-The application currently supports:
-*   **NPSHd Calculation**: Inputs for atmospheric pressure, suction height, flow, fluid, temperature, pipe/fitting details. Calculates velocity, head losses, NPSHd, with  input, cavitation alerts, recommendations, and a dynamic installation schema adapting to suction type.
-*   **HMT Calculation**: Inputs for suction/discharge heights, pipe details, fittings. Calculates velocities, total head losses, Total Dynamic Head (HMT), and useful pressure for Submersible or Surface installations.
-*   **Performance Analysis & Electrical**: Inputs for flow, HMT, pipe diameter, fluid/pipe material, pump/motor efficiency, P1/P2, starting method, power factor, cable length/material. Displays overall efficiency, nominal current, recommended cable section, and interactive performance curves (HMT, efficiency, power, head losses vs. flow) with a best operating point.
-*   **Expert Tab**: Provides comprehensive hydraulic/electrical analysis with real-time results, dynamic installation schema, graphs, and expert advice, integrating useful pressure, head losses, flow regime, kWh price, expanded singularity types, and dynamic fluid properties. It includes fields for user and company details, phone, email, and supports professional PDF/Excel report generation with branding.
+The system currently offers:
+*   **NPSHd Calculation**: Comprehensive inputs for velocity, head losses, NPSHd, including , cavitation alerts, and a dynamic installation schema.
+*   **HMT Calculation**: Determines velocities, total head losses, and Total Dynamic Head (HMT) for various installations.
+*   **Performance Analysis & Electrical**: Calculates efficiency, current, and cable section, displaying interactive performance curves with an optimal operating point.
+*   **Expert Tab**: Delivers in-depth hydraulic/electrical analysis, real-time results, dynamic schemas, and expert advice, supporting professional report generation with project and branding details.
 
-Recent major requests include:
-1.  **Input Correction in EXPERT Tab**: Allow 0 or 0.5 for suction/discharge height/length, required NPSH.
-2.  **Creation of a FORMULAS Tab**: Display all project's physical formulas with a searchable dropdown.
-3.  **Extension of the Fluid List**: Add Palm oil, Gasoline, Diesel, Hydraulic oil, and other industrial fluids.
-4.  **Creation of a CHEMICAL COMPATIBILITY Tab**: Search fluid and display compatibility with materials.
-5.  **Creation of an AUDIT Tab**: With Hydraulic Audit and Energy Audit sub-tabs, offering interactive forms for technical data entry, an EXPERT button for analysis, technical recommendations, improvements, and warnings.
+Recent major enhancements included allowing  or  input values in the Expert tab fields (and fixing backspace clearing), introducing a **FORMULAS Tab** for physical equations, significantly **extending the fluid list** (industrial, food, domestic fluids), adding a **CHEMICAL COMPATIBILITY Tab** (fluid-material compatibility via dropdown), and developing an **AUDIT Tab** with Hydraulic Audit and Energy Audit sub-sections for expert analysis and recommendations. The immediate next requirement is to integrate fluid-material compatibility into Expert recommendations.
 </product_requirements>
 
 <key_technical_concepts>
--   **Hydraulic Engineering**: NPSH (NPSHd/NPSHr), HMT, fluid properties (density, viscosity, vapor pressure), head loss (Darcy-Weisbach, Reynolds Number, Colebrook-White).
--   **Electrical Calculations**: Power (P1, P2), current, efficiency, voltage drop.
--   **Full-Stack Development**: React.js (Frontend), FastAPI (Backend), MongoDB (Database).
--   **Data Visualization**: Chart.js, SVG for dynamic diagrams.
--   **UI/UX**: Tailwind CSS, French localization, dynamic forms, PDF/CSV export.
--   **Data Validation**: Pydantic models.
+- Hydraulic Engineering: NPSH, HMT, fluid properties (density, viscosity, vapor pressure), head loss calculations.
+- Electrical Engineering: Power (P1, P2), current, efficiency, voltage drop.
+- Full-Stack Development: React.js (Frontend), FastAPI (Backend), MongoDB (Database).
+- Data Visualization: Chart.js, SVG for dynamic diagrams.
+- UI/UX: Tailwind CSS, French localization, dynamic forms, PDF/CSV export.
+- Data Validation: Pydantic models.
 </key_technical_concepts>
 
 <code_architecture>
-The application is structured as a full-stack web application, comprising a React frontend, a FastAPI backend, and a MongoDB database.
+The application is a full-stack web application structured with a React frontend, a FastAPI backend, and a MongoDB database.
 
 **Detailed Directory Structure:**
 
@@ -37,65 +32,33 @@ The application is structured as a full-stack web application, comprising a Reac
 **Key Files and Their Importance/Changes:**
 
 -   ****:
-    -   **Summary**: Defines the FastAPI application, API endpoints, Pydantic models, and core calculation logic for hydraulic, electrical, and performance analysis, including MongoDB interactions.
-    -   **Changes**: Corrected , integrated , refactored  (removed NPSH, added velocity/alert data, adjusted curve logic), modified  and  (optional suction fields for submersible), updated // (NPSHr, cavitation), created  and  endpoint for comprehensive hydraulic/electrical results (useful pressure, head losses, flow regime, kWh price, singularities). Pydantic models (e.g., ) updated to make NPSH fields . Expert recommendations enriched.
+    -   **Summary**: Central to the backend, defining FastAPI endpoints and all core calculation logic (hydraulic, electrical, performance analysis) and data models. Handles MongoDB interactions.
+    -   **Changes**: Refinements to  and . Expanded  to include a wide range of industrial, food, and domestic fluids with their  and  data. Added  for detailed material compatibility.  was updated to handle the expanded fluid data structure. The API endpoints, especially , were enhanced to utilize these new fluid properties.
 
 -   ****:
-    -   **Summary**: The main React component managing UI, state, API calls, and dynamic result display including charts and SVG diagrams.
-    -   **Changes**:
-        -   **Multi-tab Interface**: Expanded to NPSHd, HMT, Performance, Historique, Expert.
-        -   **Performance Tab UI**: Removed NPSH fields, refactored chart display into primary Q/H and secondary absorbed power, ensured curve intersection.
-        -   **NPSHd Tab UI**: Added  input, cavitation risk/recommendations, dynamic SVG installation schema.
-        -   **Expert Tab UI**: Implemented with extensive inputs, real-time results, multi-curve charts, and dynamic installation schema. Key additions:
-            -   **Reset Button**: Added a Réinitialiser button to clear all input fields to initial defaults (which later changed to all zeros, then specific smart defaults).
-            -   **Dynamic Schema**: Improved  to dynamically adapt pump position based on en charge vs. en aspiration (though full dynamization is still a pending task). Texts and arrows in schema were resized for readability. Fluid properties are now dynamically displayed within the SVG schema.
-            -   **Hydraulic Data Display**: Explicitly included flow rate () and enhanced display of  and velocities. Important result values (Débit, HMT, P2, Courant nominal) are intended to be highlighted.
-            -   **Fluid Properties Display**: Dedicated PROPRIÉTÉS DU FLUIDE section automatically updates with density, viscosity, and vapor pressure based on selected fluid and temperature.
-            -   **DN Combos**: Replaced manual diameter inputs with dropdowns ( elements) for standard DN values (e.g., DN20, DN25...DN500) with their precise millimeter equivalents (e.g., DN100 (114.3mm)).
-            -   **Export Buttons**: Added Export PDF and Export Excel buttons, which generate reports with project details and branding.
-            -   **Input Fields**: Addressed 0 not clearing with backspace by using  for input values. Important fields (flow, temperature, heights, diameters, NPSH) are highlighted with yellow borders and stars.
-            -   **Project Information**: Added input fields for Engineer's Name/Surname, Client Company, Phone Number, and Email. This information is incorporated into the PDF report header along with the ECO PUMP AFRIK logo.
-            -   **Default Values**: Implemented smart default values for  (0.8),  (20°C),  (96 FCFA),  (4000 h/year),  (25°C),  (60%),  (75%),  (85%), and typical  quantities (e.g., 1 suction elbow, 2 discharge elbows).
-            -   **Voltage Drop**: Added an input field for  (Voltage Drop) in percentage.
-        -   **General UI**: French localization; removed numerical arrows from input fields.
+    -   **Summary**: The primary React component, managing the application's UI, state, API calls, and displaying dynamic results including charts and SVG diagrams. It hosts all major tabs and their corresponding components.
+    -   **Changes**: Implemented a multi-tab interface including NPSHd, HMT, Performance, Historique, Expert, and new FORMULAS, CHEMICAL COMPATIBILITY, and AUDIT tabs. Significant work on the Expert tab involved adding project information fields, PDF/Excel export, dynamic SVG schema enhancements (fluid properties display), DN dropdowns, and smart default values. Crucially, input fields in the Expert tab were modified to correctly allow  and  values, and to permit clearing with backspace (by adjusting  handlers and  to allow empty strings and convert to  only for API calls). A new  component was created for the FORMULAS tab. A  component was developed, initially with search, then refined to a dropdown-based UX. An  component was added for the AUDIT tab, encompassing Hydraulic Audit and Energy Audit sub-sections. A  function was introduced within  to handle frontend-side dynamic calculation and display of fluid properties, resolving NaN issues.
 
 -   ****:
-    -   **Summary**: Defines visual appearance, leveraging Tailwind CSS and custom styles.
-    -   **Changes**: Contains specific CSS rules to hide default up/down arrows in numeric input fields.
+    -   **Summary**: Contains custom CSS rules that complement Tailwind CSS for specific visual adjustments.
+    -   **Changes**: Includes rules to hide default up/down arrows in numeric input fields, improving UI consistency.
 
 -   ** & **:
-    -   **Summary**: Lists Python and Node.js dependencies.
-    -   **Changes**: Incrementally updated with new libraries as features were introduced.
+    -   **Summary**: List Python and Node.js dependencies, respectively.
+    -   **Changes**: Updated incrementally to reflect new libraries and tools added throughout the development process for new features.
 </code_architecture>
 
 <pending_tasks>
--   **Input Correction in EXPERT Tab**: Allow 0 or 0.5 for , , , , and  fields. (Work has started on this.)
--   **Creation of a FORMULAS Tab**: Implement a new tab to display all physical formulas used in the project with a comprehensive dropdown list and clear expression display.
--   **Extension of the Fluid List**: Expand the list of selectable fluids to include Palm oil, Gasoline, Diesel, Hydraulic oil, and other industrial fluids.
--   **Creation of a CHEMICAL COMPATIBILITY Tab**: Develop a new tab for searching fluids and displaying their chemical compatibility with various materials.
--   **Creation of an AUDIT Tab**: Implement a main tab with Hydraulic Audit and Energy Audit sub-tabs, each containing interactive forms, an EXPERT button for data analysis, and detailed feedback (recommendations, improvements, warnings).
+- Integrate chemical compatibility analysis into the Expert tab's recommendations, including suggestions for optimal materials and joints based on the selected fluid.
 </pending_tasks>
 
 <current_work>
-The previous AI engineer was actively working on enhancing the Expert tab and has just received a set of new, significant feature requests.
+The previous AI engineer was actively working on enhancing the Expert tab by integrating chemical compatibility data into its recommendations. This directly follows the extensive work on developing new tabs (FORMULAS, CHEMICAL COMPATIBILITY, AUDIT), expanding the fluid list with industrial, food, and domestic fluids, and resolving input field issues (allowing 0/0.5 and backspace clearing) in the Expert tab.
 
-Immediately before this summary request, the engineer had completed a series of improvements for the Expert tab, including:
-*   Refining the dynamic schema with better readability and fluid property display.
-*   Implementing precise DN to mm correspondences for pipe diameters based on a user-provided table.
-*   Adding comprehensive project information fields (Name, Surname, Company, Phone, Email) which are integrated into a professional PDF export with the ECO PUMP AFRIK logo.
-*   Setting smart default values for various parameters like , temperature, kWh price, annual operation hours, ambient conditions, and pump/motor efficiencies.
-*   Correcting the voltage drop field to accept percentage values.
-*   Ensuring fluid properties (density, viscosity, vapor pressure) automatically display based on fluid type and temperature, both in the dedicated section and within the SVG schema.
-*   Addressing the 0 not clearing with backspace in input fields.
-
-The last user interaction (Chat Message 197) introduced a set of **major new requirements**:
-1.  Input correction in the EXPERT tab to allow values like 0 or 0.5 for various height, length, and NPSH fields.
-2.  Creation of new, distinct tabs: FORMULAS, CHEMICAL COMPATIBILITY, and AUDIT (with Hydraulic Audit and Energy Audit sub-tabs).
-3.  Extension of the fluid list with more industrial fluids.
-
-The AI engineer's most recent action (Chat Message 198) confirms acknowledgment of all these new demands and explicitly states the immediate next step is to begin with the **correction of input fields in the EXPERT tab** to allow 0 or 0.5 values.
+Specifically, the engineer has just begun the task by:
+1.  **Backend ()**: Populating a detailed  dictionary and extending the existing  with compatibility information for a vast range of fluids. The very last action in the trajectory (Chat Message 280) indicates the engineer is about to create a function to leverage this data and integrate it into the  endpoint, which is crucial for influencing the expert recommendations on materials.
 </current_work>
 
 <optional_next_step>
-Correct the input fields in the EXPERT tab to allow values of 0 or 0.5 for suction/discharge height/length and required NPSH.
+Create and integrate a compatibility analysis function into the backend's  endpoint.
 </optional_next_step>
