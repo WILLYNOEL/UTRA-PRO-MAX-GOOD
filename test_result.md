@@ -439,7 +439,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Expert Solaire Tab with Optimizations"
+    - "Expert Solaire CALCULS DYNAMIQUES - Nouvelles Optimisations Majeures"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
