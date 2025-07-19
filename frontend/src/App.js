@@ -1012,10 +1012,37 @@ const SolarExpertSystem = () => {
   }, [results]);
 
   const handleInputChange = (field, value) => {
-    setSolarData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setSolarData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Calcul automatique du débit basé sur les heures de fonctionnement
+      if (field === 'daily_water_need' || field === 'operating_hours') {
+        const volume = field === 'daily_water_need' ? value : prev.daily_water_need;
+        const hours = field === 'operating_hours' ? value : prev.operating_hours;
+        if (hours > 0) {
+          updated.flow_rate = parseFloat((volume / hours).toFixed(2));
+        }
+      }
+      
+      // Calcul automatique de la hauteur géométrique
+      if (field === 'dynamic_level' || field === 'tank_height') {
+        const dynamicLevel = field === 'dynamic_level' ? value : prev.dynamic_level;
+        const tankHeight = field === 'tank_height' ? value : prev.tank_height;
+        updated.static_head = dynamicLevel + tankHeight;
+        
+        // Recalcul automatique HMT
+        updated.total_head = updated.static_head + prev.dynamic_losses + prev.useful_pressure_head;
+      }
+      
+      // Recalcul automatique HMT pour autres champs
+      if (field === 'dynamic_losses' || field === 'useful_pressure_head') {
+        const losses = field === 'dynamic_losses' ? value : prev.dynamic_losses;
+        const pressure = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
+        updated.total_head = prev.static_head + losses + pressure;
+      }
+      
+      return updated;
+    });
   };
 
   const formatCurrency = (value) => {
