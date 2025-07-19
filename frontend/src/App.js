@@ -6,7 +6,453 @@ import './App.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Component pour Tab 1 - Calcul NPSHd
+// Component pour Onglet FORMULES - Base de Données des Formules Hydrauliques
+const FormulaDatabase = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedFormula, setSelectedFormula] = useState(null);
+
+  // Base de données complète des formules hydrauliques utilisées
+  const formulaDatabase = {
+    // 1. FORMULES NPSHD
+    npshd: {
+      name: "Calculs NPSH Disponible",
+      color: "bg-blue-50 border-blue-200",
+      icon: "🟦",
+      formulas: [
+        {
+          id: "npshd_flooded",
+          name: "NPSHd - Installation en Charge",
+          formula: "NPSHd = (Patm / (ρ × g)) + hasp - (Pv / (ρ × g)) - ΔHasp",
+          variables: {
+            "NPSHd": "Net Positive Suction Head disponible (m)",
+            "Patm": "Pression atmosphérique (Pa) = 101 325 Pa",
+            "ρ": "Masse volumique du fluide (kg/m³)",
+            "g": "Accélération de la pesanteur = 9.81 m/s²",
+            "hasp": "Hauteur d'aspiration en charge (m, positif)",
+            "Pv": "Pression de vapeur saturante du fluide (Pa)",
+            "ΔHasp": "Pertes de charge totales côté aspiration (m)"
+          },
+          application: "Pour pompes installées sous le niveau du réservoir (aspiration positive)",
+          references: "NF EN ISO 17769-1, API 610"
+        },
+        {
+          id: "npshd_suction_lift",
+          name: "NPSHd - Installation en Dépression",
+          formula: "NPSHd = (Patm / (ρ × g)) - hasp - (Pv / (ρ × g)) - ΔHasp",
+          variables: {
+            "NPSHd": "Net Positive Suction Head disponible (m)",
+            "Patm": "Pression atmosphérique (Pa) = 101 325 Pa",
+            "ρ": "Masse volumique du fluide (kg/m³)",
+            "g": "Accélération de la pesanteur = 9.81 m/s²",
+            "hasp": "Hauteur d'aspiration en dépression (m, positif)",
+            "Pv": "Pression de vapeur saturante du fluide (Pa)",
+            "ΔHasp": "Pertes de charge totales côté aspiration (m)"
+          },
+          application: "Pour pompes installées au-dessus du niveau du réservoir",
+          references: "NF EN ISO 17769-1, Hydraulic Institute Standards"
+        }
+      ]
+    },
+
+    // 2. FORMULES PERTES DE CHARGE
+    head_loss: {
+      name: "Pertes de Charge Hydrauliques",
+      color: "bg-red-50 border-red-200",
+      icon: "📉",
+      formulas: [
+        {
+          id: "darcy_weisbach",
+          name: "Formule de Darcy-Weisbach",
+          formula: "ΔH = f × (L / D) × (V² / (2 × g))",
+          variables: {
+            "ΔH": "Perte de charge linéaire (m)",
+            "f": "Coefficient de friction (sans dimension)",
+            "L": "Longueur de la conduite (m)",
+            "D": "Diamètre intérieur de la conduite (m)",
+            "V": "Vitesse moyenne du fluide (m/s)",
+            "g": "Accélération de la pesanteur = 9.81 m/s²"
+          },
+          application: "Calcul des pertes de charge en conduite cylindrique",
+          references: "ISO 4006, Moody Diagram"
+        },
+        {
+          id: "reynolds_number",
+          name: "Nombre de Reynolds",
+          formula: "Re = (ρ × V × D) / μ",
+          variables: {
+            "Re": "Nombre de Reynolds (sans dimension)",
+            "ρ": "Masse volumique du fluide (kg/m³)",
+            "V": "Vitesse moyenne du fluide (m/s)",
+            "D": "Diamètre intérieur de la conduite (m)",
+            "μ": "Viscosité dynamique du fluide (Pa·s)"
+          },
+          application: "Détermination du régime d'écoulement (laminaire Re < 2300, turbulent Re > 4000)",
+          references: "Mécanique des fluides, Reynolds (1883)"
+        },
+        {
+          id: "colebrook_white",
+          name: "Équation de Colebrook-White",
+          formula: "1/√f = -2 × log₁₀((ε/D)/3.7 + 2.51/(Re×√f))",
+          variables: {
+            "f": "Coefficient de friction (sans dimension)",
+            "ε": "Rugosité absolue de la conduite (m)",
+            "D": "Diamètre intérieur de la conduite (m)",
+            "Re": "Nombre de Reynolds (sans dimension)"
+          },
+          application: "Calcul du coefficient de friction pour écoulement turbulent",
+          references: "Colebrook & White (1937), ISO 4006"
+        }
+      ]
+    },
+
+    // 3. FORMULES HMT
+    hmt: {
+      name: "Hauteur Manométrique Totale",
+      color: "bg-green-50 border-green-200", 
+      icon: "🟩",
+      formulas: [
+        {
+          id: "hmt_total",
+          name: "HMT - Formule Générale",
+          formula: "HMT = Hgéo + ΔHtotal + ΔPutile/(ρ×g)",
+          variables: {
+            "HMT": "Hauteur Manométrique Totale (m)",
+            "Hgéo": "Hauteur géométrique = hrefoulement + haspiration (m)",
+            "ΔHtotal": "Pertes de charge totales = ΔHasp + ΔHref (m)",
+            "ΔPutile": "Pression utile requise (Pa)",
+            "ρ": "Masse volumique du fluide (kg/m³)",
+            "g": "Accélération de la pesanteur = 9.81 m/s²"
+          },
+          application: "Calcul de la hauteur totale que doit fournir la pompe",
+          references: "NF EN 809, ISO 17769"
+        },
+        {
+          id: "static_head",
+          name: "Hauteur Statique",
+          formula: "Hstatique = hrefoulement - haspiration",
+          variables: {
+            "Hstatique": "Hauteur statique (m)",
+            "hrefoulement": "Niveau de refoulement (m)",
+            "haspiration": "Niveau d'aspiration (m, négatif si en dépression)"
+          },
+          application: "Calcul de la différence d'altitude entre aspiration et refoulement",
+          references: "Principes de base hydraulique"
+        }
+      ]
+    },
+
+    // 4. FORMULES PUISSANCE ET ÉLECTRICITÉ
+    power: {
+      name: "Calculs de Puissance et Électriques",
+      color: "bg-yellow-50 border-yellow-200",
+      icon: "⚡",
+      formulas: [
+        {
+          id: "hydraulic_power",
+          name: "Puissance Hydraulique",
+          formula: "Ph = (ρ × g × Q × HMT) / 1000",
+          variables: {
+            "Ph": "Puissance hydraulique (kW)",
+            "ρ": "Masse volumique du fluide (kg/m³)",
+            "g": "Accélération de la pesanteur = 9.81 m/s²",
+            "Q": "Débit volumique (m³/s)",
+            "HMT": "Hauteur Manométrique Totale (m)"
+          },
+          application: "Puissance théorique nécessaire pour élever le fluide",
+          references: "Principes thermodynamiques"
+        },
+        {
+          id: "absorbed_power",
+          name: "Puissance Absorbée P2",
+          formula: "P2 = (Q × HMT) / (ηpompe × 367)",
+          variables: {
+            "P2": "Puissance absorbée par la pompe (kW)",
+            "Q": "Débit volumique (m³/h)",
+            "HMT": "Hauteur Manométrique Totale (m)",
+            "ηpompe": "Rendement de la pompe (%)",
+            "367": "Constante de conversion (m⁴/h·kW pour l'eau)"
+          },
+          application: "Puissance mécanique requise à l'arbre de la pompe",
+          references: "Calculs normalised pompes centrifuges"
+        },
+        {
+          id: "motor_power",
+          name: "Puissance Électrique P1",
+          formula: "P1 = P2 / (ηmoteur / 100)",
+          variables: {
+            "P1": "Puissance électrique absorbée (kW)",
+            "P2": "Puissance mécanique absorbée (kW)",
+            "ηmoteur": "Rendement du moteur électrique (%)"
+          },
+          application: "Puissance électrique consommée par le moteur",
+          references: "CEI 60034, NEMA MG1"
+        },
+        {
+          id: "nominal_current",
+          name: "Courant Nominal",
+          formula: "I = P1 / (U × √3 × cos(φ))",
+          variables: {
+            "I": "Courant nominal (A)",
+            "P1": "Puissance électrique (kW)",
+            "U": "Tension entre phases (V)",
+            "cos(φ)": "Facteur de puissance"
+          },
+          application: "Calcul du courant de fonctionnement nominal",
+          references: "Électrotechnique industrielle"
+        }
+      ]
+    },
+
+    // 5. FORMULES RENDEMENT
+    efficiency: {
+      name: "Calculs de Rendement",
+      color: "bg-purple-50 border-purple-200",
+      icon: "📊",
+      formulas: [
+        {
+          id: "overall_efficiency",
+          name: "Rendement Global",
+          formula: "ηglobal = ηpompe × ηmoteur",
+          variables: {
+            "ηglobal": "Rendement global du groupe motopompe (%)",
+            "ηpompe": "Rendement hydraulique de la pompe (%)", 
+            "ηmoteur": "Rendement électrique du moteur (%)"
+          },
+          application: "Efficacité énergétique globale de l'installation",
+          references: "Directive ErP 2009/125/CE, ISO 12723"
+        },
+        {
+          id: "pump_efficiency",
+          name: "Rendement Hydraulique Pompe", 
+          formula: "ηpompe = Ph / P2 × 100",
+          variables: {
+            "ηpompe": "Rendement hydraulique de la pompe (%)",
+            "Ph": "Puissance hydraulique utile (kW)",
+            "P2": "Puissance mécanique absorbée (kW)"
+          },
+          application: "Efficacité de conversion d'énergie mécanique en énergie hydraulique",
+          references: "ISO 9906, Hydraulic Institute"
+        }
+      ]
+    },
+
+    // 6. FORMULES VITESSE ET DÉBIT
+    flow: {
+      name: "Écoulement et Vitesse",
+      color: "bg-cyan-50 border-cyan-200",
+      icon: "🌊",
+      formulas: [
+        {
+          id: "flow_velocity",
+          name: "Vitesse d'Écoulement",
+          formula: "V = Q / A = 4Q / (π × D²)",
+          variables: {
+            "V": "Vitesse moyenne du fluide (m/s)",
+            "Q": "Débit volumique (m³/s)",
+            "A": "Section transversale de la conduite (m²)",
+            "D": "Diamètre intérieur de la conduite (m)"
+          },
+          application: "Calcul de la vitesse du fluide dans les conduites",
+          references: "Équation de continuité"
+        },
+        {
+          id: "flow_rate_conversion",
+          name: "Conversion de Débit",
+          formula: "Q(m³/h) = Q(m³/s) × 3600",
+          variables: {
+            "Q(m³/h)": "Débit en mètres cubes par heure",
+            "Q(m³/s)": "Débit en mètres cubes par seconde"
+          },
+          application: "Conversion entre unités de débit usuelles",
+          references: "Système international d'unités"
+        }
+      ]
+    }
+  };
+
+  // Fonction de recherche dans les formules
+  const getFilteredFormulas = () => {
+    let filtered = [];
+    
+    Object.entries(formulaDatabase).forEach(([categoryKey, category]) => {
+      if (selectedCategory === 'all' || selectedCategory === categoryKey) {
+        category.formulas.forEach(formula => {
+          const searchMatch = searchTerm === '' || 
+            formula.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            formula.formula.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            Object.values(formula.variables).some(variable => 
+              variable.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          
+          if (searchMatch) {
+            filtered.push({
+              ...formula,
+              category: categoryKey,
+              categoryName: category.name,
+              categoryColor: category.color,
+              categoryIcon: category.icon
+            });
+          }
+        });
+      }
+    });
+    
+    return filtered;
+  };
+
+  const filteredFormulas = getFilteredFormulas();
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2">📚 BASE DE DONNÉES DES FORMULES HYDRAULIQUES</h2>
+        <p className="text-blue-100">
+          Référentiel technique complet des équations utilisées dans les calculs de pompes centrifuges
+        </p>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div>✅ Conformité ISO 17769</div>
+          <div>✅ Standards API 610</div>
+          <div>✅ Normes Hydraulic Institute</div>
+        </div>
+      </div>
+
+      {/* Filtres et recherche */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Recherche */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              🔍 Recherche dans les formules
+            </label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Rechercher par nom, formule ou variable..."
+            />
+          </div>
+
+          {/* Filtre par catégorie */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              📂 Catégorie de formules
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">Toutes les formules ({Object.values(formulaDatabase).reduce((acc, cat) => acc + cat.formulas.length, 0)})</option>
+              {Object.entries(formulaDatabase).map(([key, category]) => (
+                <option key={key} value={key}>
+                  {category.icon} {category.name} ({category.formulas.length})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Statistiques */}
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-blue-600">{filteredFormulas.length}</div>
+            <div className="text-sm text-blue-800">Formules trouvées</div>
+          </div>
+          <div className="bg-green-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-green-600">{Object.keys(formulaDatabase).length}</div>
+            <div className="text-sm text-green-800">Catégories</div>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-purple-600">ISO</div>
+            <div className="text-sm text-purple-800">Conformité</div>
+          </div>
+          <div className="bg-yellow-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-yellow-600">API</div>
+            <div className="text-sm text-yellow-800">Standards</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Liste des formules */}
+      <div className="grid grid-cols-1 gap-6">
+        {filteredFormulas.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="text-gray-500 text-lg">
+              🔍 Aucune formule trouvée pour "{searchTerm}"
+            </div>
+            <p className="text-gray-400 mt-2">
+              Essayez avec d'autres termes de recherche ou sélectionnez une autre catégorie
+            </p>
+          </div>
+        ) : (
+          filteredFormulas.map((formula) => (
+            <div 
+              key={`${formula.category}-${formula.id}`}
+              className={`bg-white rounded-lg shadow-lg border-l-4 ${formula.categoryColor.replace('bg-', 'border-').replace('-50', '-400')} overflow-hidden`}
+            >
+              <div className="p-6">
+                {/* En-tête formule */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{formula.categoryIcon}</span>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">{formula.name}</h3>
+                      <p className="text-sm text-gray-600">{formula.categoryName}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedFormula(selectedFormula === formula.id ? null : formula.id)}
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    {selectedFormula === formula.id ? 'Réduire' : 'Détails'}
+                  </button>
+                </div>
+
+                {/* Formule mathématique */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <div className="text-sm text-gray-600 mb-2">Formule mathématique:</div>
+                  <div className="font-mono text-lg text-gray-900 font-medium">
+                    {formula.formula}
+                  </div>
+                </div>
+
+                {/* Variables (toujours visibles) */}
+                <div className="mb-4">
+                  <h4 className="font-medium text-gray-900 mb-2">📋 Variables et unités:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(formula.variables).map(([symbol, description], index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <span className="font-mono font-bold text-blue-600 min-w-fit">{symbol}:</span>
+                        <span className="text-gray-700 text-sm">{description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Détails (conditionnels) */}
+                {selectedFormula === formula.id && (
+                  <div className="border-t pt-4 mt-4 space-y-3">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-1">🎯 Application pratique:</h4>
+                      <p className="text-gray-700">{formula.application}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-1">📖 Références normatives:</h4>
+                      <p className="text-gray-700">{formula.references}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [inputData, setInputData] = useState({
     suction_type: 'flooded',
