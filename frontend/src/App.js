@@ -4298,20 +4298,21 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       <div className="font-medium text-gray-700">Pression Vapeur</div>
                       <div className="text-lg font-bold text-red-600">
                         {(() => {
-                          // Calcul de la pression de vapeur saturante selon la température
+                          // Utiliser les propriétés du backend si disponibles dans results.fluid_properties
+                          if (results && results.fluid_properties && results.fluid_properties.vapor_pressure) {
+                            return results.fluid_properties.vapor_pressure.toFixed(0);
+                          }
+                          
+                          // Calcul de la pression de vapeur saturante selon la température pour fluides de base
                           let vaporPressure = 0;
                           if (inputData.fluid_type === 'water') {
-                            // Formule approximative pour l'eau : P = 611 * exp(17.27 * T / (T + 237.3))
                             vaporPressure = 611 * Math.exp(17.27 * inputData.temperature / (inputData.temperature + 237.3));
                           } else if (inputData.fluid_type === 'oil') {
-                            // Huile : pression de vapeur très faible
-                            vaporPressure = 10 * Math.exp(0.05 * (inputData.temperature - 20));
+                            vaporPressure = 100 + 20 * (inputData.temperature - 20);
                           } else if (inputData.fluid_type === 'glycol') {
-                            // Glycol : pression de vapeur modérée
-                            vaporPressure = 100 * Math.exp(0.08 * (inputData.temperature - 20));
+                            vaporPressure = 10 + 5 * (inputData.temperature - 20);
                           } else if (inputData.fluid_type === 'acid') {
-                            // Acide : pression de vapeur variable
-                            vaporPressure = 800 * Math.exp(0.06 * (inputData.temperature - 20));
+                            vaporPressure = 3000 + 150 * (inputData.temperature - 20);
                           }
                           
                           return Math.max(vaporPressure, 1).toFixed(0);
