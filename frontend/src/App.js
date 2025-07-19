@@ -1387,10 +1387,10 @@ const SolarExpertSystem = () => {
             </div>
           </div>
 
-          {/* Paramètres solaires */}
-          <div className="mb-6">
-            <h4 className="text-lg font-semibold text-yellow-800 mb-3">☀️ Paramètres Solaires</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Paramètres solaires et conduites */}
+          <div>
+            <h4 className="text-lg font-semibold text-yellow-800 mb-3">☀️ Paramètres Solaires & Conduites</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg border-l-4 border-yellow-500">
                 <label className="block text-sm font-medium text-yellow-800 mb-2">Puissance crête panneau (Wc)</label>
                 <select
@@ -1409,53 +1409,53 @@ const SolarExpertSystem = () => {
                 <p className="text-xs text-yellow-700 mt-1">Puissance unitaire des panneaux</p>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
-                <label className="block text-sm font-medium text-green-700 mb-2">Surface disponible (m²)</label>
+              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-lg border-l-4 border-blue-600">
+                <label className="block text-sm font-medium text-blue-800 mb-2">DN Conduite (calculé auto)</label>
                 <input
-                  type="number"
-                  step="1"
-                  value={solarData.available_surface || ''}
-                  onChange={(e) => handleInputChange('available_surface', e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full p-3 border-2 border-green-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                  placeholder="Illimitée"
+                  type="text"
+                  value={`DN ${solarData.pipe_diameter}`}
+                  readOnly
+                  className="w-full p-3 border-2 border-blue-300 rounded-lg bg-blue-50 text-lg font-bold text-blue-800 cursor-not-allowed text-center"
                 />
-                <p className="text-xs text-green-600 mt-1">Surface disponible pour panneaux</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Basé sur débit {solarData.flow_rate} m³/h (v=2m/s)
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg border-l-4 border-green-600">
+                <label className="block text-sm font-medium text-green-800 mb-2">Longueur estimée (m)</label>
+                <input
+                  type="text"
+                  value={`${solarData.pipe_length.toFixed(0)} m`}
+                  readOnly
+                  className="w-full p-3 border-2 border-green-300 rounded-lg bg-green-50 text-lg font-bold text-green-800 cursor-not-allowed text-center"
+                />
+                <p className="text-xs text-green-700 mt-1">
+                  Basé sur géométrie (hauteur × 1.5)
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Tuyauteries */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">🔧 Tuyauteries</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-lg border-l-4 border-gray-500">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Diamètre tuyauterie (mm)</label>
-                <select
-                  value={solarData.pipe_diameter}
-                  onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-                >
-                  <option value={50}>50 mm</option>
-                  <option value={63}>63 mm</option>
-                  <option value={80}>80 mm</option>
-                  <option value={100}>100 mm</option>
-                  <option value={125}>125 mm</option>
-                  <option value={150}>150 mm</option>
-                  <option value={200}>200 mm</option>
-                </select>
-                <p className="text-xs text-gray-600 mt-1">Diamètre nominal</p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg border-l-4 border-gray-500">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Longueur totale (m)</label>
-                <input
-                  type="number"
-                  step="1"
-                  value={solarData.pipe_length}
-                  onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-                />
-                <p className="text-xs text-gray-600 mt-1">Longueur totale des conduites</p>
+            {/* Informations techniques sur la conduite */}
+            <div className="mt-4 bg-gray-50 p-4 rounded-lg border">
+              <h5 className="text-sm font-semibold text-gray-700 mb-2">📋 Spécifications Techniques Conduite</h5>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="text-center">
+                  <div className="font-semibold text-blue-600">Vitesse</div>
+                  <div>{((solarData.flow_rate / 3600) / (Math.PI * Math.pow(solarData.pipe_diameter/2000, 2))).toFixed(1)} m/s</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-green-600">Matériau</div>
+                  <div>{solarData.pipe_diameter <= 63 ? 'PEHD' : 'PVC-U'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-orange-600">Pression</div>
+                  <div>PN {solarData.pipe_diameter <= 100 ? '16' : '10'} bar</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-purple-600">Norme</div>
+                  <div>ISO 4427</div>
+                </div>
               </div>
             </div>
           </div>
