@@ -343,6 +343,24 @@ const AuditSystem = () => {
     };
   };
 
+  // Fonction d'analyse experte des données d'audit
+  const performExpertAuditAnalysis = async () => {
+    setLoadingAnalysis(true);
+    
+    try {
+      // Simulation d'analyse experte (en réalité, cela utiliserait l'API backend)
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Générer les résultats d'audit basés sur les données
+      const results = generateAuditResults();
+      setAuditResults(results);
+    } catch (error) {
+      console.error('Erreur analyse audit:', error);
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
