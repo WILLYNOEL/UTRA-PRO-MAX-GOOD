@@ -145,34 +145,63 @@ const AuditSystem = () => {
     }
   };
 
-  const generateAuditResults = () => {
+  const generatePriorityActions = () => [
+    'Remplacement immédiat des pièces critiques usées',
+    'Correction de l\'alignement pompe-moteur', 
+    'Installation d\'un système de surveillance vibratoire',
+    'Optimisation du programme de maintenance préventive'
+  ];
+
+  const generateCostEstimates = () => ({
+    immediate_repairs: 15000,
+    preventive_maintenance: 8000,
+    efficiency_upgrades: 25000,
+    monitoring_systems: 12000
+  });
+
+  const generateImprovementMeasures = () => [
+    {
+      measure: 'Installation variateur de fréquence',
+      savings_percentage: 25,
+      cost: 35000,
+      payback_months: 14
+    },
+    {
+      measure: 'Optimisation régulation pression',
+      savings_percentage: 15,
+      cost: 18000,
+      payback_months: 18
+    },
+    {
+      measure: 'Amélioration facteur puissance',
+      savings_percentage: 8,
+      cost: 12000,
+      payback_months: 24
+    }
+  ];
+
+  const generatePaybackAnalysis = () => ({
+    total_investment: 65000,
+    annual_savings: 230400,
+    simple_payback_months: 3.4,
+    npv_5_years: 890000,
+    irr_percentage: 42
+  });
+
+  const determineInvestmentPriority = () => {
     const hydraulicScore = calculateHydraulicScore();
     const energyScore = calculateEnergyScore();
     
-    return {
-      hydraulic_audit: {
-        overall_score: hydraulicScore,
-        performance_rating: getPerformanceRating(hydraulicScore),
-        key_findings: generateHydraulicFindings(),
-        recommendations: generateHydraulicRecommendations(),
-        priority_actions: generatePriorityActions(),
-        cost_estimates: generateCostEstimates()
-      },
-      energy_audit: {
-        overall_score: energyScore,
-        efficiency_rating: getPerformanceRating(energyScore),
-        energy_analysis: generateEnergyAnalysis(),
-        savings_potential: generateSavingsPotential(),
-        improvement_measures: generateImprovementMeasures(),
-        payback_analysis: generatePaybackAnalysis()
-      },
-      combined_analysis: {
-        total_score: Math.round((hydraulicScore + energyScore) / 2),
-        investment_priority: determineInvestmentPriority(),
-        implementation_roadmap: generateImplementationRoadmap()
-      }
-    };
+    if (hydraulicScore < 60 && energyScore < 60) return 'Critique - Intervention immédiate';
+    if (hydraulicScore < 75 || energyScore < 75) return 'Élevée - Planifier sous 6 mois';
+    return 'Modérée - Optimisation continue';
   };
+
+  const generateImplementationRoadmap = () => [
+    { phase: 'Phase 1 (0-3 mois)', actions: ['Réparations critiques', 'Maintenance corrective'] },
+    { phase: 'Phase 2 (3-6 mois)', actions: ['Installation variateur', 'Optimisation contrôle'] },
+    { phase: 'Phase 3 (6-12 mois)', actions: ['Système monitoring', 'Formation équipes'] }
+  ];
 
   const calculateHydraulicScore = () => {
     let score = 100;
