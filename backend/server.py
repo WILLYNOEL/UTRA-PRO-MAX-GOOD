@@ -2075,27 +2075,31 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         ])
         material_recommendations.extend(compatibility_analysis["recommendations"])
         
-        # Ajouter les matériaux optimaux si disponibles
+        # Ajouter les recommandations de joints
+        if compatibility_analysis["seal_recommendations"]:
+            material_recommendations.extend(compatibility_analysis["seal_recommendations"])
+        
+        # Ajouter les conseils hydrauliques avancés
+        if compatibility_analysis["hydraulic_advice"]:
+            material_recommendations.extend(compatibility_analysis["hydraulic_advice"])
+        
+        # Ajouter les matériaux optimaux
         if compatibility_analysis["optimal_materials"]:
             material_recommendations.append(
-                f"Matériaux optimaux recommandés: {', '.join(compatibility_analysis['optimal_materials'][:3])}"
+                f"🏗️ MATÉRIAUX OPTIMAUX: {', '.join(compatibility_analysis['optimal_materials'][:3])}"
             )
     
     # Recommandations générales pour certains fluides (complément)
     if input_data.fluid_type == "acid":
         material_recommendations.extend([
-            "Fluide acide détecté - Attention corrosion",
-            "Utiliser matériaux résistant aux acides (PVC, PP, 316L)",
-            "Prévoir inspection régulière des matériaux",
-            "Installer système de neutralisation si nécessaire"
+            "📋 RÉGLEMENTATION: Directive ATEX pour milieux corrosifs",
+            "🧯 Sécurité: EPI résistant acides obligatoire"
         ])
     elif input_data.temperature > 60:
         material_recommendations.extend([
-            f"Température élevée: {input_data.temperature}°C",
-            "Éviter PVC au-delà de 60°C",
-            "Prévoir dilatation thermique",
-            "Utiliser supports coulissants",
-            "Isolation thermique recommandée"
+            f"🌡️ Température élevée: {input_data.temperature}°C",
+            "📏 Calcul dilatation: ΔL = α × L × ΔT",
+            "🔧 Supports: Coulissants tous les 20m maximum"
         ])
     
     # Recommandations électriques d'installation
