@@ -5982,22 +5982,49 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="245" className="text-xs" fill="#1f2937">
         Viscosité: {(() => {
-          if (results && results.fluid_properties && results.fluid_properties.viscosity) {
-            return results.fluid_properties.viscosity.toFixed(4);
-          }
+          // Calcul direct de la viscosité pour tous les fluides
+          let viscosity = 0.001; // valeur par défaut eau
           
-          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
-          if (!selectedFluid) return 'N/A';
-          
-          let viscosity = selectedFluid.viscosity;
           if (inputData.fluid_type === 'water') {
-            viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
+            viscosity = 0.001 - 0.00005 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'oil') {
-            viscosity = 0.05 * Math.exp(-0.05 * (inputData.temperature - 20));
-          } else if (inputData.fluid_type === 'glycol') {
-            viscosity = 0.0161 * Math.exp(-0.04 * (inputData.temperature - 20));
+            viscosity = 0.05 - 0.002 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'acid') {
-            viscosity = 0.002 * Math.exp(-0.025 * (inputData.temperature - 20));
+            viscosity = 0.002 - 0.0001 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycol') {
+            viscosity = 0.0161 - 0.0008 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'palm_oil') {
+            viscosity = 0.045 - 0.0018 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'gasoline') {
+            viscosity = 0.00055 - 0.000015 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'diesel') {
+            viscosity = 0.0035 - 0.00012 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'hydraulic_oil') {
+            viscosity = 0.046 - 0.0019 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'ethanol') {
+            viscosity = 0.0012 - 0.00004 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'seawater') {
+            viscosity = 0.00107 - 0.000052 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'methanol') {
+            viscosity = 0.00059 - 0.000025 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycerol') {
+            viscosity = 1.48 - 0.058 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'milk') {
+            viscosity = 0.0015 - 0.00006 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'honey') {
+            viscosity = 8.5 - 0.25 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'wine') {
+            viscosity = 0.0012 - 0.00004 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'bleach') {
+            viscosity = 0.0011 - 0.000045 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'yogurt') {
+            viscosity = 0.15 - 0.008 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'tomato_sauce') {
+            viscosity = 2.5 - 0.12 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'soap_solution') {
+            viscosity = 0.0013 - 0.00005 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'fruit_juice') {
+            viscosity = 0.0018 - 0.00007 * (inputData.temperature - 20);
           }
           
           return Math.max(viscosity, 0.0001).toFixed(4);
