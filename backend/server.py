@@ -2551,6 +2551,676 @@ async def delete_calculation(history_id: str):
         raise HTTPException(status_code=404, detail="Calculation not found")
     return {"message": "Calculation deleted successfully"}
 
+# ============================================================================
+# EXPERT SOLAIRE - DIMENSIONNEMENT POMPAGE SOLAIRE
+# ============================================================================
+
+# Base de données d'irradiation solaire par région (kWh/m²/jour)
+SOLAR_IRRADIATION_DATABASE = {
+    "france": {
+        "nord": {"name": "Nord de la France", "irradiation_annual": 3.2, "peak_month": 5.8, "min_month": 1.1},
+        "centre": {"name": "Centre de la France", "irradiation_annual": 3.8, "peak_month": 6.5, "min_month": 1.4},
+        "sud": {"name": "Sud de la France", "irradiation_annual": 4.6, "peak_month": 7.2, "min_month": 2.1},
+        "corse": {"name": "Corse", "irradiation_annual": 4.9, "peak_month": 7.5, "min_month": 2.4}
+    },
+    "afrique": {
+        "maroc_nord": {"name": "Maroc Nord", "irradiation_annual": 5.2, "peak_month": 8.1, "min_month": 2.8},
+        "maroc_sud": {"name": "Maroc Sud", "irradiation_annual": 6.8, "peak_month": 9.2, "min_month": 4.1},
+        "algerie": {"name": "Algérie", "irradiation_annual": 5.8, "peak_month": 8.5, "min_month": 3.2},
+        "tunisie": {"name": "Tunisie", "irradiation_annual": 5.4, "peak_month": 8.0, "min_month": 2.9},
+        "senegal": {"name": "Sénégal", "irradiation_annual": 6.2, "peak_month": 7.8, "min_month": 4.8},
+        "burkina": {"name": "Burkina Faso", "irradiation_annual": 6.5, "peak_month": 7.2, "min_month": 5.1},
+        "mali": {"name": "Mali", "irradiation_annual": 6.8, "peak_month": 7.5, "min_month": 5.4},
+        "niger": {"name": "Niger", "irradiation_annual": 7.1, "peak_month": 7.8, "min_month": 5.8},
+        "tchad": {"name": "Tchad", "irradiation_annual": 6.9, "peak_month": 7.4, "min_month": 5.2},
+        "egypte": {"name": "Égypte", "irradiation_annual": 6.4, "peak_month": 8.9, "min_month": 3.8}
+    },
+    "moyen_orient": {
+        "arabie": {"name": "Arabie Saoudite", "irradiation_annual": 6.2, "peak_month": 8.7, "min_month": 3.9},
+        "emirats": {"name": "Émirats Arabes Unis", "irradiation_annual": 5.9, "peak_month": 8.2, "min_month": 3.6},
+        "jordanie": {"name": "Jordanie", "irradiation_annual": 5.8, "peak_month": 8.5, "min_month": 3.1}
+    },
+    "asie": {
+        "inde_nord": {"name": "Inde Nord", "irradiation_annual": 5.1, "peak_month": 7.8, "min_month": 2.9},
+        "inde_sud": {"name": "Inde Sud", "irradiation_annual": 5.8, "peak_month": 6.9, "min_month": 4.2},
+        "chine": {"name": "Chine", "irradiation_annual": 4.2, "peak_month": 6.8, "min_month": 1.8},
+        "vietnam": {"name": "Vietnam", "irradiation_annual": 4.6, "peak_month": 6.1, "min_month": 2.8}
+    }
+}
+
+# Base de données des pompes solaires
+SOLAR_PUMP_DATABASE = {
+    "grundfos_sqflex": {
+        "name": "Grundfos SQFlex 2.5-2",
+        "power_range": [180, 400],  # Watts
+        "flow_range": [1, 8],  # m³/h
+        "head_range": [10, 120],  # mètres
+        "efficiency": 0.45,
+        "voltage": [24, 48],  # DC volts
+        "price_eur": 1250,
+        "type": "submersible"
+    },
+    "grundfos_sqflex_high": {
+        "name": "Grundfos SQFlex 5-7",
+        "power_range": [500, 1200],  # Watts
+        "flow_range": [2, 15],  # m³/h
+        "head_range": [20, 180],  # mètres
+        "efficiency": 0.52,
+        "voltage": [48, 96],  # DC volts
+        "price_eur": 2150,
+        "type": "submersible"
+    },
+    "lorentz_ps": {
+        "name": "Lorentz PS2-600",
+        "power_range": [150, 600],  # Watts
+        "flow_range": [0.5, 12],  # m³/h
+        "head_range": [5, 140],  # mètres
+        "efficiency": 0.48,
+        "voltage": [24, 48],  # DC volts
+        "price_eur": 980,
+        "type": "submersible"
+    },
+    "surface_solar": {
+        "name": "Pompe Surface Solaire 1kW",
+        "power_range": [300, 1000],  # Watts
+        "flow_range": [5, 25],  # m³/h
+        "head_range": [15, 80],  # mètres
+        "efficiency": 0.42,
+        "voltage": [48, 96],  # DC volts
+        "price_eur": 1450,
+        "type": "surface"
+    }
+}
+
+# Base de données des panneaux solaires
+SOLAR_PANEL_DATABASE = {
+    "monocristallin_400w": {
+        "name": "Panneau Monocristallin 400W",
+        "power_nominal": 400,  # Watts
+        "voltage_nominal": 24,  # Volts
+        "current_nominal": 16.67,  # Ampères
+        "efficiency": 0.21,  # 21%
+        "size": [2.0, 1.0],  # mètres [longueur, largeur]
+        "price_eur": 280,
+        "warranty": 25,  # années
+        "temperature_coefficient": -0.38  # %/°C
+    },
+    "monocristallin_550w": {
+        "name": "Panneau Monocristallin 550W",
+        "power_nominal": 550,  # Watts
+        "voltage_nominal": 48,  # Volts
+        "current_nominal": 11.46,  # Ampères
+        "efficiency": 0.22,  # 22%
+        "size": [2.3, 1.1],  # mètres [longueur, largeur]
+        "price_eur": 380,
+        "warranty": 25,  # années
+        "temperature_coefficient": -0.35  # %/°C
+    },
+    "polycristallin_320w": {
+        "name": "Panneau Polycristallin 320W",
+        "power_nominal": 320,  # Watts
+        "voltage_nominal": 24,  # Volts
+        "current_nominal": 13.33,  # Ampères
+        "efficiency": 0.18,  # 18%
+        "size": [1.96, 0.99],  # mètres [longueur, largeur]
+        "price_eur": 195,
+        "warranty": 20,  # années
+        "temperature_coefficient": -0.42  # %/°C
+    }
+}
+
+# Base de données des batteries solaires
+SOLAR_BATTERY_DATABASE = {
+    "lithium_100ah": {
+        "name": "Batterie Lithium LiFePO4 100Ah",
+        "capacity": 100,  # Ah
+        "voltage": 12,  # Volts
+        "energy": 1.2,  # kWh
+        "efficiency": 0.95,  # 95%
+        "cycles": 6000,
+        "price_eur": 450,
+        "weight": 13,  # kg
+        "discharge_depth": 0.95  # 95% DOD
+    },
+    "lithium_200ah": {
+        "name": "Batterie Lithium LiFePO4 200Ah",
+        "capacity": 200,  # Ah
+        "voltage": 12,  # Volts
+        "energy": 2.4,  # kWh
+        "efficiency": 0.96,  # 96%
+        "cycles": 6000,
+        "price_eur": 850,
+        "weight": 24,  # kg
+        "discharge_depth": 0.95  # 95% DOD
+    },
+    "gel_150ah": {
+        "name": "Batterie Gel 150Ah",
+        "capacity": 150,  # Ah
+        "voltage": 12,  # Volts
+        "energy": 1.8,  # kWh
+        "efficiency": 0.85,  # 85%
+        "cycles": 1500,
+        "price_eur": 320,
+        "weight": 45,  # kg
+        "discharge_depth": 0.50  # 50% DOD pour longévité
+    }
+}
+
+# Base de données des régulateurs MPPT
+MPPT_CONTROLLER_DATABASE = {
+    "victron_75_15": {
+        "name": "Victron MPPT 75/15",
+        "max_pv_voltage": 75,  # Volts
+        "max_current": 15,  # Ampères
+        "max_power": 220,  # Watts (12V)
+        "efficiency": 0.98,  # 98%
+        "price_eur": 95,
+        "bluetooth": True
+    },
+    "victron_100_30": {
+        "name": "Victron MPPT 100/30",
+        "max_pv_voltage": 100,  # Volts
+        "max_current": 30,  # Ampères
+        "max_power": 440,  # Watts (12V)
+        "efficiency": 0.98,  # 98%
+        "price_eur": 180,
+        "bluetooth": True
+    },
+    "victron_150_45": {
+        "name": "Victron MPPT 150/45",
+        "max_pv_voltage": 150,  # Volts
+        "max_current": 45,  # Ampères
+        "max_power": 650,  # Watts (12V)
+        "efficiency": 0.98,  # 98%
+        "price_eur": 285,
+        "bluetooth": True
+    }
+}
+
+# Modèles Pydantic pour le dimensionnement solaire
+class SolarPumpingInput(BaseModel):
+    # Informations du projet
+    project_name: str = "Système de Pompage Solaire"
+    location_region: str = "france"
+    location_subregion: str = "centre"
+    
+    # Besoins en eau
+    daily_water_need: float  # m³/jour
+    seasonal_variation: float = 1.2  # coefficient saisonnier (1.0 = constant, 1.5 = +50% en été)
+    peak_months: List[int] = [6, 7, 8]  # mois de pic (juin, juillet, août)
+    
+    # Paramètres hydrauliques
+    total_head: float  # mètres (hauteur totale)
+    static_head: float  # mètres (hauteur statique)
+    dynamic_head: Optional[float] = None  # mètres (calculé automatiquement si non fourni)
+    well_depth: Optional[float] = None  # mètres (profondeur du puits)
+    pipe_diameter: float = 100  # mm
+    pipe_length: float = 50  # mètres
+    
+    # Contraintes du système
+    autonomy_days: int = 2  # jours d'autonomie souhaités
+    system_voltage: int = 24  # Volts DC (12, 24, 48 ou 96)
+    installation_type: str = "submersible"  # ou "surface"
+    
+    # Paramètres économiques
+    electricity_cost: float = 0.15  # €/kWh (coût électricité locale)
+    project_lifetime: int = 25  # années
+    maintenance_cost_annual: float = 0.02  # % du coût initial par an
+    
+    # Contraintes d'installation
+    available_surface: Optional[float] = None  # m² disponibles pour panneaux
+    max_budget: Optional[float] = None  # € budget maximum
+    grid_connection_available: bool = False  # connexion réseau disponible
+    
+    # Paramètres environnementaux
+    ambient_temperature_avg: float = 25  # °C température ambiante moyenne
+    dust_factor: float = 0.95  # facteur de réduction dû à la poussière (0.9-1.0)
+    shading_factor: float = 1.0  # facteur d'ombrage (0.8-1.0)
+
+class SolarSystemDimensioning(BaseModel):
+    # Dimensionnement automatique des composants
+    recommended_pump: Dict[str, Any]
+    solar_panels: Dict[str, Any]
+    batteries: Dict[str, Any]
+    mppt_controller: Dict[str, Any]
+    
+    # Calculs de performance
+    energy_production: Dict[str, float]  # kWh/jour par mois
+    energy_consumption: Dict[str, float]  # kWh/jour requis
+    system_sizing: Dict[str, Any]
+    
+    # Analyse économique
+    economic_analysis: Dict[str, float]
+    
+    # Recommandations
+    technical_recommendations: List[str]
+    optimization_suggestions: List[str]
+    
+class SolarPumpingResult(BaseModel):
+    input_data: SolarPumpingInput
+    dimensioning: SolarSystemDimensioning
+    
+    # Calculs détaillés
+    solar_irradiation: Dict[str, float]
+    system_efficiency: float
+    pump_operating_hours: Dict[str, float]  # heures/jour par mois
+    
+    # Graphiques et courbes
+    monthly_performance: Dict[str, List[float]]
+    system_curves: Dict[str, Any]
+    
+    # Alertes et warnings
+    warnings: List[str]
+    critical_alerts: List[str]
+
+def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpingResult:
+    """
+    Calcul complet du dimensionnement d'un système de pompage solaire
+    """
+    warnings = []
+    critical_alerts = []
+    
+    # 1. Récupération des données d'irradiation solaire
+    try:
+        region_data = SOLAR_IRRADIATION_DATABASE[input_data.location_region]
+        location_data = region_data[input_data.location_subregion]
+        irradiation_annual = location_data["irradiation_annual"]
+        irradiation_peak = location_data["peak_month"]
+        irradiation_min = location_data["min_month"]
+    except KeyError:
+        warnings.append("Région non trouvée, utilisation des valeurs par défaut")
+        irradiation_annual = 4.0
+        irradiation_peak = 6.5
+        irradiation_min = 2.0
+    
+    # 2. Calcul des besoins énergétiques hydrauliques
+    # Puissance hydraulique = (Q × H × ρ × g) / 3600  [Watts]
+    # Q en m³/h, H en mètres
+    daily_flow = input_data.daily_water_need  # m³/jour
+    peak_daily_flow = daily_flow * input_data.seasonal_variation
+    
+    # Estimation du débit horaire (fonctionnement sur heures de soleil utile)
+    useful_sun_hours = irradiation_annual  # approximation
+    hourly_flow_avg = daily_flow / useful_sun_hours  # m³/h
+    hourly_flow_peak = peak_daily_flow / useful_sun_hours  # m³/h
+    
+    # Puissance hydraulique requise
+    hydraulic_power_avg = (hourly_flow_avg * input_data.total_head * 1000 * 9.81) / 3600  # Watts
+    hydraulic_power_peak = (hourly_flow_peak * input_data.total_head * 1000 * 9.81) / 3600  # Watts
+    
+    # 3. Sélection automatique de la pompe optimale
+    suitable_pumps = []
+    for pump_id, pump_data in SOLAR_PUMP_DATABASE.items():
+        if (pump_data["type"] == input_data.installation_type and
+            hydraulic_power_peak <= max(pump_data["power_range"]) and
+            hourly_flow_peak <= max(pump_data["flow_range"]) and
+            input_data.total_head <= max(pump_data["head_range"])):
+            
+            # Calculer l'efficacité du point de fonctionnement
+            power_ratio = hydraulic_power_peak / max(pump_data["power_range"])
+            efficiency_penalty = 1.0 if power_ratio > 0.5 else (0.8 + 0.2 * power_ratio / 0.5)
+            
+            suitable_pumps.append({
+                "id": pump_id,
+                "data": pump_data,
+                "required_power": hydraulic_power_peak / (pump_data["efficiency"] * efficiency_penalty),
+                "efficiency_score": pump_data["efficiency"] * efficiency_penalty,
+                "cost_score": pump_data["price_eur"] / max(pump_data["power_range"])
+            })
+    
+    if not suitable_pumps:
+        critical_alerts.append("Aucune pompe compatible trouvée pour ces spécifications")
+        # Sélection de la pompe la plus puissante par défaut
+        selected_pump_id = "grundfos_sqflex_high"
+        selected_pump = SOLAR_PUMP_DATABASE[selected_pump_id]
+        required_electrical_power = 1200  # Watts par défaut
+    else:
+        # Sélection de la pompe avec le meilleur compromis efficacité/coût
+        best_pump = min(suitable_pumps, key=lambda x: x["required_power"] * x["cost_score"])
+        selected_pump_id = best_pump["id"]
+        selected_pump = best_pump["data"]
+        required_electrical_power = best_pump["required_power"]
+    
+    # 4. Dimensionnement des panneaux solaires
+    # Facteur de dégradation et pertes système
+    system_losses = 0.85  # 15% pertes (câblage, MPPT, température, vieillissement)
+    environmental_factor = input_data.dust_factor * input_data.shading_factor
+    
+    # Puissance crête nécessaire
+    peak_power_needed = required_electrical_power / (system_losses * environmental_factor)
+    
+    # Sélection des panneaux optimaux
+    selected_panels = {}
+    for panel_id, panel_data in SOLAR_PANEL_DATABASE.items():
+        if input_data.system_voltage in [12, 24] and panel_data["voltage_nominal"] <= input_data.system_voltage * 2:
+            nb_panels = math.ceil(peak_power_needed / panel_data["power_nominal"])
+            total_power = nb_panels * panel_data["power_nominal"]
+            total_cost = nb_panels * panel_data["price_eur"]
+            surface_required = nb_panels * (panel_data["size"][0] * panel_data["size"][1])
+            
+            selected_panels[panel_id] = {
+                "panel_data": panel_data,
+                "quantity": nb_panels,
+                "total_power": total_power,
+                "total_cost": total_cost,
+                "surface_required": surface_required,
+                "power_ratio": total_power / peak_power_needed
+            }
+    
+    # Sélection du meilleur compromis
+    if selected_panels:
+        best_panels_id = min(selected_panels.keys(), 
+                           key=lambda x: selected_panels[x]["total_cost"] / selected_panels[x]["total_power"])
+        recommended_panels = selected_panels[best_panels_id]
+    else:
+        warnings.append("Configuration de panneaux par défaut utilisée")
+        recommended_panels = {
+            "panel_data": SOLAR_PANEL_DATABASE["monocristallin_400w"],
+            "quantity": math.ceil(peak_power_needed / 400),
+            "total_power": math.ceil(peak_power_needed / 400) * 400,
+            "total_cost": math.ceil(peak_power_needed / 400) * 280,
+            "surface_required": math.ceil(peak_power_needed / 400) * 2.0,
+            "power_ratio": (math.ceil(peak_power_needed / 400) * 400) / peak_power_needed
+        }
+    
+    # 5. Dimensionnement des batteries
+    # Énergie requise pour l'autonomie
+    daily_energy_need = required_electrical_power * useful_sun_hours / 1000  # kWh/jour
+    autonomy_energy = daily_energy_need * input_data.autonomy_days  # kWh
+    
+    # Sélection des batteries
+    selected_batteries = {}
+    for battery_id, battery_data in SOLAR_BATTERY_DATABASE.items():
+        if battery_data["voltage"] == 12:  # Standardisation sur 12V
+            usable_energy = battery_data["energy"] * battery_data["discharge_depth"]
+            nb_batteries = math.ceil(autonomy_energy / usable_energy)
+            
+            # Configuration série/parallèle pour atteindre la tension système
+            voltage_multiplier = input_data.system_voltage // battery_data["voltage"]
+            nb_series = voltage_multiplier
+            nb_parallel = math.ceil(nb_batteries / nb_series)
+            total_batteries = nb_series * nb_parallel
+            
+            selected_batteries[battery_id] = {
+                "battery_data": battery_data,
+                "series": nb_series,
+                "parallel": nb_parallel,
+                "total_quantity": total_batteries,
+                "total_capacity": total_batteries * battery_data["capacity"],
+                "total_energy": total_batteries * battery_data["energy"],
+                "usable_energy": total_batteries * usable_energy,
+                "total_cost": total_batteries * battery_data["price_eur"]
+            }
+    
+    # Sélection des meilleures batteries (compromis coût/performance)
+    if selected_batteries:
+        best_battery_id = min(selected_batteries.keys(),
+                            key=lambda x: selected_batteries[x]["total_cost"] / selected_batteries[x]["usable_energy"])
+        recommended_batteries = selected_batteries[best_battery_id]
+    else:
+        warnings.append("Configuration de batteries par défaut utilisée")
+        recommended_batteries = {
+            "battery_data": SOLAR_BATTERY_DATABASE["lithium_100ah"],
+            "series": input_data.system_voltage // 12,
+            "parallel": 2,
+            "total_quantity": 4,
+            "total_capacity": 400,
+            "total_energy": 4.8,
+            "usable_energy": 4.56,
+            "total_cost": 1800
+        }
+    
+    # 6. Sélection du régulateur MPPT
+    max_pv_current = recommended_panels["quantity"] * recommended_panels["panel_data"]["current_nominal"]
+    max_pv_voltage = recommended_panels["panel_data"]["voltage_nominal"] * 1.25  # facteur de sécurité
+    
+    suitable_mppt = []
+    for mppt_id, mppt_data in MPPT_CONTROLLER_DATABASE.items():
+        if (mppt_data["max_current"] >= max_pv_current * 1.25 and
+            mppt_data["max_pv_voltage"] >= max_pv_voltage):
+            suitable_mppt.append({
+                "id": mppt_id,
+                "data": mppt_data,
+                "cost_efficiency": mppt_data["price_eur"] / mppt_data["max_power"]
+            })
+    
+    if suitable_mppt:
+        best_mppt = min(suitable_mppt, key=lambda x: x["cost_efficiency"])
+        recommended_mppt = {
+            "mppt_data": best_mppt["data"],
+            "quantity": 1,
+            "total_cost": best_mppt["data"]["price_eur"]
+        }
+    else:
+        warnings.append("Régulateur MPPT par défaut utilisé")
+        recommended_mppt = {
+            "mppt_data": MPPT_CONTROLLER_DATABASE["victron_100_30"],
+            "quantity": 1,
+            "total_cost": 180
+        }
+    
+    # 7. Calculs de performance mensuelle
+    monthly_irradiation = []
+    for month in range(12):
+        if month + 1 in input_data.peak_months:
+            irradiation = irradiation_peak - (irradiation_peak - irradiation_annual) * 0.3
+        elif month + 1 in [11, 12, 1, 2]:  # mois d'hiver
+            irradiation = irradiation_min + (irradiation_annual - irradiation_min) * 0.5
+        else:
+            irradiation = irradiation_annual
+        monthly_irradiation.append(irradiation)
+    
+    # Production énergétique mensuelle
+    energy_production = {}
+    energy_consumption = {}
+    pump_hours = {}
+    
+    for month, irradiation in enumerate(monthly_irradiation):
+        monthly_production = (recommended_panels["total_power"] * irradiation * 
+                            system_losses * environmental_factor) / 1000  # kWh/jour
+        
+        # Besoins saisonniers
+        if month + 1 in input_data.peak_months:
+            monthly_need = peak_daily_flow
+        else:
+            monthly_need = daily_flow
+        
+        # Heures de fonctionnement de la pompe
+        available_energy = monthly_production
+        pump_power_kw = required_electrical_power / 1000
+        max_pump_hours = available_energy / pump_power_kw if pump_power_kw > 0 else 0
+        
+        # Limitation par les besoins en eau
+        required_pump_hours = (monthly_need * input_data.total_head * 1000 * 9.81) / (
+            selected_pump["efficiency"] * required_electrical_power * 3600)
+        
+        actual_pump_hours = min(max_pump_hours, required_pump_hours, irradiation)
+        
+        energy_production[f"month_{month+1}"] = monthly_production
+        energy_consumption[f"month_{month+1}"] = actual_pump_hours * pump_power_kw
+        pump_hours[f"month_{month+1}"] = actual_pump_hours
+    
+    # 8. Analyse économique
+    total_system_cost = (recommended_panels["total_cost"] + 
+                        recommended_batteries["total_cost"] + 
+                        recommended_mppt["total_cost"] + 
+                        selected_pump["price_eur"] + 
+                        1500)  # Installation et accessoires
+    
+    # Économies annuelles (vs pompe électrique)
+    annual_water_production = sum([pump_hours[f"month_{month}"] * 
+                                  (hourly_flow_avg if month not in input_data.peak_months 
+                                   else hourly_flow_avg * input_data.seasonal_variation) * 30.44 
+                                  for month in range(1, 13)])
+    
+    equivalent_electrical_consumption = annual_water_production * input_data.total_head * 1000 * 9.81 / (
+        0.70 * 3600 * 1000)  # kWh/an avec rendement pompe électrique 70%
+    
+    annual_savings = equivalent_electrical_consumption * input_data.electricity_cost
+    
+    # Analyse de rentabilité
+    payback_period = total_system_cost / annual_savings if annual_savings > 0 else float('inf')
+    
+    # Maintenance annuelle
+    annual_maintenance = total_system_cost * input_data.maintenance_cost_annual
+    net_annual_savings = annual_savings - annual_maintenance
+    
+    economic_analysis = {
+        "total_system_cost": total_system_cost,
+        "annual_savings": annual_savings,
+        "annual_maintenance": annual_maintenance,
+        "net_annual_savings": net_annual_savings,
+        "payback_period": payback_period,
+        "project_lifetime": input_data.project_lifetime,
+        "total_lifetime_savings": net_annual_savings * input_data.project_lifetime,
+        "roi_percentage": (net_annual_savings * input_data.project_lifetime / total_system_cost) * 100
+    }
+    
+    # 9. Recommandations techniques
+    technical_recommendations = []
+    optimization_suggestions = []
+    
+    if payback_period > 10:
+        optimization_suggestions.append(f"Période de retour élevée ({payback_period:.1f} ans) - Considérer l'optimisation du système")
+    
+    if recommended_panels["surface_required"] > 100:
+        technical_recommendations.append(f"Surface importante requise ({recommended_panels['surface_required']:.1f} m²)")
+    
+    if input_data.autonomy_days > 3:
+        technical_recommendations.append("Autonomie élevée - Système de stockage important requis")
+    
+    if irradiation_annual < 3.5:
+        warnings.append("Irradiation faible pour cette région - Performance réduite")
+    
+    # Vérifications critiques
+    if required_electrical_power > recommended_panels["total_power"] * 0.8:
+        critical_alerts.append("Puissance des panneaux juste suffisante - Prévoir une marge de sécurité")
+    
+    if autonomy_energy > recommended_batteries["usable_energy"] * 0.9:
+        critical_alerts.append("Capacité de stockage limite atteinte")
+    
+    # 10. Compilation des résultats
+    dimensioning = SolarSystemDimensioning(
+        recommended_pump={
+            "model": selected_pump["name"],
+            "power": required_electrical_power,
+            "efficiency": selected_pump["efficiency"],
+            "type": selected_pump["type"],
+            "cost": selected_pump["price_eur"],
+            "specifications": selected_pump
+        },
+        solar_panels={
+            "model": recommended_panels["panel_data"]["name"],
+            "quantity": recommended_panels["quantity"],
+            "total_power": recommended_panels["total_power"],
+            "surface_required": recommended_panels["surface_required"],
+            "cost": recommended_panels["total_cost"],
+            "specifications": recommended_panels
+        },
+        batteries={
+            "model": recommended_batteries["battery_data"]["name"],
+            "configuration": f"{recommended_batteries['series']}S{recommended_batteries['parallel']}P",
+            "total_quantity": recommended_batteries["total_quantity"],
+            "total_capacity": recommended_batteries["total_capacity"],
+            "usable_energy": recommended_batteries["usable_energy"],
+            "cost": recommended_batteries["total_cost"],
+            "specifications": recommended_batteries
+        },
+        mppt_controller={
+            "model": recommended_mppt["mppt_data"]["name"],
+            "quantity": recommended_mppt["quantity"],
+            "cost": recommended_mppt["total_cost"],
+            "specifications": recommended_mppt
+        },
+        energy_production=energy_production,
+        energy_consumption=energy_consumption,
+        system_sizing={
+            "total_power": recommended_panels["total_power"],
+            "system_efficiency": system_losses * environmental_factor,
+            "autonomy_days": input_data.autonomy_days,
+            "daily_water_capacity": daily_flow,
+            "peak_water_capacity": peak_daily_flow
+        },
+        economic_analysis=economic_analysis,
+        technical_recommendations=technical_recommendations,
+        optimization_suggestions=optimization_suggestions
+    )
+    
+    # Courbes de performance pour graphiques
+    monthly_performance = {
+        "months": list(range(1, 13)),
+        "irradiation": monthly_irradiation,
+        "production": [energy_production[f"month_{m}"] for m in range(1, 13)],
+        "consumption": [energy_consumption[f"month_{m}"] for m in range(1, 13)],
+        "pump_hours": [pump_hours[f"month_{m}"] for m in range(1, 13)],
+        "water_production": [pump_hours[f"month_{m}"] * hourly_flow_avg * 
+                           (input_data.seasonal_variation if m in input_data.peak_months else 1.0) 
+                           for m in range(1, 13)]
+    }
+    
+    system_curves = {
+        "power_curve": {
+            "irradiation_points": [i for i in range(1, 11)],
+            "power_output": [i * recommended_panels["total_power"] * system_losses / 10 for i in range(1, 11)]
+        },
+        "pump_curve": {
+            "flow_points": [i * hourly_flow_peak / 10 for i in range(1, 11)],
+            "head_points": [input_data.total_head + (i * input_data.total_head * 0.1) for i in range(1, 11)]
+        }
+    }
+    
+    return SolarPumpingResult(
+        input_data=input_data,
+        dimensioning=dimensioning,
+        solar_irradiation={
+            "annual": irradiation_annual,
+            "peak_month": irradiation_peak,
+            "min_month": irradiation_min,
+            "monthly": {f"month_{i+1}": monthly_irradiation[i] for i in range(12)}
+        },
+        system_efficiency=system_losses * environmental_factor,
+        pump_operating_hours=pump_hours,
+        monthly_performance=monthly_performance,
+        system_curves=system_curves,
+        warnings=warnings,
+        critical_alerts=critical_alerts
+    )
+
+@api_router.post("/solar-pumping", response_model=SolarPumpingResult)
+async def calculate_solar_pumping(input_data: SolarPumpingInput):
+    """
+    Dimensionnement complet d'un système de pompage solaire avec calculs automatisés
+    """
+    try:
+        result = calculate_solar_pumping_system(input_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur dans le dimensionnement solaire: {str(e)}")
+
+@api_router.get("/solar-regions")
+async def get_solar_regions():
+    """Obtenir les régions disponibles pour l'irradiation solaire"""
+    regions = []
+    for region_key, region_data in SOLAR_IRRADIATION_DATABASE.items():
+        for subregion_key, subregion_data in region_data.items():
+            regions.append({
+                "region": region_key,
+                "subregion": subregion_key,
+                "name": subregion_data["name"],
+                "irradiation_annual": subregion_data["irradiation_annual"]
+            })
+    return {"regions": regions}
+
+@api_router.get("/solar-equipment")
+async def get_solar_equipment():
+    """Obtenir la liste des équipements solaires disponibles"""
+    return {
+        "pumps": SOLAR_PUMP_DATABASE,
+        "panels": SOLAR_PANEL_DATABASE,
+        "batteries": SOLAR_BATTERY_DATABASE,
+        "mppt_controllers": MPPT_CONTROLLER_DATABASE
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
