@@ -401,10 +401,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "NPSHd Required Field Acceptance"
-    - "NPSHd vs NPSH Required Comparison" 
-    - "Cavitation Risk Detection"
-    - "Cavitation Alerts and Recommendations"
+    - "Chemical Compatibility Analysis Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
