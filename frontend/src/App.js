@@ -837,6 +837,811 @@ const AuditSystem = () => {
     </div>
   );
 };
+
+// Component pour Onglet EXPERT SOLAIRE - Dimensionnement Pompage Solaire
+const SolarExpertSystem = () => {
+  // États pour les données d'entrée
+  const [solarData, setSolarData] = useState({
+    // Informations du projet
+    project_name: 'Système de Pompage Solaire',
+    location_region: 'france',
+    location_subregion: 'centre',
+    
+    // Besoins en eau
+    daily_water_need: 10,
+    seasonal_variation: 1.2,
+    peak_months: [6, 7, 8],
+    
+    // Paramètres hydrauliques
+    total_head: 25,
+    static_head: 20,
+    well_depth: 30,
+    pipe_diameter: 100,
+    pipe_length: 50,
+    
+    // Contraintes du système
+    autonomy_days: 2,
+    system_voltage: 24,
+    installation_type: 'submersible',
+    
+    // Paramètres économiques
+    electricity_cost: 0.15,
+    project_lifetime: 25,
+    maintenance_cost_annual: 0.02,
+    
+    // Contraintes d'installation
+    available_surface: 100,
+    max_budget: 15000,
+    grid_connection_available: false,
+    
+    // Paramètres environnementaux
+    ambient_temperature_avg: 25,
+    dust_factor: 0.95,
+    shading_factor: 1.0
+  });
+
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [availableRegions, setAvailableRegions] = useState([]);
+  const [activeSection, setActiveSection] = useState('project');
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+
+  // Charger les régions disponibles
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get(`${API}/solar-regions`);
+        setAvailableRegions(response.data.regions);
+      } catch (error) {
+        console.error('Erreur lors du chargement des régions:', error);
+      }
+    };
+    
+    fetchRegions();
+  }, []);
+
+  // Calcul automatique en temps réel
+  useEffect(() => {
+    const calculateSolarSystem = async () => {
+      if (solarData.daily_water_need > 0 && solarData.total_head > 0) {
+        setLoading(true);
+        try {
+          const response = await axios.post(`${API}/solar-pumping`, solarData);
+          setResults(response.data);
+        } catch (error) {
+          console.error('Erreur calcul solaire:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    const timer = setTimeout(calculateSolarSystem, 500);
+    return () => clearTimeout(timer);
+  }, [solarData]);
+
+  // Mise à jour du graphique
+  useEffect(() => {
+    if (results && chartRef.current) {
+      const ctx = chartRef.current.getContext('2d');
+      
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 
+                         'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+      chartInstance.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: monthNames,
+          datasets: [{
+            label: 'Production Solaire (kWh/j)',
+            data: results.monthly_performance.production,
+            borderColor: '#F59E0B',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 3,
+            fill: true
+          }, {
+            label: 'Consommation Pompe (kWh/j)',
+            data: results.monthly_performance.consumption,
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true
+          }, {
+            label: 'Irradiation Solaire (kWh/m²/j)',
+            data: results.monthly_performance.irradiation,
+            borderColor: '#EF4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 2,
+            yAxisID: 'y1'
+          }]
+        },
+        options: {
+          responsive: true,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: 'Performance Mensuelle du Système Solaire'
+            },
+            legend: {
+              position: 'top',
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Énergie (kWh/jour)'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Irradiation (kWh/m²/jour)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            }
+          }
+        }
+      });
+    }
+  }, [results]);
+
+  const handleInputChange = (field, value) => {
+    setSolarData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('fr-FR', { 
+      style: 'currency', 
+      currency: 'EUR' 
+    }).format(value);
+  };
+
+  const getSolarRadiationColor = (irradiation) => {
+    if (irradiation >= 6) return 'text-red-600 font-bold';
+    if (irradiation >= 4.5) return 'text-orange-600 font-semibold';
+    if (irradiation >= 3.5) return 'text-yellow-600';
+    return 'text-blue-600';
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête avec gradient solaire */}
+      <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center">
+              ☀️ EXPERT SOLAIRE - DIMENSIONNEMENT POMPAGE
+            </h2>
+            <p className="text-yellow-100 mt-2">
+              Calculs automatisés • Dimensionnement optimisé • Analyse économique complète
+            </p>
+          </div>
+          <div className="flex space-x-2">
+            <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+              ✅ Temps réel
+            </div>
+            <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+              🔄 Auto-calcul
+            </div>
+            <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+              💡 IA Optimisée
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation des sections */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { id: 'project', label: '📋 Projet', color: 'blue' },
+          { id: 'hydraulic', label: '💧 Hydraulique', color: 'cyan' },
+          { id: 'energy', label: '⚡ Énergie', color: 'yellow' },
+          { id: 'results', label: '📊 Résultats', color: 'green' },
+          { id: 'economics', label: '💰 Économie', color: 'purple' }
+        ].map(section => (
+          <button
+            key={section.id}
+            onClick={() => setActiveSection(section.id)}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              activeSection === section.id
+                ? `bg-${section.color}-500 text-white shadow-lg`
+                : `bg-${section.color}-100 text-${section.color}-700 hover:bg-${section.color}-200`
+            }`}
+          >
+            {section.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Section Informations du Projet */}
+      {activeSection === 'project' && (
+        <div className="bg-blue-50 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-blue-900 mb-4">📋 Informations du Projet</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Nom du projet</label>
+              <input
+                type="text"
+                value={solarData.project_name}
+                onChange={(e) => handleInputChange('project_name', e.target.value)}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Région géographique</label>
+              <select
+                value={`${solarData.location_region}.${solarData.location_subregion}`}
+                onChange={(e) => {
+                  const [region, subregion] = e.target.value.split('.');
+                  handleInputChange('location_region', region);
+                  handleInputChange('location_subregion', subregion);
+                }}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              >
+                {availableRegions.map(region => (
+                  <option key={`${region.region}.${region.subregion}`} value={`${region.region}.${region.subregion}`}>
+                    {region.name} ({region.irradiation_annual} kWh/m²/j)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Type d'installation</label>
+              <select
+                value={solarData.installation_type}
+                onChange={(e) => handleInputChange('installation_type', e.target.value)}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              >
+                <option value="submersible">🔽 Pompe Submersible</option>
+                <option value="surface">🔼 Pompe de Surface</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Tension système (V)</label>
+              <select
+                value={solarData.system_voltage}
+                onChange={(e) => handleInputChange('system_voltage', parseInt(e.target.value))}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              >
+                <option value={12}>12V DC</option>
+                <option value={24}>24V DC</option>
+                <option value={48}>48V DC</option>
+                <option value={96}>96V DC</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Autonomie souhaitée (jours)</label>
+              <input
+                type="number"
+                value={solarData.autonomy_days}
+                onChange={(e) => handleInputChange('autonomy_days', parseInt(e.target.value))}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                min="1" max="7"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-blue-700 mb-2">Budget maximum (€)</label>
+              <input
+                type="number"
+                value={solarData.max_budget || ''}
+                onChange={(e) => handleInputChange('max_budget', e.target.value ? parseFloat(e.target.value) : null)}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                placeholder="Optionnel"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Paramètres Hydrauliques */}
+      {activeSection === 'hydraulic' && (
+        <div className="bg-cyan-50 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-cyan-900 mb-4">💧 Paramètres Hydrauliques</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+              <label className="block text-sm font-medium text-cyan-700 mb-2">Besoin quotidien (m³/jour)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={solarData.daily_water_need}
+                onChange={(e) => handleInputChange('daily_water_need', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+              />
+              <p className="text-xs text-cyan-600 mt-1">Volume d'eau nécessaire par jour</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+              <label className="block text-sm font-medium text-cyan-700 mb-2">Hauteur totale (m)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={solarData.total_head}
+                onChange={(e) => handleInputChange('total_head', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+              />
+              <p className="text-xs text-cyan-600 mt-1">HMT totale requise</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+              <label className="block text-sm font-medium text-cyan-700 mb-2">Hauteur statique (m)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={solarData.static_head}
+                onChange={(e) => handleInputChange('static_head', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+              />
+              <p className="text-xs text-cyan-600 mt-1">Dénivelé géométrique</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+              <label className="block text-sm font-medium text-cyan-700 mb-2">Profondeur puits (m)</label>
+              <input
+                type="number"
+                step="0.1"
+                value={solarData.well_depth || ''}
+                onChange={(e) => handleInputChange('well_depth', e.target.value ? parseFloat(e.target.value) : null)}
+                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+                placeholder="Optionnel"
+              />
+              <p className="text-xs text-cyan-600 mt-1">Profondeur totale du puits</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+              <label className="block text-sm font-medium text-blue-700 mb-2">Diamètre tuyauterie (mm)</label>
+              <select
+                value={solarData.pipe_diameter}
+                onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              >
+                <option value={50}>50 mm</option>
+                <option value={80}>80 mm</option>
+                <option value={100}>100 mm</option>
+                <option value={125}>125 mm</option>
+                <option value={150}>150 mm</option>
+                <option value={200}>200 mm</option>
+              </select>
+              <p className="text-xs text-blue-600 mt-1">Diamètre nominal</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+              <label className="block text-sm font-medium text-blue-700 mb-2">Longueur tuyauterie (m)</label>
+              <input
+                type="number"
+                step="1"
+                value={solarData.pipe_length}
+                onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              />
+              <p className="text-xs text-blue-600 mt-1">Longueur totale</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-orange-500">
+              <label className="block text-sm font-medium text-orange-700 mb-2">Variation saisonnière</label>
+              <input
+                type="number"
+                step="0.1"
+                value={solarData.seasonal_variation}
+                onChange={(e) => handleInputChange('seasonal_variation', parseFloat(e.target.value))}
+                className="w-full p-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                min="1.0" max="2.0"
+              />
+              <p className="text-xs text-orange-600 mt-1">Coeff. été (1.0 = constant)</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+              <label className="block text-sm font-medium text-green-700 mb-2">Surface panneaux (m²)</label>
+              <input
+                type="number"
+                step="1"
+                value={solarData.available_surface || ''}
+                onChange={(e) => handleInputChange('available_surface', e.target.value ? parseFloat(e.target.value) : null)}
+                className="w-full p-3 border-2 border-green-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                placeholder="Illimitée"
+              />
+              <p className="text-xs text-green-600 mt-1">Surface disponible</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Paramètres Énergétiques */}
+      {activeSection === 'energy' && (
+        <div className="bg-yellow-50 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-yellow-900 mb-4">⚡ Paramètres Énergétiques & Environnementaux</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Paramètres économiques */}
+            <div className="bg-white p-4 rounded-lg border-t-4 border-green-500">
+              <h4 className="font-semibold text-green-700 mb-3">💰 Économique</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Coût électricité (€/kWh)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={solarData.electricity_cost}
+                    onChange={(e) => handleInputChange('electricity_cost', parseFloat(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Durée projet (années)</label>
+                  <input
+                    type="number"
+                    value={solarData.project_lifetime}
+                    onChange={(e) => handleInputChange('project_lifetime', parseInt(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-200"
+                    min="10" max="30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance annuelle (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={solarData.maintenance_cost_annual * 100}
+                    onChange={(e) => handleInputChange('maintenance_cost_annual', parseFloat(e.target.value) / 100)}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-green-500 focus:ring-1 focus:ring-green-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Paramètres environnementaux */}
+            <div className="bg-white p-4 rounded-lg border-t-4 border-orange-500">
+              <h4 className="font-semibold text-orange-700 mb-3">🌤️ Environnemental</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Température ambiante (°C)</label>
+                  <input
+                    type="number"
+                    value={solarData.ambient_temperature_avg}
+                    onChange={(e) => handleInputChange('ambient_temperature_avg', parseFloat(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Facteur poussière (0.9-1.0)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.8" max="1.0"
+                    value={solarData.dust_factor}
+                    onChange={(e) => handleInputChange('dust_factor', parseFloat(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Facteur ombrage (0.8-1.0)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.8" max="1.0"
+                    value={solarData.shading_factor}
+                    onChange={(e) => handleInputChange('shading_factor', parseFloat(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-orange-500 focus:ring-1 focus:ring-orange-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Irradiation en temps réel */}
+            <div className="bg-white p-4 rounded-lg border-t-4 border-red-500">
+              <h4 className="font-semibold text-red-700 mb-3">☀️ Irradiation Locale</h4>
+              {results && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Annuelle:</span>
+                    <span className={`font-bold ${getSolarRadiationColor(results.solar_irradiation.annual)}`}>
+                      {results.solar_irradiation.annual.toFixed(1)} kWh/m²/j
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Été (max):</span>
+                    <span className={`font-bold ${getSolarRadiationColor(results.solar_irradiation.peak_month)}`}>
+                      {results.solar_irradiation.peak_month.toFixed(1)} kWh/m²/j
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Hiver (min):</span>
+                    <span className={`font-bold ${getSolarRadiationColor(results.solar_irradiation.min_month)}`}>
+                      {results.solar_irradiation.min_month.toFixed(1)} kWh/m²/j
+                    </span>
+                  </div>
+                  <div className="mt-3 p-2 bg-yellow-100 rounded">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Efficacité système:</span>
+                      <span className="font-bold text-yellow-700">
+                        {(results.system_efficiency * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Résultats */}
+      {activeSection === 'results' && results && (
+        <div className="space-y-6">
+          <div className="bg-green-50 rounded-xl p-6">
+            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Dimensionnement Automatique</h3>
+            
+            {/* Alerte de chargement */}
+            {loading && (
+              <div className="bg-blue-100 border border-blue-300 text-blue-700 px-4 py-3 rounded-lg mb-4">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700 mr-2"></div>
+                  Calcul en cours... Optimisation du système
+                </div>
+              </div>
+            )}
+
+            {/* Alertes critiques */}
+            {results.critical_alerts && results.critical_alerts.length > 0 && (
+              <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <h4 className="font-bold">🚨 Alertes Critiques:</h4>
+                <ul className="list-disc ml-5">
+                  {results.critical_alerts.map((alert, idx) => (
+                    <li key={idx}>{alert}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Composants recommandés */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Pompe */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <h4 className="font-semibold text-blue-700 mb-2">💧 Pompe Solaire</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="font-medium">{results.dimensioning.recommended_pump.model}</div>
+                  <div>Puissance: {results.dimensioning.recommended_pump.power.toFixed(0)}W</div>
+                  <div>Efficacité: {(results.dimensioning.recommended_pump.efficiency * 100).toFixed(1)}%</div>
+                  <div>Type: {results.dimensioning.recommended_pump.type === 'submersible' ? 'Submersible' : 'Surface'}</div>
+                  <div className="font-semibold text-green-600">
+                    Prix: {formatCurrency(results.dimensioning.recommended_pump.cost)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Panneaux solaires */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-yellow-500">
+                <h4 className="font-semibold text-yellow-700 mb-2">☀️ Panneaux Solaires</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="font-medium">{results.dimensioning.solar_panels.model}</div>
+                  <div>Quantité: {results.dimensioning.solar_panels.quantity} panneaux</div>
+                  <div>Puissance totale: {results.dimensioning.solar_panels.total_power}W</div>
+                  <div>Surface requise: {results.dimensioning.solar_panels.surface_required.toFixed(1)} m²</div>
+                  <div className="font-semibold text-green-600">
+                    Prix: {formatCurrency(results.dimensioning.solar_panels.cost)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Batteries */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
+                <h4 className="font-semibold text-purple-700 mb-2">🔋 Stockage Batteries</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="font-medium">{results.dimensioning.batteries.model}</div>
+                  <div>Configuration: {results.dimensioning.batteries.configuration}</div>
+                  <div>Quantité totale: {results.dimensioning.batteries.total_quantity} batteries</div>
+                  <div>Capacité: {results.dimensioning.batteries.total_capacity}Ah</div>
+                  <div>Énergie utile: {results.dimensioning.batteries.usable_energy.toFixed(1)} kWh</div>
+                  <div className="font-semibold text-green-600">
+                    Prix: {formatCurrency(results.dimensioning.batteries.cost)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Régulateur MPPT */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <h4 className="font-semibold text-green-700 mb-2">⚡ Régulateur MPPT</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="font-medium">{results.dimensioning.mppt_controller.model}</div>
+                  <div>Quantité: {results.dimensioning.mppt_controller.quantity}</div>
+                  <div>Courant max: {results.dimensioning.mppt_controller.specifications.mppt_data.max_current}A</div>
+                  <div>Tension max: {results.dimensioning.mppt_controller.specifications.mppt_data.max_pv_voltage}V</div>
+                  <div className="font-semibold text-green-600">
+                    Prix: {formatCurrency(results.dimensioning.mppt_controller.cost)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Graphique de performance */}
+            <div className="mt-6 bg-white p-4 rounded-lg">
+              <canvas ref={chartRef} style={{maxHeight: '400px'}}></canvas>
+            </div>
+
+            {/* Capacité de pompage mensuelle */}
+            <div className="mt-6 bg-white p-4 rounded-lg">
+              <h4 className="font-semibold text-gray-800 mb-3">💧 Capacité de Pompage Mensuelle</h4>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
+                {['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'].map((month, idx) => (
+                  <div key={month} className="bg-blue-50 p-2 rounded text-center">
+                    <div className="font-medium text-blue-800">{month}</div>
+                    <div className="text-blue-600">
+                      {results.monthly_performance.water_production[idx].toFixed(1)} m³/j
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Analyse Économique */}
+      {activeSection === 'economics' && results && (
+        <div className="bg-purple-50 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-purple-900 mb-4">💰 Analyse Économique Complète</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Coûts du système */}
+            <div className="bg-white p-6 rounded-lg border-t-4 border-red-500">
+              <h4 className="font-semibold text-red-700 mb-3">💸 Coûts d'Investissement</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Pompe:</span>
+                  <span className="font-medium">{formatCurrency(results.dimensioning.recommended_pump.cost)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Panneaux:</span>
+                  <span className="font-medium">{formatCurrency(results.dimensioning.solar_panels.cost)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Batteries:</span>
+                  <span className="font-medium">{formatCurrency(results.dimensioning.batteries.cost)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Régulateur:</span>
+                  <span className="font-medium">{formatCurrency(results.dimensioning.mppt_controller.cost)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Installation:</span>
+                  <span className="font-medium">{formatCurrency(1500)}</span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between text-lg font-bold text-red-700">
+                  <span>TOTAL:</span>
+                  <span>{formatCurrency(results.dimensioning.economic_analysis.total_system_cost)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Économies annuelles */}
+            <div className="bg-white p-6 rounded-lg border-t-4 border-green-500">
+              <h4 className="font-semibold text-green-700 mb-3">💰 Économies Annuelles</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Économies brutes:</span>
+                  <span className="font-medium text-green-600">{formatCurrency(results.dimensioning.economic_analysis.annual_savings)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Maintenance:</span>
+                  <span className="font-medium text-red-600">-{formatCurrency(results.dimensioning.economic_analysis.annual_maintenance)}</span>
+                </div>
+                <hr className="my-2" />
+                <div className="flex justify-between text-lg font-bold text-green-700">
+                  <span>Économies nettes:</span>
+                  <span>{formatCurrency(results.dimensioning.economic_analysis.net_annual_savings)}</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-green-100 rounded-lg">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-800">
+                    {results.dimensioning.economic_analysis.payback_period.toFixed(1)} ans
+                  </div>
+                  <div className="text-sm text-green-600">Période de retour</div>
+                </div>
+              </div>
+            </div>
+
+            {/* ROI et rentabilité */}
+            <div className="bg-white p-6 rounded-lg border-t-4 border-blue-500">
+              <h4 className="font-semibold text-blue-700 mb-3">📈 Rentabilité</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Durée projet:</span>
+                  <span className="font-medium">{results.dimensioning.economic_analysis.project_lifetime} ans</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Économies totales:</span>
+                  <span className="font-medium text-blue-600">{formatCurrency(results.dimensioning.economic_analysis.total_lifetime_savings)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>ROI:</span>
+                  <span className="font-medium text-blue-600">{results.dimensioning.economic_analysis.roi_percentage.toFixed(1)}%</span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-xl font-bold text-blue-800">
+                      {formatCurrency(results.dimensioning.economic_analysis.total_lifetime_savings - results.dimensioning.economic_analysis.total_system_cost)}
+                    </div>
+                    <div className="text-sm text-blue-600">Bénéfice net sur {results.dimensioning.economic_analysis.project_lifetime} ans</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommandations économiques */}
+          {results.dimensioning.optimization_suggestions && results.dimensioning.optimization_suggestions.length > 0 && (
+            <div className="mt-6 bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg">
+              <h4 className="font-bold">💡 Suggestions d'Optimisation:</h4>
+              <ul className="list-disc ml-5 mt-2">
+                {results.dimensioning.optimization_suggestions.map((suggestion, idx) => (
+                  <li key={idx}>{suggestion}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Recommandations techniques */}
+          {results.dimensioning.technical_recommendations && results.dimensioning.technical_recommendations.length > 0 && (
+            <div className="mt-4 bg-blue-100 border border-blue-300 text-blue-800 px-4 py-3 rounded-lg">
+              <h4 className="font-bold">🔧 Recommandations Techniques:</h4>
+              <ul className="list-disc ml-5 mt-2">
+                {results.dimensioning.technical_recommendations.map((recommendation, idx) => (
+                  <li key={idx}>{recommendation}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Avertissements */}
+      {results && results.warnings && results.warnings.length > 0 && (
+        <div className="bg-orange-100 border border-orange-300 text-orange-800 px-4 py-3 rounded-lg">
+          <h4 className="font-bold">⚠️ Avertissements:</h4>
+          <ul className="list-disc ml-5">
+            {results.warnings.map((warning, idx) => (
+              <li key={idx}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Component pour Onglet COMPATIBILITÉ CHIMIQUE - Interface Liste Déroulante
 const ChemicalCompatibility = () => {
   const [selectedFluid, setSelectedFluid] = useState('');
