@@ -861,8 +861,8 @@ const SolarExpertSystem = () => {
     dynamic_losses: 5, // Pertes de charge dynamiques
     useful_pressure_head: 0, // Pression utile convertie en hauteur
     total_head: 25, // HMT totale calculée automatiquement
-    pipe_diameter: 100,
-    pipe_length: 50,
+    pipe_diameter: 100, // DN calculé automatiquement basé sur débit
+    pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
     
     // Paramètres solaires
     panel_peak_power: 400, // Wc - puissance crête panneau
