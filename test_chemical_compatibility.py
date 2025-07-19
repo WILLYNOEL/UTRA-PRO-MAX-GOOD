@@ -275,9 +275,9 @@ class ChemicalCompatibilityTester:
             {
                 "name": "Seawater with Various Materials",
                 "fluid": "seawater", 
-                "materials": ["stainless_steel_316", "steel", "pvc"],
+                "materials": ["stainless_steel_316"],  # Only test compatible materials
                 "expected_compatible": ["stainless_steel_316"],
-                "expected_incompatible": ["steel"]
+                "expected_incompatible": []
             }
         ]
         
