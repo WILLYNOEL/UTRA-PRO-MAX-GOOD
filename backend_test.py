@@ -4038,6 +4038,502 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_new_industrial_fluids_api(self):
+        """Test that all 12 new industrial fluids are available in /api/fluids endpoint"""
+        print("\n🧪 Testing New Industrial Fluids API...")
+        
+        try:
+            response = requests.get(f"{BACKEND_URL}/fluids", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check structure
+                if "fluids" not in data:
+                    self.log_test("New Industrial Fluids API Structure", False, "Missing 'fluids' key")
+                    return False
+                
+                fluids = data["fluids"]
+                
+                # Expected 12 fluids total (4 original + 8 new)
+                expected_fluids = [
+                    "water", "oil", "acid", "glycol",  # Original 4
+                    "palm_oil", "gasoline", "diesel", "hydraulic_oil",  # New 4
+                    "ethanol", "seawater", "methanol", "glycerol"  # New 4 more
+                ]
+                
+                # Check all expected fluids are present
+                fluid_ids = [f["id"] for f in fluids]
+                missing_fluids = [f for f in expected_fluids if f not in fluid_ids]
+                
+                if missing_fluids:
+                    self.log_test("New Industrial Fluids API Content", False, f"Missing fluids: {missing_fluids}")
+                    return False
+                
+                # Check we have exactly 12 fluids
+                if len(fluids) != 12:
+                    self.log_test("New Industrial Fluids API Count", False, f"Expected 12 fluids, got {len(fluids)}")
+                    return False
+                
+                # Check fluid structure for new fluids
+                new_fluids = ["palm_oil", "gasoline", "diesel", "hydraulic_oil", "ethanol", "seawater", "methanol", "glycerol"]
+                for fluid in fluids:
+                    if fluid["id"] in new_fluids:
+                        if "id" not in fluid or "name" not in fluid:
+                            self.log_test("New Industrial Fluids API Structure", False, f"Invalid fluid structure: {fluid}")
+                            return False
+                
+                self.log_test("New Industrial Fluids API", True, f"Found all 12 fluids: {fluid_ids}")
+                return True
+            else:
+                self.log_test("New Industrial Fluids API", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("New Industrial Fluids API", False, f"Error: {str(e)}")
+            return False
+    
+    def test_new_fluids_property_calculations(self):
+        """Test property calculations with new industrial fluids at specific temperatures"""
+        print("\n🌡️ Testing New Fluids Property Calculations...")
+        
+        test_cases = [
+            {
+                "name": "Palm Oil at 30°C",
+                "fluid_type": "palm_oil",
+                "temperature": 30.0,
+                "expected_density_range": (900, 920),  # Should be lower than base 915 at 30°C
+                "expected_viscosity_range": (0.025, 0.050)  # Should be lower than base 0.045 at 30°C
+            },
+            {
+                "name": "Diesel at 40°C", 
+                "fluid_type": "diesel",
+                "temperature": 40.0,
+                "expected_density_range": (820, 850),  # Should be lower than base 840 at 40°C
+                "expected_viscosity_range": (0.002, 0.004)  # Should be lower than base 0.0035 at 40°C
+            },
+            {
+                "name": "Gasoline at 25°C",
+                "fluid_type": "gasoline", 
+                "temperature": 25.0,
+                "expected_density_range": (735, 745),  # Should be lower than base 740 at 25°C
+                "expected_viscosity_range": (0.0005, 0.0006)  # Should be slightly lower than base 0.00055 at 25°C
+            },
+            {
+                "name": "Hydraulic Oil at 50°C",
+                "fluid_type": "hydraulic_oil",
+                "temperature": 50.0,
+                "expected_density_range": (855, 880),  # Should be lower than base 875 at 50°C
+                "expected_viscosity_range": (0.025, 0.050)  # Should be lower than base 0.046 at 50°C
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                # Test with NPSHd calculation to get fluid properties
+                test_data = {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 50.0,
+                    "fluid_type": case["fluid_type"],
+                    "temperature": case["temperature"],
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 30.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0
+                }
+                
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=test_data, timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    fluid_props = result.get("fluid_properties", {})
+                    
+                    # Check fluid name
+                    fluid_name = fluid_props.get("name", "")
+                    if not fluid_name:
+                        self.log_test(f"New Fluid Properties - {case['name']} - Name", False, "Missing fluid name")
+                        all_passed = False
+                        continue
+                    
+                    # Check density is in expected range and temperature-adjusted
+                    density = fluid_props.get("density", 0)
+                    if not (case["expected_density_range"][0] <= density <= case["expected_density_range"][1]):
+                        self.log_test(f"New Fluid Properties - {case['name']} - Density", False, 
+                                    f"Density {density:.1f} kg/m³ not in expected range {case['expected_density_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check viscosity is in expected range and temperature-adjusted
+                    viscosity = fluid_props.get("viscosity", 0)
+                    if not (case["expected_viscosity_range"][0] <= viscosity <= case["expected_viscosity_range"][1]):
+                        self.log_test(f"New Fluid Properties - {case['name']} - Viscosity", False, 
+                                    f"Viscosity {viscosity:.6f} Pa·s not in expected range {case['expected_viscosity_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check vapor pressure is present and reasonable
+                    vapor_pressure = fluid_props.get("vapor_pressure", 0)
+                    if vapor_pressure < 0:
+                        self.log_test(f"New Fluid Properties - {case['name']} - Vapor Pressure", False, 
+                                    f"Negative vapor pressure: {vapor_pressure}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that calculations don't return NaN
+                    npshd = result.get("npshd", 0)
+                    velocity = result.get("velocity", 0)
+                    reynolds_number = result.get("reynolds_number", 0)
+                    
+                    if math.isnan(npshd) or math.isnan(velocity) or math.isnan(reynolds_number):
+                        self.log_test(f"New Fluid Properties - {case['name']} - NaN Check", False, 
+                                    f"NaN values detected: NPSHd={npshd}, Velocity={velocity}, Reynolds={reynolds_number}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"New Fluid Properties - {case['name']}", True, 
+                                f"Density: {density:.1f} kg/m³, Viscosity: {viscosity:.6f} Pa·s, NPSHd: {npshd:.2f} m")
+                else:
+                    self.log_test(f"New Fluid Properties - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"New Fluid Properties - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_expert_analysis_with_new_fluids(self):
+        """Test /api/expert-analysis endpoint with new industrial fluids"""
+        print("\n🎓 Testing Expert Analysis with New Industrial Fluids...")
+        
+        test_cases = [
+            {
+                "name": "Expert Analysis - Palm Oil",
+                "data": {
+                    "flow_rate": 40.0,
+                    "fluid_type": "palm_oil",
+                    "temperature": 30.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 2.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 20.0,
+                    "discharge_length": 80.0,
+                    "total_length": 100.0,
+                    "useful_pressure": 1.5,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 78.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.2,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 6000.0,
+                    "electricity_cost": 0.15,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Expert Analysis - Diesel",
+                "data": {
+                    "flow_rate": 60.0,
+                    "fluid_type": "diesel",
+                    "temperature": 40.0,
+                    "suction_type": "suction_lift",
+                    "suction_pipe_diameter": 125.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 3.5,
+                    "discharge_height": 20.0,
+                    "suction_length": 30.0,
+                    "discharge_length": 100.0,
+                    "total_length": 130.0,
+                    "useful_pressure": 2.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.85,
+                    "starting_method": "direct_on_line",
+                    "cable_length": 75.0,
+                    "cable_material": "copper",
+                    "npsh_required": 4.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Expert Analysis - Gasoline",
+                "data": {
+                    "flow_rate": 35.0,
+                    "fluid_type": "gasoline",
+                    "temperature": 25.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,
+                    "discharge_pipe_diameter": 65.0,
+                    "suction_height": 1.5,
+                    "discharge_height": 12.0,
+                    "suction_length": 15.0,
+                    "discharge_length": 60.0,
+                    "total_length": 75.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "stainless_steel",
+                    "discharge_material": "stainless_steel",
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 87.0,
+                    "voltage": 230,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 40.0,
+                    "cable_material": "copper",
+                    "npsh_required": 2.8,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 4000.0,
+                    "electricity_cost": 0.18,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Expert Analysis - Hydraulic Oil",
+                "data": {
+                    "flow_rate": 25.0,
+                    "fluid_type": "hydraulic_oil",
+                    "temperature": 50.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 75.0,
+                    "discharge_pipe_diameter": 65.0,
+                    "suction_height": 1.0,
+                    "discharge_height": 25.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 120.0,
+                    "total_length": 130.0,
+                    "useful_pressure": 3.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 82.0,
+                    "motor_efficiency": 92.0,
+                    "voltage": 400,
+                    "power_factor": 0.85,
+                    "starting_method": "star_delta",
+                    "cable_length": 60.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.5,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8000.0,
+                    "electricity_cost": 0.14,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that all required sections are present
+                    required_sections = [
+                        "input_data", "npshd_analysis", "hmt_analysis", "performance_analysis",
+                        "electrical_analysis", "overall_efficiency", "total_head_loss",
+                        "system_stability", "energy_consumption", "expert_recommendations",
+                        "optimization_potential", "performance_curves", "system_curves"
+                    ]
+                    
+                    missing_sections = [s for s in required_sections if s not in result]
+                    if missing_sections:
+                        self.log_test(f"Expert Analysis Structure - {case['name']}", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # Check NPSHd analysis
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    npshd = npshd_analysis.get("npshd", 0)
+                    cavitation_risk = npshd_analysis.get("cavitation_risk", None)
+                    
+                    if math.isnan(npshd):
+                        self.log_test(f"Expert Analysis NPSHd - {case['name']}", False, "NPSHd is NaN")
+                        all_passed = False
+                        continue
+                    
+                    if cavitation_risk is None:
+                        self.log_test(f"Expert Analysis Cavitation - {case['name']}", False, "Missing cavitation_risk")
+                        all_passed = False
+                        continue
+                    
+                    # Check HMT analysis
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    hmt = hmt_analysis.get("hmt", 0)
+                    
+                    if math.isnan(hmt) or hmt <= 0:
+                        self.log_test(f"Expert Analysis HMT - {case['name']}", False, f"Invalid HMT: {hmt}")
+                        all_passed = False
+                        continue
+                    
+                    # Check performance analysis
+                    performance_analysis = result.get("performance_analysis", {})
+                    overall_efficiency = result.get("overall_efficiency", 0)
+                    
+                    if math.isnan(overall_efficiency) or overall_efficiency <= 0:
+                        self.log_test(f"Expert Analysis Efficiency - {case['name']}", False, f"Invalid efficiency: {overall_efficiency}")
+                        all_passed = False
+                        continue
+                    
+                    # Check expert recommendations
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not isinstance(expert_recommendations, list):
+                        self.log_test(f"Expert Analysis Recommendations - {case['name']}", False, "Recommendations not a list")
+                        all_passed = False
+                        continue
+                    
+                    # Check performance curves
+                    performance_curves = result.get("performance_curves", {})
+                    if "flow" not in performance_curves or "hmt" not in performance_curves:
+                        self.log_test(f"Expert Analysis Curves - {case['name']}", False, "Missing performance curves")
+                        all_passed = False
+                        continue
+                    
+                    # Check system stability
+                    system_stability = result.get("system_stability", None)
+                    if system_stability is None:
+                        self.log_test(f"Expert Analysis Stability - {case['name']}", False, "Missing system_stability")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Expert Analysis - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f}m, HMT: {hmt:.2f}m, Efficiency: {overall_efficiency:.1f}%, Stable: {system_stability}")
+                else:
+                    self.log_test(f"Expert Analysis - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Expert Analysis - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_hydraulic_calculations_consistency(self):
+        """Test that hydraulic calculations are consistent and don't return NaN with new fluids"""
+        print("\n🔧 Testing Hydraulic Calculations Consistency...")
+        
+        # Test all new fluids with various conditions
+        new_fluids = ["palm_oil", "gasoline", "diesel", "hydraulic_oil", "ethanol", "seawater", "methanol", "glycerol"]
+        
+        all_passed = True
+        for fluid in new_fluids:
+            try:
+                # Test NPSHd calculation
+                npshd_data = {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 45.0,
+                    "fluid_type": fluid,
+                    "temperature": 30.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 40.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 1}
+                    ],
+                    "npsh_required": 3.0
+                }
+                
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=npshd_data, timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check for NaN values
+                    critical_values = [
+                        ("npshd", result.get("npshd", 0)),
+                        ("velocity", result.get("velocity", 0)),
+                        ("reynolds_number", result.get("reynolds_number", 0)),
+                        ("friction_factor", result.get("friction_factor", 0)),
+                        ("total_head_loss", result.get("total_head_loss", 0))
+                    ]
+                    
+                    for name, value in critical_values:
+                        if math.isnan(value) or math.isinf(value):
+                            self.log_test(f"Hydraulic Consistency - {fluid} - {name}", False, f"{name} is NaN/Inf: {value}")
+                            all_passed = False
+                            break
+                        
+                        if name in ["velocity", "reynolds_number", "friction_factor"] and value <= 0:
+                            self.log_test(f"Hydraulic Consistency - {fluid} - {name}", False, f"{name} is zero or negative: {value}")
+                            all_passed = False
+                            break
+                    else:
+                        # Test HMT calculation with same fluid
+                        hmt_data = {
+                            "installation_type": "surface",
+                            "suction_type": "flooded",
+                            "hasp": 2.0,
+                            "discharge_height": 18.0,
+                            "useful_pressure": 1.5,
+                            "suction_pipe_diameter": 100.0,
+                            "discharge_pipe_diameter": 80.0,
+                            "suction_pipe_length": 25.0,
+                            "discharge_pipe_length": 90.0,
+                            "suction_pipe_material": "pvc",
+                            "discharge_pipe_material": "pvc",
+                            "suction_fittings": [],
+                            "discharge_fittings": [
+                                {"fitting_type": "elbow_90", "quantity": 2}
+                            ],
+                            "fluid_type": fluid,
+                            "temperature": 30.0,
+                            "flow_rate": 45.0
+                        }
+                        
+                        hmt_response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_data, timeout=10)
+                        if hmt_response.status_code == 200:
+                            hmt_result = hmt_response.json()
+                            
+                            hmt_critical_values = [
+                                ("hmt", hmt_result.get("hmt", 0)),
+                                ("suction_velocity", hmt_result.get("suction_velocity", 0)),
+                                ("discharge_velocity", hmt_result.get("discharge_velocity", 0)),
+                                ("total_head_loss", hmt_result.get("total_head_loss", 0))
+                            ]
+                            
+                            for name, value in hmt_critical_values:
+                                if value is not None and (math.isnan(value) or math.isinf(value)):
+                                    self.log_test(f"Hydraulic Consistency - {fluid} - HMT {name}", False, f"{name} is NaN/Inf: {value}")
+                                    all_passed = False
+                                    break
+                            else:
+                                self.log_test(f"Hydraulic Consistency - {fluid}", True, 
+                                            f"NPSHd: {result['npshd']:.2f}m, HMT: {hmt_result['hmt']:.2f}m")
+                        else:
+                            self.log_test(f"Hydraulic Consistency - {fluid} - HMT", False, f"HMT Status: {hmt_response.status_code}")
+                            all_passed = False
+                else:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - NPSHd", False, f"NPSHd Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Hydraulic Consistency - {fluid}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
