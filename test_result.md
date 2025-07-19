@@ -416,7 +416,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Chemical Compatibility Analysis Integration"
+    - "Expert Solaire Tab with Optimizations"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
