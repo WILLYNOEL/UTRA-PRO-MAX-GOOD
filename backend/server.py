@@ -122,6 +122,160 @@ FLUID_PROPERTIES = {
             "viscosity": -0.0008,
             "vapor_pressure": 5
         }
+    },
+    # NOUVEAUX FLUIDES INDUSTRIELS - Extension Expertise Hydraulique
+    "palm_oil": {
+        "name": "Huile de Palme",
+        "density_20c": 915,  # kg/m³ (ASTM D1298)
+        "viscosity_20c": 0.045,  # Pa·s (à 20°C)
+        "vapor_pressure_20c": 0.001,  # Pa (très faible)
+        "temp_coeffs": {
+            "density": -0.65,  # Coefficient thermique typique huiles végétales
+            "viscosity": -0.0018,  # Forte variation avec température
+            "vapor_pressure": 0.0001
+        },
+        "technical_specs": {
+            "flash_point": 315,  # °C
+            "pour_point": 2,  # °C
+            "saponification_value": 199,  # mg KOH/g
+            "iodine_value": 53,  # g I2/100g
+            "compatibility": ["stainless_steel", "bronze", "pvc"],
+            "incompatibility": ["galvanized_steel", "copper_alloys"]
+        }
+    },
+    "gasoline": {
+        "name": "Essence (Octane 95)",
+        "density_20c": 740,  # kg/m³ (ASTM D4052)
+        "viscosity_20c": 0.00055,  # Pa·s (très faible)
+        "vapor_pressure_20c": 13000,  # Pa (très volatile)
+        "temp_coeffs": {
+            "density": -0.9,  # Fort coefficient pour hydrocarbures légers
+            "viscosity": -0.000015,  # Très faible viscosité
+            "vapor_pressure": 850  # Augmentation rapide avec température
+        },
+        "technical_specs": {
+            "flash_point": -43,  # °C (très inflammable)
+            "autoignition_temp": 280,  # °C
+            "octane_rating": 95,
+            "reid_vapor_pressure": 90,  # kPa
+            "compatibility": ["stainless_steel", "ptfe", "viton"],
+            "incompatibility": ["rubber", "pvc", "copper"]
+        }
+    },
+    "diesel": {
+        "name": "Gazole (Diesel)",
+        "density_20c": 840,  # kg/m³ (EN 590)
+        "viscosity_20c": 0.0035,  # Pa·s (à 20°C)
+        "vapor_pressure_20c": 300,  # Pa
+        "temp_coeffs": {
+            "density": -0.75,  # Coefficient pour gazole
+            "viscosity": -0.00012,
+            "vapor_pressure": 25
+        },
+        "technical_specs": {
+            "flash_point": 65,  # °C minimum (EN 590)
+            "cetane_number": 51,  # minimum
+            "sulfur_content": 10,  # mg/kg maximum
+            "cold_filter_plugging_point": -5,  # °C
+            "compatibility": ["carbon_steel", "stainless_steel", "aluminum"],
+            "incompatibility": ["zinc", "copper"]
+        }
+    },
+    "hydraulic_oil": {
+        "name": "Huile Hydraulique ISO VG 46",
+        "density_20c": 875,  # kg/m³ (ISO 3675)
+        "viscosity_20c": 0.046,  # Pa·s (équivalent à 46 cSt)
+        "vapor_pressure_20c": 0.1,  # Pa (très faible)
+        "temp_coeffs": {
+            "density": -0.65,
+            "viscosity": -0.0019,  # Indice de viscosité ~100
+            "vapor_pressure": 0.02
+        },
+        "technical_specs": {
+            "iso_grade": "VG 46",
+            "viscosity_index": 100,  # Minimum selon ISO 11158
+            "flash_point": 220,  # °C minimum
+            "pour_point": -30,  # °C maximum
+            "anti_wear_additives": True,
+            "compatibility": ["steel", "cast_iron", "bronze", "nitrile"],
+            "incompatibility": ["zinc", "natural_rubber"]
+        }
+    },
+    "ethanol": {
+        "name": "Éthanol (95%)",
+        "density_20c": 810,  # kg/m³
+        "viscosity_20c": 0.0012,  # Pa·s
+        "vapor_pressure_20c": 5870,  # Pa (volatile)
+        "temp_coeffs": {
+            "density": -1.05,  # Fort coefficient pour alcool
+            "viscosity": -0.00004,
+            "vapor_pressure": 420
+        },
+        "technical_specs": {
+            "flash_point": 17,  # °C (inflammable)
+            "boiling_point": 78,  # °C
+            "concentration": 95,  # % vol
+            "ph": 7.0,  # Neutre
+            "compatibility": ["stainless_steel", "ptfe", "epdm"],
+            "incompatibility": ["aluminum", "zinc", "natural_rubber"]
+        }
+    },
+    "seawater": {
+        "name": "Eau de Mer",
+        "density_20c": 1025,  # kg/m³ (salinité 35‰)
+        "viscosity_20c": 0.00107,  # Pa·s (légèrement supérieure à l'eau douce)
+        "vapor_pressure_20c": 2280,  # Pa (légèrement inférieure à l'eau pure)
+        "temp_coeffs": {
+            "density": -0.25,  # Légèrement différent de l'eau pure
+            "viscosity": -0.000052,
+            "vapor_pressure": 95
+        },
+        "technical_specs": {
+            "salinity": 35,  # g/L (‰)
+            "chloride_content": 19000,  # mg/L
+            "ph": 8.1,  # Légèrement basique
+            "electrical_conductivity": 50000,  # µS/cm
+            "compatibility": ["316L_stainless", "duplex_steel", "bronze_naval"],
+            "incompatibility": ["carbon_steel", "aluminum", "zinc"]
+        }
+    },
+    "methanol": {
+        "name": "Méthanol (99.5%)",
+        "density_20c": 792,  # kg/m³
+        "viscosity_20c": 0.00059,  # Pa·s
+        "vapor_pressure_20c": 12800,  # Pa (très volatile)
+        "temp_coeffs": {
+            "density": -1.2,
+            "viscosity": -0.000025,
+            "vapor_pressure": 780
+        },
+        "technical_specs": {
+            "flash_point": 12,  # °C (très inflammable)
+            "boiling_point": 64.7,  # °C
+            "purity": 99.5,  # % vol
+            "water_content": 0.1,  # % max
+            "compatibility": ["stainless_steel", "ptfe", "viton"],
+            "incompatibility": ["natural_rubber", "pvc", "aluminum"]
+        }
+    },
+    "glycerol": {
+        "name": "Glycérine (99%)",
+        "density_20c": 1260,  # kg/m³
+        "viscosity_20c": 1.48,  # Pa·s (très visqueux)
+        "vapor_pressure_20c": 0.001,  # Pa (négligeable)
+        "temp_coeffs": {
+            "density": -0.65,
+            "viscosity": -0.058,  # Forte variation avec température
+            "vapor_pressure": 0.0002
+        },
+        "technical_specs": {
+            "purity": 99.0,  # % minimum
+            "water_content": 0.5,  # % max
+            "ash_content": 0.01,  # % max
+            "ph": 7.0,  # Neutre
+            "compatibility": ["stainless_steel", "pvc", "ptfe", "epdm"],
+            "incompatibility": ["natural_rubber", "neoprene"]
+        }
     }
 }
 
