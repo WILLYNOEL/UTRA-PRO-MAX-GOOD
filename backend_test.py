@@ -5244,7 +5244,532 @@ class HydraulicPumpTester:
                 all_passed = False
         
         return all_passed
-        """Run all tests including the specific corrections requested"""
+    
+    def test_food_domestic_fluids_properties(self):
+        """Test properties of new food and domestic fluids at specific temperatures"""
+        print("\n🥛 Testing Food & Domestic Fluids Properties...")
+        
+        test_cases = [
+            {
+                "name": "Milk at 20°C",
+                "fluid": "milk",
+                "temperature": 20.0,
+                "expected_density_range": (1025, 1035),  # kg/m³
+                "expected_viscosity_range": (0.0014, 0.0016)  # Pa·s
+            },
+            {
+                "name": "Milk at 4°C (refrigeration)",
+                "fluid": "milk",
+                "temperature": 4.0,
+                "expected_density_range": (1035, 1045),  # Higher density at lower temp
+                "expected_viscosity_range": (0.0016, 0.0018)  # Higher viscosity at lower temp
+            },
+            {
+                "name": "Honey at 20°C",
+                "fluid": "honey",
+                "temperature": 20.0,
+                "expected_density_range": (1395, 1405),  # kg/m³
+                "expected_viscosity_range": (8.0, 9.0)  # Pa·s (very viscous)
+            },
+            {
+                "name": "Honey at 40°C (processing)",
+                "fluid": "honey",
+                "temperature": 40.0,
+                "expected_density_range": (1380, 1390),  # Lower density at higher temp
+                "expected_viscosity_range": (3.0, 6.0)  # Much lower viscosity at higher temp
+            },
+            {
+                "name": "Wine at 20°C",
+                "fluid": "wine",
+                "temperature": 20.0,
+                "expected_density_range": (985, 995),  # kg/m³ (less dense due to alcohol)
+                "expected_viscosity_range": (0.0011, 0.0013)  # Pa·s
+            },
+            {
+                "name": "Bleach at 20°C",
+                "fluid": "bleach",
+                "temperature": 20.0,
+                "expected_density_range": (1045, 1055),  # kg/m³
+                "expected_viscosity_range": (0.0010, 0.0012)  # Pa·s (close to water)
+            },
+            {
+                "name": "Yogurt at 4°C (refrigeration)",
+                "fluid": "yogurt",
+                "temperature": 4.0,
+                "expected_density_range": (1055, 1065),  # kg/m³
+                "expected_viscosity_range": (0.18, 0.22)  # Pa·s (creamy consistency)
+            },
+            {
+                "name": "Tomato Sauce at 80°C (processing)",
+                "fluid": "tomato_sauce",
+                "temperature": 80.0,
+                "expected_density_range": (1070, 1080),  # kg/m³
+                "expected_viscosity_range": (1.0, 2.0)  # Pa·s (much lower at high temp)
+            },
+            {
+                "name": "Soap Solution at 20°C",
+                "fluid": "soap_solution",
+                "temperature": 20.0,
+                "expected_density_range": (1005, 1015),  # kg/m³
+                "expected_viscosity_range": (0.0012, 0.0014)  # Pa·s
+            },
+            {
+                "name": "Fruit Juice at 5°C (service)",
+                "fluid": "fruit_juice",
+                "temperature": 5.0,
+                "expected_density_range": (1050, 1060),  # kg/m³
+                "expected_viscosity_range": (0.0019, 0.0021)  # Pa·s
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                # Test with NPSHd calculation to get fluid properties
+                test_data = {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 30.0,
+                    "fluid_type": case["fluid"],
+                    "temperature": case["temperature"],
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 30.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0
+                }
+                
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=test_data, timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    fluid_props = result.get("fluid_properties", {})
+                    
+                    # Check for NaN values
+                    density = fluid_props.get("density", 0)
+                    viscosity = fluid_props.get("viscosity", 0)
+                    vapor_pressure = fluid_props.get("vapor_pressure", 0)
+                    npshd = result.get("npshd", 0)
+                    
+                    # Check for NaN or invalid values
+                    if math.isnan(density) or math.isnan(viscosity) or math.isnan(vapor_pressure) or math.isnan(npshd):
+                        self.log_test(f"Food/Domestic Fluids - {case['name']} - NaN Check", False, 
+                                    "Found NaN values in calculations")
+                        all_passed = False
+                        continue
+                    
+                    # Check density range
+                    if not (case["expected_density_range"][0] <= density <= case["expected_density_range"][1]):
+                        self.log_test(f"Food/Domestic Fluids - {case['name']} - Density", False, 
+                                    f"Density {density:.1f} kg/m³ outside expected range {case['expected_density_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check viscosity range
+                    if not (case["expected_viscosity_range"][0] <= viscosity <= case["expected_viscosity_range"][1]):
+                        self.log_test(f"Food/Domestic Fluids - {case['name']} - Viscosity", False, 
+                                    f"Viscosity {viscosity:.6f} Pa·s outside expected range {case['expected_viscosity_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that NPSHd calculation is reasonable
+                    if npshd < -20 or npshd > 50:  # Reasonable range for NPSHd
+                        self.log_test(f"Food/Domestic Fluids - {case['name']} - NPSHd", False, 
+                                    f"NPSHd {npshd:.2f} m seems unreasonable")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Food/Domestic Fluids - {case['name']}", True, 
+                                f"Density: {density:.1f} kg/m³, Viscosity: {viscosity:.6f} Pa·s, NPSHd: {npshd:.2f} m")
+                else:
+                    self.log_test(f"Food/Domestic Fluids - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Food/Domestic Fluids - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_expert_analysis_with_food_domestic_fluids(self):
+        """Test expert analysis endpoint with new food and domestic fluids"""
+        print("\n🧪 Testing Expert Analysis with Food & Domestic Fluids...")
+        
+        test_cases = [
+            {
+                "name": "Milk Processing System",
+                "data": {
+                    "flow_rate": 25.0,
+                    "fluid_type": "milk",
+                    "temperature": 4.0,  # Refrigeration temperature
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 1.0,
+                    "discharge_height": 8.0,
+                    "suction_length": 15.0,
+                    "discharge_length": 50.0,
+                    "total_length": 65.0,
+                    "useful_pressure": 1.5,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 1,
+                    "discharge_elbow_90": 2,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 30.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760,
+                    "electricity_cost": 0.12,
+                    "altitude": 0,
+                    "ambient_temperature": 25,
+                    "humidity": 60
+                }
+            },
+            {
+                "name": "Honey Processing System",
+                "data": {
+                    "flow_rate": 15.0,
+                    "fluid_type": "honey",
+                    "temperature": 40.0,  # Processing temperature
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 0.5,
+                    "discharge_height": 5.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 30.0,
+                    "total_length": 40.0,
+                    "useful_pressure": 2.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "suction_elbow_90": 0,
+                    "discharge_elbow_90": 1,
+                    "discharge_gate_valve": 1,
+                    "pump_efficiency": 70.0,
+                    "motor_efficiency": 85.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "direct_on_line",
+                    "cable_length": 25.0,
+                    "cable_material": "copper",
+                    "npsh_required": 4.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 2000,
+                    "electricity_cost": 0.12,
+                    "altitude": 0,
+                    "ambient_temperature": 25,
+                    "humidity": 60
+                }
+            },
+            {
+                "name": "Wine Transfer System",
+                "data": {
+                    "flow_rate": 40.0,
+                    "fluid_type": "wine",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 1.5,
+                    "discharge_height": 12.0,
+                    "suction_length": 20.0,
+                    "discharge_length": 80.0,
+                    "total_length": 100.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 78.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.5,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 1500,
+                    "electricity_cost": 0.12,
+                    "altitude": 0,
+                    "ambient_temperature": 25,
+                    "humidity": 60
+                }
+            },
+            {
+                "name": "Cleaning Solution System",
+                "data": {
+                    "flow_rate": 35.0,
+                    "fluid_type": "soap_solution",
+                    "temperature": 20.0,
+                    "suction_type": "suction_lift",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 25.0,
+                    "discharge_length": 60.0,
+                    "total_length": 85.0,
+                    "useful_pressure": 2.5,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 1,
+                    "suction_check_valve": 1,
+                    "discharge_elbow_90": 2,
+                    "discharge_gate_valve": 1,
+                    "pump_efficiency": 72.0,
+                    "motor_efficiency": 87.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 40.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.2,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 3000,
+                    "electricity_cost": 0.12,
+                    "altitude": 0,
+                    "ambient_temperature": 25,
+                    "humidity": 60
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check all required sections are present
+                    required_sections = [
+                        "input_data", "npshd_analysis", "hmt_analysis", "performance_analysis",
+                        "electrical_analysis", "overall_efficiency", "total_head_loss",
+                        "system_stability", "energy_consumption", "expert_recommendations",
+                        "optimization_potential", "performance_curves", "system_curves"
+                    ]
+                    
+                    missing_sections = [s for s in required_sections if s not in result]
+                    if missing_sections:
+                        self.log_test(f"Expert Analysis - {case['name']} - Structure", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # Check for NaN values in key calculations
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    performance_analysis = result.get("performance_analysis", {})
+                    
+                    npshd = npshd_analysis.get("npshd", 0)
+                    hmt = hmt_analysis.get("hmt", 0)
+                    overall_efficiency = result.get("overall_efficiency", 0)
+                    energy_consumption = result.get("energy_consumption", 0)
+                    
+                    # Check for NaN values
+                    values_to_check = [npshd, hmt, overall_efficiency, energy_consumption]
+                    nan_values = [v for v in values_to_check if math.isnan(v) or math.isinf(v)]
+                    
+                    if nan_values:
+                        self.log_test(f"Expert Analysis - {case['name']} - NaN Check", False, 
+                                    f"Found NaN/Inf values in calculations")
+                        all_passed = False
+                        continue
+                    
+                    # Check reasonable ranges
+                    if npshd < -50 or npshd > 100:
+                        self.log_test(f"Expert Analysis - {case['name']} - NPSHd Range", False, 
+                                    f"NPSHd {npshd:.2f} m outside reasonable range")
+                        all_passed = False
+                        continue
+                    
+                    if hmt <= 0 or hmt > 200:
+                        self.log_test(f"Expert Analysis - {case['name']} - HMT Range", False, 
+                                    f"HMT {hmt:.2f} m outside reasonable range")
+                        all_passed = False
+                        continue
+                    
+                    if overall_efficiency <= 0 or overall_efficiency > 100:
+                        self.log_test(f"Expert Analysis - {case['name']} - Efficiency Range", False, 
+                                    f"Overall efficiency {overall_efficiency:.1f}% outside reasonable range")
+                        all_passed = False
+                        continue
+                    
+                    # Check expert recommendations are present
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not expert_recommendations:
+                        self.log_test(f"Expert Analysis - {case['name']} - Recommendations", False, 
+                                    "No expert recommendations generated")
+                        all_passed = False
+                        continue
+                    
+                    # Check performance curves are generated
+                    performance_curves = result.get("performance_curves", {})
+                    if not performance_curves or "flow" not in performance_curves:
+                        self.log_test(f"Expert Analysis - {case['name']} - Performance Curves", False, 
+                                    "Performance curves not generated")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Expert Analysis - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f}m, HMT: {hmt:.2f}m, Eff: {overall_efficiency:.1f}%, Stable: {result.get('system_stability', False)}")
+                else:
+                    self.log_test(f"Expert Analysis - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Expert Analysis - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_hydraulic_calculations_consistency_food_domestic(self):
+        """Test hydraulic calculations consistency with food and domestic fluids"""
+        print("\n🔧 Testing Hydraulic Calculations Consistency - Food & Domestic Fluids...")
+        
+        test_fluids = ["milk", "honey", "wine", "bleach", "yogurt", "tomato_sauce", "soap_solution", "fruit_juice"]
+        
+        all_passed = True
+        for fluid in test_fluids:
+            try:
+                # Test NPSHd calculation
+                npshd_data = {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 30.0,
+                    "fluid_type": fluid,
+                    "temperature": 20.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 40.0,
+                    "suction_fittings": [{"fitting_type": "elbow_90", "quantity": 1}],
+                    "npsh_required": 3.0
+                }
+                
+                npshd_response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=npshd_data, timeout=10)
+                if npshd_response.status_code != 200:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - NPSHd", False, f"NPSHd calculation failed: {npshd_response.status_code}")
+                    all_passed = False
+                    continue
+                
+                npshd_result = npshd_response.json()
+                
+                # Test HMT calculation
+                hmt_data = {
+                    "installation_type": "surface",
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "discharge_height": 15.0,
+                    "useful_pressure": 1.5,
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_pipe_length": 30.0,
+                    "discharge_pipe_length": 80.0,
+                    "suction_pipe_material": "pvc",
+                    "discharge_pipe_material": "pvc",
+                    "suction_fittings": [{"fitting_type": "elbow_90", "quantity": 1}],
+                    "discharge_fittings": [{"fitting_type": "elbow_90", "quantity": 2}],
+                    "fluid_type": fluid,
+                    "temperature": 20.0,
+                    "flow_rate": 30.0
+                }
+                
+                hmt_response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_data, timeout=10)
+                if hmt_response.status_code != 200:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - HMT", False, f"HMT calculation failed: {hmt_response.status_code}")
+                    all_passed = False
+                    continue
+                
+                hmt_result = hmt_response.json()
+                
+                # Check for NaN values in all critical calculations
+                critical_values = [
+                    npshd_result.get("npshd", 0),
+                    npshd_result.get("velocity", 0),
+                    npshd_result.get("reynolds_number", 0),
+                    npshd_result.get("friction_factor", 0),
+                    npshd_result.get("total_head_loss", 0),
+                    hmt_result.get("hmt", 0),
+                    hmt_result.get("suction_velocity", 0),
+                    hmt_result.get("discharge_velocity", 0),
+                    hmt_result.get("total_head_loss", 0)
+                ]
+                
+                # Remove None values (for submersible installations)
+                critical_values = [v for v in critical_values if v is not None]
+                
+                # Check for NaN or Inf values
+                invalid_values = [v for v in critical_values if math.isnan(v) or math.isinf(v)]
+                if invalid_values:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - NaN Check", False, 
+                                f"Found NaN/Inf values in calculations")
+                    all_passed = False
+                    continue
+                
+                # Check that all values are positive (except NPSHd which can be negative)
+                npshd = npshd_result.get("npshd", 0)
+                velocity = npshd_result.get("velocity", 0)
+                reynolds = npshd_result.get("reynolds_number", 0)
+                friction_factor = npshd_result.get("friction_factor", 0)
+                hmt = hmt_result.get("hmt", 0)
+                
+                if velocity <= 0:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - Velocity", False, 
+                                f"Velocity should be positive: {velocity}")
+                    all_passed = False
+                    continue
+                
+                if reynolds <= 0:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - Reynolds", False, 
+                                f"Reynolds number should be positive: {reynolds}")
+                    all_passed = False
+                    continue
+                
+                if friction_factor <= 0:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - Friction Factor", False, 
+                                f"Friction factor should be positive: {friction_factor}")
+                    all_passed = False
+                    continue
+                
+                if hmt <= 0:
+                    self.log_test(f"Hydraulic Consistency - {fluid} - HMT", False, 
+                                f"HMT should be positive: {hmt}")
+                    all_passed = False
+                    continue
+                
+                # Check reasonable ranges
+                if velocity > 10:  # Very high velocity
+                    self.log_test(f"Hydraulic Consistency - {fluid} - Velocity Range", False, 
+                                f"Velocity seems too high: {velocity:.2f} m/s")
+                    all_passed = False
+                    continue
+                
+                if hmt > 100:  # Very high HMT
+                    self.log_test(f"Hydraulic Consistency - {fluid} - HMT Range", False, 
+                                f"HMT seems too high: {hmt:.2f} m")
+                    all_passed = False
+                    continue
+                
+                self.log_test(f"Hydraulic Consistency - {fluid}", True, 
+                            f"NPSHd: {npshd:.2f}m, Velocity: {velocity:.2f}m/s, HMT: {hmt:.2f}m")
+                
+            except Exception as e:
+                self.log_test(f"Hydraulic Consistency - {fluid}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def run_food_domestic_fluids_tests(self):
         print("=" * 80)
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
