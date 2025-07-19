@@ -6,7 +6,456 @@ import './App.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Component pour Onglet FORMULES - Base de Données des Formules Hydrauliques
+// Component pour Onglet COMPATIBILITÉ CHIMIQUE - Base de Données Matériaux
+const ChemicalCompatibility = () => {
+  const [searchFluid, setSearchFluid] = useState('');
+  const [selectedFluid, setSelectedFluid] = useState(null);
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
+
+  // Base de données exhaustive de compatibilité chimique industrielle
+  const chemicalCompatibilityDatabase = {
+    // FLUIDES AVEC COMPATIBILITÉS MATÉRIAUX
+    "water": {
+      name: "Eau",
+      ph_range: "6.5-8.5",
+      corrosiveness: "Faible",
+      temperature_limits: "-10°C à +100°C",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "PVC", "PEHD", "PP", "PTFE", "EPDM", "Viton", "Bronze Naval"],
+          reasons: ["Résistance à la corrosion", "Inertie chimique", "Usage eau potable"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Acier Carbone (avec revêtement)", "Fonte Ductile", "Laiton"],
+          reasons: ["Résistance acceptable", "Nécessite traitement anticorrosion"]
+        },
+        "poor": {
+          materials: ["Acier Carbone Nu", "Zinc", "Aluminium (eau de mer)"],
+          reasons: ["Corrosion rapide", "Formation d'oxydes", "Durée de vie limitée"]
+        },
+        "incompatible": {
+          materials: ["Magnésium", "Acier Galvanisé (long terme)"],
+          reasons: ["Corrosion galvanique", "Dégradation rapide"]
+        }
+      }
+    },
+    
+    "seawater": {
+      name: "Eau de Mer",
+      ph_range: "7.8-8.3",
+      corrosiveness: "Très Élevée",
+      temperature_limits: "-2°C à +40°C",
+      salinity: "35 g/L",
+      compatibility: {
+        "excellent": {
+          materials: ["Super Duplex 2507", "Inconel 625", "Hastelloy C-276", "Titane Grade 2", "Bronze Naval"],
+          reasons: ["Résistance chlorures", "Pas de corrosion par piqûres", "Usage marin certifié"]
+        },
+        "good": {
+          materials: ["316L Stainless Steel", "Duplex 2205", "Cupronickel 90/10"],
+          reasons: ["Résistance acceptable", "Maintenance préventive requise"]
+        },
+        "poor": {
+          materials: ["304 Stainless Steel", "Fonte", "Laiton Ordinaire"],
+          reasons: ["Corrosion par piqûres", "Attaque chlorures", "Durée de vie réduite"]
+        },
+        "incompatible": {
+          materials: ["Acier Carbone", "Zinc", "Aluminium", "PVC (>40°C)"],
+          reasons: ["Corrosion massive", "Défaillance rapide", "Non adapté milieu marin"]
+        }
+      }
+    },
+
+    "palm_oil": {
+      name: "Huile de Palme",
+      ph_range: "Neutre",
+      corrosiveness: "Faible",
+      temperature_limits: "5°C à +60°C",
+      saponification: "199 mg KOH/g",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "304 Stainless Steel", "PVC", "PP", "PTFE", "Viton", "EPDM"],
+          reasons: ["Inertie aux huiles végétales", "Résistance température", "Usage alimentaire"]
+        },
+        "good": {
+          materials: ["Acier Carbone Inoxydable", "Bronze", "Laiton Étamé"],
+          reasons: ["Compatible huiles végétales", "Revêtement protecteur requis"]
+        },
+        "poor": {
+          materials: ["Caoutchouc Naturel", "Zinc", "Cuivre Nu"],
+          reasons: ["Gonflement", "Catalyse oxydation", "Saponification"]
+        },
+        "incompatible": {
+          materials: ["Acier Galvanisé", "PVC Plastifié", "NBR (>50°C)"],
+          reasons: ["Réaction chimique", "Migration plastifiants", "Dégradation température"]
+        }
+      }
+    },
+
+    "gasoline": {
+      name: "Essence (Octane 95)",
+      ph_range: "N/A",
+      corrosiveness: "Modérée",
+      temperature_limits: "-40°C à +50°C",
+      volatility: "Très Élevée",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Aluminum 5052", "PTFE", "Viton FKM", "Terne Plated Steel"],
+          reasons: ["Résistance hydrocarbures", "Pas de gonflement", "Usage carburant certifié"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Acier Carbone (revêtu)", "EPDM (spécial essence)"],
+          reasons: ["Résistance acceptable", "Revêtement anti-corrosion nécessaire"]
+        },
+        "poor": {
+          materials: ["PVC", "Polyéthylène Standard", "Caoutchouc Naturel"],
+          reasons: ["Gonflement", "Perméabilité vapeurs", "Dégradation mécanique"]
+        },
+        "incompatible": {
+          materials: ["Zinc", "Cuivre", "NBR Standard", "Plomb"],
+          reasons: ["Formation de gommes", "Catalyse oxydation", "Pollution carburant"]
+        }
+      }
+    },
+
+    "diesel": {
+      name: "Gazole (Diesel)",
+      ph_range: "N/A", 
+      corrosiveness: "Faible à Modérée",
+      temperature_limits: "-20°C à +70°C",
+      sulfur_content: "≤10 mg/kg (EN 590)",
+      compatibility: {
+        "excellent": {
+          materials: ["Acier Carbone", "316L Stainless Steel", "Aluminum", "Viton FKM", "PTFE"],
+          reasons: ["Usage standard diesel", "Résistance corrosion", "Étanchéité hydrocarbures"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Fonte Ductile", "EPDM Diesel", "NBR Haute Performance"],
+          reasons: ["Compatible diesel standard", "Résistance acceptable"]
+        },
+        "poor": {
+          materials: ["PVC Standard", "Caoutchouc Naturel", "Polyéthylène"],
+          reasons: ["Gonflement modéré", "Perméabilité", "Vieillissement accéléré"]
+        },
+        "incompatible": {
+          materials: ["Zinc (contact direct)", "Cuivre (catalyseur)"],
+          reasons: ["Formation de dépôts", "Catalyse d'oxydation", "Dégradation qualité"]
+        }
+      }
+    },
+
+    "hydraulic_oil": {
+      name: "Huile Hydraulique ISO VG 46",
+      ph_range: "N/A",
+      corrosiveness: "Très Faible",
+      temperature_limits: "-30°C à +80°C",
+      additive_package: "Anti-usure, Anti-oxydant",
+      compatibility: {
+        "excellent": {
+          materials: ["Acier Carbone", "316L Stainless Steel", "Fonte", "NBR 90 Shore A", "Viton", "Polyuréthane"],
+          reasons: ["Usage hydraulique standard", "Résistance pression", "Étanchéité parfaite"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Bronze", "EPDM Hydraulique", "PTFE"],
+          reasons: ["Compatible systèmes hydrauliques", "Durabilité prouvée"]
+        },
+        "poor": {
+          materials: ["PVC Souple", "Caoutchouc Naturel", "SBR"],
+          reasons: ["Gonflement", "Dégradation additifs", "Perte propriétés mécaniques"]
+        },
+        "incompatible": {
+          materials: ["Zinc Direct", "PVC Plastifié"],
+          reasons: ["Attaque additifs anti-usure", "Migration plastifiants"]
+        }
+      }
+    },
+
+    "ethanol": {
+      name: "Éthanol (95%)",
+      ph_range: "6.5-7.5",
+      corrosiveness: "Modérée",
+      temperature_limits: "-100°C à +60°C",
+      concentration: "95% vol",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "PTFE", "EPDM Alcool", "Viton A", "PP"],
+          reasons: ["Résistance alcools", "Inertie chimique", "Usage pharmaceutique"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Acier Carbone Revêtu", "PVC (concentrations < 50%)"],
+          reasons: ["Résistance acceptable", "Limitation concentration"]
+        },
+        "poor": {
+          materials: ["Aluminum", "Zinc", "NBR Standard"],
+          reasons: ["Corrosion intergranulaire", "Formation d'alcoolates", "Gonflement"]
+        },
+        "incompatible": {
+          materials: ["Caoutchouc Naturel", "PVC Plastifié", "Acétals"],
+          reasons: ["Dissolution", "Extraction plastifiants", "Fissuration contrainte"]
+        }
+      }
+    },
+
+    "methanol": {
+      name: "Méthanol (99.5%)",
+      ph_range: "6.0-7.0",
+      corrosiveness: "Élevée",
+      temperature_limits: "-100°C à +50°C",
+      toxicity: "Très Toxique",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Hastelloy C-276", "PTFE", "Viton A", "EPDM Spécial"],
+          reasons: ["Résistance méthanol", "Pas de corrosion", "Étanchéité parfaite"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Monel 400"],
+          reasons: ["Résistance acceptable", "Inspection régulière requise"]
+        },
+        "poor": {
+          materials: ["Aluminum", "PVC", "NBR"],
+          reasons: ["Corrosion", "Gonflement", "Dégradation rapide"]
+        },
+        "incompatible": {
+          materials: ["Caoutchouc Naturel", "Zinc", "Magnésium", "Plomb"],
+          reasons: ["Dissolution complète", "Corrosion massive", "Toxicité renforcée"]
+        }
+      }
+    },
+
+    "glycerol": {
+      name: "Glycérine (99%)",
+      ph_range: "7.0",
+      corrosiveness: "Très Faible",
+      temperature_limits: "-10°C à +150°C",
+      viscosity: "Très Élevée",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "304 Stainless Steel", "PVC", "PP", "PTFE", "EPDM", "Viton"],
+          reasons: ["Inertie chimique", "Usage pharmaceutique", "Non corrosif"]
+        },
+        "good": {
+          materials: ["Acier Carbone", "Fonte", "Bronze", "Laiton"],
+          reasons: ["Compatible glycérine", "Pas d'attaque chimique"]
+        },
+        "poor": {
+          materials: ["Caoutchouc Naturel (>100°C)", "NBR (température élevée)"],
+          reasons: ["Ramollissement température", "Perte élasticité"]
+        },
+        "incompatible": {
+          materials: [],
+          reasons: ["Glycérine généralement compatible avec tous matériaux courants"]
+        }
+      }
+    },
+
+    "acid": {
+      name: "Solution Acide (HCl 10%)",
+      ph_range: "1.0-2.0",
+      corrosiveness: "Très Élevée",
+      temperature_limits: "0°C à +60°C",
+      concentration: "10% HCl",
+      compatibility: {
+        "excellent": {
+          materials: ["Hastelloy C-276", "Inconel 625", "PTFE", "PVC-C", "PVDF", "EPDM Acide"],
+          reasons: ["Résistance acides forts", "Pas d'attaque chimique", "Usage chimique certifié"]
+        },
+        "good": {
+          materials: ["316L Stainless Steel (dilué)", "CPVC"],
+          reasons: ["Résistance acides dilués", "Limitation concentration"]
+        },
+        "poor": {
+          materials: ["304 Stainless Steel", "Aluminum", "Zinc"],
+          reasons: ["Corrosion rapide", "Formation d'hydrogène", "Attaque intergranulaire"]
+        },
+        "incompatible": {
+          materials: ["Acier Carbone", "Fonte", "Cuivre", "Laiton", "Caoutchouc Naturel"],
+          reasons: ["Dissolution rapide", "Corrosion massive", "Réaction violente"]
+        }
+      }
+    }
+  };
+
+  // Fonction de recherche
+  const getFilteredFluids = () => {
+    return Object.entries(chemicalCompatibilityDatabase).filter(([key, fluid]) => {
+      const searchMatch = searchFluid === '' || 
+        fluid.name.toLowerCase().includes(searchFluid.toLowerCase()) ||
+        key.toLowerCase().includes(searchFluid.toLowerCase());
+      return searchMatch;
+    });
+  };
+
+  // Fonction pour obtenir la couleur de compatibilité
+  const getCompatibilityColor = (level) => {
+    switch(level) {
+      case 'excellent': return 'bg-green-100 border-green-400 text-green-800';
+      case 'good': return 'bg-blue-100 border-blue-400 text-blue-800';
+      case 'poor': return 'bg-yellow-100 border-yellow-400 text-yellow-800';
+      case 'incompatible': return 'bg-red-100 border-red-400 text-red-800';
+      default: return 'bg-gray-100 border-gray-400 text-gray-800';
+    }
+  };
+
+  const getCompatibilityIcon = (level) => {
+    switch(level) {
+      case 'excellent': return '✅';
+      case 'good': return '👍';
+      case 'poor': return '⚠️';
+      case 'incompatible': return '❌';
+      default: return '❓';
+    }
+  };
+
+  const filteredFluids = getFilteredFluids();
+
+  return (
+    <div className="space-y-6">
+      {/* En-tête */}
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2">🧪 COMPATIBILITÉ CHIMIQUE FLUIDES-MATÉRIAUX</h2>
+        <p className="text-purple-100">
+          Base de données technique de compatibilité chimique pour installations industrielles
+        </p>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>✅ Standards ASTM</div>
+          <div>✅ Normes ISO 23936</div>
+          <div>✅ Codes ASME</div>
+          <div>✅ Certifications FDA</div>
+        </div>
+      </div>
+
+      {/* Recherche */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            🔍 Rechercher un fluide pour vérifier sa compatibilité
+          </label>
+          <input
+            type="text"
+            value={searchFluid}
+            onChange={(e) => setSearchFluid(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            placeholder="Rechercher par nom de fluide (ex: diesel, eau, acide...)"
+          />
+        </div>
+
+        {/* Statistiques */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-green-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-green-600">{filteredFluids.length}</div>
+            <div className="text-sm text-green-800">Fluides analysés</div>
+          </div>
+          <div className="bg-blue-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-blue-600">4</div>
+            <div className="text-sm text-blue-800">Niveaux compatibilité</div>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-purple-600">30+</div>
+            <div className="text-sm text-purple-800">Matériaux référencés</div>
+          </div>
+          <div className="bg-pink-50 rounded-lg p-3 text-center">
+            <div className="text-2xl font-bold text-pink-600">ISO</div>
+            <div className="text-sm text-pink-800">Conformité</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Légende */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">📋 Légende des Niveaux de Compatibilité</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`p-3 rounded-lg border-2 ${getCompatibilityColor('excellent')}`}>
+            <div className="font-bold">✅ EXCELLENT</div>
+            <div className="text-sm">Compatibilité parfaite - Usage long terme</div>
+          </div>
+          <div className={`p-3 rounded-lg border-2 ${getCompatibilityColor('good')}`}>
+            <div className="font-bold">👍 BON</div>
+            <div className="text-sm">Compatible - Surveillance recommandée</div>
+          </div>
+          <div className={`p-3 rounded-lg border-2 ${getCompatibilityColor('poor')}`}>
+            <div className="font-bold">⚠️ MÉDIOCRE</div>
+            <div className="text-sm">Usage limité - Maintenance fréquente</div>
+          </div>
+          <div className={`p-3 rounded-lg border-2 ${getCompatibilityColor('incompatible')}`}>
+            <div className="font-bold">❌ INCOMPATIBLE</div>
+            <div className="text-sm">À éviter - Risque de défaillance</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Liste des fluides */}
+      <div className="grid grid-cols-1 gap-6">
+        {filteredFluids.length === 0 ? (
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="text-gray-500 text-lg">
+              🔍 Aucun fluide trouvé pour "{searchFluid}"
+            </div>
+          </div>
+        ) : (
+          filteredFluids.map(([fluidKey, fluid]) => (
+            <div key={fluidKey} className="bg-white rounded-lg shadow-lg border-l-4 border-purple-400 overflow-hidden">
+              <div className="p-6">
+                {/* En-tête fluide */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🧪</span>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">{fluid.name}</h3>
+                      <div className="text-sm text-gray-600 space-x-4">
+                        <span>pH: {fluid.ph_range}</span>
+                        <span>Corrosion: {fluid.corrosiveness}</span>
+                        <span>T°: {fluid.temperature_limits}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelectedFluid(selectedFluid === fluidKey ? null : fluidKey)}
+                    className="text-purple-600 hover:text-purple-800 font-medium"
+                  >
+                    {selectedFluid === fluidKey ? 'Réduire' : 'Voir compatibilité'}
+                  </button>
+                </div>
+
+                {/* Détails compatibilité (conditionnels) */}
+                {selectedFluid === fluidKey && (
+                  <div className="border-t pt-4 mt-4">
+                    {Object.entries(fluid.compatibility).map(([compatLevel, compatData]) => (
+                      <div key={compatLevel} className={`mb-4 p-4 rounded-lg border-2 ${getCompatibilityColor(compatLevel)}`}>
+                        <h4 className="font-bold mb-2">
+                          {getCompatibilityIcon(compatLevel)} {compatLevel.toUpperCase()}
+                        </h4>
+                        
+                        <div className="mb-3">
+                          <h5 className="font-medium text-sm mb-1">Matériaux :</h5>
+                          <div className="flex flex-wrap gap-2">
+                            {compatData.materials.map((material, index) => (
+                              <span key={index} className="px-2 py-1 bg-white rounded text-xs font-medium">
+                                {material}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h5 className="font-medium text-sm mb-1">Justifications techniques :</h5>
+                          <ul className="text-xs space-y-1">
+                            {compatData.reasons.map((reason, index) => (
+                              <li key={index}>• {reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
 const FormulaDatabase = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
