@@ -5772,15 +5772,19 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="260" className="text-xs" fill="#1f2937">
         P. vapeur: {(() => {
+          if (results && results.fluid_properties && results.fluid_properties.vapor_pressure) {
+            return (results.fluid_properties.vapor_pressure / 1000).toFixed(1);
+          }
+          
           let vaporPressure = 0;
           if (inputData.fluid_type === 'water') {
             vaporPressure = 611 * Math.exp(17.27 * inputData.temperature / (inputData.temperature + 237.3));
           } else if (inputData.fluid_type === 'oil') {
-            vaporPressure = 10 * Math.exp(0.05 * (inputData.temperature - 20));
+            vaporPressure = 100 + 20 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'glycol') {
-            vaporPressure = 100 * Math.exp(0.08 * (inputData.temperature - 20));
+            vaporPressure = 10 + 5 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'acid') {
-            vaporPressure = 800 * Math.exp(0.06 * (inputData.temperature - 20));
+            vaporPressure = 3000 + 150 * (inputData.temperature - 20);
           }
           
           return (Math.max(vaporPressure, 1) / 1000).toFixed(1);
