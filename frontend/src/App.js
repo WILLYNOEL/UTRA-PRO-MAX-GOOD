@@ -5918,6 +5918,16 @@ function App() {
                 📚 Formules
               </button>
               <button
+                onClick={() => setActiveTab('chemical_compatibility')}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  activeTab === 'chemical_compatibility'
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800'
+                }`}
+              >
+                🧪 Compatibilité
+              </button>
+              <button
                 onClick={() => setActiveTab('expert')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   activeTab === 'expert'
