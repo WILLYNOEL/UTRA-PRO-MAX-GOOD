@@ -333,12 +333,12 @@ class ChemicalCompatibilityTester:
                         
                         # Check if material compatibility is addressed
                         if material in combination["expected_incompatible"]:
-                            # Should have warnings about incompatibility or replacement
-                            if ("REMPLACEMENT" not in recommendations_text.upper() and 
-                                "CORROSIF" not in recommendations_text.upper() and
+                            # Should have warnings about corrosive fluids or material recommendations
+                            if ("CORROSIF" not in recommendations_text.upper() and 
+                                "MATÉRIAUX RECOMMANDÉS" not in recommendations_text.upper() and
                                 "PRÉCAUTIONS" not in recommendations_text.upper()):
                                 self.log_test(f"Material Database - {combination['name']} - {material} (Incompatible)", False, 
-                                            "Missing incompatibility warning")
+                                            "Missing material compatibility warning")
                                 all_passed = False
                                 continue
                         
