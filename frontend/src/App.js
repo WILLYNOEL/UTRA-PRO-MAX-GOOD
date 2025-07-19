@@ -4398,7 +4398,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     <input
                       type="number"
                       value={inputData.discharge_length !== undefined && inputData.discharge_length !== null ? inputData.discharge_length : ''}
-                      onChange={(e) => handleInputChange('discharge_length', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                      onChange={(e) => handleInputChange('discharge_length', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Longueur refoulement"
                     />
