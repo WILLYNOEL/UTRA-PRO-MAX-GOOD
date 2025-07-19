@@ -2593,8 +2593,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     <input
                       type="number"
                       step="0.1"
-                      value={inputData.discharge_height || ''}
-                      onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value) || 0)}
+                      value={inputData.discharge_height !== undefined && inputData.discharge_height !== null ? inputData.discharge_height : ''}
+                      onChange={(e) => handleInputChange('discharge_height', e.target.value === '' ? 0 : parseFloat(e.target.value))}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                       placeholder="Hauteur de refoulement"
                     />
