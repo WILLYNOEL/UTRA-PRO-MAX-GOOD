@@ -432,6 +432,196 @@ FLUID_PROPERTIES = {
     }
 }
 
+# Base de données complète de compatibilité fluide-matériau pour recommandations expertes
+FLUID_MATERIAL_COMPATIBILITY = {
+    # Structure: fluide -> matériau -> {niveau, recommandations, joints, alertes}
+    "water": {
+        "stainless_steel_316l": {
+            "level": "excellent",
+            "description": "Compatibilité parfaite pour installations eau potable",
+            "recommended_gaskets": ["EPDM", "Viton", "PTFE"],
+            "maintenance": "Maintenance standard - Contrôle annuel",
+            "lifespan": "25+ ans",
+            "special_notes": "Idéal pour applications alimentaires et sanitaires"
+        },
+        "pvc": {
+            "level": "excellent", 
+            "description": "Excellent pour eau froide, bon marché",
+            "recommended_gaskets": ["EPDM", "NBR"],
+            "maintenance": "Faible maintenance requise",
+            "lifespan": "20+ ans",
+            "special_notes": "Limiter à 60°C maximum"
+        },
+        "carbon_steel": {
+            "level": "poor",
+            "description": "Risque de corrosion importante",
+            "recommended_gaskets": ["NBR"],
+            "maintenance": "Maintenance préventive intensive - Inspection trimestrielle",
+            "lifespan": "5-10 ans avec traitement",
+            "special_notes": "ATTENTION: Traitement anticorrosion obligatoire",
+            "alternatives": ["316L Stainless Steel", "PVC", "Fonte Ductile revêtue"]
+        }
+    },
+    
+    "seawater": {
+        "duplex_2205": {
+            "level": "excellent",
+            "description": "Spécialement conçu pour milieux marins",
+            "recommended_gaskets": ["Viton", "PTFE"],
+            "maintenance": "Inspection semestrielle - Nettoyage chimique",
+            "lifespan": "20+ ans",
+            "special_notes": "Résistance optimale aux chlorures"
+        },
+        "bronze_naval": {
+            "level": "excellent",
+            "description": "Alliage marin traditionnel éprouvé",
+            "recommended_gaskets": ["Viton", "EPDM Naval"],
+            "maintenance": "Polissage annuel - Contrôle galvanique",
+            "lifespan": "15+ ans",
+            "special_notes": "Éviter contact avec acier carbone (corrosion galvanique)"
+        },
+        "stainless_steel_316l": {
+            "level": "good",
+            "description": "Acceptable avec surveillance renforcée",
+            "recommended_gaskets": ["Viton", "PTFE"],
+            "maintenance": "Inspection trimestrielle - Contrôle piqûres",
+            "lifespan": "10-15 ans",
+            "special_notes": "ATTENTION: Risque de corrosion par piqûres à long terme",
+            "alternatives": ["Duplex 2205", "Super Duplex 2507", "Bronze Naval"]
+        },
+        "carbon_steel": {
+            "level": "incompatible",
+            "description": "INTERDIT - Corrosion massive assurée",
+            "maintenance": "NON APPLICABLE",
+            "lifespan": "Défaillance en quelques mois",
+            "special_notes": "DANGER: Défaillance catastrophique prévue",
+            "alternatives": ["Duplex 2205", "Bronze Naval", "Super Duplex 2507"]
+        }
+    },
+
+    "diesel": {
+        "carbon_steel": {
+            "level": "excellent",
+            "description": "Standard de l'industrie pétrolière",
+            "recommended_gaskets": ["Viton FKM", "NBR Carburant"],
+            "maintenance": "Inspection annuelle - Test étanchéité",
+            "lifespan": "20+ ans",
+            "special_notes": "Solution économique et éprouvée"
+        },
+        "stainless_steel_316l": {
+            "level": "excellent",
+            "description": "Qualité premium - Résistance maximale",
+            "recommended_gaskets": ["Viton FKM", "PTFE"],
+            "maintenance": "Maintenance minimale",
+            "lifespan": "25+ ans",
+            "special_notes": "Investissement à long terme"
+        },
+        "pvc": {
+            "level": "poor",
+            "description": "Non recommandé - Gonflement et fragilisation",
+            "maintenance": "Remplacement fréquent nécessaire",
+            "lifespan": "2-5 ans maximum",
+            "special_notes": "ATTENTION: Risque de fuite à terme",
+            "alternatives": ["Acier Carbone", "316L Stainless Steel", "HDPE Carburant"]
+        }
+    },
+
+    "gasoline": {
+        "stainless_steel_316l": {
+            "level": "excellent",
+            "description": "Sécurité maximale pour carburant volatile",
+            "recommended_gaskets": ["Viton FKM", "PTFE"],
+            "maintenance": "Inspection stricte semestrielle",
+            "lifespan": "20+ ans",
+            "special_notes": "Conforme réglementation carburants"
+        },
+        "aluminum_5052": {
+            "level": "excellent",
+            "description": "Léger et résistant - Standard aviation",
+            "recommended_gaskets": ["Viton FKM"],
+            "maintenance": "Contrôle corrosion annuel",
+            "lifespan": "15+ ans",
+            "special_notes": "Excellent rapport poids/résistance"
+        },
+        "pvc": {
+            "level": "incompatible",
+            "description": "INTERDIT - Dissolution du plastique",
+            "maintenance": "NON APPLICABLE",
+            "lifespan": "Défaillance immédiate",
+            "special_notes": "DANGER: Risque de fuite majeure et incendie",
+            "alternatives": ["316L Stainless Steel", "Aluminum 5052", "Acier Revêtu PTFE"]
+        }
+    },
+
+    "milk": {
+        "stainless_steel_316l": {
+            "level": "excellent",
+            "description": "Standard alimentaire - Hygiène maximale",
+            "recommended_gaskets": ["EPDM Food Grade", "Silicone Alimentaire"],
+            "maintenance": "Nettoyage CIP quotidien - Stérilisation périodique",
+            "lifespan": "20+ ans",
+            "special_notes": "Certification FDA/CE alimentaire"
+        },
+        "pvc_food": {
+            "level": "good",
+            "description": "Acceptable pour circuits froids",
+            "recommended_gaskets": ["EPDM Food Grade"],
+            "maintenance": "Nettoyage manuel quotidien",
+            "lifespan": "10+ ans",
+            "special_notes": "Limiter à 40°C - Certification alimentaire obligatoire"
+        },
+        "copper": {
+            "level": "incompatible",
+            "description": "INTERDIT - Contamination métallique",
+            "maintenance": "NON APPLICABLE",
+            "special_notes": "DANGER: Contamination du lait - Non conforme normes alimentaires",
+            "alternatives": ["316L Stainless Steel", "PVC Food Grade", "Verre Borosilicate"]
+        }
+    },
+
+    "honey": {
+        "stainless_steel_316l": {
+            "level": "excellent",
+            "description": "Idéal pour produits sucrés acides",
+            "recommended_gaskets": ["Silicone Food Grade", "EPDM Alimentaire"],
+            "maintenance": "Nettoyage à l'eau chaude - Pas de détergent agressif",
+            "lifespan": "25+ ans",
+            "special_notes": "Résistance parfaite aux acides naturels du miel"
+        },
+        "copper": {
+            "level": "incompatible", 
+            "description": "INTERDIT - Catalyse fermentation",
+            "special_notes": "DANGER: Accélération fermentation - Altération qualité miel",
+            "alternatives": ["316L Stainless Steel", "Verre", "Céramique Alimentaire"]
+        }
+    },
+
+    "bleach": {
+        "pvc": {
+            "level": "excellent",
+            "description": "Matériau de référence pour hypochlorite",
+            "recommended_gaskets": ["Viton Chlore", "EPDM Résistant Chlore"],
+            "maintenance": "Rinçage après usage - Contrôle visuel mensuel",
+            "lifespan": "10+ ans",
+            "special_notes": "Spécialement formulé pour résister au chlore"
+        },
+        "cpvc": {
+            "level": "excellent",
+            "description": "Haute résistance chimique et thermique",
+            "recommended_gaskets": ["Viton Chlore", "PTFE"],
+            "maintenance": "Inspection trimestrielle",
+            "lifespan": "15+ ans",
+            "special_notes": "Supérieur au PVC pour applications chaudes"
+        },
+        "stainless_steel_316l": {
+            "level": "incompatible",
+            "description": "INTERDIT - Corrosion par piqûres rapide",
+            "special_notes": "DANGER: Défaillance structurelle assurée avec hypochlorite",
+            "alternatives": ["PVC", "CPVC", "PVDF", "PTFE"]
+        }
+    }
+}
+
 # ============================================================================
 # ENHANCED PYDANTIC MODELS FOR THREE TABS
 # ============================================================================
