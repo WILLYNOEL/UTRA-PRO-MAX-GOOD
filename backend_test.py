@@ -5315,6 +5315,76 @@ class HydraulicPumpTester:
         
         return success_rate >= 75
 
+    def run_all_tests(self):
+        """Run all tests including Phase 3 additions"""
+        print("=" * 80)
+        print("HYDRAULIC PUMP CALCULATION API - PHASE 3 COMPREHENSIVE TESTING")
+        print("=" * 80)
+        print()
+        
+        # Test connectivity first
+        if not self.test_api_connectivity():
+            print("\n❌ API connectivity failed - aborting remaining tests")
+            return False
+        
+        print()
+        
+        # Run all tests - prioritizing Phase 3 additions and specific corrections
+        tests = [
+            # PHASE 3 TESTS - NEW INDUSTRIAL FLUIDS AND EXPERT ANALYSIS
+            self.test_phase3_new_industrial_fluids_properties,  # NEW: Test new fluids properties
+            self.test_phase3_expert_analysis_new_fluids,  # NEW: Test expert analysis with new fluids
+            self.test_phase3_npshd_gasoline_methanol,  # NEW: Test NPSHd with volatile fluids
+            self.test_phase3_zero_half_values_robustness,  # NEW: Test 0 and 0.5 values robustness
+            self.test_phase3_system_integrity,  # NEW: Test system integrity (no regressions)
+            # EXISTING TESTS - Updated fluids API to check all 12 fluids
+            self.test_fluids_api,  # Updated to check all 12 industrial fluids
+            # Core functionality tests
+            self.test_standard_water_calculation,
+            self.test_oil_calculation_high_temp,
+            self.test_edge_cases,
+            self.test_npsh_cavitation_warnings,
+            self.test_power_and_electrical_calculations,
+            self.test_history_management,
+            self.test_error_handling
+        ]
+        
+        for test in tests:
+            print()
+            test()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("PHASE 3 TEST SUMMARY")
+        print("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["passed"])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        
+        if self.failed_tests:
+            print(f"\nFailed Tests:")
+            for test in self.failed_tests:
+                print(f"  - {test}")
+        
+        success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
+        print(f"\nSuccess Rate: {success_rate:.1f}%")
+        
+        if success_rate >= 90:
+            print("\n🎉 EXCELLENT: Phase 3 hydraulic application is working very well!")
+        elif success_rate >= 75:
+            print("\n✅ GOOD: Phase 3 hydraulic application is mostly working with minor issues")
+        elif success_rate >= 50:
+            print("\n⚠️  MODERATE: Phase 3 hydraulic application has significant issues that need attention")
+        else:
+            print("\n❌ CRITICAL: Phase 3 hydraulic application has major problems that must be fixed")
+        
+        return success_rate >= 75
+
 if __name__ == "__main__":
     tester = HydraulicPumpTester()
     success = tester.run_all_tests()
