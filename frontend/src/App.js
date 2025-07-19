@@ -6032,19 +6032,49 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="260" className="text-xs" fill="#1f2937">
         P. vapeur: {(() => {
-          if (results && results.fluid_properties && results.fluid_properties.vapor_pressure) {
-            return (results.fluid_properties.vapor_pressure / 1000).toFixed(1);
-          }
+          // Calcul direct de la pression de vapeur pour tous les fluides
+          let vaporPressure = 2340; // valeur par défaut eau
           
-          let vaporPressure = 0;
           if (inputData.fluid_type === 'water') {
-            vaporPressure = 611 * Math.exp(17.27 * inputData.temperature / (inputData.temperature + 237.3));
+            vaporPressure = 2340 + 100 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'oil') {
             vaporPressure = 100 + 20 * (inputData.temperature - 20);
-          } else if (inputData.fluid_type === 'glycol') {
-            vaporPressure = 10 + 5 * (inputData.temperature - 20);
           } else if (inputData.fluid_type === 'acid') {
             vaporPressure = 3000 + 150 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycol') {
+            vaporPressure = 10 + 5 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'palm_oil') {
+            vaporPressure = 0.001 + 0.0001 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'gasoline') {
+            vaporPressure = 13000 + 850 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'diesel') {
+            vaporPressure = 300 + 25 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'hydraulic_oil') {
+            vaporPressure = 0.1 + 0.02 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'ethanol') {
+            vaporPressure = 5870 + 420 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'seawater') {
+            vaporPressure = 2280 + 95 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'methanol') {
+            vaporPressure = 12800 + 780 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycerol') {
+            vaporPressure = 0.001 + 0.0002 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'milk') {
+            vaporPressure = 2200 + 95 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'honey') {
+            vaporPressure = 0.1 + 0.02 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'wine') {
+            vaporPressure = 2800 + 120 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'bleach') {
+            vaporPressure = 2100 + 90 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'yogurt') {
+            vaporPressure = 2150 + 92 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'tomato_sauce') {
+            vaporPressure = 1800 + 75 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'soap_solution') {
+            vaporPressure = 2250 + 95 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'fruit_juice') {
+            vaporPressure = 2100 + 88 * (inputData.temperature - 20);
           }
           
           return (Math.max(vaporPressure, 1) / 1000).toFixed(1);
