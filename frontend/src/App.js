@@ -6760,6 +6760,16 @@ function App() {
                 🧪 Compatibilité
               </button>
               <button
+                onClick={() => setActiveTab('audit')}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  activeTab === 'audit'
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800'
+                }`}
+              >
+                🔧 Audit
+              </button>
+              <button
                 onClick={() => setActiveTab('expert')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   activeTab === 'expert'
