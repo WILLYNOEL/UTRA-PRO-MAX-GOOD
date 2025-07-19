@@ -379,7 +379,7 @@ class ChemicalCompatibilityTester:
                     "suction_material": "steel",
                     "discharge_material": "steel"
                 },
-                "expected_warning": "adapté aux hautes températures"
+                "expected_warning": "TEMPÉRATURE"
             }
         ]
         
