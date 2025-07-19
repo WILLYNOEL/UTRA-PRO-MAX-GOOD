@@ -2573,6 +2573,7 @@ SOLAR_IRRADIATION_DATABASE = {
         "mali": {"name": "Mali", "irradiation_annual": 6.8, "peak_month": 7.5, "min_month": 5.4},
         "niger": {"name": "Niger", "irradiation_annual": 7.1, "peak_month": 7.8, "min_month": 5.8},
         "tchad": {"name": "Tchad", "irradiation_annual": 6.9, "peak_month": 7.4, "min_month": 5.2},
+        "cote_ivoire": {"name": "Côte d'Ivoire", "irradiation_annual": 5.1, "peak_month": 6.8, "min_month": 3.9},
         "egypte": {"name": "Égypte", "irradiation_annual": 6.4, "peak_month": 8.9, "min_month": 3.8}
     },
     "moyen_orient": {
