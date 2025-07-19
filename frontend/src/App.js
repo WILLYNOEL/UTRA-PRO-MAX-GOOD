@@ -3530,8 +3530,18 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/expert-analysis`, {
+      // Convertir les valeurs vides en 0 pour les calculs (sans affecter l'affichage)
+      const cleanedData = {
         ...data,
+        suction_height: data.suction_height === '' ? 0 : data.suction_height,
+        discharge_height: data.discharge_height === '' ? 0 : data.discharge_height,
+        suction_length: data.suction_length === '' ? 0 : data.suction_length,
+        discharge_length: data.discharge_length === '' ? 0 : data.discharge_length,
+        npsh_required: data.npsh_required === '' ? 0 : data.npsh_required
+      };
+      
+      const response = await axios.post(`${API}/expert-analysis`, {
+        ...cleanedData,
         // Formatage des raccords
         suction_fittings: [
           { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
