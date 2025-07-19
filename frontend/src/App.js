@@ -7817,6 +7817,8 @@ function App() {
         return <AuditSystem />;
       case 'expert':
         return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
+      case 'solar':
+        return <SolarExpertSystem />;
       case 'history':
         return (
           <div className="bg-white rounded-lg shadow-lg p-6">
