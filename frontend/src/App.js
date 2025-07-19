@@ -4445,7 +4445,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     type="number"
                     step="0.1"
                     value={inputData.npsh_required !== undefined && inputData.npsh_required !== null ? inputData.npsh_required : ''}
-                    onChange={(e) => handleInputChange('npsh_required', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                    onChange={(e) => handleInputChange('npsh_required', e.target.value === '' ? '' : parseFloat(e.target.value))}
                     className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     placeholder="NPSH requis de la pompe"
                   />
