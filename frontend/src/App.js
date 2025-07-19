@@ -3628,29 +3628,29 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
           ].filter(f => f.quantity > 0),
           fluid_type: cleanedData.fluid_type,
           temperature: cleanedData.temperature,
-          flow_rate: data.flow_rate
+          flow_rate: cleanedData.flow_rate
         }),
         axios.post(`${API}/calculate-performance`, {
-          flow_rate: data.flow_rate,
+          flow_rate: cleanedData.flow_rate,
           hmt: 30, // Estimation temporaire
-          pipe_diameter: data.suction_pipe_diameter,
-          fluid_type: data.fluid_type,
-          pipe_material: data.suction_material,
-          pump_efficiency: data.pump_efficiency,
-          motor_efficiency: data.motor_efficiency,
-          starting_method: data.starting_method,
-          power_factor: data.power_factor,
-          cable_length: data.cable_length,
-          cable_material: data.cable_material,
-          voltage: data.voltage
+          pipe_diameter: cleanedData.suction_pipe_diameter,
+          fluid_type: cleanedData.fluid_type,
+          pipe_material: cleanedData.suction_material,
+          pump_efficiency: cleanedData.pump_efficiency,
+          motor_efficiency: cleanedData.motor_efficiency,
+          starting_method: cleanedData.starting_method,
+          power_factor: cleanedData.power_factor,
+          cable_length: cleanedData.cable_length,
+          cable_material: cleanedData.cable_material,
+          voltage: cleanedData.voltage
         })
       ]);
 
       // Calculs avancés d'expert
-      const hydraulicPower = ((data.flow_rate * hmtResponse.data.hmt) / (data.pump_efficiency * 367)) * 100;
-      const electricalPower = hydraulicPower / (data.motor_efficiency / 100);
-      const overallEfficiency = (data.pump_efficiency / 100) * (data.motor_efficiency / 100) * 100;
-      const annualEnergyCost = (electricalPower * data.operating_hours * data.electricity_cost) / 1000;
+      const hydraulicPower = ((cleanedData.flow_rate * hmtResponse.data.hmt) / (cleanedData.pump_efficiency * 367)) * 100;
+      const electricalPower = hydraulicPower / (cleanedData.motor_efficiency / 100);
+      const overallEfficiency = (cleanedData.pump_efficiency / 100) * (cleanedData.motor_efficiency / 100) * 100;
+      const annualEnergyCost = (electricalPower * cleanedData.operating_hours * cleanedData.electricity_cost) / 1000;
       
       // Combinaison des résultats
       const combinedResults = {
