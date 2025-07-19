@@ -2746,12 +2746,15 @@ class SolarPumpingInput(BaseModel):
     
     # Besoins en eau et hydrauliques
     daily_water_need: float  # m³/jour
-    flow_rate: float = 5.0  # m³/h - nouveau champ débit
+    operating_hours: float = 8.0  # heures de fonctionnement par jour
+    flow_rate: float = 1.25  # m³/h - calculé automatiquement (volume/heures)
     seasonal_variation: float = 1.2  # coefficient saisonnier (1.0 = constant, 1.5 = +50% en été)
     peak_months: List[int] = [6, 7, 8]  # mois de pic (juin, juillet, août)
     
-    # Paramètres hydrauliques pour calcul HMT
-    static_head: float = 20.0  # Hauteur géométrique
+    # Paramètres hydrauliques pour calcul HMT restructuré
+    dynamic_level: float = 15.0  # Niveau dynamique (profondeur pompage)
+    tank_height: float = 5.0  # Hauteur du château d'eau
+    static_head: float = 20.0  # Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: float = 5.0  # Pertes de charge dynamiques
     useful_pressure_head: float = 0.0  # Pression utile convertie en hauteur
     total_head: float  # HMT totale (calculée automatiquement dans le frontend)
