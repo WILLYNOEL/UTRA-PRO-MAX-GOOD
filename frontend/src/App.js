@@ -5932,8 +5932,52 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="230" className="text-xs" fill="#1f2937">
         Masse volumique: {(() => {
-          const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
-          return fluidProps.density.toFixed(1);
+          // Calcul direct des propriétés pour le SVG
+          let density = 1000; // valeur par défaut eau
+          
+          if (inputData.fluid_type === 'water') {
+            density = 1000 - 0.2 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'oil') {
+            density = 850 - 0.7 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'acid') {
+            density = 1200 - 0.3 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycol') {
+            density = 1113 - 0.8 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'palm_oil') {
+            density = 915 - 0.65 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'gasoline') {
+            density = 740 - 0.9 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'diesel') {
+            density = 840 - 0.75 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'hydraulic_oil') {
+            density = 875 - 0.65 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'ethanol') {
+            density = 810 - 1.05 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'seawater') {
+            density = 1025 - 0.25 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'methanol') {
+            density = 792 - 1.2 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'glycerol') {
+            density = 1260 - 0.65 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'milk') {
+            density = 1030 - 0.3 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'honey') {
+            density = 1400 - 0.8 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'wine') {
+            density = 990 - 0.9 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'bleach') {
+            density = 1050 - 0.25 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'yogurt') {
+            density = 1050 - 0.35 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'tomato_sauce') {
+            density = 1100 - 0.4 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'soap_solution') {
+            density = 1010 - 0.28 * (inputData.temperature - 20);
+          } else if (inputData.fluid_type === 'fruit_juice') {
+            density = 1045 - 0.35 * (inputData.temperature - 20);
+          }
+          
+          return Math.max(density, 500).toFixed(1);
         })()} kg/m³
       </text>
       <text x="860" y="245" className="text-xs" fill="#1f2937">
