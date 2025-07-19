@@ -847,17 +847,22 @@ const SolarExpertSystem = () => {
     location_region: 'france',
     location_subregion: 'centre',
     
-    // Besoins en eau
+    // Besoins en eau et hydrauliques
     daily_water_need: 10,
+    flow_rate: 5, // m³/h - nouveau champ débit
     seasonal_variation: 1.2,
     peak_months: [6, 7, 8],
     
-    // Paramètres hydrauliques
-    total_head: 25,
-    static_head: 20,
-    well_depth: 30,
+    // Paramètres hydrauliques pour calcul HMT
+    static_head: 20, // Hauteur géométrique
+    dynamic_losses: 5, // Pertes de charge dynamiques
+    useful_pressure_head: 0, // Pression utile convertie en hauteur
+    total_head: 25, // HMT totale calculée automatiquement
     pipe_diameter: 100,
     pipe_length: 50,
+    
+    // Paramètres solaires
+    panel_peak_power: 400, // Wc - nouveau champ puissance crête panneau
     
     // Contraintes du système
     autonomy_days: 2,
