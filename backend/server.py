@@ -2751,7 +2751,7 @@ class SolarPumpingInput(BaseModel):
     
     # Paramètres hydrauliques
     total_head: float  # mètres (hauteur totale)
-    static_head: float  # mètres (hauteur statique)
+    static_head: float = 20.0  # mètres (hauteur statique) - valeur par défaut
     dynamic_head: Optional[float] = None  # mètres (calculé automatiquement si non fourni)
     well_depth: Optional[float] = None  # mètres (profondeur du puits)
     pipe_diameter: float = 100  # mm
