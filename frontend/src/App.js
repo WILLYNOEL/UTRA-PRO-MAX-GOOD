@@ -1021,7 +1021,33 @@ const SolarExpertSystem = () => {
         const hours = field === 'operating_hours' ? value : prev.operating_hours;
         if (hours > 0) {
           updated.flow_rate = parseFloat((volume / hours).toFixed(2));
+          
+          // Calcul automatique du DN basé sur débit et vitesse recommandée 2 m/s
+          const flowM3s = (updated.flow_rate / 3600); // m³/s
+          const velocity = 2.0; // m/s vitesse recommandée
+          const diameterM = Math.sqrt((4 * flowM3s) / (Math.PI * velocity)); // diamètre en mètres
+          const diameterMM = diameterM * 1000; // en millimètres
+          
+          // Normalisation vers DN standard
+          const standardDNs = [20, 25, 32, 40, 50, 63, 80, 100, 125, 150, 200, 250, 300];
+          const recommendedDN = standardDNs.find(dn => dn >= diameterMM) || 300;
+          updated.pipe_diameter = recommendedDN;
+          
+          // Estimation automatique longueur basée sur géométrie (hauteur × 1.5 pour trajets)
+          updated.pipe_length = Math.max(30, prev.static_head * 1.5);
         }
+      }
+      
+      // Calcul automatique du DN quand le débit change directement
+      if (field === 'flow_rate') {
+        const flowM3s = (value / 3600); // m³/s
+        const velocity = 2.0; // m/s vitesse recommandée
+        const diameterM = Math.sqrt((4 * flowM3s) / (Math.PI * velocity));
+        const diameterMM = diameterM * 1000;
+        
+        const standardDNs = [20, 25, 32, 40, 50, 63, 80, 100, 125, 150, 200, 250, 300];
+        const recommendedDN = standardDNs.find(dn => dn >= diameterMM) || 300;
+        updated.pipe_diameter = recommendedDN;
       }
       
       // Calcul automatique de la hauteur géométrique
@@ -1032,6 +1058,9 @@ const SolarExpertSystem = () => {
         
         // Recalcul automatique HMT
         updated.total_head = updated.static_head + prev.dynamic_losses + prev.useful_pressure_head;
+        
+        // Recalcul automatique longueur conduite
+        updated.pipe_length = Math.max(30, updated.static_head * 1.5);
       }
       
       // Recalcul automatique HMT pour autres champs
