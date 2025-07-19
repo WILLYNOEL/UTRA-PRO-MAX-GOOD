@@ -4241,23 +4241,24 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                           const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
                           if (!selectedFluid) return 'N/A';
                           
-                          // Calcul de la masse volumique selon la température
-                          let density = selectedFluid.density;
-                          if (inputData.fluid_type === 'water') {
-                            // Eau : densité varie avec la température
-                            density = 1000 - 0.2 * (inputData.temperature - 20);
-                          } else if (inputData.fluid_type === 'oil') {
-                            // Huile : densité diminue avec la température
-                            density = 850 - 0.7 * (inputData.temperature - 20);
-                          } else if (inputData.fluid_type === 'glycol') {
-                            // Glycol : densité varie moins
-                            density = 1050 - 0.3 * (inputData.temperature - 20);
-                          } else if (inputData.fluid_type === 'acid') {
-                            // Acide : densité stable
-                            density = 1200 - 0.1 * (inputData.temperature - 20);
+                          // Utiliser les propriétés du backend si disponibles dans results.fluid_properties
+                          if (results && results.fluid_properties && results.fluid_properties.density) {
+                            return results.fluid_properties.density.toFixed(1);
                           }
                           
-                          return Math.max(density, 700).toFixed(1);
+                          // Calcul de la masse volumique selon la température pour fluides de base
+                          let density = selectedFluid.density;
+                          if (inputData.fluid_type === 'water') {
+                            density = 1000 - 0.2 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'oil') {
+                            density = 850 - 0.7 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'glycol') {
+                            density = 1113 - 0.8 * (inputData.temperature - 20);
+                          } else if (inputData.fluid_type === 'acid') {
+                            density = 1200 - 0.3 * (inputData.temperature - 20);
+                          }
+                          
+                          return Math.max(density, 500).toFixed(1);
                         })()}
                       </div>
                       <div className="text-xs text-gray-500">kg/m³</div>
