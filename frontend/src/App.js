@@ -5379,6 +5379,8 @@ function App() {
         return <HMTCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'performance':
         return <PerformanceAnalysis fluids={fluids} pipeMaterials={pipeMaterials} />;
+      case 'formulas':
+        return <FormulaDatabase />;
       case 'expert':
         return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'history':
