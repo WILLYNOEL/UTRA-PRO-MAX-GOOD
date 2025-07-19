@@ -5225,14 +5225,21 @@ class HydraulicPumpTester:
         # URGENT TEST FIRST - Performance endpoint issue
         urgent_success = self.test_urgent_performance_endpoint_issue()
         
-        # Run all tests - prioritizing the specific corrections and NPSHd tests
+        # Run all tests - prioritizing Phase 3 additions and specific corrections
         tests = [
+            # PHASE 3 TESTS - NEW INDUSTRIAL FLUIDS AND EXPERT ANALYSIS
+            self.test_phase3_new_industrial_fluids_properties,  # NEW: Test new fluids properties
+            self.test_phase3_expert_analysis_new_fluids,  # NEW: Test expert analysis with new fluids
+            self.test_phase3_npshd_gasoline_methanol,  # NEW: Test NPSHd with volatile fluids
+            self.test_phase3_zero_half_values_robustness,  # NEW: Test 0 and 0.5 values robustness
+            self.test_phase3_system_integrity,  # NEW: Test system integrity (no regressions)
+            # EXISTING TESTS - Updated fluids API to check all 12 fluids
+            self.test_fluids_api,  # Updated to check all 12 industrial fluids
             # NEW INDUSTRIAL FLUIDS TESTS (from review request)
             self.test_new_industrial_fluids_api,  # NEW: Test all 12 fluids are available
             self.test_new_fluids_property_calculations,  # NEW: Test specific fluids at specific temperatures
             self.test_expert_analysis_with_new_fluids,  # NEW: Test expert analysis with new fluids
             self.test_hydraulic_calculations_consistency,  # NEW: Test no NaN values with new fluids
-            self.test_fluids_api,
             # URGENT NPSHD SPECIFIC TESTS (from review request)
             self.test_npshd_required_field_acceptance,  # NEW: Test npsh_required field acceptance
             self.test_npshd_vs_npsh_required_comparison,  # NEW: Test NPSHd vs NPSHr comparison
