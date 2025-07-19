@@ -2801,7 +2801,7 @@ class SolarPumpingResult(BaseModel):
     dimensioning: SolarSystemDimensioning
     
     # Calculs détaillés
-    solar_irradiation: Dict[str, float]
+    solar_irradiation: Dict[str, Any]  # Changé de float vers Any pour accepter les dicts
     system_efficiency: float
     pump_operating_hours: Dict[str, float]  # heures/jour par mois
     
