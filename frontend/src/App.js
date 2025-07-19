@@ -1728,88 +1728,106 @@ const SolarExpertSystem = () => {
               </div>
             </div>
 
-            {/* Équipements du système */}
+            {/* Équipements du système - Recommandations techniques */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pompe solaire */}
+              {/* Pompe solaire - Spécifications techniques */}
               <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 shadow-md">
                 <h4 className="font-semibold text-blue-700 mb-2 flex items-center">
                   💧 Pompe Solaire Recommandée
                 </h4>
                 <div className="space-y-2 text-sm">
-                  <div className="font-medium text-lg text-blue-800">{results.dimensioning.recommended_pump.model}</div>
+                  <div className="font-medium text-lg text-blue-800">
+                    Pompe {results.dimensioning.recommended_pump.type === 'submersible' ? 'Submersible' : 'de Surface'}
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-gray-600">Puissance:</span>
+                      <span className="text-gray-600">Puissance nominale:</span>
                       <span className="font-semibold ml-1">{results.dimensioning.recommended_pump.power.toFixed(0)}W</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Efficacité:</span>
-                      <span className="font-semibold ml-1">{(results.dimensioning.recommended_pump.efficiency * 100).toFixed(1)}%</span>
+                      <span className="text-gray-600">Efficacité minimale:</span>
+                      <span className="font-semibold ml-1">{(results.dimensioning.recommended_pump.efficiency * 100).toFixed(0)}%</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-semibold ml-1">{results.dimensioning.recommended_pump.type === 'submersible' ? 'Submersible' : 'Surface'}</span>
+                      <span className="text-gray-600">Type installation:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.recommended_pump.type === 'submersible' ? 'Immergée' : 'Surface'}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Débit max:</span>
+                      <span className="text-gray-600">Débit nominal:</span>
                       <span className="font-semibold ml-1">{solarData.flow_rate} m³/h</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">HMT requise:</span>
+                      <span className="font-semibold ml-1">{solarData.total_head} m</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Tension d'alim.:</span>
+                      <span className="font-semibold ml-1">{solarData.system_voltage}V DC</span>
                     </div>
                   </div>
                   <div className="bg-blue-50 p-2 rounded mt-2">
-                    <div className="font-semibold text-green-600">
-                      Prix: {formatCurrency(results.dimensioning.recommended_pump.cost)}
+                    <div className="text-xs text-blue-700">
+                      <strong>Recommandation:</strong> Pompe DC avec contrôleur MPPT intégré ou externe
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Système de stockage */}
+              {/* Système de stockage - Spécifications techniques */}
               <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500 shadow-md">
                 <h4 className="font-semibold text-purple-700 mb-2">🔋 Système de Stockage</h4>
                 <div className="space-y-2 text-sm">
-                  <div className="font-medium text-lg text-purple-800">{results.dimensioning.batteries.model}</div>
+                  <div className="font-medium text-lg text-purple-800">
+                    Batteries {results.dimensioning.batteries.specifications.battery_data.name.includes('Lithium') ? 'Lithium LiFePO4' : 'Gel/AGM'}
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-600">Configuration:</span>
                       <span className="font-semibold ml-1">{results.dimensioning.batteries.configuration}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Quantité:</span>
-                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_quantity} batteries</span>
+                      <span className="text-gray-600">Nombre batteries:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_quantity}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Capacité:</span>
-                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_capacity}Ah</span>
+                      <span className="text-gray-600">Capacité totale:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_capacity}Ah @ {solarData.system_voltage}V</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Énergie stockée:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.usable_energy.toFixed(1)} kWh utiles</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Autonomie:</span>
-                      <span className="font-semibold ml-1">{solarData.autonomy_days} jours</span>
+                      <span className="font-semibold ml-1">{solarData.autonomy_days} jour{solarData.autonomy_days > 1 ? 's' : ''}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Cycles de vie:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.specifications.battery_data.cycles.toLocaleString()}</span>
                     </div>
                   </div>
                   <div className="bg-purple-50 p-2 rounded mt-2">
-                    <div>
-                      <span className="text-xs text-purple-600">Énergie utile: </span>
-                      <span className="font-semibold text-purple-700">{results.dimensioning.batteries.usable_energy.toFixed(1)} kWh</span>
-                    </div>
-                    <div className="font-semibold text-green-600 mt-1">
-                      Prix: {formatCurrency(results.dimensioning.batteries.cost)}
+                    <div className="text-xs text-purple-700">
+                      <strong>Recommandation:</strong> {results.dimensioning.batteries.specifications.battery_data.name.includes('Lithium') ? 
+                      'Batteries Lithium pour longévité et performance optimales' : 
+                      'Batteries Gel pour rapport qualité/prix avec maintenance réduite'}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Régulateur MPPT */}
+              {/* Régulateur MPPT - Spécifications techniques */}
               <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-md">
                 <h4 className="font-semibold text-green-700 mb-2">⚡ Régulateur MPPT</h4>
                 <div className="space-y-2 text-sm">
-                  <div className="font-medium text-lg text-green-800">{results.dimensioning.mppt_controller.model}</div>
+                  <div className="font-medium text-lg text-green-800">Contrôleur MPPT High Efficiency</div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-600">Courant max:</span>
                       <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.max_current}A</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Tension max:</span>
+                      <span className="text-gray-600">Tension PV max:</span>
                       <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.max_pv_voltage}V</span>
                     </div>
                     <div>
@@ -1817,41 +1835,60 @@ const SolarExpertSystem = () => {
                       <span className="font-semibold ml-1">{(results.dimensioning.mppt_controller.specifications.mppt_data.efficiency * 100).toFixed(0)}%</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Bluetooth:</span>
-                      <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.bluetooth ? '✅ Oui' : '❌ Non'}</span>
+                      <span className="text-gray-600">Tension batterie:</span>
+                      <span className="font-semibold ml-1">{solarData.system_voltage}V nominal</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Protection:</span>
+                      <span className="font-semibold ml-1">IP65 minimum</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Monitoring:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.bluetooth ? 'Bluetooth/WiFi' : 'LCD/LED'}</span>
                     </div>
                   </div>
                   <div className="bg-green-50 p-2 rounded mt-2">
-                    <div className="font-semibold text-green-600">
-                      Prix: {formatCurrency(results.dimensioning.mppt_controller.cost)}
+                    <div className="text-xs text-green-700">
+                      <strong>Recommandation:</strong> MPPT avec tracking intelligent et protection contre surtensions
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Résumé système */}
+              {/* Résumé système - Spécifications générales */}
               <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-4 rounded-lg border-l-4 border-gray-600 shadow-md">
-                <h4 className="font-semibold text-gray-700 mb-2">📋 Résumé Installation</h4>
+                <h4 className="font-semibold text-gray-700 mb-2">📋 Spécifications Système</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Tension système:</span>
-                    <span className="font-semibold">{solarData.system_voltage}V DC</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Type installation:</span>
-                    <span className="font-semibold">{solarData.installation_type === 'submersible' ? 'Submersible' : 'Surface'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Efficacité système:</span>
-                    <span className="font-semibold">{(results.system_efficiency * 100).toFixed(1)}%</span>
+                    <span>Architecture:</span>
+                    <span className="font-semibold">{solarData.system_voltage}V DC - {solarData.installation_type === 'submersible' ? 'Immergée' : 'Surface'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Production quotidienne:</span>
-                    <span className="font-semibold text-blue-600">{solarData.daily_water_need} m³/jour</span>
+                    <span className="font-semibold">{solarData.daily_water_need} m³/jour</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Heures fonctionnement:</span>
+                    <span className="font-semibold">{solarData.operating_hours}h/jour</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Efficacité globale:</span>
+                    <span className="font-semibold">{(results.system_efficiency * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Protection requise:</span>
+                    <span className="font-semibold">IP65, Parafoudre</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Certification:</span>
+                    <span className="font-semibold">CE, IEC 61215</span>
                   </div>
                   <div className="bg-gray-50 p-2 rounded mt-2">
-                    <div className="font-bold text-red-600 text-center">
-                      COÛT TOTAL: {formatCurrency(results.dimensioning.economic_analysis.total_system_cost)}
+                    <div className="font-bold text-blue-600 text-center">
+                      INVESTISSEMENT ESTIMÉ: {formatCurrency(results.dimensioning.economic_analysis.total_system_cost)}
+                    </div>
+                    <div className="text-xs text-gray-600 text-center mt-1">
+                      Installation et mise en service comprises
                     </div>
                   </div>
                 </div>
