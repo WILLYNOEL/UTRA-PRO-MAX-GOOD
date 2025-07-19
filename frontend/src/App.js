@@ -1583,13 +1583,47 @@ const SolarExpertSystem = () => {
             <div className="mb-6 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 border-l-4 border-yellow-500">
               <h4 className="text-xl font-bold text-yellow-800 mb-4">☀️ Configuration Champ Photovoltaïque Optimal</h4>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Puissance requise */}
+                <div className="bg-white p-4 rounded-lg shadow-md border-t-2 border-red-500">
+                  <h5 className="font-semibold text-red-700 mb-2">⚡ Puissance Requise</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>P. hydraulique:</span>
+                      <span className="font-bold text-blue-600">
+                        {((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000).toFixed(2)} kW
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Rendement pompe:</span>
+                      <span className="font-bold">75%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>P. électrique:</span>
+                      <span className="font-bold text-red-600">
+                        {(((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 1000).toFixed(2)} kW
+                      </span>
+                    </div>
+                    <div className="bg-red-50 p-2 rounded mt-2">
+                      <div className="text-xs text-red-700 text-center">
+                        P. crête nécessaire: {(((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8 / 1000).toFixed(2)} kWc
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h5 className="font-semibold text-yellow-700 mb-2">📐 Dimensionnement</h5>
+                  <h5 className="font-semibold text-yellow-700 mb-2">📐 Dimensionnement Auto</h5>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Nombre de panneaux:</span>
-                      <span className="font-bold text-yellow-800">{results.dimensioning.solar_panels.quantity}</span>
+                      <span className="font-bold text-yellow-800">
+                        {(() => {
+                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
+                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
+                          return nbPanels;
+                        })()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Puissance unitaire:</span>
@@ -1597,44 +1631,61 @@ const SolarExpertSystem = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Puissance totale:</span>
-                      <span className="font-bold text-green-600">{results.dimensioning.solar_panels.total_power} Wc</span>
+                      <span className="font-bold text-green-600">
+                        {(() => {
+                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
+                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
+                          return (nbPanels * solarData.panel_peak_power);
+                        })()} Wc
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Surface requise:</span>
-                      <span className="font-bold">{results.dimensioning.solar_panels.surface_required.toFixed(1)} m²</span>
+                      <span className="font-bold">
+                        {(() => {
+                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
+                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
+                          // Surface estimée : 2m² par panneau en moyenne
+                          return (nbPanels * 2).toFixed(1);
+                        })()} m²
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h5 className="font-semibold text-blue-700 mb-2">🔗 Configuration Série/Parallèle</h5>
+                  <h5 className="font-semibold text-blue-700 mb-2">🔗 Config. Série/Parallèle</h5>
                   <div className="space-y-2 text-sm">
                     {(() => {
-                      // Calcul automatique de la configuration série/parallèle
-                      const totalPanels = results.dimensioning.solar_panels.quantity;
+                      // Calcul dynamique de la configuration
+                      const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
+                      const totalPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
                       const systemVoltage = solarData.system_voltage;
                       const panelVoltage = solarData.panel_peak_power >= 400 ? 48 : 24; // Estimation voltage panneau
                       
                       const panelsInSeries = Math.ceil(systemVoltage / panelVoltage);
                       const strings = Math.ceil(totalPanels / panelsInSeries);
-                      const panelsInParallel = strings;
                       
                       return (
                         <>
+                          <div className="flex justify-between">
+                            <span>Panneaux total:</span>
+                            <span className="font-bold text-gray-600">{totalPanels}</span>
+                          </div>
                           <div className="flex justify-between">
                             <span>Panneaux en série:</span>
                             <span className="font-bold text-blue-600">{panelsInSeries}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Strings en parallèle:</span>
-                            <span className="font-bold text-blue-600">{panelsInParallel}</span>
+                            <span>Strings parallèle:</span>
+                            <span className="font-bold text-blue-600">{strings}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Configuration:</span>
-                            <span className="font-bold text-purple-600">{panelsInSeries}S{panelsInParallel}P</span>
+                            <span className="font-bold text-purple-600">{panelsInSeries}S{strings}P</span>
                           </div>
                           <div className="bg-blue-50 p-2 rounded mt-2">
-                            <div className="text-xs text-blue-700">
+                            <div className="text-xs text-blue-700 text-center">
                               Tension string: {panelsInSeries * panelVoltage}V
                             </div>
                           </div>
@@ -1645,21 +1696,32 @@ const SolarExpertSystem = () => {
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h5 className="font-semibold text-green-700 mb-2">💰 Coût Panneaux</h5>
+                  <h5 className="font-semibold text-green-700 mb-2">💰 Estimation Coût</h5>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Prix unitaire:</span>
-                      <span className="font-bold">{formatCurrency(results.dimensioning.solar_panels.cost / results.dimensioning.solar_panels.quantity)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Coût total:</span>
-                      <span className="font-bold text-green-600">{formatCurrency(results.dimensioning.solar_panels.cost)}</span>
-                    </div>
-                    <div className="bg-green-50 p-2 rounded mt-2">
-                      <div className="text-xs text-green-700">
-                        {(results.dimensioning.solar_panels.cost / results.dimensioning.solar_panels.total_power * 1000).toFixed(2)} €/kWc
-                      </div>
-                    </div>
+                    {(() => {
+                      const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
+                      const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
+                      const pricePerWatt = solarData.panel_peak_power >= 400 ? 0.7 : 0.6; // €/Wc estimation
+                      const totalCost = nbPanels * solarData.panel_peak_power * pricePerWatt;
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Prix unitaire:</span>
+                            <span className="font-bold">{formatCurrency(solarData.panel_peak_power * pricePerWatt)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Coût total:</span>
+                            <span className="font-bold text-green-600">{formatCurrency(totalCost)}</span>
+                          </div>
+                          <div className="bg-green-50 p-2 rounded mt-2">
+                            <div className="text-xs text-green-700 text-center">
+                              {(totalCost / (nbPanels * solarData.panel_peak_power) * 1000).toFixed(2)} €/kWc
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
