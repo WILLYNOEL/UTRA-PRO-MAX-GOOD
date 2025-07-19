@@ -13,7 +13,7 @@ from datetime import datetime
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://f49f2fb8-da0a-46ca-81c0-61a4df558609.preview.emergentagent.com/api"
+BACKEND_URL = "https://667f55a2-4328-428f-9c85-4f54318d654a.preview.emergentagent.com/api"
 
 class CorrectedPowerFormulasTester:
     def __init__(self):
