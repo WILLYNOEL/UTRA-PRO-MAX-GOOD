@@ -5770,7 +5770,71 @@ class HydraulicPumpTester:
         return all_passed
     
     def run_food_domestic_fluids_tests(self):
+        """Run comprehensive tests for food and domestic fluids extension"""
         print("=" * 80)
+        print("FOOD & DOMESTIC FLUIDS EXTENSION - COMPREHENSIVE TESTING")
+        print("=" * 80)
+        print()
+        
+        # Test connectivity first
+        if not self.test_api_connectivity():
+            print("\n❌ API connectivity failed - aborting remaining tests")
+            return False
+        
+        print()
+        
+        # Test 1: Verify 20 fluids are available
+        print("🔍 PHASE 1: Verifying 20 Fluids API...")
+        fluids_test = self.test_fluids_api()
+        
+        # Test 2: Test properties of new food and domestic fluids
+        print("\n🔍 PHASE 2: Testing Food & Domestic Fluids Properties...")
+        properties_test = self.test_food_domestic_fluids_properties()
+        
+        # Test 3: Test expert analysis with new fluids
+        print("\n🔍 PHASE 3: Testing Expert Analysis with New Fluids...")
+        expert_test = self.test_expert_analysis_with_food_domestic_fluids()
+        
+        # Test 4: Test hydraulic calculations consistency
+        print("\n🔍 PHASE 4: Testing Hydraulic Calculations Consistency...")
+        consistency_test = self.test_hydraulic_calculations_consistency_food_domestic()
+        
+        # Summary
+        print("\n" + "=" * 80)
+        print("FOOD & DOMESTIC FLUIDS TESTING SUMMARY")
+        print("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t["passed"]])
+        failed_tests = len(self.failed_tests)
+        
+        success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {failed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        
+        if self.failed_tests:
+            print(f"\n❌ Failed Tests:")
+            for test in self.failed_tests:
+                print(f"   - {test}")
+        
+        overall_success = fluids_test and properties_test and expert_test and consistency_test
+        
+        if overall_success:
+            print(f"\n✅ FOOD & DOMESTIC FLUIDS EXTENSION TESTING COMPLETED SUCCESSFULLY!")
+            print(f"✅ All 20 fluids are available and working correctly")
+            print(f"✅ No NaN values detected in calculations")
+            print(f"✅ Expert analysis works with all new fluids")
+            print(f"✅ Hydraulic calculations are consistent and reliable")
+        else:
+            print(f"\n❌ FOOD & DOMESTIC FLUIDS EXTENSION TESTING FAILED!")
+            print(f"❌ Some critical issues were found - see details above")
+        
+        return overall_success
+    
+    def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
         print()
