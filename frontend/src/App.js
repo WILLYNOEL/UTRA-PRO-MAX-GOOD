@@ -4302,7 +4302,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       type="number"
                       step="0.1"
                       value={inputData.suction_height !== undefined && inputData.suction_height !== null ? inputData.suction_height : ''}
-                      onChange={(e) => handleInputChange('suction_height', e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                      onChange={(e) => handleInputChange('suction_height', e.target.value === '' ? '' : parseFloat(e.target.value))}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                       placeholder="Hauteur d'aspiration"
                     />
