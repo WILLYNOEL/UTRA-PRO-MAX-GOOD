@@ -1202,8 +1202,8 @@ const SolarExpertSystem = () => {
           
           {/* Paramètres d'eau et débit */}
           <div className="mb-6">
-            <h4 className="text-lg font-semibold text-cyan-800 mb-3">💧 Besoins en Eau</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h4 className="text-lg font-semibold text-cyan-800 mb-3">💧 Besoins en Eau & Fonctionnement</h4>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
                 <label className="block text-sm font-medium text-cyan-700 mb-2">Volume quotidien (m³/jour)</label>
                 <input
@@ -1216,16 +1216,30 @@ const SolarExpertSystem = () => {
                 <p className="text-xs text-cyan-600 mt-1">Volume d'eau nécessaire par jour</p>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
-                <label className="block text-sm font-medium text-cyan-700 mb-2">Débit nominal (m³/h)</label>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Heures fonctionnement/jour</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="1"
+                  max="12"
+                  value={solarData.operating_hours}
+                  onChange={(e) => handleInputChange('operating_hours', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Heures de pompage par jour</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg border-l-4 border-green-600">
+                <label className="block text-sm font-medium text-green-800 mb-2">Débit calculé (m³/h)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={solarData.flow_rate}
-                  onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value))}
-                  className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+                  readOnly
+                  className="w-full p-3 border-2 border-green-300 rounded-lg bg-green-50 text-lg font-bold text-green-800 cursor-not-allowed"
                 />
-                <p className="text-xs text-cyan-600 mt-1">Débit de la pompe en fonctionnement</p>
+                <p className="text-xs text-green-700 mt-1">Calculé automatiquement</p>
               </div>
 
               <div className="bg-white p-4 rounded-lg border-l-4 border-orange-500">
@@ -1243,74 +1257,103 @@ const SolarExpertSystem = () => {
             </div>
           </div>
 
-          {/* Calcul HMT */}
+          {/* Calcul HMT restructuré */}
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-blue-800 mb-3">📏 Calcul HMT (Hauteur Manométrique Totale)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Première ligne : Composants de base */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-                <label className="block text-sm font-medium text-blue-700 mb-2">Hauteur géométrique (m)</label>
+                <label className="block text-sm font-medium text-blue-700 mb-2">Niveau dynamique (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.dynamic_level}
+                  onChange={(e) => handleInputChange('dynamic_level', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Profondeur niveau d'eau</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Hauteur château (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.tank_height}
+                  onChange={(e) => handleInputChange('tank_height', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Hauteur du réservoir/château</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-4 rounded-lg border-l-4 border-purple-600">
+                <label className="block text-sm font-medium text-purple-800 mb-2">Hauteur géométrique (m)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={solarData.static_head}
-                  onChange={(e) => {
-                    const newValue = parseFloat(e.target.value);
-                    handleInputChange('static_head', newValue);
-                    // Recalcul automatique HMT
-                    const newHMT = newValue + solarData.dynamic_losses + solarData.useful_pressure_head;
-                    handleInputChange('total_head', newHMT);
-                  }}
-                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                  readOnly
+                  className="w-full p-3 border-2 border-purple-300 rounded-lg bg-purple-50 text-lg font-bold text-purple-800 cursor-not-allowed"
                 />
-                <p className="text-xs text-blue-600 mt-1">Dénivelé géométrique total</p>
+                <p className="text-xs text-purple-700 mt-1">Niveau + Château (auto)</p>
               </div>
 
-              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-                <label className="block text-sm font-medium text-blue-700 mb-2">Pertes de charge (m)</label>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-red-500">
+                <label className="block text-sm font-medium text-red-700 mb-2">Pertes de charge (m)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={solarData.dynamic_losses}
-                  onChange={(e) => {
-                    const newValue = parseFloat(e.target.value);
-                    handleInputChange('dynamic_losses', newValue);
-                    // Recalcul automatique HMT
-                    const newHMT = solarData.static_head + newValue + solarData.useful_pressure_head;
-                    handleInputChange('total_head', newHMT);
-                  }}
-                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                  onChange={(e) => handleInputChange('dynamic_losses', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-red-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 text-lg font-semibold"
                 />
-                <p className="text-xs text-blue-600 mt-1">Pertes dans tuyauteries</p>
+                <p className="text-xs text-red-600 mt-1">Pertes dans tuyauteries</p>
               </div>
+            </div>
 
-              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-                <label className="block text-sm font-medium text-blue-700 mb-2">Pression utile (m)</label>
+            {/* Deuxième ligne : Calcul final */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-yellow-500">
+                <label className="block text-sm font-medium text-yellow-700 mb-2">Pression utile (m)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={solarData.useful_pressure_head}
-                  onChange={(e) => {
-                    const newValue = parseFloat(e.target.value);
-                    handleInputChange('useful_pressure_head', newValue);
-                    // Recalcul automatique HMT
-                    const newHMT = solarData.static_head + solarData.dynamic_losses + newValue;
-                    handleInputChange('total_head', newHMT);
-                  }}
-                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                  onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
                 />
-                <p className="text-xs text-blue-600 mt-1">Pression résiduelle requise</p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise</p>
               </div>
 
-              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg border-l-4 border-green-600">
-                <label className="block text-sm font-medium text-green-800 mb-2">HMT Totale (m)</label>
+              <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
+                <label className="block text-sm font-medium text-green-900 mb-2">🎯 HMT TOTALE (m)</label>
                 <input
                   type="number"
                   step="0.1"
                   value={solarData.total_head}
                   readOnly
-                  className="w-full p-3 border-2 border-green-300 rounded-lg bg-green-50 text-lg font-bold text-green-800 cursor-not-allowed"
+                  className="w-full p-3 border-2 border-green-400 rounded-lg bg-green-100 text-2xl font-bold text-green-900 cursor-not-allowed text-center"
                 />
-                <p className="text-xs text-green-700 mt-1">Calculé automatiquement</p>
+                <p className="text-xs text-green-800 mt-1 text-center">Calculé automatiquement</p>
+              </div>
+
+              <div className="bg-gray-100 p-4 rounded-lg border-l-4 border-gray-500">
+                <h5 className="text-sm font-medium text-gray-700 mb-2">📊 Répartition HMT</h5>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span>Géométrique:</span>
+                    <span className="font-semibold">{solarData.static_head.toFixed(1)}m ({((solarData.static_head / solarData.total_head) * 100).toFixed(0)}%)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pertes charge:</span>
+                    <span className="font-semibold">{solarData.dynamic_losses.toFixed(1)}m ({((solarData.dynamic_losses / solarData.total_head) * 100).toFixed(0)}%)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Pression utile:</span>
+                    <span className="font-semibold">{solarData.useful_pressure_head.toFixed(1)}m ({((solarData.useful_pressure_head / solarData.total_head) * 100).toFixed(0)}%)</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
