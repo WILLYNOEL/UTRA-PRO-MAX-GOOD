@@ -5457,6 +5457,16 @@ function App() {
                 🟨 Performance
               </button>
               <button
+                onClick={() => setActiveTab('formulas')}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  activeTab === 'formulas'
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800'
+                }`}
+              >
+                📚 Formules
+              </button>
+              <button
                 onClick={() => setActiveTab('expert')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   activeTab === 'expert'
