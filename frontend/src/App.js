@@ -5932,25 +5932,8 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="230" className="text-xs" fill="#1f2937">
         Masse volumique: {(() => {
-          if (results && results.fluid_properties && results.fluid_properties.density) {
-            return results.fluid_properties.density.toFixed(1);
-          }
-          
-          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
-          if (!selectedFluid) return 'N/A';
-          
-          let density = selectedFluid.density;
-          if (inputData.fluid_type === 'water') {
-            density = 1000 - 0.2 * (inputData.temperature - 20);
-          } else if (inputData.fluid_type === 'oil') {
-            density = 850 - 0.7 * (inputData.temperature - 20);
-          } else if (inputData.fluid_type === 'glycol') {
-            density = 1113 - 0.8 * (inputData.temperature - 20);
-          } else if (inputData.fluid_type === 'acid') {
-            density = 1200 - 0.3 * (inputData.temperature - 20);
-          }
-          
-          return Math.max(density, 500).toFixed(1);
+          const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
+          return fluidProps.density.toFixed(1);
         })()} kg/m³
       </text>
       <text x="860" y="245" className="text-xs" fill="#1f2937">
