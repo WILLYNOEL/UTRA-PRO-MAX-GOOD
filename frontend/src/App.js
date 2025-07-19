@@ -6680,6 +6680,8 @@ function App() {
         return <FormulaDatabase />;
       case 'chemical_compatibility':
         return <ChemicalCompatibility />;
+      case 'audit':
+        return <AuditSystem />;
       case 'expert':
         return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'history':
