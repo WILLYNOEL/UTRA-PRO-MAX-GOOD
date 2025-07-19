@@ -3855,6 +3855,189 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_expert_analysis_zero_and_half_values(self):
+        """Test /api/expert-analysis endpoint with 0 and 0.5 values for specific fields"""
+        print("\n🎯 Testing Expert Analysis with 0 and 0.5 Values...")
+        
+        # Base test data structure for expert analysis
+        base_data = {
+            "flow_rate": 50.0,
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "total_length": 100.0,
+            "useful_pressure": 2.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "pump_efficiency": 80.0,
+            "motor_efficiency": 90.0,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 8760.0,
+            "electricity_cost": 0.12,
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0
+        }
+        
+        test_cases = [
+            {
+                "name": "Case 1: All Zero Values",
+                "data": {
+                    **base_data,
+                    "suction_height": 0.0,
+                    "discharge_height": 0.0,
+                    "suction_length": 0.0,
+                    "discharge_length": 0.0,
+                    "npsh_required": 0.0
+                }
+            },
+            {
+                "name": "Case 2: All 0.5 Values",
+                "data": {
+                    **base_data,
+                    "suction_height": 0.5,
+                    "discharge_height": 0.5,
+                    "suction_length": 0.5,
+                    "discharge_length": 0.5,
+                    "npsh_required": 0.5
+                }
+            },
+            {
+                "name": "Case 3: Mixed Values (0 and 0.5)",
+                "data": {
+                    **base_data,
+                    "suction_height": 0.0,
+                    "discharge_height": 0.5,
+                    "suction_length": 0.5,
+                    "discharge_length": 0.0,
+                    "npsh_required": 0.5
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Verify complete response structure
+                    required_sections = [
+                        "input_data", "npshd_analysis", "hmt_analysis", 
+                        "performance_analysis", "electrical_analysis", 
+                        "overall_efficiency", "total_head_loss", "system_stability",
+                        "energy_consumption", "expert_recommendations", 
+                        "optimization_potential", "performance_curves", "system_curves"
+                    ]
+                    
+                    missing_sections = [section for section in required_sections if section not in result]
+                    if missing_sections:
+                        self.log_test(f"Expert Analysis Structure - {case['name']}", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # Verify input data preservation
+                    input_data = result.get("input_data", {})
+                    test_fields = ["suction_height", "discharge_height", "suction_length", "discharge_length", "npsh_required"]
+                    
+                    for field in test_fields:
+                        expected_value = case["data"][field]
+                        actual_value = input_data.get(field)
+                        
+                        if actual_value != expected_value:
+                            self.log_test(f"Expert Analysis Input Preservation - {case['name']} - {field}", False, 
+                                        f"Expected {expected_value}, got {actual_value}")
+                            all_passed = False
+                            continue
+                    
+                    # Verify NPSHd calculations work with these values
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    npshd_value = npshd_analysis.get("npshd")
+                    npsh_required = npshd_analysis.get("npsh_required")
+                    cavitation_risk = npshd_analysis.get("cavitation_risk")
+                    
+                    if npshd_value is None:
+                        self.log_test(f"Expert Analysis NPSHd - {case['name']}", False, "NPSHd value is None")
+                        all_passed = False
+                        continue
+                    
+                    if npsh_required != case["data"]["npsh_required"]:
+                        self.log_test(f"Expert Analysis NPSH Required - {case['name']}", False, 
+                                    f"NPSH required not preserved: expected {case['data']['npsh_required']}, got {npsh_required}")
+                        all_passed = False
+                        continue
+                    
+                    if cavitation_risk is None:
+                        self.log_test(f"Expert Analysis Cavitation Risk - {case['name']}", False, "Cavitation risk is None")
+                        all_passed = False
+                        continue
+                    
+                    # Verify HMT calculations work with these values
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    hmt_value = hmt_analysis.get("hmt")
+                    static_head = hmt_analysis.get("static_head")
+                    total_head_loss = hmt_analysis.get("total_head_loss")
+                    
+                    if hmt_value is None:
+                        self.log_test(f"Expert Analysis HMT - {case['name']}", False, "HMT value is None")
+                        all_passed = False
+                        continue
+                    
+                    if static_head is None:
+                        self.log_test(f"Expert Analysis Static Head - {case['name']}", False, "Static head is None")
+                        all_passed = False
+                        continue
+                    
+                    # Verify Performance calculations work with these values
+                    performance_analysis = result.get("performance_analysis", {})
+                    overall_efficiency = result.get("overall_efficiency")
+                    
+                    if overall_efficiency is None or overall_efficiency <= 0:
+                        self.log_test(f"Expert Analysis Performance - {case['name']}", False, 
+                                    f"Invalid overall efficiency: {overall_efficiency}")
+                        all_passed = False
+                        continue
+                    
+                    # Verify no calculation errors occurred
+                    if "error" in result or "Error" in str(result):
+                        self.log_test(f"Expert Analysis Errors - {case['name']}", False, "Calculation errors detected")
+                        all_passed = False
+                        continue
+                    
+                    # Verify performance curves are generated
+                    performance_curves = result.get("performance_curves", {})
+                    if not performance_curves or "flow" not in performance_curves:
+                        self.log_test(f"Expert Analysis Curves - {case['name']}", False, "Performance curves missing or incomplete")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Expert Analysis - {case['name']}", True, 
+                                f"NPSHd: {npshd_value:.2f}m, HMT: {hmt_value:.2f}m, Efficiency: {overall_efficiency:.1f}%")
+                else:
+                    self.log_test(f"Expert Analysis - {case['name']}", False, f"HTTP Status: {response.status_code}")
+                    if response.status_code == 422:
+                        try:
+                            error_detail = response.json()
+                            self.log_test(f"Expert Analysis Error Detail - {case['name']}", False, f"Validation error: {error_detail}")
+                        except:
+                            pass
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Expert Analysis - {case['name']}", False, f"Exception: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
