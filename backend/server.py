@@ -969,6 +969,139 @@ def get_fluid_properties(fluid_type: str, temperature: float) -> FluidProperties
         vapor_pressure=vapor_pressure
     )
 
+def analyze_chemical_compatibility(fluid_type: str, suction_material: str, discharge_material: str, temperature: float) -> Dict[str, Any]:
+    """
+    Analyser la compatibilité chimique entre le fluide et les matériaux à une température donnée
+    """
+    if fluid_type not in FLUID_PROPERTIES:
+        return {"status": "unknown_fluid", "recommendations": [], "warnings": []}
+    
+    fluid_data = FLUID_PROPERTIES[fluid_type]
+    fluid_name = fluid_data["name"]
+    
+    # Dictionnaire de mapping des matériaux (nom technique -> nom FLUID_PROPERTIES)
+    material_mapping = {
+        "pvc": ["pvc", "pvc_food"],
+        "pehd": ["pehd", "pe", "polyethylene"],
+        "steel": ["steel", "carbon_steel"],
+        "steel_galvanized": ["galvanized_steel", "galvanized"],
+        "stainless_steel_316": ["stainless_steel", "316L_stainless", "316L", "stainless"],
+        "stainless_steel_304": ["stainless_steel", "304_stainless", "304", "stainless"],
+        "copper": ["copper", "copper_alloys"],
+        "brass": ["brass", "copper_alloys"],
+        "cast_iron": ["cast_iron", "fonte"],
+        "concrete": ["concrete"],
+        "aluminum": ["aluminum"]
+    }
+    
+    compatibility_analysis = {
+        "fluid_name": fluid_name,
+        "compatible_materials": [],
+        "incompatible_materials": [],
+        "suction_material_status": "unknown",
+        "discharge_material_status": "unknown",
+        "temperature_warnings": [],
+        "recommendations": [],
+        "optimal_materials": []
+    }
+    
+    # Obtenir les listes de compatibilité du fluide
+    if "technical_specs" in fluid_data and "compatibility" in fluid_data["technical_specs"]:
+        compatibility_analysis["compatible_materials"] = fluid_data["technical_specs"]["compatibility"]
+    
+    if "technical_specs" in fluid_data and "incompatibility" in fluid_data["technical_specs"]:
+        compatibility_analysis["incompatible_materials"] = fluid_data["technical_specs"]["incompatibility"]
+    
+    # Analyser la compatibilité des matériaux d'aspiration et refoulement
+    def check_material_compatibility(material: str) -> str:
+        """Vérifier la compatibilité d'un matériau avec le fluide"""
+        if not material or material == "unknown":
+            return "unknown"
+        
+        # Rechercher le matériau dans le mapping
+        material_variants = material_mapping.get(material, [material])
+        material_variants.append(material)  # Ajouter le matériau original
+        
+        # Vérifier compatibilité
+        for variant in material_variants:
+            if variant in compatibility_analysis["compatible_materials"]:
+                return "compatible"
+            if variant in compatibility_analysis["incompatible_materials"]:
+                return "incompatible"
+        
+        return "unknown"
+    
+    compatibility_analysis["suction_material_status"] = check_material_compatibility(suction_material)
+    compatibility_analysis["discharge_material_status"] = check_material_compatibility(discharge_material)
+    
+    # Analyser les contraintes de température
+    if "technical_specs" in fluid_data:
+        specs = fluid_data["technical_specs"]
+        
+        # Vérifications spécifiques par fluide
+        if fluid_type == "gasoline" or fluid_type == "diesel":
+            if temperature > 40:
+                compatibility_analysis["temperature_warnings"].append(
+                    f"Température élevée ({temperature}°C) pour {fluid_name} - Risque d'évaporation accrue"
+                )
+        
+        if fluid_type == "pvc" and temperature > 60:
+            compatibility_analysis["temperature_warnings"].append(
+                "PVC non recommandé au-dessus de 60°C - Déformation possible"
+            )
+        
+        if "flash_point" in specs and temperature > specs["flash_point"] - 20:
+            compatibility_analysis["temperature_warnings"].append(
+                f"Température proche du point d'éclair ({specs['flash_point']}°C) - Risque d'inflammabilité"
+            )
+    
+    # Générer des recommandations basées sur l'analyse
+    if compatibility_analysis["suction_material_status"] == "incompatible":
+        compatibility_analysis["recommendations"].append(
+            f"⚠️ Matériau aspiration ({suction_material}) incompatible avec {fluid_name}"
+        )
+        compatibility_analysis["recommendations"].append(
+            f"Remplacer par: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
+        )
+    
+    if compatibility_analysis["discharge_material_status"] == "incompatible":
+        compatibility_analysis["recommendations"].append(
+            f"⚠️ Matériau refoulement ({discharge_material}) incompatible avec {fluid_name}"
+        )
+        compatibility_analysis["recommendations"].append(
+            f"Remplacer par: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
+        )
+    
+    if compatibility_analysis["suction_material_status"] == "unknown" or compatibility_analysis["discharge_material_status"] == "unknown":
+        compatibility_analysis["recommendations"].append(
+            f"Vérifier compatibilité matériaux avec {fluid_name}"
+        )
+        if compatibility_analysis["compatible_materials"]:
+            compatibility_analysis["recommendations"].append(
+                f"Matériaux recommandés: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
+            )
+    
+    # Recommandations optimales basées sur le fluide et la température
+    optimal_materials = []
+    if fluid_type in ["acid", "seawater"]:
+        optimal_materials = ["stainless_steel_316", "pvc", "ptfe"]
+    elif fluid_type in ["gasoline", "diesel", "ethanol", "methanol"]:
+        optimal_materials = ["stainless_steel_316", "ptfe", "viton"]
+    elif fluid_type in ["milk", "honey", "wine"]:
+        optimal_materials = ["stainless_steel_316", "ptfe", "epdm_food"]
+    elif temperature > 60:
+        optimal_materials = ["stainless_steel_316", "stainless_steel_304", "ptfe"]
+    else:
+        optimal_materials = ["stainless_steel_316", "pvc", "pehd"]
+    
+    compatibility_analysis["optimal_materials"] = optimal_materials
+    
+    # Recommandations générales de température
+    if len(compatibility_analysis["temperature_warnings"]) > 0:
+        compatibility_analysis["recommendations"].extend(compatibility_analysis["temperature_warnings"])
+    
+    return compatibility_analysis
+
 def calculate_reynolds_number(velocity: float, diameter: float, density: float, viscosity: float) -> float:
     """Calculate Reynolds number"""
     return (density * velocity * diameter) / viscosity
