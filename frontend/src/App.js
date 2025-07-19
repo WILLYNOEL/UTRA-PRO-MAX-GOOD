@@ -1614,87 +1614,102 @@ const SolarExpertSystem = () => {
               <h4 className="text-xl font-bold text-yellow-800 mb-4">☀️ Configuration Champ Photovoltaïque Optimal</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Puissance requise */}
+                {/* Puissance requise - CALCULS DYNAMIQUES RÉELS */}
                 <div className="bg-white p-4 rounded-lg shadow-md border-t-2 border-red-500">
                   <h5 className="font-semibold text-red-700 mb-2">⚡ Puissance Requise</h5>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>P. hydraulique:</span>
-                      <span className="font-bold text-blue-600">
-                        {((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000).toFixed(2)} kW
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Rendement pompe:</span>
-                      <span className="font-bold">75%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>P. électrique:</span>
-                      <span className="font-bold text-red-600">
-                        {(((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 1000).toFixed(2)} kW
-                      </span>
-                    </div>
-                    <div className="bg-red-50 p-2 rounded mt-2">
-                      <div className="text-xs text-red-700 text-center">
-                        P. crête nécessaire: {(((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8 / 1000).toFixed(2)} kWc
-                      </div>
-                    </div>
+                    {(() => {
+                      // CALCULS DYNAMIQUES RÉELS basés sur les données saisies
+                      const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000; // kW
+                      const pumpEfficiency = 0.75; // 75% rendement pompe
+                      const electricalPowerKW = hydraulicPowerKW / pumpEfficiency; // kW
+                      const systemLosses = 0.8; // 80% efficacité système
+                      const peakPowerKW = electricalPowerKW / systemLosses; // kWc nécessaire
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span>P. hydraulique:</span>
+                            <span className="font-bold text-blue-600">
+                              {hydraulicPowerKW.toFixed(2)} kW
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Rendement pompe:</span>
+                            <span className="font-bold">{(pumpEfficiency * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>P. électrique:</span>
+                            <span className="font-bold text-red-600">
+                              {electricalPowerKW.toFixed(2)} kW
+                            </span>
+                          </div>
+                          <div className="bg-red-50 p-2 rounded mt-2">
+                            <div className="text-xs text-red-700 text-center">
+                              P. crête nécessaire: {peakPowerKW.toFixed(2)} kWc
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
+                {/* Dimensionnement automatique - CALCULS DYNAMIQUES RÉELS */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h5 className="font-semibold text-yellow-700 mb-2">📐 Dimensionnement Auto</h5>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Nombre de panneaux:</span>
-                      <span className="font-bold text-yellow-800">
-                        {(() => {
-                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
-                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
-                          return nbPanels;
-                        })()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Puissance unitaire:</span>
-                      <span className="font-bold">{solarData.panel_peak_power} Wc</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Puissance totale:</span>
-                      <span className="font-bold text-green-600">
-                        {(() => {
-                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
-                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
-                          return (nbPanels * solarData.panel_peak_power);
-                        })()} Wc
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Surface requise:</span>
-                      <span className="font-bold">
-                        {(() => {
-                          const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
-                          const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
-                          // Surface estimée : 2m² par panneau en moyenne
-                          return (nbPanels * 2).toFixed(1);
-                        })()} m²
-                      </span>
-                    </div>
+                    {(() => {
+                      const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000;
+                      const electricalPowerKW = hydraulicPowerKW / 0.75;
+                      const peakPowerW = (electricalPowerKW / 0.8) * 1000; // Watts
+                      const nbPanels = Math.ceil(peakPowerW / solarData.panel_peak_power);
+                      const totalPowerW = nbPanels * solarData.panel_peak_power;
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Puissance requise:</span>
+                            <span className="font-bold text-red-600">{peakPowerW.toFixed(0)}W</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Nombre panneaux:</span>
+                            <span className="font-bold text-yellow-800">{nbPanels}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Puissance unitaire:</span>
+                            <span className="font-bold">{solarData.panel_peak_power} Wc</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Puissance totale:</span>
+                            <span className="font-bold text-green-600">{totalPowerW} Wc</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Surface requise:</span>
+                            <span className="font-bold">{(nbPanels * 2).toFixed(1)} m²</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
+                {/* Configuration série/parallèle - CALCULS DYNAMIQUES RÉELS */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h5 className="font-semibold text-blue-700 mb-2">🔗 Config. Série/Parallèle</h5>
                   <div className="space-y-2 text-sm">
                     {(() => {
-                      // Calcul dynamique de la configuration
-                      const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
-                      const totalPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
+                      // Calcul dynamique de la configuration RÉELLE
+                      const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000;
+                      const electricalPowerKW = hydraulicPowerKW / 0.75;
+                      const peakPowerW = (electricalPowerKW / 0.8) * 1000;
+                      const totalPanels = Math.ceil(peakPowerW / solarData.panel_peak_power);
                       const systemVoltage = solarData.system_voltage;
-                      const panelVoltage = solarData.panel_peak_power >= 400 ? 48 : 24; // Estimation voltage panneau
+                      const panelVoltage = solarData.panel_peak_power >= 400 ? 48 : 24;
                       
                       const panelsInSeries = Math.ceil(systemVoltage / panelVoltage);
                       const strings = Math.ceil(totalPanels / panelsInSeries);
+                      const stringVoltage = panelsInSeries * panelVoltage;
                       
                       return (
                         <>
@@ -1703,7 +1718,7 @@ const SolarExpertSystem = () => {
                             <span className="font-bold text-gray-600">{totalPanels}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Panneaux en série:</span>
+                            <span>Panneaux/série:</span>
                             <span className="font-bold text-blue-600">{panelsInSeries}</span>
                           </div>
                           <div className="flex justify-between">
@@ -1716,7 +1731,7 @@ const SolarExpertSystem = () => {
                           </div>
                           <div className="bg-blue-50 p-2 rounded mt-2">
                             <div className="text-xs text-blue-700 text-center">
-                              Tension string: {panelsInSeries * panelVoltage}V
+                              Tension string: {stringVoltage}V
                             </div>
                           </div>
                         </>
@@ -1725,20 +1740,28 @@ const SolarExpertSystem = () => {
                   </div>
                 </div>
 
+                {/* Estimation coût - CALCULS DYNAMIQUES RÉELS */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h5 className="font-semibold text-green-700 mb-2">💰 Estimation Coût</h5>
                   <div className="space-y-2 text-sm">
                     {(() => {
-                      const requiredPower = ((solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600) / 0.75 / 0.8; // Watts
-                      const nbPanels = Math.ceil(requiredPower / solarData.panel_peak_power);
-                      const pricePerWatt = solarData.panel_peak_power >= 400 ? 0.7 : 0.6; // €/Wc estimation
-                      const totalCost = nbPanels * solarData.panel_peak_power * pricePerWatt;
+                      const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000;
+                      const electricalPowerKW = hydraulicPowerKW / 0.75;
+                      const peakPowerW = (electricalPowerKW / 0.8) * 1000;
+                      const nbPanels = Math.ceil(peakPowerW / solarData.panel_peak_power);
+                      const pricePerWatt = solarData.panel_peak_power >= 400 ? 0.7 : 0.6; // €/Wc
+                      const unitPrice = solarData.panel_peak_power * pricePerWatt;
+                      const totalCost = nbPanels * unitPrice;
                       
                       return (
                         <>
                           <div className="flex justify-between">
                             <span>Prix unitaire:</span>
-                            <span className="font-bold">{formatCurrency(solarData.panel_peak_power * pricePerWatt)}</span>
+                            <span className="font-bold">{formatCurrency(unitPrice)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Quantité:</span>
+                            <span className="font-bold">{nbPanels} panneaux</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Coût total:</span>
