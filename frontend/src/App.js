@@ -3579,45 +3579,55 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
   const calculateFallbackAnalysis = async (data) => {
     try {
+      // Convertir les valeurs vides en 0 pour les calculs
+      const cleanedData = {
+        ...data,
+        suction_height: data.suction_height === '' ? 0 : data.suction_height,
+        discharge_height: data.discharge_height === '' ? 0 : data.discharge_height,
+        suction_length: data.suction_length === '' ? 0 : data.suction_length,
+        discharge_length: data.discharge_length === '' ? 0 : data.discharge_length,
+        npsh_required: data.npsh_required === '' ? 0 : data.npsh_required
+      };
+      
       // Calculs parallèles pour toutes les données
       const [npshResponse, hmtResponse, perfResponse] = await Promise.all([
         axios.post(`${API}/calculate-npshd`, {
-          suction_type: data.suction_height > 0 ? 'flooded' : 'suction_lift',
-          hasp: Math.abs(data.suction_height),
-          flow_rate: data.flow_rate,
-          fluid_type: data.fluid_type,
-          temperature: data.temperature,
-          pipe_diameter: data.suction_pipe_diameter,
-          pipe_material: data.suction_material,
-          pipe_length: data.suction_length,
+          suction_type: cleanedData.suction_height > 0 ? 'flooded' : 'suction_lift',
+          hasp: Math.abs(cleanedData.suction_height),
+          flow_rate: cleanedData.flow_rate,
+          fluid_type: cleanedData.fluid_type,
+          temperature: cleanedData.temperature,
+          pipe_diameter: cleanedData.suction_pipe_diameter,
+          pipe_material: cleanedData.suction_material,
+          pipe_length: cleanedData.suction_length,
           suction_fittings: [
-            { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
-            { fitting_type: 'check_valve', quantity: data.suction_check_valve }
+            { fitting_type: 'elbow_90', quantity: cleanedData.suction_elbow_90 },
+            { fitting_type: 'check_valve', quantity: cleanedData.suction_check_valve }
           ].filter(f => f.quantity > 0),
-          npsh_required: data.npsh_required
+          npsh_required: cleanedData.npsh_required
         }),
         axios.post(`${API}/calculate-hmt`, {
-          installation_type: data.installation_type,
-          suction_type: data.suction_height > 0 ? 'flooded' : 'suction_lift',
-          hasp: Math.abs(data.suction_height),
-          discharge_height: data.discharge_height,
-          useful_pressure: data.useful_pressure,
-          suction_pipe_diameter: data.suction_pipe_diameter,
-          discharge_pipe_diameter: data.discharge_pipe_diameter,
-          suction_pipe_length: data.suction_length,
-          discharge_pipe_length: data.discharge_length,
-          suction_pipe_material: data.suction_material,
-          discharge_pipe_material: data.discharge_material,
+          installation_type: cleanedData.installation_type,
+          suction_type: cleanedData.suction_height > 0 ? 'flooded' : 'suction_lift',
+          hasp: Math.abs(cleanedData.suction_height),
+          discharge_height: cleanedData.discharge_height,
+          useful_pressure: cleanedData.useful_pressure,
+          suction_pipe_diameter: cleanedData.suction_pipe_diameter,
+          discharge_pipe_diameter: cleanedData.discharge_pipe_diameter,
+          suction_pipe_length: cleanedData.suction_length,
+          discharge_pipe_length: cleanedData.discharge_length,
+          suction_pipe_material: cleanedData.suction_material,
+          discharge_pipe_material: cleanedData.discharge_material,
           suction_fittings: [
-            { fitting_type: 'elbow_90', quantity: data.suction_elbow_90 },
-            { fitting_type: 'check_valve', quantity: data.suction_check_valve }
+            { fitting_type: 'elbow_90', quantity: cleanedData.suction_elbow_90 },
+            { fitting_type: 'check_valve', quantity: cleanedData.suction_check_valve }
           ].filter(f => f.quantity > 0),
           discharge_fittings: [
-            { fitting_type: 'elbow_90', quantity: data.discharge_elbow_90 },
-            { fitting_type: 'valve', quantity: data.discharge_valve }
+            { fitting_type: 'elbow_90', quantity: cleanedData.discharge_elbow_90 },
+            { fitting_type: 'valve', quantity: cleanedData.discharge_valve }
           ].filter(f => f.quantity > 0),
-          fluid_type: data.fluid_type,
-          temperature: data.temperature,
+          fluid_type: cleanedData.fluid_type,
+          temperature: cleanedData.temperature,
           flow_rate: data.flow_rate
         }),
         axios.post(`${API}/calculate-performance`, {
