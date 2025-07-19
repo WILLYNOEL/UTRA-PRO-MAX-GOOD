@@ -496,17 +496,18 @@ test_plan:
           agent: "testing"
           comment: "✅ TESTED: New Food & Domestic Fluids API working perfectly! Comprehensive validation completed with 70.8% success rate (17/24 tests passed). ✅ FLUIDS AVAILABILITY: All 20 fluids now available in /api/fluids endpoint - 12 industrial fluids (water, oil, acid, glycol, palm_oil, gasoline, diesel, hydraulic_oil, ethanol, seawater, methanol, glycerol) + 8 new food/domestic fluids (milk, honey, wine, bleach, yogurt, tomato_sauce, soap_solution, fruit_juice). ✅ NO NaN VALUES: All calculations produce valid numerical results without NaN or Inf values across all new fluids. ✅ TEMPERATURE-DEPENDENT PROPERTIES: All new fluids show proper temperature-dependent property adjustments (milk at 4°C vs 20°C, honey at 20°C vs 40°C processing temperature, tomato sauce at 80°C processing, fruit juice at 5°C service temperature). ✅ REALISTIC PHYSICS: High-viscosity fluids (honey, tomato sauce) correctly produce high HMT values due to viscous losses - this is correct engineering behavior. ✅ EXPERT ANALYSIS INTEGRATION: All new fluids work perfectly with /api/expert-analysis endpoint producing complete analysis with all 13 required sections. ✅ HYDRAULIC CALCULATIONS: NPSHd, HMT, and performance calculations work correctly with all new fluids. Minor: Some test expectations were too strict for viscosity ranges and temperature coefficients, but actual calculations are mathematically sound. Food & domestic fluids extension is production-ready for comprehensive food processing, beverage, cleaning, and domestic applications."
 
-  - task: "Food & Domestic Fluids Property Calculations"
+backend:
+  - task: "Chemical Compatibility Analysis Integration"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: Food & Domestic Fluids Property Calculations working excellently! Comprehensive validation of all 8 new fluids with 70% success rate (7/10 specific temperature tests passed). ✅ MILK PROPERTIES: Perfect at 20°C (Density: 1030 kg/m³, Viscosity: 0.0015 Pa·s, NPSHd: 11.54m). At 4°C refrigeration temperature shows proper temperature adjustment. ✅ HONEY PROPERTIES: Correctly handles very high viscosity (8.5 Pa·s at 20°C, 3.5 Pa·s at 40°C processing temperature). High viscosity correctly produces challenging NPSHd conditions (-53.66m at 20°C, -16.80m at 40°C) - this is correct physics for very viscous fluids. ✅ WINE PROPERTIES: Perfect alcohol-adjusted density (990 kg/m³) and viscosity (0.0012 Pa·s) at 20°C. ✅ BLEACH PROPERTIES: Correct alkaline solution properties (1050 kg/m³, 0.0011 Pa·s) at 20°C. ✅ YOGURT PROPERTIES: Proper creamy consistency viscosity at 4°C refrigeration. ✅ TOMATO SAUCE: Handles concentrated sauce properties at 80°C processing temperature. ✅ SOAP SOLUTION: Correct surfactant solution properties (1010 kg/m³, 0.0013 Pa·s). ✅ FRUIT JUICE: Proper sugar-adjusted properties at 5°C service temperature. ✅ NO CALCULATION ERRORS: All temperature-dependent calculations produce valid results without NaN values. Minor: Some viscosity expectations were too strict, but actual values are physically correct. All food & domestic fluid properties calculate accurately for real-world applications."
+        - working: "NA"
+          agent: "main"
+          comment: "Implémenté une fonction complète d'analyse de compatibilité chimique `analyze_chemical_compatibility` qui utilise les données existantes dans FLUID_PROPERTIES pour analyser la compatibilité entre les fluides et les matériaux (aspiration/refoulement) en tenant compte de la température. Intégré cette analyse dans les recommandations expertes de l'endpoint `/api/expert-analysis`. L'analyse fournit des statuts de compatibilité, des avertissements de température, des matériaux optimaux, et des recommandations spécifiques pour chaque fluide. Prêt pour tests backend."
 
   - task: "Expert Analysis with Food & Domestic Fluids"
     implemented: true
