@@ -2659,8 +2659,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <input
                       type="number"
-                      value={inputData.suction_length || ''}
-                      onChange={(e) => handleInputChange('suction_length', parseFloat(e.target.value) || 0)}
+                      value={inputData.suction_length !== undefined && inputData.suction_length !== null ? inputData.suction_length : ''}
+                      onChange={(e) => handleInputChange('suction_length', e.target.value === '' ? 0 : parseFloat(e.target.value))}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Longueur aspiration"
                     />
