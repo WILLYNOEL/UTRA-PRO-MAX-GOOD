@@ -1913,8 +1913,31 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "Réduire nombre de singularités"
         ])
     
-    # Recommandations matériaux selon le fluide
+    # Recommandations matériaux selon le fluide - ANALYSE COMPLÈTE DE COMPATIBILITÉ CHIMIQUE
     material_recommendations = []
+    
+    # Nouvelle analyse complète de compatibilité chimique
+    compatibility_analysis = analyze_chemical_compatibility(
+        input_data.fluid_type,
+        input_data.suction_material,
+        input_data.discharge_material,
+        input_data.temperature
+    )
+    
+    # Intégrer les résultats de l'analyse de compatibilité
+    if compatibility_analysis["recommendations"]:
+        material_recommendations.extend([
+            f"🧪 ANALYSE DE COMPATIBILITÉ CHIMIQUE - {compatibility_analysis['fluid_name']}"
+        ])
+        material_recommendations.extend(compatibility_analysis["recommendations"])
+        
+        # Ajouter les matériaux optimaux si disponibles
+        if compatibility_analysis["optimal_materials"]:
+            material_recommendations.append(
+                f"Matériaux optimaux recommandés: {', '.join(compatibility_analysis['optimal_materials'][:3])}"
+            )
+    
+    # Recommandations générales pour certains fluides (complément)
     if input_data.fluid_type == "acid":
         material_recommendations.extend([
             "Fluide acide détecté - Attention corrosion",
