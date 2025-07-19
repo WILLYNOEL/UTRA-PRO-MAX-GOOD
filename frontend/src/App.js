@@ -314,6 +314,35 @@ const AuditSystem = () => {
     roi_percentage: 35
   });
 
+  const generateAuditResults = () => {
+    const hydraulicScore = calculateHydraulicScore();
+    const energyScore = calculateEnergyScore();
+    
+    return {
+      hydraulic_audit: {
+        overall_score: hydraulicScore,
+        performance_rating: getPerformanceRating(hydraulicScore),
+        key_findings: generateHydraulicFindings(),
+        recommendations: generateHydraulicRecommendations(),
+        priority_actions: generatePriorityActions(),
+        cost_estimates: generateCostEstimates()
+      },
+      energy_audit: {
+        overall_score: energyScore,
+        efficiency_rating: getPerformanceRating(energyScore),
+        energy_analysis: generateEnergyAnalysis(),
+        savings_potential: generateSavingsPotential(),
+        improvement_measures: generateImprovementMeasures(),
+        payback_analysis: generatePaybackAnalysis()
+      },
+      combined_analysis: {
+        total_score: Math.round((hydraulicScore + energyScore) / 2),
+        investment_priority: determineInvestmentPriority(),
+        implementation_roadmap: generateImplementationRoadmap()
+      }
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
