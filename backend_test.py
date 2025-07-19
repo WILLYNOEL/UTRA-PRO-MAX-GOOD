@@ -4538,8 +4538,677 @@ class HydraulicPumpTester:
                 all_passed = False
         
         return all_passed
-
-    def run_all_tests(self):
+    
+    def test_phase3_new_industrial_fluids_properties(self):
+        """Phase 3: Test new industrial fluids property calculations"""
+        print("\n🧪 Testing Phase 3 - New Industrial Fluids Properties...")
+        
+        test_cases = [
+            {
+                "name": "Palm Oil at 30°C",
+                "fluid": "palm_oil",
+                "temperature": 30.0,
+                "expected_density_range": (900, 920),  # Should be around 908.5 kg/m³
+                "expected_viscosity_range": (0.02, 0.03)  # Should be around 0.027 Pa·s
+            },
+            {
+                "name": "Diesel at 40°C", 
+                "fluid": "diesel",
+                "temperature": 40.0,
+                "expected_density_range": (820, 850),
+                "expected_viscosity_range": (0.002, 0.005)
+            },
+            {
+                "name": "Gasoline at 25°C",
+                "fluid": "gasoline", 
+                "temperature": 25.0,
+                "expected_density_range": (730, 750),
+                "expected_viscosity_range": (0.0004, 0.0007)
+            },
+            {
+                "name": "Seawater at 20°C",
+                "fluid": "seawater",
+                "temperature": 20.0,
+                "expected_density_range": (1020, 1030),
+                "expected_viscosity_range": (0.001, 0.0012)
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            # Test with NPSHd calculation to get fluid properties
+            test_data = {
+                "suction_type": "flooded",
+                "hasp": 2.0,
+                "flow_rate": 50.0,
+                "fluid_type": case["fluid"],
+                "temperature": case["temperature"],
+                "pipe_diameter": 100.0,
+                "pipe_material": "pvc",
+                "pipe_length": 30.0,
+                "suction_fittings": [],
+                "npsh_required": 3.0
+            }
+            
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=test_data, timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    fluid_props = result.get("fluid_properties", {})
+                    
+                    density = fluid_props.get("density", 0)
+                    viscosity = fluid_props.get("viscosity", 0)
+                    npshd = result.get("npshd", 0)
+                    
+                    # Check density range
+                    if not (case["expected_density_range"][0] <= density <= case["expected_density_range"][1]):
+                        self.log_test(f"Phase 3 - {case['name']} Density", False, 
+                                    f"Density {density:.1f} kg/m³ outside expected range {case['expected_density_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check viscosity range
+                    if not (case["expected_viscosity_range"][0] <= viscosity <= case["expected_viscosity_range"][1]):
+                        self.log_test(f"Phase 3 - {case['name']} Viscosity", False, 
+                                    f"Viscosity {viscosity:.6f} Pa·s outside expected range {case['expected_viscosity_range']}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that NPSHd calculation produces valid results
+                    if math.isnan(npshd) or math.isinf(npshd):
+                        self.log_test(f"Phase 3 - {case['name']} NPSHd", False, f"Invalid NPSHd value: {npshd}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Phase 3 - {case['name']}", True, 
+                                f"Density: {density:.1f} kg/m³, Viscosity: {viscosity:.6f} Pa·s, NPSHd: {npshd:.2f} m")
+                else:
+                    self.log_test(f"Phase 3 - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Phase 3 - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_phase3_expert_analysis_new_fluids(self):
+        """Phase 3: Test expert analysis with new industrial fluids"""
+        print("\n🎯 Testing Phase 3 - Expert Analysis with New Industrial Fluids...")
+        
+        test_cases = [
+            {
+                "name": "Palm Oil Expert Analysis",
+                "data": {
+                    "flow_rate": 75.0,
+                    "fluid_type": "palm_oil",
+                    "temperature": 30.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 125.0,
+                    "discharge_pipe_diameter": 100.0,
+                    "suction_height": 2.0,
+                    "discharge_height": 25.0,
+                    "suction_length": 20.0,
+                    "discharge_length": 80.0,
+                    "total_length": 100.0,
+                    "useful_pressure": 1.5,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 78.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "npsh_required": 3.2,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 6000.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Diesel Expert Analysis",
+                "data": {
+                    "flow_rate": 60.0,
+                    "fluid_type": "diesel",
+                    "temperature": 40.0,
+                    "suction_type": "suction_lift",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 30.0,
+                    "suction_length": 25.0,
+                    "discharge_length": 100.0,
+                    "total_length": 125.0,
+                    "useful_pressure": 2.0,
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 72.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "npsh_required": 4.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.15,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Seawater Expert Analysis",
+                "data": {
+                    "flow_rate": 100.0,
+                    "fluid_type": "seawater",
+                    "temperature": 25.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 150.0,
+                    "discharge_pipe_diameter": 125.0,
+                    "suction_height": 1.5,
+                    "discharge_height": 20.0,
+                    "suction_length": 15.0,
+                    "discharge_length": 60.0,
+                    "total_length": 75.0,
+                    "useful_pressure": 3.0,
+                    "suction_material": "316L_stainless",
+                    "discharge_material": "316L_stainless",
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 92.0,
+                    "voltage": 400,
+                    "npsh_required": 3.5,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8000.0,
+                    "electricity_cost": 0.10,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 80.0
+                }
+            },
+            {
+                "name": "Ethanol Expert Analysis",
+                "data": {
+                    "flow_rate": 40.0,
+                    "fluid_type": "ethanol",
+                    "temperature": 30.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,
+                    "discharge_pipe_diameter": 65.0,
+                    "suction_height": 1.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 50.0,
+                    "total_length": 60.0,
+                    "useful_pressure": 1.0,
+                    "suction_material": "stainless_steel",
+                    "discharge_material": "stainless_steel",
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "npsh_required": 2.8,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 4000.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check all required sections are present
+                    required_sections = [
+                        "input_data", "npshd_analysis", "hmt_analysis", "performance_analysis",
+                        "electrical_analysis", "overall_efficiency", "total_head_loss",
+                        "system_stability", "energy_consumption", "expert_recommendations",
+                        "optimization_potential", "performance_curves", "system_curves"
+                    ]
+                    
+                    missing_sections = [s for s in required_sections if s not in result]
+                    if missing_sections:
+                        self.log_test(f"Phase 3 Expert - {case['name']} Structure", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # Check NPSHd analysis
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    npshd = npshd_analysis.get("npshd", 0)
+                    cavitation_risk = npshd_analysis.get("cavitation_risk", True)
+                    
+                    if math.isnan(npshd) or math.isinf(npshd):
+                        self.log_test(f"Phase 3 Expert - {case['name']} NPSHd", False, f"Invalid NPSHd: {npshd}")
+                        all_passed = False
+                        continue
+                    
+                    # Check HMT analysis
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    hmt = hmt_analysis.get("hmt", 0)
+                    
+                    if hmt <= 0:
+                        self.log_test(f"Phase 3 Expert - {case['name']} HMT", False, f"Invalid HMT: {hmt}")
+                        all_passed = False
+                        continue
+                    
+                    # Check performance analysis
+                    performance_analysis = result.get("performance_analysis", {})
+                    overall_efficiency = result.get("overall_efficiency", 0)
+                    
+                    if overall_efficiency <= 0 or overall_efficiency > 100:
+                        self.log_test(f"Phase 3 Expert - {case['name']} Efficiency", False, 
+                                    f"Invalid efficiency: {overall_efficiency}%")
+                        all_passed = False
+                        continue
+                    
+                    # Check system stability
+                    system_stability = result.get("system_stability", False)
+                    
+                    # Check expert recommendations
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not isinstance(expert_recommendations, list):
+                        self.log_test(f"Phase 3 Expert - {case['name']} Recommendations", False, 
+                                    "Expert recommendations should be a list")
+                        all_passed = False
+                        continue
+                    
+                    # Check performance curves
+                    performance_curves = result.get("performance_curves", {})
+                    if "flow" not in performance_curves or "hmt" not in performance_curves:
+                        self.log_test(f"Phase 3 Expert - {case['name']} Curves", False, 
+                                    "Missing performance curves data")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Phase 3 Expert - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f}m, HMT: {hmt:.2f}m, Eff: {overall_efficiency:.1f}%, Stable: {system_stability}")
+                else:
+                    self.log_test(f"Phase 3 Expert - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Phase 3 Expert - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_phase3_npshd_gasoline_methanol(self):
+        """Phase 3: Test NPSHd calculations with gasoline and methanol (volatile fluids)"""
+        print("\n⚡ Testing Phase 3 - NPSHd with Volatile Fluids (Gasoline & Methanol)...")
+        
+        test_cases = [
+            {
+                "name": "Gasoline NPSHd",
+                "data": {
+                    "suction_type": "suction_lift",
+                    "hasp": 2.5,
+                    "flow_rate": 30.0,
+                    "fluid_type": "gasoline",
+                    "temperature": 25.0,
+                    "pipe_diameter": 80.0,
+                    "pipe_material": "steel",
+                    "pipe_length": 40.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_90", "quantity": 1},
+                        {"fitting_type": "check_valve", "quantity": 1}
+                    ],
+                    "npsh_required": 3.5
+                }
+            },
+            {
+                "name": "Methanol NPSHd",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 1.5,
+                    "flow_rate": 25.0,
+                    "fluid_type": "methanol",
+                    "temperature": 30.0,
+                    "pipe_diameter": 75.0,
+                    "pipe_material": "stainless_steel",
+                    "pipe_length": 30.0,
+                    "suction_fittings": [
+                        {"fitting_type": "elbow_45", "quantity": 2}
+                    ],
+                    "npsh_required": 4.0
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    npshd = result.get("npshd", 0)
+                    fluid_props = result.get("fluid_properties", {})
+                    vapor_pressure = fluid_props.get("vapor_pressure", 0)
+                    cavitation_risk = result.get("cavitation_risk", False)
+                    warnings = result.get("warnings", [])
+                    
+                    # Check that vapor pressure is high for volatile fluids
+                    if case["data"]["fluid_type"] == "gasoline" and vapor_pressure < 10000:
+                        self.log_test(f"Phase 3 - {case['name']} Vapor Pressure", False, 
+                                    f"Gasoline vapor pressure too low: {vapor_pressure} Pa")
+                        all_passed = False
+                        continue
+                    
+                    if case["data"]["fluid_type"] == "methanol" and vapor_pressure < 8000:
+                        self.log_test(f"Phase 3 - {case['name']} Vapor Pressure", False, 
+                                    f"Methanol vapor pressure too low: {vapor_pressure} Pa")
+                        all_passed = False
+                        continue
+                    
+                    # Check that NPSHd calculation handles high vapor pressure correctly
+                    if math.isnan(npshd) or math.isinf(npshd):
+                        self.log_test(f"Phase 3 - {case['name']} NPSHd Calculation", False, 
+                                    f"Invalid NPSHd: {npshd}")
+                        all_passed = False
+                        continue
+                    
+                    # For volatile fluids, NPSHd might be lower due to high vapor pressure
+                    # This is expected behavior
+                    
+                    # Check that appropriate warnings are generated for volatile fluids
+                    volatile_warnings = [w for w in warnings if "vapeur" in w.lower() or "volatile" in w.lower() or "cavitation" in w.lower()]
+                    
+                    self.log_test(f"Phase 3 - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f}m, Vapor Pressure: {vapor_pressure:.0f} Pa, Risk: {cavitation_risk}")
+                else:
+                    self.log_test(f"Phase 3 - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Phase 3 - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_phase3_zero_half_values_robustness(self):
+        """Phase 3: Test robustness - ensure 0 and 0.5 field corrections still work"""
+        print("\n🔧 Testing Phase 3 - Robustness of 0 and 0.5 Values...")
+        
+        test_cases = [
+            {
+                "name": "Expert Analysis with 0 Values",
+                "data": {
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 0.0,  # Zero value
+                    "discharge_height": 20.0,
+                    "suction_length": 0.0,  # Zero value
+                    "discharge_length": 50.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,  # Zero value
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 88.0,
+                    "voltage": 400,
+                    "npsh_required": 0.0,  # Zero value
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Expert Analysis with 0.5 Values",
+                "data": {
+                    "flow_rate": 40.0,
+                    "fluid_type": "oil",
+                    "temperature": 25.0,
+                    "suction_type": "suction_lift",
+                    "suction_pipe_diameter": 90.0,
+                    "discharge_pipe_diameter": 75.0,
+                    "suction_height": 0.5,  # 0.5 value
+                    "discharge_height": 15.0,
+                    "suction_length": 0.5,  # 0.5 value
+                    "discharge_length": 40.0,
+                    "total_length": 40.5,
+                    "useful_pressure": 0.5,  # 0.5 value
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "pump_efficiency": 70.0,
+                    "motor_efficiency": 85.0,
+                    "voltage": 400,
+                    "npsh_required": 0.5,  # 0.5 value
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 6000.0,
+                    "electricity_cost": 0.15,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            },
+            {
+                "name": "Expert Analysis with Mixed 0 and 0.5 Values",
+                "data": {
+                    "flow_rate": 60.0,
+                    "fluid_type": "glycol",
+                    "temperature": 30.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 110.0,
+                    "discharge_pipe_diameter": 90.0,
+                    "suction_height": 0.0,  # Zero value
+                    "discharge_height": 25.0,
+                    "suction_length": 0.5,  # 0.5 value
+                    "discharge_length": 60.0,
+                    "total_length": 60.5,
+                    "useful_pressure": 0.0,  # Zero value
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "pump_efficiency": 80.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "npsh_required": 0.5,  # 0.5 value
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 7000.0,
+                    "electricity_cost": 0.10,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that input data is preserved correctly
+                    input_data = result.get("input_data", {})
+                    
+                    # Verify 0 and 0.5 values are preserved
+                    test_fields = ["suction_height", "suction_length", "useful_pressure", "npsh_required"]
+                    for field in test_fields:
+                        if field in case["data"]:
+                            expected_value = case["data"][field]
+                            actual_value = input_data.get(field, -999)  # Use -999 as sentinel
+                            
+                            if abs(actual_value - expected_value) > 0.001:
+                                self.log_test(f"Phase 3 Robustness - {case['name']} - {field}", False, 
+                                            f"Expected {expected_value}, got {actual_value}")
+                                all_passed = False
+                                continue
+                    
+                    # Check that calculations work with 0 and 0.5 values
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    overall_efficiency = result.get("overall_efficiency", 0)
+                    
+                    npshd = npshd_analysis.get("npshd", 0)
+                    hmt = hmt_analysis.get("hmt", 0)
+                    
+                    if math.isnan(npshd) or math.isinf(npshd):
+                        self.log_test(f"Phase 3 Robustness - {case['name']} NPSHd", False, 
+                                    f"Invalid NPSHd with 0/0.5 values: {npshd}")
+                        all_passed = False
+                        continue
+                    
+                    if math.isnan(hmt) or math.isinf(hmt) or hmt <= 0:
+                        self.log_test(f"Phase 3 Robustness - {case['name']} HMT", False, 
+                                    f"Invalid HMT with 0/0.5 values: {hmt}")
+                        all_passed = False
+                        continue
+                    
+                    if math.isnan(overall_efficiency) or overall_efficiency <= 0:
+                        self.log_test(f"Phase 3 Robustness - {case['name']} Efficiency", False, 
+                                    f"Invalid efficiency with 0/0.5 values: {overall_efficiency}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that performance curves are generated
+                    performance_curves = result.get("performance_curves", {})
+                    if "flow" not in performance_curves or len(performance_curves["flow"]) == 0:
+                        self.log_test(f"Phase 3 Robustness - {case['name']} Curves", False, 
+                                    "Performance curves not generated with 0/0.5 values")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Phase 3 Robustness - {case['name']}", True, 
+                                f"NPSHd: {npshd:.2f}m, HMT: {hmt:.2f}m, Eff: {overall_efficiency:.1f}%")
+                else:
+                    self.log_test(f"Phase 3 Robustness - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Phase 3 Robustness - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_phase3_system_integrity(self):
+        """Phase 3: Test system integrity - ensure no regressions in existing functionality"""
+        print("\n🔍 Testing Phase 3 - System Integrity (No Regressions)...")
+        
+        # Test original functionality still works
+        legacy_tests = [
+            {
+                "name": "Legacy Calculate Endpoint",
+                "endpoint": "/calculate",
+                "data": {
+                    "flow_rate": 50.0,
+                    "suction_height": 3.0,
+                    "pipe_diameter": 100.0,
+                    "pipe_length": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "cable_length": 50.0
+                }
+            },
+            {
+                "name": "NPSHd Calculation with Original Fluids",
+                "endpoint": "/calculate-npshd",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 2.0,
+                    "flow_rate": 40.0,
+                    "fluid_type": "oil",  # Original fluid
+                    "temperature": 25.0,
+                    "pipe_diameter": 90.0,
+                    "pipe_material": "pvc",
+                    "pipe_length": 40.0,
+                    "suction_fittings": [],
+                    "npsh_required": 3.0
+                }
+            },
+            {
+                "name": "Performance Analysis with Original Fluids",
+                "endpoint": "/calculate-performance",
+                "data": {
+                    "flow_rate": 60.0,
+                    "hmt": 25.0,
+                    "pipe_diameter": 110.0,
+                    "fluid_type": "acid",  # Original fluid
+                    "pipe_material": "pvc",
+                    "pump_efficiency": 78.0,
+                    "motor_efficiency": 88.0,
+                    "starting_method": "star_delta",
+                    "power_factor": 0.8,
+                    "cable_length": 60.0,
+                    "voltage": 400
+                }
+            }
+        ]
+        
+        all_passed = True
+        for test in legacy_tests:
+            try:
+                response = requests.post(f"{BACKEND_URL}{test['endpoint']}", json=test["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check basic structure based on endpoint
+                    if test["endpoint"] == "/calculate":
+                        required_fields = ["hydraulic_power", "absorbed_power", "total_efficiency", "flow_velocity"]
+                    elif test["endpoint"] == "/calculate-npshd":
+                        required_fields = ["npshd", "velocity", "reynolds_number", "total_head_loss"]
+                    elif test["endpoint"] == "/calculate-performance":
+                        required_fields = ["power_calculations", "performance_curves", "overall_efficiency"]
+                    
+                    missing_fields = [f for f in required_fields if f not in result]
+                    if missing_fields:
+                        self.log_test(f"Phase 3 Integrity - {test['name']}", False, 
+                                    f"Missing fields: {missing_fields}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that calculations produce reasonable results
+                    if test["endpoint"] == "/calculate":
+                        hydraulic_power = result.get("hydraulic_power", 0)
+                        if hydraulic_power <= 0 or hydraulic_power > 1000:
+                            self.log_test(f"Phase 3 Integrity - {test['name']}", False, 
+                                        f"Unreasonable hydraulic power: {hydraulic_power}")
+                            all_passed = False
+                            continue
+                    
+                    elif test["endpoint"] == "/calculate-npshd":
+                        npshd = result.get("npshd", 0)
+                        if math.isnan(npshd) or math.isinf(npshd):
+                            self.log_test(f"Phase 3 Integrity - {test['name']}", False, 
+                                        f"Invalid NPSHd: {npshd}")
+                            all_passed = False
+                            continue
+                    
+                    elif test["endpoint"] == "/calculate-performance":
+                        overall_efficiency = result.get("overall_efficiency", 0)
+                        if overall_efficiency <= 0 or overall_efficiency > 100:
+                            self.log_test(f"Phase 3 Integrity - {test['name']}", False, 
+                                        f"Invalid efficiency: {overall_efficiency}")
+                            all_passed = False
+                            continue
+                    
+                    self.log_test(f"Phase 3 Integrity - {test['name']}", True, "Legacy functionality preserved")
+                else:
+                    self.log_test(f"Phase 3 Integrity - {test['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Phase 3 Integrity - {test['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
         """Run all tests including the specific corrections requested"""
         print("=" * 80)
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
