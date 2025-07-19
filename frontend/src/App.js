@@ -7126,6 +7126,16 @@ function App() {
                 🟣 Expert
               </button>
               <button
+                onClick={() => setActiveTab('solar')}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  activeTab === 'solar'
+                    ? 'bg-yellow-600 text-white'
+                    : 'text-blue-200 hover:bg-yellow-700'
+                }`}
+              >
+                ☀️ Expert Solaire
+              </button>
+              <button
                 onClick={() => setActiveTab('history')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   activeTab === 'history'
