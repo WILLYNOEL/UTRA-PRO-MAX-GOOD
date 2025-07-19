@@ -2744,18 +2744,22 @@ class SolarPumpingInput(BaseModel):
     location_region: str = "france"
     location_subregion: str = "centre"
     
-    # Besoins en eau
+    # Besoins en eau et hydrauliques
     daily_water_need: float  # m³/jour
+    flow_rate: float = 5.0  # m³/h - nouveau champ débit
     seasonal_variation: float = 1.2  # coefficient saisonnier (1.0 = constant, 1.5 = +50% en été)
     peak_months: List[int] = [6, 7, 8]  # mois de pic (juin, juillet, août)
     
-    # Paramètres hydrauliques
-    total_head: float  # mètres (hauteur totale)
-    static_head: float = 20.0  # mètres (hauteur statique) - valeur par défaut
-    dynamic_head: Optional[float] = None  # mètres (calculé automatiquement si non fourni)
-    well_depth: Optional[float] = None  # mètres (profondeur du puits)
+    # Paramètres hydrauliques pour calcul HMT
+    static_head: float = 20.0  # Hauteur géométrique
+    dynamic_losses: float = 5.0  # Pertes de charge dynamiques
+    useful_pressure_head: float = 0.0  # Pression utile convertie en hauteur
+    total_head: float  # HMT totale (calculée automatiquement dans le frontend)
     pipe_diameter: float = 100  # mm
     pipe_length: float = 50  # mètres
+    
+    # Paramètres solaires
+    panel_peak_power: float = 400  # Wc - nouveau champ puissance crête panneau
     
     # Contraintes du système
     autonomy_days: int = 2  # jours d'autonomie souhaités
