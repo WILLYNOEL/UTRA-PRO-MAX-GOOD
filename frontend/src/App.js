@@ -5749,6 +5749,10 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
       </text>
       <text x="860" y="245" className="text-xs" fill="#1f2937">
         Viscosité: {(() => {
+          if (results && results.fluid_properties && results.fluid_properties.viscosity) {
+            return results.fluid_properties.viscosity.toFixed(4);
+          }
+          
           const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
           if (!selectedFluid) return 'N/A';
           
@@ -5756,11 +5760,11 @@ const ExpertInstallationSchema = ({ inputData, results, pipeMaterials, fluids })
           if (inputData.fluid_type === 'water') {
             viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
           } else if (inputData.fluid_type === 'oil') {
-            viscosity = 0.1 * Math.exp(-0.05 * (inputData.temperature - 20));
+            viscosity = 0.05 * Math.exp(-0.05 * (inputData.temperature - 20));
           } else if (inputData.fluid_type === 'glycol') {
-            viscosity = 0.01 * Math.exp(-0.04 * (inputData.temperature - 20));
+            viscosity = 0.0161 * Math.exp(-0.04 * (inputData.temperature - 20));
           } else if (inputData.fluid_type === 'acid') {
-            viscosity = 0.0012 * Math.exp(-0.025 * (inputData.temperature - 20));
+            viscosity = 0.002 * Math.exp(-0.025 * (inputData.temperature - 20));
           }
           
           return Math.max(viscosity, 0.0001).toFixed(4);
