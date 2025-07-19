@@ -5830,6 +5830,8 @@ function App() {
         return <PerformanceAnalysis fluids={fluids} pipeMaterials={pipeMaterials} />;
       case 'formulas':
         return <FormulaDatabase />;
+      case 'chemical_compatibility':
+        return <ChemicalCompatibility />;
       case 'expert':
         return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
       case 'history':
