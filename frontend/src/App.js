@@ -4271,20 +4271,21 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                           const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
                           if (!selectedFluid) return 'N/A';
                           
-                          // Calcul de la viscosité selon la température
+                          // Utiliser les propriétés du backend si disponibles dans results.fluid_properties
+                          if (results && results.fluid_properties && results.fluid_properties.viscosity) {
+                            return results.fluid_properties.viscosity.toFixed(4);
+                          }
+                          
+                          // Calcul de la viscosité selon la température pour fluides de base
                           let viscosity = selectedFluid.viscosity;
                           if (inputData.fluid_type === 'water') {
-                            // Eau : viscosité diminue avec la température
                             viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
                           } else if (inputData.fluid_type === 'oil') {
-                            // Huile : viscosité très sensible à la température
-                            viscosity = 0.1 * Math.exp(-0.05 * (inputData.temperature - 20));
+                            viscosity = 0.05 * Math.exp(-0.05 * (inputData.temperature - 20));
                           } else if (inputData.fluid_type === 'glycol') {
-                            // Glycol : viscosité élevée
-                            viscosity = 0.01 * Math.exp(-0.04 * (inputData.temperature - 20));
+                            viscosity = 0.0161 * Math.exp(-0.04 * (inputData.temperature - 20));
                           } else if (inputData.fluid_type === 'acid') {
-                            // Acide : viscosité proche de l'eau
-                            viscosity = 0.0012 * Math.exp(-0.025 * (inputData.temperature - 20));
+                            viscosity = 0.002 * Math.exp(-0.025 * (inputData.temperature - 20));
                           }
                           
                           return Math.max(viscosity, 0.0001).toFixed(4);
