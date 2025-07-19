@@ -4507,27 +4507,9 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       <div className="font-medium text-gray-700">Viscosité</div>
                       <div className="text-lg font-bold text-green-600">
                         {(() => {
-                          const selectedFluid = fluids.find(f => f.id === inputData.fluid_type);
-                          if (!selectedFluid) return 'N/A';
-                          
-                          // Utiliser les propriétés du backend si disponibles dans results.fluid_properties
-                          if (results && results.fluid_properties && results.fluid_properties.viscosity) {
-                            return results.fluid_properties.viscosity.toFixed(4);
-                          }
-                          
-                          // Calcul de la viscosité selon la température pour fluides de base
-                          let viscosity = selectedFluid.viscosity;
-                          if (inputData.fluid_type === 'water') {
-                            viscosity = 0.001 * Math.exp(-0.03 * (inputData.temperature - 20));
-                          } else if (inputData.fluid_type === 'oil') {
-                            viscosity = 0.05 * Math.exp(-0.05 * (inputData.temperature - 20));
-                          } else if (inputData.fluid_type === 'glycol') {
-                            viscosity = 0.0161 * Math.exp(-0.04 * (inputData.temperature - 20));
-                          } else if (inputData.fluid_type === 'acid') {
-                            viscosity = 0.002 * Math.exp(-0.025 * (inputData.temperature - 20));
-                          }
-                          
-                          return Math.max(viscosity, 0.0001).toFixed(4);
+                          // Utiliser la nouvelle fonction universelle
+                          const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
+                          return fluidProps.viscosity.toFixed(4);
                         })()}
                       </div>
                       <div className="text-xs text-gray-500">Pa·s</div>
