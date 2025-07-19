@@ -1482,7 +1482,7 @@ const SolarExpertSystem = () => {
       {activeSection === 'results' && results && (
         <div className="space-y-6">
           <div className="bg-green-50 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Dimensionnement Automatique</h3>
+            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
             {/* Alerte de chargement */}
             {loading && (
@@ -1506,80 +1506,240 @@ const SolarExpertSystem = () => {
               </div>
             )}
 
-            {/* Composants recommandés */}
+            {/* Configuration du champ photovoltaïque */}
+            <div className="mb-6 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 border-l-4 border-yellow-500">
+              <h4 className="text-xl font-bold text-yellow-800 mb-4">☀️ Configuration Champ Photovoltaïque Optimal</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <h5 className="font-semibold text-yellow-700 mb-2">📐 Dimensionnement</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Nombre de panneaux:</span>
+                      <span className="font-bold text-yellow-800">{results.dimensioning.solar_panels.quantity}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Puissance unitaire:</span>
+                      <span className="font-bold">{solarData.panel_peak_power} Wc</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Puissance totale:</span>
+                      <span className="font-bold text-green-600">{results.dimensioning.solar_panels.total_power} Wc</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Surface requise:</span>
+                      <span className="font-bold">{results.dimensioning.solar_panels.surface_required.toFixed(1)} m²</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <h5 className="font-semibold text-blue-700 mb-2">🔗 Configuration Série/Parallèle</h5>
+                  <div className="space-y-2 text-sm">
+                    {(() => {
+                      // Calcul automatique de la configuration série/parallèle
+                      const totalPanels = results.dimensioning.solar_panels.quantity;
+                      const systemVoltage = solarData.system_voltage;
+                      const panelVoltage = solarData.panel_peak_power >= 400 ? 48 : 24; // Estimation voltage panneau
+                      
+                      const panelsInSeries = Math.ceil(systemVoltage / panelVoltage);
+                      const strings = Math.ceil(totalPanels / panelsInSeries);
+                      const panelsInParallel = strings;
+                      
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span>Panneaux en série:</span>
+                            <span className="font-bold text-blue-600">{panelsInSeries}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Strings en parallèle:</span>
+                            <span className="font-bold text-blue-600">{panelsInParallel}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Configuration:</span>
+                            <span className="font-bold text-purple-600">{panelsInSeries}S{panelsInParallel}P</span>
+                          </div>
+                          <div className="bg-blue-50 p-2 rounded mt-2">
+                            <div className="text-xs text-blue-700">
+                              Tension string: {panelsInSeries * panelVoltage}V
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <h5 className="font-semibold text-green-700 mb-2">💰 Coût Panneaux</h5>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Prix unitaire:</span>
+                      <span className="font-bold">{formatCurrency(results.dimensioning.solar_panels.cost / results.dimensioning.solar_panels.quantity)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Coût total:</span>
+                      <span className="font-bold text-green-600">{formatCurrency(results.dimensioning.solar_panels.cost)}</span>
+                    </div>
+                    <div className="bg-green-50 p-2 rounded mt-2">
+                      <div className="text-xs text-green-700">
+                        {(results.dimensioning.solar_panels.cost / results.dimensioning.solar_panels.total_power * 1000).toFixed(2)} €/kWc
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Équipements du système */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pompe */}
-              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-                <h4 className="font-semibold text-blue-700 mb-2">💧 Pompe Solaire</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="font-medium">{results.dimensioning.recommended_pump.model}</div>
-                  <div>Puissance: {results.dimensioning.recommended_pump.power.toFixed(0)}W</div>
-                  <div>Efficacité: {(results.dimensioning.recommended_pump.efficiency * 100).toFixed(1)}%</div>
-                  <div>Type: {results.dimensioning.recommended_pump.type === 'submersible' ? 'Submersible' : 'Surface'}</div>
-                  <div className="font-semibold text-green-600">
-                    Prix: {formatCurrency(results.dimensioning.recommended_pump.cost)}
+              {/* Pompe solaire */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 shadow-md">
+                <h4 className="font-semibold text-blue-700 mb-2 flex items-center">
+                  💧 Pompe Solaire Recommandée
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="font-medium text-lg text-blue-800">{results.dimensioning.recommended_pump.model}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-gray-600">Puissance:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.recommended_pump.power.toFixed(0)}W</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Efficacité:</span>
+                      <span className="font-semibold ml-1">{(results.dimensioning.recommended_pump.efficiency * 100).toFixed(1)}%</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Type:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.recommended_pump.type === 'submersible' ? 'Submersible' : 'Surface'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Débit max:</span>
+                      <span className="font-semibold ml-1">{solarData.flow_rate} m³/h</span>
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 p-2 rounded mt-2">
+                    <div className="font-semibold text-green-600">
+                      Prix: {formatCurrency(results.dimensioning.recommended_pump.cost)}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Panneaux solaires */}
-              <div className="bg-white p-4 rounded-lg border-l-4 border-yellow-500">
-                <h4 className="font-semibold text-yellow-700 mb-2">☀️ Panneaux Solaires</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="font-medium">{results.dimensioning.solar_panels.model}</div>
-                  <div>Quantité: {results.dimensioning.solar_panels.quantity} panneaux</div>
-                  <div>Puissance totale: {results.dimensioning.solar_panels.total_power}W</div>
-                  <div>Surface requise: {results.dimensioning.solar_panels.surface_required.toFixed(1)} m²</div>
-                  <div className="font-semibold text-green-600">
-                    Prix: {formatCurrency(results.dimensioning.solar_panels.cost)}
+              {/* Système de stockage */}
+              <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500 shadow-md">
+                <h4 className="font-semibold text-purple-700 mb-2">🔋 Système de Stockage</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="font-medium text-lg text-purple-800">{results.dimensioning.batteries.model}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-gray-600">Configuration:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.configuration}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Quantité:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_quantity} batteries</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Capacité:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.batteries.total_capacity}Ah</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Autonomie:</span>
+                      <span className="font-semibold ml-1">{solarData.autonomy_days} jours</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Batteries */}
-              <div className="bg-white p-4 rounded-lg border-l-4 border-purple-500">
-                <h4 className="font-semibold text-purple-700 mb-2">🔋 Stockage Batteries</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="font-medium">{results.dimensioning.batteries.model}</div>
-                  <div>Configuration: {results.dimensioning.batteries.configuration}</div>
-                  <div>Quantité totale: {results.dimensioning.batteries.total_quantity} batteries</div>
-                  <div>Capacité: {results.dimensioning.batteries.total_capacity}Ah</div>
-                  <div>Énergie utile: {results.dimensioning.batteries.usable_energy.toFixed(1)} kWh</div>
-                  <div className="font-semibold text-green-600">
-                    Prix: {formatCurrency(results.dimensioning.batteries.cost)}
+                  <div className="bg-purple-50 p-2 rounded mt-2">
+                    <div>
+                      <span className="text-xs text-purple-600">Énergie utile: </span>
+                      <span className="font-semibold text-purple-700">{results.dimensioning.batteries.usable_energy.toFixed(1)} kWh</span>
+                    </div>
+                    <div className="font-semibold text-green-600 mt-1">
+                      Prix: {formatCurrency(results.dimensioning.batteries.cost)}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Régulateur MPPT */}
-              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-md">
                 <h4 className="font-semibold text-green-700 mb-2">⚡ Régulateur MPPT</h4>
-                <div className="space-y-1 text-sm">
-                  <div className="font-medium">{results.dimensioning.mppt_controller.model}</div>
-                  <div>Quantité: {results.dimensioning.mppt_controller.quantity}</div>
-                  <div>Courant max: {results.dimensioning.mppt_controller.specifications.mppt_data.max_current}A</div>
-                  <div>Tension max: {results.dimensioning.mppt_controller.specifications.mppt_data.max_pv_voltage}V</div>
-                  <div className="font-semibold text-green-600">
-                    Prix: {formatCurrency(results.dimensioning.mppt_controller.cost)}
+                <div className="space-y-2 text-sm">
+                  <div className="font-medium text-lg text-green-800">{results.dimensioning.mppt_controller.model}</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-gray-600">Courant max:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.max_current}A</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Tension max:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.max_pv_voltage}V</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Efficacité:</span>
+                      <span className="font-semibold ml-1">{(results.dimensioning.mppt_controller.specifications.mppt_data.efficiency * 100).toFixed(0)}%</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Bluetooth:</span>
+                      <span className="font-semibold ml-1">{results.dimensioning.mppt_controller.specifications.mppt_data.bluetooth ? '✅ Oui' : '❌ Non'}</span>
+                    </div>
+                  </div>
+                  <div className="bg-green-50 p-2 rounded mt-2">
+                    <div className="font-semibold text-green-600">
+                      Prix: {formatCurrency(results.dimensioning.mppt_controller.cost)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Résumé système */}
+              <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-4 rounded-lg border-l-4 border-gray-600 shadow-md">
+                <h4 className="font-semibold text-gray-700 mb-2">📋 Résumé Installation</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Tension système:</span>
+                    <span className="font-semibold">{solarData.system_voltage}V DC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Type installation:</span>
+                    <span className="font-semibold">{solarData.installation_type === 'submersible' ? 'Submersible' : 'Surface'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Efficacité système:</span>
+                    <span className="font-semibold">{(results.system_efficiency * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Production quotidienne:</span>
+                    <span className="font-semibold text-blue-600">{solarData.daily_water_need} m³/jour</span>
+                  </div>
+                  <div className="bg-gray-50 p-2 rounded mt-2">
+                    <div className="font-bold text-red-600 text-center">
+                      COÛT TOTAL: {formatCurrency(results.dimensioning.economic_analysis.total_system_cost)}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Graphique de performance */}
-            <div className="mt-6 bg-white p-4 rounded-lg">
+            <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
+              <h4 className="font-semibold text-gray-800 mb-3">📊 Performance Mensuelle du Système</h4>
               <canvas ref={chartRef} style={{maxHeight: '400px'}}></canvas>
             </div>
 
             {/* Capacité de pompage mensuelle */}
-            <div className="mt-6 bg-white p-4 rounded-lg">
+            <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
               <h4 className="font-semibold text-gray-800 mb-3">💧 Capacité de Pompage Mensuelle</h4>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
                 {['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'].map((month, idx) => (
-                  <div key={month} className="bg-blue-50 p-2 rounded text-center">
+                  <div key={month} className="bg-blue-50 p-2 rounded text-center border">
                     <div className="font-medium text-blue-800">{month}</div>
                     <div className="text-blue-600">
                       {results.monthly_performance.water_production[idx].toFixed(1)} m³/j
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {results.monthly_performance.pump_hours[idx].toFixed(1)}h
                     </div>
                   </div>
                 ))}
