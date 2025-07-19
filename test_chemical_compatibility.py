@@ -70,7 +70,7 @@ class ChemicalCompatibilityTester:
                     "ambient_temperature": 25,
                     "humidity": 60
                 },
-                "expected_warnings": ["FLUIDE CORROSIF", "INCOMPATIBILITÉ", "Inox 316L"]
+                "expected_warnings": ["FLUIDE CORROSIF", "REMPLACEMENT", "Inox 316L"]
             },
             {
                 "name": "Seawater with Stainless Steel (Compatible)",
