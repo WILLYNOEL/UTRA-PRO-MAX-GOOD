@@ -1371,7 +1371,8 @@ const SolarExpertSystem = () => {
                 >
                   <option value={100}>100 Wc - Petit panneau</option>
                   <option value={200}>200 Wc - Panneau compact</option>
-                  <option value={320}>320 Wc - Polycristallin standard</option>
+                  <option value={270}>270 Wc - Polycristallin standard</option>
+                  <option value={320}>320 Wc - Polycristallin amélioré</option>
                   <option value={400}>400 Wc - Monocristallin standard</option>
                   <option value={550}>550 Wc - Monocristallin haute performance</option>
                   <option value={600}>600 Wc - Panneau haute puissance</option>
