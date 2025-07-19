@@ -2913,12 +2913,12 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const chartInstance = useRef(null);
 
   const handleInputChange = (field, value) => {
-    // Permettre les valeurs 0, 0.5, et toutes les autres valeurs numériques valides
+    // Permettre les valeurs 0, 0.5, les chaînes vides, et toutes les autres valeurs numériques valides
     let processedValue = value;
     
-    // Pour les champs numériques, accepter les chaînes vides et les convertir en 0 si nécessaire
+    // Pour les champs numériques, conserver les chaînes vides comme telles pour l'affichage
     if (typeof value === 'string' && value === '') {
-      processedValue = 0;
+      processedValue = ''; // Garder vide pour l'affichage
     } else if (typeof value === 'string' && !isNaN(parseFloat(value))) {
       processedValue = parseFloat(value);
     } else if (typeof value === 'number') {
