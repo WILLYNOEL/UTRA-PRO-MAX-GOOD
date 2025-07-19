@@ -50,7 +50,7 @@ class HydraulicPumpTester:
             return False
     
     def test_fluids_api(self):
-        """Test fluid properties API"""
+        """Test fluid properties API - Phase 3: All 12 industrial fluids"""
         try:
             response = requests.get(f"{BACKEND_URL}/fluids", timeout=10)
             if response.status_code == 200:
@@ -62,14 +62,19 @@ class HydraulicPumpTester:
                     return False
                 
                 fluids = data["fluids"]
-                expected_fluids = ["water", "oil", "acid", "glycol"]
+                # Phase 3: All 12 industrial fluids
+                expected_fluids = [
+                    "water", "oil", "acid", "glycol",  # Original 4
+                    "palm_oil", "gasoline", "diesel", "hydraulic_oil",  # New industrial fluids
+                    "ethanol", "seawater", "methanol", "glycerol"  # Additional industrial fluids
+                ]
                 
                 # Check all expected fluids are present
                 fluid_ids = [f["id"] for f in fluids]
                 missing_fluids = [f for f in expected_fluids if f not in fluid_ids]
                 
                 if missing_fluids:
-                    self.log_test("Fluids API Content", False, f"Missing fluids: {missing_fluids}")
+                    self.log_test("Phase 3 - Extended Fluids API", False, f"Missing fluids: {missing_fluids}")
                     return False
                 
                 # Check fluid structure
@@ -78,13 +83,13 @@ class HydraulicPumpTester:
                         self.log_test("Fluids API Structure", False, f"Invalid fluid structure: {fluid}")
                         return False
                 
-                self.log_test("Fluids API", True, f"Found {len(fluids)} fluids: {fluid_ids}")
+                self.log_test("Phase 3 - Extended Fluids API", True, f"Found {len(fluids)} fluids: {fluid_ids}")
                 return True
             else:
-                self.log_test("Fluids API", False, f"Status: {response.status_code}")
+                self.log_test("Phase 3 - Extended Fluids API", False, f"Status: {response.status_code}")
                 return False
         except Exception as e:
-            self.log_test("Fluids API", False, f"Error: {str(e)}")
+            self.log_test("Phase 3 - Extended Fluids API", False, f"Error: {str(e)}")
             return False
     
     def test_standard_water_calculation(self):
