@@ -4459,7 +4459,6 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                           const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
                           return fluidProps.density.toFixed(1);
                         })()}
-                      </div>}
                       </div>
                       <div className="text-xs text-gray-500">kg/m³</div>
                     </div>
