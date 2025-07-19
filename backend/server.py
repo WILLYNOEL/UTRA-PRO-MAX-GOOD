@@ -2635,6 +2635,28 @@ SOLAR_PUMP_DATABASE = {
 
 # Base de données des panneaux solaires
 SOLAR_PANEL_DATABASE = {
+    "polycristallin_270w": {
+        "name": "Panneau Polycristallin 270W",
+        "power_nominal": 270,  # Watts
+        "voltage_nominal": 24,  # Volts
+        "current_nominal": 11.25,  # Ampères
+        "efficiency": 0.17,  # 17%
+        "size": [1.65, 0.99],  # mètres [longueur, largeur]
+        "price_eur": 175,
+        "warranty": 20,  # années
+        "temperature_coefficient": -0.43  # %/°C
+    },
+    "polycristallin_320w": {
+        "name": "Panneau Polycristallin 320W",
+        "power_nominal": 320,  # Watts
+        "voltage_nominal": 24,  # Volts
+        "current_nominal": 13.33,  # Ampères
+        "efficiency": 0.18,  # 18%
+        "size": [1.96, 0.99],  # mètres [longueur, largeur]
+        "price_eur": 195,
+        "warranty": 20,  # années
+        "temperature_coefficient": -0.42  # %/°C
+    },
     "monocristallin_400w": {
         "name": "Panneau Monocristallin 400W",
         "power_nominal": 400,  # Watts
@@ -2656,17 +2678,6 @@ SOLAR_PANEL_DATABASE = {
         "price_eur": 380,
         "warranty": 25,  # années
         "temperature_coefficient": -0.35  # %/°C
-    },
-    "polycristallin_320w": {
-        "name": "Panneau Polycristallin 320W",
-        "power_nominal": 320,  # Watts
-        "voltage_nominal": 24,  # Volts
-        "current_nominal": 13.33,  # Ampères
-        "efficiency": 0.18,  # 18%
-        "size": [1.96, 0.99],  # mètres [longueur, largeur]
-        "price_eur": 195,
-        "warranty": 20,  # années
-        "temperature_coefficient": -0.42  # %/°C
     }
 }
 
