@@ -837,10 +837,9 @@ const AuditSystem = () => {
     </div>
   );
 };
+// Component pour Onglet COMPATIBILITÉ CHIMIQUE - Interface Liste Déroulante
 const ChemicalCompatibility = () => {
-  const [searchFluid, setSearchFluid] = useState('');
-  const [selectedFluid, setSelectedFluid] = useState(null);
-  const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [selectedFluid, setSelectedFluid] = useState('');
 
   // Base de données exhaustive de compatibilité chimique industrielle
   const chemicalCompatibilityDatabase = {
@@ -850,6 +849,7 @@ const ChemicalCompatibility = () => {
       ph_range: "6.5-8.5",
       corrosiveness: "Faible",
       temperature_limits: "-10°C à +100°C",
+      icon: "💧",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "PVC", "PEHD", "PP", "PTFE", "EPDM", "Viton", "Bronze Naval"],
@@ -876,6 +876,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Très Élevée",
       temperature_limits: "-2°C à +40°C",
       salinity: "35 g/L",
+      icon: "🌊",
       compatibility: {
         "excellent": {
           materials: ["Super Duplex 2507", "Inconel 625", "Hastelloy C-276", "Titane Grade 2", "Bronze Naval"],
@@ -902,6 +903,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Faible",
       temperature_limits: "5°C à +60°C",
       saponification: "199 mg KOH/g",
+      icon: "🌴",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "304 Stainless Steel", "PVC", "PP", "PTFE", "Viton", "EPDM"],
@@ -928,6 +930,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Modérée",
       temperature_limits: "-40°C à +50°C",
       volatility: "Très Élevée",
+      icon: "⛽",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "Aluminum 5052", "PTFE", "Viton FKM", "Terne Plated Steel"],
@@ -954,6 +957,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Faible à Modérée",
       temperature_limits: "-20°C à +70°C",
       sulfur_content: "≤10 mg/kg (EN 590)",
+      icon: "🚛",
       compatibility: {
         "excellent": {
           materials: ["Acier Carbone", "316L Stainless Steel", "Aluminum", "Viton FKM", "PTFE"],
@@ -980,6 +984,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Très Faible",
       temperature_limits: "-30°C à +80°C",
       additive_package: "Anti-usure, Anti-oxydant",
+      icon: "🛢️",
       compatibility: {
         "excellent": {
           materials: ["Acier Carbone", "316L Stainless Steel", "Fonte", "NBR 90 Shore A", "Viton", "Polyuréthane"],
@@ -1006,6 +1011,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Modérée",
       temperature_limits: "-100°C à +60°C",
       concentration: "95% vol",
+      icon: "🍾",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "PTFE", "EPDM Alcool", "Viton A", "PP"],
@@ -1032,6 +1038,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Élevée",
       temperature_limits: "-100°C à +50°C",
       toxicity: "Très Toxique",
+      icon: "🧪",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "Hastelloy C-276", "PTFE", "Viton A", "EPDM Spécial"],
@@ -1058,6 +1065,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Très Faible",
       temperature_limits: "-10°C à +150°C",
       viscosity: "Très Élevée",
+      icon: "🧴",
       compatibility: {
         "excellent": {
           materials: ["316L Stainless Steel", "304 Stainless Steel", "PVC", "PP", "PTFE", "EPDM", "Viton"],
@@ -1084,6 +1092,7 @@ const ChemicalCompatibility = () => {
       corrosiveness: "Très Élevée",
       temperature_limits: "0°C à +60°C",
       concentration: "10% HCl",
+      icon: "⚠️",
       compatibility: {
         "excellent": {
           materials: ["Hastelloy C-276", "Inconel 625", "PTFE", "PVC-C", "PVDF", "EPDM Acide"],
@@ -1103,16 +1112,6 @@ const ChemicalCompatibility = () => {
         }
       }
     }
-  };
-
-  // Fonction de recherche
-  const getFilteredFluids = () => {
-    return Object.entries(chemicalCompatibilityDatabase).filter(([key, fluid]) => {
-      const searchMatch = searchFluid === '' || 
-        fluid.name.toLowerCase().includes(searchFluid.toLowerCase()) ||
-        key.toLowerCase().includes(searchFluid.toLowerCase());
-      return searchMatch;
-    });
   };
 
   // Fonction pour obtenir la couleur de compatibilité
@@ -1136,7 +1135,17 @@ const ChemicalCompatibility = () => {
     }
   };
 
-  const filteredFluids = getFilteredFluids();
+  const getCompatibilityTitle = (level) => {
+    switch(level) {
+      case 'excellent': return 'EXCELLENT';
+      case 'good': return 'BON';
+      case 'poor': return 'MÉDIOCRE';
+      case 'incompatible': return 'INCOMPATIBLE';
+      default: return 'INCONNU';
+    }
+  };
+
+  const selectedFluidData = selectedFluid ? chemicalCompatibilityDatabase[selectedFluid] : null;
 
   return (
     <div className="space-y-6">
@@ -1144,7 +1153,7 @@ const ChemicalCompatibility = () => {
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">🧪 COMPATIBILITÉ CHIMIQUE FLUIDES-MATÉRIAUX</h2>
         <p className="text-purple-100">
-          Base de données technique de compatibilité chimique pour installations industrielles
+          Sélectionnez un fluide pour visualiser sa compatibilité avec les matériaux d'installation
         </p>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>✅ Standards ASTM</div>
@@ -1154,39 +1163,24 @@ const ChemicalCompatibility = () => {
         </div>
       </div>
 
-      {/* Recherche */}
+      {/* Sélection du fluide */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="mb-4">
+        <div className="max-w-md">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            🔍 Rechercher un fluide pour vérifier sa compatibilité
+            🔍 Sélectionnez un fluide à analyser
           </label>
-          <input
-            type="text"
-            value={searchFluid}
-            onChange={(e) => setSearchFluid(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            placeholder="Rechercher par nom de fluide (ex: diesel, eau, acide...)"
-          />
-        </div>
-
-        {/* Statistiques */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-green-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">{filteredFluids.length}</div>
-            <div className="text-sm text-green-800">Fluides analysés</div>
-          </div>
-          <div className="bg-blue-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600">4</div>
-            <div className="text-sm text-blue-800">Niveaux compatibilité</div>
-          </div>
-          <div className="bg-purple-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-purple-600">30+</div>
-            <div className="text-sm text-purple-800">Matériaux référencés</div>
-          </div>
-          <div className="bg-pink-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-pink-600">ISO</div>
-            <div className="text-sm text-pink-800">Conformité</div>
-          </div>
+          <select
+            value={selectedFluid}
+            onChange={(e) => setSelectedFluid(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-base"
+          >
+            <option value="">-- Choisir un fluide --</option>
+            {Object.entries(chemicalCompatibilityDatabase).map(([key, fluid]) => (
+              <option key={key} value={key}>
+                {fluid.icon} {fluid.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -1213,76 +1207,103 @@ const ChemicalCompatibility = () => {
         </div>
       </div>
 
-      {/* Liste des fluides */}
-      <div className="grid grid-cols-1 gap-6">
-        {filteredFluids.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="text-gray-500 text-lg">
-              🔍 Aucun fluide trouvé pour "{searchFluid}"
-            </div>
-          </div>
-        ) : (
-          filteredFluids.map(([fluidKey, fluid]) => (
-            <div key={fluidKey} className="bg-white rounded-lg shadow-lg border-l-4 border-purple-400 overflow-hidden">
-              <div className="p-6">
-                {/* En-tête fluide */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">🧪</span>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">{fluid.name}</h3>
-                      <div className="text-sm text-gray-600 space-x-4">
-                        <span>pH: {fluid.ph_range}</span>
-                        <span>Corrosion: {fluid.corrosiveness}</span>
-                        <span>T°: {fluid.temperature_limits}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedFluid(selectedFluid === fluidKey ? null : fluidKey)}
-                    className="text-purple-600 hover:text-purple-800 font-medium"
-                  >
-                    {selectedFluid === fluidKey ? 'Réduire' : 'Voir compatibilité'}
-                  </button>
+      {/* Affichage des compatibilités du fluide sélectionné */}
+      {selectedFluidData && (
+        <div className="bg-white rounded-lg shadow-lg border-l-4 border-purple-400 overflow-hidden">
+          <div className="p-6">
+            {/* En-tête fluide sélectionné */}
+            <div className="flex items-center space-x-3 mb-6">
+              <span className="text-3xl">{selectedFluidData.icon}</span>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{selectedFluidData.name}</h3>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+                  <span className="bg-gray-100 px-2 py-1 rounded"><strong>pH:</strong> {selectedFluidData.ph_range}</span>
+                  <span className="bg-gray-100 px-2 py-1 rounded"><strong>Corrosion:</strong> {selectedFluidData.corrosiveness}</span>
+                  <span className="bg-gray-100 px-2 py-1 rounded"><strong>Température:</strong> {selectedFluidData.temperature_limits}</span>
+                  {selectedFluidData.salinity && (
+                    <span className="bg-gray-100 px-2 py-1 rounded"><strong>Salinité:</strong> {selectedFluidData.salinity}</span>
+                  )}
+                  {selectedFluidData.volatility && (
+                    <span className="bg-gray-100 px-2 py-1 rounded"><strong>Volatilité:</strong> {selectedFluidData.volatility}</span>
+                  )}
+                  {selectedFluidData.toxicity && (
+                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded"><strong>⚠️ Toxicité:</strong> {selectedFluidData.toxicity}</span>
+                  )}
                 </div>
-
-                {/* Détails compatibilité (conditionnels) */}
-                {selectedFluid === fluidKey && (
-                  <div className="border-t pt-4 mt-4">
-                    {Object.entries(fluid.compatibility).map(([compatLevel, compatData]) => (
-                      <div key={compatLevel} className={`mb-4 p-4 rounded-lg border-2 ${getCompatibilityColor(compatLevel)}`}>
-                        <h4 className="font-bold mb-2">
-                          {getCompatibilityIcon(compatLevel)} {compatLevel.toUpperCase()}
-                        </h4>
-                        
-                        <div className="mb-3">
-                          <h5 className="font-medium text-sm mb-1">Matériaux :</h5>
-                          <div className="flex flex-wrap gap-2">
-                            {compatData.materials.map((material, index) => (
-                              <span key={index} className="px-2 py-1 bg-white rounded text-xs font-medium">
-                                {material}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <h5 className="font-medium text-sm mb-1">Justifications techniques :</h5>
-                          <ul className="text-xs space-y-1">
-                            {compatData.reasons.map((reason, index) => (
-                              <li key={index}>• {reason}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+
+            {/* Matrice de compatibilité */}
+            <div className="space-y-4">
+              <h4 className="text-xl font-semibold text-gray-900 mb-4">🔍 Compatibilité avec les Matériaux</h4>
+              
+              {Object.entries(selectedFluidData.compatibility).map(([compatLevel, compatData]) => (
+                compatData.materials.length > 0 && (
+                  <div key={compatLevel} className={`p-4 rounded-lg border-2 ${getCompatibilityColor(compatLevel)}`}>
+                    <div className="flex items-center mb-3">
+                      <span className="text-lg mr-2">{getCompatibilityIcon(compatLevel)}</span>
+                      <h5 className="text-lg font-bold">{getCompatibilityTitle(compatLevel)}</h5>
+                      <span className="ml-2 px-2 py-1 text-xs bg-white rounded-full">
+                        {compatData.materials.length} matériaux
+                      </span>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <h6 className="font-medium text-sm mb-2">📦 Matériaux recommandés :</h6>
+                      <div className="flex flex-wrap gap-2">
+                        {compatData.materials.map((material, index) => (
+                          <span key={index} className="px-3 py-1 bg-white rounded-md text-sm font-medium shadow-sm border">
+                            {material}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h6 className="font-medium text-sm mb-2">💡 Justifications techniques :</h6>
+                      <ul className="text-sm space-y-1">
+                        {compatData.reasons.map((reason, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span>{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
+
+            {/* Avertissement pour fluides dangereux */}
+            {(selectedFluid === 'acid' || selectedFluid === 'methanol' || selectedFluid === 'gasoline') && (
+              <div className="mt-6 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+                <div className="flex items-start">
+                  <span className="text-red-600 text-xl mr-3">⚠️</span>
+                  <div>
+                    <h6 className="font-bold text-red-800 mb-2">AVERTISSEMENT SÉCURITÉ</h6>
+                    <p className="text-red-700 text-sm">
+                      Ce fluide présente des risques particuliers. Consulter les fiches de données de sécurité (FDS) 
+                      et respecter les réglementations en vigueur pour la manipulation, le stockage et l'installation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Message si aucun fluide sélectionné */}
+      {!selectedFluid && (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <div className="text-6xl mb-4">🧪</div>
+          <h3 className="text-xl font-medium text-gray-700 mb-2">Sélectionnez un fluide</h3>
+          <p className="text-gray-500">
+            Choisissez un fluide dans la liste déroulante ci-dessus pour voir sa compatibilité avec les matériaux d'installation
+          </p>
+        </div>
+      )}
     </div>
   );
 };
