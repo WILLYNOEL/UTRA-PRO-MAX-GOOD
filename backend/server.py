@@ -276,6 +276,159 @@ FLUID_PROPERTIES = {
             "compatibility": ["stainless_steel", "pvc", "ptfe", "epdm"],
             "incompatibility": ["natural_rubber", "neoprene"]
         }
+    },
+    # NOUVEAUX FLUIDES ALIMENTAIRES ET DOMESTIQUES - Extension Complète
+    "milk": {
+        "name": "Lait (3.5% MG)",
+        "density_20c": 1030,  # kg/m³ (légèrement plus dense que l'eau)
+        "viscosity_20c": 0.0015,  # Pa·s (légèrement plus visqueux que l'eau)
+        "vapor_pressure_20c": 2200,  # Pa (proche de l'eau)
+        "temp_coeffs": {
+            "density": -0.3,  # Coefficient similaire à l'eau
+            "viscosity": -0.00006,
+            "vapor_pressure": 95
+        },
+        "technical_specs": {
+            "fat_content": 3.5,  # % matière grasse
+            "ph": 6.7,  # pH légèrement acide
+            "total_solids": 12.5,  # % matières sèches
+            "protein_content": 3.2,  # % protéines
+            "compatibility": ["stainless_steel", "ptfe", "epdm_food", "silicone"],
+            "incompatibility": ["copper", "brass", "pvc_food"]
+        }
+    },
+    "honey": {
+        "name": "Miel (Naturel)",
+        "density_20c": 1400,  # kg/m³ (très dense)
+        "viscosity_20c": 8.5,  # Pa·s (très visqueux)
+        "vapor_pressure_20c": 0.1,  # Pa (négligeable)
+        "temp_coeffs": {
+            "density": -0.8,
+            "viscosity": -0.25,  # Forte variation avec température
+            "vapor_pressure": 0.02
+        },
+        "technical_specs": {
+            "sugar_content": 82,  # % sucres
+            "water_content": 17,  # % eau
+            "ph": 3.9,  # Acide
+            "viscosity_index": "Newtonien à faible cisaillement",
+            "compatibility": ["316L_stainless", "glass", "ptfe", "food_grade_silicone"],
+            "incompatibility": ["iron", "copper", "aluminum_contact"]
+        }
+    },
+    "wine": {
+        "name": "Vin Rouge (12° alcool)",
+        "density_20c": 990,  # kg/m³ (moins dense que l'eau à cause de l'alcool)
+        "viscosity_20c": 0.0012,  # Pa·s (légèrement plus visqueux que l'eau)
+        "vapor_pressure_20c": 2800,  # Pa (plus élevé à cause de l'alcool)
+        "temp_coeffs": {
+            "density": -0.9,  # Fort coefficient à cause de l'alcool
+            "viscosity": -0.00004,
+            "vapor_pressure": 120
+        },
+        "technical_specs": {
+            "alcohol_content": 12,  # % vol
+            "ph": 3.4,  # Acide
+            "sulfites": 150,  # mg/L
+            "total_acidity": 6.0,  # g/L
+            "compatibility": ["316L_stainless", "glass", "ptfe", "epdm_wine"],
+            "incompatibility": ["iron", "lead", "pvc_standard"]
+        }
+    },
+    "bleach": {
+        "name": "Eau de Javel (5% NaClO)",
+        "density_20c": 1050,  # kg/m³
+        "viscosity_20c": 0.0011,  # Pa·s (proche de l'eau)
+        "vapor_pressure_20c": 2100,  # Pa
+        "temp_coeffs": {
+            "density": -0.25,
+            "viscosity": -0.000045,
+            "vapor_pressure": 90
+        },
+        "technical_specs": {
+            "active_chlorine": 5.0,  # % NaClO
+            "ph": 12.5,  # Très basique
+            "stability": "Dégradation UV et température",
+            "concentration_available": "5-6% chlore actif",
+            "compatibility": ["pvc", "cpvc", "ptfe", "viton_chlorine"],
+            "incompatibility": ["stainless_steel_prolonged", "rubber", "metal_fittings"]
+        }
+    },
+    "yogurt": {
+        "name": "Yaourt Nature",
+        "density_20c": 1050,  # kg/m³
+        "viscosity_20c": 0.15,  # Pa·s (consistance crémeuse)
+        "vapor_pressure_20c": 2150,  # Pa (proche de l'eau)
+        "temp_coeffs": {
+            "density": -0.35,
+            "viscosity": -0.008,  # Forte variation avec température
+            "vapor_pressure": 92
+        },
+        "technical_specs": {
+            "protein_content": 3.5,  # % protéines
+            "fat_content": 3.2,  # % matière grasse
+            "ph": 4.2,  # Acide lactique
+            "lactic_acid": 0.8,  # % acide lactique
+            "compatibility": ["316L_stainless", "glass", "ptfe", "silicone_food"],
+            "incompatibility": ["copper_alloys", "aluminum_direct"]
+        }
+    },
+    "tomato_sauce": {
+        "name": "Sauce Tomate Concentrée",
+        "density_20c": 1100,  # kg/m³ (concentrée)
+        "viscosity_20c": 2.5,  # Pa·s (épaisse)
+        "vapor_pressure_20c": 1800,  # Pa
+        "temp_coeffs": {
+            "density": -0.4,
+            "viscosity": -0.12,
+            "vapor_pressure": 75
+        },
+        "technical_specs": {
+            "concentration": 28,  # % matière sèche
+            "ph": 4.1,  # Acide
+            "salt_content": 2.5,  # % NaCl
+            "lycopene_content": 150,  # mg/kg
+            "compatibility": ["316L_stainless", "glass", "ptfe", "epdm_food"],
+            "incompatibility": ["iron", "copper", "tin_prolonged"]
+        }
+    },
+    "soap_solution": {
+        "name": "Solution Savonneuse (2%)",
+        "density_20c": 1010,  # kg/m³
+        "viscosity_20c": 0.0013,  # Pa·s
+        "vapor_pressure_20c": 2250,  # Pa
+        "temp_coeffs": {
+            "density": -0.28,
+            "viscosity": -0.00005,
+            "vapor_pressure": 95
+        },
+        "technical_specs": {
+            "surfactant_content": 2.0,  # % agents actifs
+            "ph": 10.5,  # Basique
+            "foam_tendency": "Élevée",
+            "biodegradability": "Biodégradable",
+            "compatibility": ["stainless_steel", "pvc", "pp", "ptfe"],
+            "incompatibility": ["aluminum_prolonged", "zinc"]
+        }
+    },
+    "fruit_juice": {
+        "name": "Jus de Fruits (Orange)",
+        "density_20c": 1045,  # kg/m³ (sucres naturels)
+        "viscosity_20c": 0.0018,  # Pa·s
+        "vapor_pressure_20c": 2100,  # Pa
+        "temp_coeffs": {
+            "density": -0.35,
+            "viscosity": -0.00007,
+            "vapor_pressure": 88
+        },
+        "technical_specs": {
+            "sugar_content": 11,  # % Brix
+            "ph": 3.7,  # Acide citrique
+            "vitamin_c": 50,  # mg/100ml
+            "pulp_content": 8,  # % pulpe
+            "compatibility": ["316L_stainless", "glass", "ptfe", "silicone_food"],
+            "incompatibility": ["iron", "copper", "tin_uncoated"]
+        }
     }
 }
 
