@@ -972,6 +972,7 @@ def get_fluid_properties(fluid_type: str, temperature: float) -> FluidProperties
 def analyze_chemical_compatibility(fluid_type: str, suction_material: str, discharge_material: str, temperature: float) -> Dict[str, Any]:
     """
     Analyser la compatibilité chimique entre le fluide et les matériaux à une température donnée
+    avec recommandations avancées de matériaux, joints et suggestions hydrauliques
     """
     if fluid_type not in FLUID_PROPERTIES:
         return {"status": "unknown_fluid", "recommendations": [], "warnings": []}
@@ -994,6 +995,50 @@ def analyze_chemical_compatibility(fluid_type: str, suction_material: str, disch
         "aluminum": ["aluminum"]
     }
     
+    # Base de données avancée des joints selon les fluides
+    recommended_seals = {
+        "acid": {
+            "seals": ["PTFE", "FKM (Viton)", "EPDM"],
+            "avoid": ["NBR (Nitrile)", "Caoutchouc naturel"],
+            "notes": "Joints en PTFE pour acides concentrés, FKM pour acides dilués"
+        },
+        "gasoline": {
+            "seals": ["NBR (Nitrile)", "FKM (Viton)", "CR (Néoprène)"],
+            "avoid": ["EPDM", "Caoutchouc naturel"],
+            "notes": "FKM obligatoire pour températures élevées >80°C"
+        },
+        "diesel": {
+            "seals": ["NBR (Nitrile)", "FKM (Viton)", "CR (Néoprène)"],
+            "avoid": ["EPDM", "Caoutchouc naturel"],
+            "notes": "Attention aux biocarburants - préférer FKM"
+        },
+        "seawater": {
+            "seals": ["EPDM", "FKM (Viton)", "CR (Néoprène)"],
+            "avoid": ["NBR", "Caoutchouc naturel"],
+            "notes": "EPDM résistant au chlore, FKM pour applications critiques"
+        },
+        "milk": {
+            "seals": ["EPDM alimentaire", "Silicone FDA", "FKM alimentaire"],
+            "avoid": ["NBR", "Caoutchouc naturel"],
+            "notes": "Certifications FDA/CE obligatoires pour contact alimentaire"
+        },
+        "honey": {
+            "seals": ["EPDM alimentaire", "Silicone FDA", "PTFE"],
+            "avoid": ["NBR", "Caoutchouc naturel"],
+            "notes": "Résistance aux sucres concentrés, nettoyage vapeur"
+        },
+        "water": {
+            "seals": ["EPDM", "NBR", "CR (Néoprène)"],
+            "avoid": [],
+            "notes": "EPDM recommandé pour eau potable"
+        },
+        "oil": {
+            "seals": ["NBR (Nitrile)", "FKM (Viton)", "Polyuréthane"],
+            "avoid": ["EPDM"],
+            "notes": "NBR économique, FKM pour huiles haute température"
+        }
+    }
+    
     compatibility_analysis = {
         "fluid_name": fluid_name,
         "compatible_materials": [],
@@ -1002,7 +1047,9 @@ def analyze_chemical_compatibility(fluid_type: str, suction_material: str, disch
         "discharge_material_status": "unknown",
         "temperature_warnings": [],
         "recommendations": [],
-        "optimal_materials": []
+        "optimal_materials": [],
+        "seal_recommendations": [],
+        "hydraulic_advice": []
     }
     
     # Obtenir les listes de compatibilité du fluide
@@ -1034,71 +1081,168 @@ def analyze_chemical_compatibility(fluid_type: str, suction_material: str, disch
     compatibility_analysis["suction_material_status"] = check_material_compatibility(suction_material)
     compatibility_analysis["discharge_material_status"] = check_material_compatibility(discharge_material)
     
-    # Analyser les contraintes de température
-    if "technical_specs" in fluid_data:
-        specs = fluid_data["technical_specs"]
+    # === RECOMMANDATIONS AVANCÉES DE JOINTS ===
+    if fluid_type in recommended_seals:
+        seal_info = recommended_seals[fluid_type]
+        compatibility_analysis["seal_recommendations"].extend([
+            f"🔧 JOINTS RECOMMANDÉS pour {fluid_name}:",
+            f"✅ Joints adaptés: {', '.join(seal_info['seals'])}",
+            f"❌ Joints à éviter: {', '.join(seal_info['avoid'])}" if seal_info['avoid'] else "❌ Aucun joint spécifiquement déconseillé",
+            f"💡 Note technique: {seal_info['notes']}"
+        ])
+    
+    # === RECOMMANDATIONS SPÉCIFIQUES PAR FLUIDE ===
+    if fluid_type == "acid":
+        compatibility_analysis["recommendations"].extend([
+            "⚠️ FLUIDE CORROSIF - Précautions spéciales requises",
+            "🏗️ Matériaux recommandés: Inox 316L (optimal), PVC/PP (économique)",
+            "🔧 Boulonnerie: Inox A4 (316L) obligatoire",
+            "🛡️ Revêtements: Résine époxy ou polyuréthane",
+            "📊 Surveillance pH et inspection trimestrielle",
+            "🚿 Équipements rinçage d'urgence obligatoires"
+        ])
         
-        # Vérifications spécifiques par fluide
-        if fluid_type == "gasoline" or fluid_type == "diesel":
-            if temperature > 40:
-                compatibility_analysis["temperature_warnings"].append(
-                    f"Température élevée ({temperature}°C) pour {fluid_name} - Risque d'évaporation accrue"
-                )
-        
-        if fluid_type == "pvc" and temperature > 60:
-            compatibility_analysis["temperature_warnings"].append(
-                "PVC non recommandé au-dessus de 60°C - Déformation possible"
+        if temperature > 60:
+            compatibility_analysis["recommendations"].append(
+                "🌡️ HAUTE TEMPÉRATURE + ACIDE: Utiliser uniquement Inox 316L ou Hastelloy"
             )
+    
+    elif fluid_type in ["gasoline", "diesel"]:
+        compatibility_analysis["recommendations"].extend([
+            "⛽ FLUIDE INFLAMMABLE - Mise à la terre obligatoire",
+            "🏗️ Matériaux: Inox 316L ou acier au carbone avec revêtement",
+            "⚡ Équipements antidéflagrants (ATEX Zone 1)",
+            "🔧 Joints FKM (Viton) - résistance hydrocarbures",
+            "🔄 Système de récupération des vapeurs",
+            "📏 Dilatation thermique importante - compensateurs requis"
+        ])
         
-        if "flash_point" in specs and temperature > specs["flash_point"] - 20:
-            compatibility_analysis["temperature_warnings"].append(
-                f"Température proche du point d'éclair ({specs['flash_point']}°C) - Risque d'inflammabilité"
+        if fluid_type == "gasoline":
+            compatibility_analysis["recommendations"].append(
+                "🚨 ESSENCE: Pression vapeur élevée - réservoirs sous pression"
             )
+    
+    elif fluid_type == "seawater":
+        compatibility_analysis["recommendations"].extend([
+            "🌊 EAU DE MER - Corrosion saline critique",
+            "🏗️ Matériau OBLIGATOIRE: Inox 316L minimum (idéal: Duplex 2205)",
+            "🔧 Anodes sacrificielles en zinc ou aluminium",
+            "🛡️ Protection cathodique active recommandée",
+            "🧪 Surveillance chlorures et inspection mensuelle",
+            "💧 Rinçage eau douce après arrêt prolongé"
+        ])
+    
+    elif fluid_type in ["milk", "honey", "wine"]:
+        compatibility_analysis["recommendations"].extend([
+            "🥛 FLUIDE ALIMENTAIRE - Normes sanitaires strictes",
+            "🏗️ Matériaux: Inox 316L poli sanitaire (Ra ≤ 0.8 μm)",
+            "🔧 Joints FDA/CE - Silicone ou EPDM alimentaire",
+            "🧽 Nettoyage CIP (Clean In Place) intégré",
+            "🌡️ Traçage vapeur pour maintien température",
+            "📋 Traçabilité et validation HACCP"
+        ])
+        
+        if fluid_type == "milk":
+            compatibility_analysis["recommendations"].append(
+                "❄️ LAIT: Refroidissement rapide <4°C - échangeurs plates"
+            )
+    
+    # === CONSEILS HYDRAULIQUES AVANCÉS ===
+    viscosity = fluid_data["viscosity_20c"]
+    
+    if viscosity > 0.1:  # Fluides visqueux
+        compatibility_analysis["hydraulic_advice"].extend([
+            "🌊 FLUIDE VISQUEUX - Adaptations hydrauliques:",
+            "📏 Diamètres majorés +20% minimum",
+            "⚙️ Pompe volumétrique recommandée si η < 10 cP",
+            "🔄 Vitesses réduites: aspiration <1m/s, refoulement <2m/s",
+            "🌡️ Préchauffage pour réduire viscosité",
+            "📊 Courbes de pompe à recalculer selon viscosité"
+        ])
+    
+    if "vapor_pressure_20c" in fluid_data and fluid_data["vapor_pressure_20c"] > 5000:  # Fluides volatils
+        compatibility_analysis["hydraulic_advice"].extend([
+            "💨 FLUIDE VOLATIL - Précautions NPSH:",
+            "📏 Diamètres aspiration majorés +30%",
+            "⬇️ Hauteur aspiration minimisée (<3m si possible)",
+            "❄️ Refroidissement fluide recommandé",
+            "🔒 Réservoir sous pression inerte (azote)",
+            "📊 Calcul NPSH avec marge sécurité +50%"
+        ])
+    
+    # === RECOMMANDATIONS DE MATÉRIAUX OPTIMAUX ===
+    if fluid_type in ["acid", "seawater"]:
+        compatibility_analysis["optimal_materials"] = [
+            "Inox 316L (optimal)",
+            "Duplex 2205 (haute performance)", 
+            "Hastelloy C-276 (extrême)",
+            "PVC/CPVC (économique température <60°C)",
+            "PTFE (joints et revêtements)"
+        ]
+    elif fluid_type in ["gasoline", "diesel", "ethanol", "methanol"]:
+        compatibility_analysis["optimal_materials"] = [
+            "Inox 316L",
+            "Acier au carbone + revêtement époxy",
+            "Aluminium 5083 (réservoirs)",
+            "PTFE/FKM (joints)",
+            "Acier galvanisé (interdit - corrosion galvanique)"
+        ]
+    elif fluid_type in ["milk", "honey", "wine"]:
+        compatibility_analysis["optimal_materials"] = [
+            "Inox 316L poli sanitaire",
+            "Inox 304L (acceptable usage non critique)",
+            "PTFE/Silicone alimentaire (joints)",
+            "PVC alimentaire (tuyauteries secondaires)",
+            "Cuivre (interdit - contamination)"
+        ]
+    elif temperature > 80:
+        compatibility_analysis["optimal_materials"] = [
+            "Inox 316L (haute température)",
+            "Inox 321 (stabilisé titane)",
+            "Acier P91/P92 (vapeur)",
+            "Réfractaires (>200°C)",
+            "PVC (interdit >60°C)"
+        ]
+    else:
+        compatibility_analysis["optimal_materials"] = [
+            "Inox 316L (polyvalent)",
+            "PVC/CPVC (économique)",
+            "PEHD (enterré)",
+            "Fonte ductile (réseaux)",
+            "Acier galvanisé (air comprimé)"
+        ]
     
     # Générer des recommandations basées sur l'analyse
     if compatibility_analysis["suction_material_status"] == "incompatible":
-        compatibility_analysis["recommendations"].append(
-            f"⚠️ Matériau aspiration ({suction_material}) incompatible avec {fluid_name}"
-        )
-        compatibility_analysis["recommendations"].append(
-            f"Remplacer par: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
-        )
+        compatibility_analysis["recommendations"].extend([
+            f"⚠️ INCOMPATIBILITÉ DÉTECTÉE - Aspiration ({suction_material})",
+            f"🔄 Remplacement URGENT par: {compatibility_analysis['optimal_materials'][0]}",
+            "⏰ Risque de défaillance prématurée",
+            "💰 Coût remplacement < coût panne"
+        ])
     
     if compatibility_analysis["discharge_material_status"] == "incompatible":
-        compatibility_analysis["recommendations"].append(
-            f"⚠️ Matériau refoulement ({discharge_material}) incompatible avec {fluid_name}"
-        )
-        compatibility_analysis["recommendations"].append(
-            f"Remplacer par: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
-        )
-    
-    if compatibility_analysis["suction_material_status"] == "unknown" or compatibility_analysis["discharge_material_status"] == "unknown":
-        compatibility_analysis["recommendations"].append(
-            f"Vérifier compatibilité matériaux avec {fluid_name}"
-        )
-        if compatibility_analysis["compatible_materials"]:
-            compatibility_analysis["recommendations"].append(
-                f"Matériaux recommandés: {', '.join(compatibility_analysis['compatible_materials'][:3])}"
-            )
-    
-    # Recommandations optimales basées sur le fluide et la température
-    optimal_materials = []
-    if fluid_type in ["acid", "seawater"]:
-        optimal_materials = ["stainless_steel_316", "pvc", "ptfe"]
-    elif fluid_type in ["gasoline", "diesel", "ethanol", "methanol"]:
-        optimal_materials = ["stainless_steel_316", "ptfe", "viton"]
-    elif fluid_type in ["milk", "honey", "wine"]:
-        optimal_materials = ["stainless_steel_316", "ptfe", "epdm_food"]
-    elif temperature > 60:
-        optimal_materials = ["stainless_steel_316", "stainless_steel_304", "ptfe"]
-    else:
-        optimal_materials = ["stainless_steel_316", "pvc", "pehd"]
-    
-    compatibility_analysis["optimal_materials"] = optimal_materials
+        compatibility_analysis["recommendations"].extend([
+            f"⚠️ INCOMPATIBILITÉ DÉTECTÉE - Refoulement ({discharge_material})",
+            f"🔄 Remplacement URGENT par: {compatibility_analysis['optimal_materials'][0]}",
+            "⏰ Risque de défaillance prématurée",
+            "💰 Coût remplacement < coût panne"
+        ])
     
     # Recommandations générales de température
-    if len(compatibility_analysis["temperature_warnings"]) > 0:
-        compatibility_analysis["recommendations"].extend(compatibility_analysis["temperature_warnings"])
+    if temperature > 100:
+        compatibility_analysis["recommendations"].extend([
+            f"🌡️ HAUTE TEMPÉRATURE ({temperature}°C) - Précautions:",
+            "🔧 Compensateurs de dilatation obligatoires",
+            "🛡️ Isolation thermique et calorifugeage",
+            "⚙️ Supports coulissants/pendulaires",
+            "📊 Calculs contraintes thermiques",
+            "🔥 Protection personnel - risque brûlure"
+        ])
+    elif temperature > 60:
+        compatibility_analysis["recommendations"].append(
+            f"🌡️ Température élevée ({temperature}°C) - Éviter PVC, prévoir dilatation"
+        )
     
     return compatibility_analysis
 
