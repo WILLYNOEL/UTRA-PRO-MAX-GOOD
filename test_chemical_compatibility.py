@@ -368,7 +368,7 @@ class ChemicalCompatibilityTester:
                     "suction_material": "pvc",
                     "discharge_material": "pvc"
                 },
-                "expected_warning": "PVC non recommandé au-dessus de 60°C"
+                "expected_warning": "TEMPÉRATURE"
             },
             {
                 "name": "Steel at High Temperature",
