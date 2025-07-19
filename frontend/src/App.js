@@ -849,12 +849,15 @@ const SolarExpertSystem = () => {
     
     // Besoins en eau et hydrauliques
     daily_water_need: 10,
-    flow_rate: 5, // m³/h - nouveau champ débit
+    operating_hours: 8, // Nouvelles heures de fonctionnement
+    flow_rate: 1.25, // m³/h - calculé automatiquement (10/8)
     seasonal_variation: 1.2,
     peak_months: [6, 7, 8],
     
-    // Paramètres hydrauliques pour calcul HMT
-    static_head: 20, // Hauteur géométrique
+    // Paramètres hydrauliques pour calcul HMT restructuré
+    dynamic_level: 15, // Niveau dynamique (profondeur pompage)
+    tank_height: 5, // Hauteur du château d'eau
+    static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: 5, // Pertes de charge dynamiques
     useful_pressure_head: 0, // Pression utile convertie en hauteur
     total_head: 25, // HMT totale calculée automatiquement
@@ -862,7 +865,7 @@ const SolarExpertSystem = () => {
     pipe_length: 50,
     
     // Paramètres solaires
-    panel_peak_power: 400, // Wc - nouveau champ puissance crête panneau
+    panel_peak_power: 400, // Wc - puissance crête panneau
     
     // Contraintes du système
     autonomy_days: 2,
