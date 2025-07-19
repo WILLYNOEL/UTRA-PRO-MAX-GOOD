@@ -1170,109 +1170,190 @@ const SolarExpertSystem = () => {
         <div className="bg-cyan-50 rounded-xl p-6">
           <h3 className="text-xl font-bold text-cyan-900 mb-4">💧 Paramètres Hydrauliques</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
-              <label className="block text-sm font-medium text-cyan-700 mb-2">Besoin quotidien (m³/jour)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={solarData.daily_water_need}
-                onChange={(e) => handleInputChange('daily_water_need', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
-              />
-              <p className="text-xs text-cyan-600 mt-1">Volume d'eau nécessaire par jour</p>
-            </div>
+          {/* Paramètres d'eau et débit */}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-cyan-800 mb-3">💧 Besoins en Eau</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+                <label className="block text-sm font-medium text-cyan-700 mb-2">Volume quotidien (m³/jour)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.daily_water_need}
+                  onChange={(e) => handleInputChange('daily_water_need', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-cyan-600 mt-1">Volume d'eau nécessaire par jour</p>
+              </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
-              <label className="block text-sm font-medium text-cyan-700 mb-2">Hauteur totale (m)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={solarData.total_head}
-                onChange={(e) => handleInputChange('total_head', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
-              />
-              <p className="text-xs text-cyan-600 mt-1">HMT totale requise</p>
-            </div>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
+                <label className="block text-sm font-medium text-cyan-700 mb-2">Débit nominal (m³/h)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.flow_rate}
+                  onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-cyan-600 mt-1">Débit de la pompe en fonctionnement</p>
+              </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
-              <label className="block text-sm font-medium text-cyan-700 mb-2">Hauteur statique (m)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={solarData.static_head}
-                onChange={(e) => handleInputChange('static_head', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
-              />
-              <p className="text-xs text-cyan-600 mt-1">Dénivelé géométrique</p>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-orange-500">
+                <label className="block text-sm font-medium text-orange-700 mb-2">Variation saisonnière</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.seasonal_variation}
+                  onChange={(e) => handleInputChange('seasonal_variation', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+                  min="1.0" max="2.0"
+                />
+                <p className="text-xs text-orange-600 mt-1">Coeff. été (1.0 = constant)</p>
+              </div>
             </div>
+          </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-cyan-500">
-              <label className="block text-sm font-medium text-cyan-700 mb-2">Profondeur puits (m)</label>
-              <input
-                type="number"
-                step="0.1"
-                value={solarData.well_depth || ''}
-                onChange={(e) => handleInputChange('well_depth', e.target.value ? parseFloat(e.target.value) : null)}
-                className="w-full p-3 border-2 border-cyan-200 rounded-lg focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 text-lg font-semibold"
-                placeholder="Optionnel"
-              />
-              <p className="text-xs text-cyan-600 mt-1">Profondeur totale du puits</p>
+          {/* Calcul HMT */}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-blue-800 mb-3">📏 Calcul HMT (Hauteur Manométrique Totale)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Hauteur géométrique (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.static_head}
+                  onChange={(e) => {
+                    const newValue = parseFloat(e.target.value);
+                    handleInputChange('static_head', newValue);
+                    // Recalcul automatique HMT
+                    const newHMT = newValue + solarData.dynamic_losses + solarData.useful_pressure_head;
+                    handleInputChange('total_head', newHMT);
+                  }}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Dénivelé géométrique total</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Pertes de charge (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.dynamic_losses}
+                  onChange={(e) => {
+                    const newValue = parseFloat(e.target.value);
+                    handleInputChange('dynamic_losses', newValue);
+                    // Recalcul automatique HMT
+                    const newHMT = solarData.static_head + newValue + solarData.useful_pressure_head;
+                    handleInputChange('total_head', newHMT);
+                  }}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Pertes dans tuyauteries</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
+                <label className="block text-sm font-medium text-blue-700 mb-2">Pression utile (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.useful_pressure_head}
+                  onChange={(e) => {
+                    const newValue = parseFloat(e.target.value);
+                    handleInputChange('useful_pressure_head', newValue);
+                    // Recalcul automatique HMT
+                    const newHMT = solarData.static_head + solarData.dynamic_losses + newValue;
+                    handleInputChange('total_head', newHMT);
+                  }}
+                  className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-lg font-semibold"
+                />
+                <p className="text-xs text-blue-600 mt-1">Pression résiduelle requise</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg border-l-4 border-green-600">
+                <label className="block text-sm font-medium text-green-800 mb-2">HMT Totale (m)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={solarData.total_head}
+                  readOnly
+                  className="w-full p-3 border-2 border-green-300 rounded-lg bg-green-50 text-lg font-bold text-green-800 cursor-not-allowed"
+                />
+                <p className="text-xs text-green-700 mt-1">Calculé automatiquement</p>
+              </div>
             </div>
+          </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-              <label className="block text-sm font-medium text-blue-700 mb-2">Diamètre tuyauterie (mm)</label>
-              <select
-                value={solarData.pipe_diameter}
-                onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              >
-                <option value={50}>50 mm</option>
-                <option value={80}>80 mm</option>
-                <option value={100}>100 mm</option>
-                <option value={125}>125 mm</option>
-                <option value={150}>150 mm</option>
-                <option value={200}>200 mm</option>
-              </select>
-              <p className="text-xs text-blue-600 mt-1">Diamètre nominal</p>
+          {/* Paramètres solaires */}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-yellow-800 mb-3">☀️ Paramètres Solaires</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg border-l-4 border-yellow-500">
+                <label className="block text-sm font-medium text-yellow-800 mb-2">Puissance crête panneau (Wc)</label>
+                <select
+                  value={solarData.panel_peak_power}
+                  onChange={(e) => handleInputChange('panel_peak_power', parseInt(e.target.value))}
+                  className="w-full p-3 border-2 border-yellow-300 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
+                >
+                  <option value={100}>100 Wc - Petit panneau</option>
+                  <option value={200}>200 Wc - Panneau compact</option>
+                  <option value={320}>320 Wc - Polycristallin standard</option>
+                  <option value={400}>400 Wc - Monocristallin standard</option>
+                  <option value={550}>550 Wc - Monocristallin haute performance</option>
+                  <option value={600}>600 Wc - Panneau haute puissance</option>
+                </select>
+                <p className="text-xs text-yellow-700 mt-1">Puissance unitaire des panneaux</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
+                <label className="block text-sm font-medium text-green-700 mb-2">Surface disponible (m²)</label>
+                <input
+                  type="number"
+                  step="1"
+                  value={solarData.available_surface || ''}
+                  onChange={(e) => handleInputChange('available_surface', e.target.value ? parseFloat(e.target.value) : null)}
+                  className="w-full p-3 border-2 border-green-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
+                  placeholder="Illimitée"
+                />
+                <p className="text-xs text-green-600 mt-1">Surface disponible pour panneaux</p>
+              </div>
             </div>
+          </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500">
-              <label className="block text-sm font-medium text-blue-700 mb-2">Longueur tuyauterie (m)</label>
-              <input
-                type="number"
-                step="1"
-                value={solarData.pipe_length}
-                onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              />
-              <p className="text-xs text-blue-600 mt-1">Longueur totale</p>
-            </div>
+          {/* Tuyauteries */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-3">🔧 Tuyauteries</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white p-4 rounded-lg border-l-4 border-gray-500">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Diamètre tuyauterie (mm)</label>
+                <select
+                  value={solarData.pipe_diameter}
+                  onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+                >
+                  <option value={50}>50 mm</option>
+                  <option value={63}>63 mm</option>
+                  <option value={80}>80 mm</option>
+                  <option value={100}>100 mm</option>
+                  <option value={125}>125 mm</option>
+                  <option value={150}>150 mm</option>
+                  <option value={200}>200 mm</option>
+                </select>
+                <p className="text-xs text-gray-600 mt-1">Diamètre nominal</p>
+              </div>
 
-            <div className="bg-white p-4 rounded-lg border-l-4 border-orange-500">
-              <label className="block text-sm font-medium text-orange-700 mb-2">Variation saisonnière</label>
-              <input
-                type="number"
-                step="0.1"
-                value={solarData.seasonal_variation}
-                onChange={(e) => handleInputChange('seasonal_variation', parseFloat(e.target.value))}
-                className="w-full p-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-                min="1.0" max="2.0"
-              />
-              <p className="text-xs text-orange-600 mt-1">Coeff. été (1.0 = constant)</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg border-l-4 border-green-500">
-              <label className="block text-sm font-medium text-green-700 mb-2">Surface panneaux (m²)</label>
-              <input
-                type="number"
-                step="1"
-                value={solarData.available_surface || ''}
-                onChange={(e) => handleInputChange('available_surface', e.target.value ? parseFloat(e.target.value) : null)}
-                className="w-full p-3 border-2 border-green-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200"
-                placeholder="Illimitée"
-              />
-              <p className="text-xs text-green-600 mt-1">Surface disponible</p>
+              <div className="bg-white p-4 rounded-lg border-l-4 border-gray-500">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Longueur totale (m)</label>
+                <input
+                  type="number"
+                  step="1"
+                  value={solarData.pipe_length}
+                  onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
+                  className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+                />
+                <p className="text-xs text-gray-600 mt-1">Longueur totale des conduites</p>
+              </div>
             </div>
           </div>
         </div>
