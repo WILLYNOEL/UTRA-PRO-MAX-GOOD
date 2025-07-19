@@ -4972,6 +4972,10 @@ class HydraulicPumpTester:
                     "pump_efficiency": 75.0,
                     "motor_efficiency": 88.0,
                     "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
                     "npsh_required": 0.0,  # Zero value
                     "installation_type": "surface",
                     "pump_type": "centrifugal",
