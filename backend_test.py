@@ -4553,6 +4553,11 @@ class HydraulicPumpTester:
         
         # Run all tests - prioritizing the specific corrections and NPSHd tests
         tests = [
+            # NEW INDUSTRIAL FLUIDS TESTS (from review request)
+            self.test_new_industrial_fluids_api,  # NEW: Test all 12 fluids are available
+            self.test_new_fluids_property_calculations,  # NEW: Test specific fluids at specific temperatures
+            self.test_expert_analysis_with_new_fluids,  # NEW: Test expert analysis with new fluids
+            self.test_hydraulic_calculations_consistency,  # NEW: Test no NaN values with new fluids
             self.test_fluids_api,
             # URGENT NPSHD SPECIFIC TESTS (from review request)
             self.test_npshd_required_field_acceptance,  # NEW: Test npsh_required field acceptance
