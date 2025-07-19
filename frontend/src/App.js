@@ -1188,7 +1188,19 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const chartInstance = useRef(null);
 
   const handleInputChange = (field, value) => {
-    const newData = { ...inputData, [field]: value };
+    // Permettre les valeurs 0, 0.5, et toutes les autres valeurs numériques valides
+    let processedValue = value;
+    
+    // Pour les champs numériques, accepter les chaînes vides et les convertir en 0 si nécessaire
+    if (typeof value === 'string' && value === '') {
+      processedValue = 0;
+    } else if (typeof value === 'string' && !isNaN(parseFloat(value))) {
+      processedValue = parseFloat(value);
+    } else if (typeof value === 'number') {
+      processedValue = value;
+    }
+    
+    const newData = { ...inputData, [field]: processedValue };
     setInputData(newData);
     
     // Calcul automatique si activé
