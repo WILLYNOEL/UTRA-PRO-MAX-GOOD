@@ -1111,6 +1111,223 @@ const ChemicalCompatibility = () => {
           reasons: ["Dissolution rapide", "Corrosion massive", "Réaction violente"]
         }
       }
+    },
+
+    // NOUVEAUX FLUIDES ALIMENTAIRES ET DOMESTIQUES
+    "milk": {
+      name: "Lait (3.5% MG)",
+      ph_range: "6.6-6.8",
+      corrosiveness: "Très Faible",
+      temperature_limits: "2°C à +80°C",
+      fat_content: "3.5% MG",
+      icon: "🥛",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "PTFE", "EPDM Food Grade", "Silicone Alimentaire", "Verre Borosilicaté"],
+          reasons: ["Usage alimentaire certifié", "Résistance nettoyage", "Inertie chimique totale"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "PP Food Grade", "PVC Alimentaire"],
+          reasons: ["Compatible produits laitiers", "Nettoyage facile"]
+        },
+        "poor": {
+          materials: ["Aluminum Non Traité", "PVC Standard"],
+          reasons: ["Interaction avec acidité", "Absorption d'odeurs"]
+        },
+        "incompatible": {
+          materials: ["Cuivre", "Laiton", "Caoutchouc Naturel", "Acier Galvanisé"],
+          reasons: ["Contamination métallique", "Développement bactérien", "Altération goût"]
+        }
+      }
+    },
+
+    "honey": {
+      name: "Miel (Naturel)",
+      ph_range: "3.4-6.1",
+      corrosiveness: "Faible (Acide)",
+      temperature_limits: "10°C à +60°C",
+      sugar_content: "82% sucres",
+      icon: "🍯",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Verre", "PTFE", "Silicone Food Grade", "Céramique Alimentaire"],
+          reasons: ["Résistance sucres acides", "Pas d'interaction", "Facilité nettoyage"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "HDPE Food Grade", "PP"],
+          reasons: ["Compatible alimentaire", "Résistance acceptable aux acides"]
+        },
+        "poor": {
+          materials: ["Aluminum", "Étain", "PVC Standard"],
+          reasons: ["Interaction acide", "Coloration possible", "Absorption"]
+        },
+        "incompatible": {
+          materials: ["Fer", "Cuivre", "Plomb", "Caoutchouc Naturel"],
+          reasons: ["Catalyse fermentation", "Contamination métallique", "Altération qualité"]
+        }
+      }
+    },
+
+    "wine": {
+      name: "Vin Rouge (12° alcool)",
+      ph_range: "3.3-3.7",
+      corrosiveness: "Modérée (Acide + Alcool)",
+      temperature_limits: "8°C à +25°C",
+      alcohol_content: "12% vol",
+      icon: "🍷",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Verre", "PTFE", "EPDM Œnologique", "Chêne Traité"],
+          reasons: ["Usage œnologique certifié", "Pas d'altération goût", "Résistance acides organiques"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Polyéthylène Dense", "Résines Alimentaires"],
+          reasons: ["Compatible vin", "Résistance alcool-acide"]
+        },
+        "poor": {
+          materials: ["Aluminum Anodisé", "PVC Food", "Caoutchouc Spécial"],
+          reasons: ["Interaction légère", "Nécessite surveillance", "Vieillissement accéléré"]
+        },
+        "incompatible": {
+          materials: ["Fer", "Cuivre Nu", "Plomb", "PVC Standard", "Caoutchouc Naturel"],
+          reasons: ["Casse métallique", "Goûts indésirables", "Contamination", "Altération aromatique"]
+        }
+      }
+    },
+
+    "bleach": {
+      name: "Eau de Javel (5% NaClO)",
+      ph_range: "11.5-13.0",
+      corrosiveness: "Très Élevée",
+      temperature_limits: "5°C à +25°C",
+      active_chlorine: "5% NaClO",
+      icon: "🧽",
+      compatibility: {
+        "excellent": {
+          materials: ["PVC", "CPVC", "PTFE", "Viton Résistant Chlore", "PVDF"],
+          reasons: ["Résistance chlore excellente", "Pas de dégradation", "Usage désinfection certifié"]
+        },
+        "good": {
+          materials: ["PEHD", "PP (court terme)", "Céramique Émaillée"],
+          reasons: ["Résistance acceptable", "Usage limité dans le temps"]
+        },
+        "poor": {
+          materials: ["304 Stainless Steel", "Caoutchouc EPDM", "Silicone Standard"],
+          reasons: ["Corrosion par piqûres", "Dégradation progressive", "Durée de vie limitée"]
+        },
+        "incompatible": {
+          materials: ["Acier Carbone", "Aluminum", "Cuivre", "Laiton", "316L Stainless (prolongé)", "NBR"],
+          reasons: ["Corrosion rapide", "Réaction violente", "Dégagement gazeux", "Défaillance immédiate"]
+        }
+      }
+    },
+
+    "yogurt": {
+      name: "Yaourt Nature",
+      ph_range: "4.0-4.4",
+      corrosiveness: "Faible (Acide Lactique)",
+      temperature_limits: "2°C à +45°C",
+      lactic_acid: "0.8% acide lactique",
+      icon: "🥛",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Verre", "PTFE", "Silicone Alimentaire", "EPDM Food Grade"],
+          reasons: ["Résistance acide lactique", "Usage laitier certifié", "Facilité stérilisation"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "PP Food Grade", "HDPE Alimentaire"],
+          reasons: ["Compatible produits fermentés", "Nettoyage efficace"]
+        },
+        "poor": {
+          materials: ["Aluminum Anodisé", "PVC Alimentaire", "Étain"],
+          reasons: ["Interaction acide faible", "Coloration possible", "Surveillance requise"]
+        },
+        "incompatible": {
+          materials: ["Fer", "Cuivre", "Zinc", "Caoutchouc Naturel", "Acier Galvanisé"],
+          reasons: ["Contamination métallique", "Altération bactérienne", "Goûts métalliques"]
+        }
+      }
+    },
+
+    "tomato_sauce": {
+      name: "Sauce Tomate Concentrée",
+      ph_range: "4.0-4.6",
+      corrosiveness: "Modérée (Acide + Sel)",
+      temperature_limits: "5°C à +95°C",
+      salt_content: "2.5% NaCl",
+      icon: "🍅",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Verre", "PTFE", "Céramique Émaillée", "Émail Vitrifié"],
+          reasons: ["Résistance acides organiques", "Pas d'interaction sel", "Usage conserverie certifié"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "Résines Époxy", "HDPE Food Grade"],
+          reasons: ["Compatible tomate", "Résistance température-acidité"]
+        },
+        "poor": {
+          materials: ["Aluminum Traité", "PVC Rigide", "Polyester"],
+          reasons: ["Interaction acide-sel", "Coloration progressive", "Durée limitée"]
+        },
+        "incompatible": {
+          materials: ["Fer", "Étain Non Protégé", "Cuivre", "Zinc", "Caoutchouc Standard"],
+          reasons: ["Corrosion acide", "Contamination métallique", "Altération couleur/goût"]
+        }
+      }
+    },
+
+    "soap_solution": {
+      name: "Solution Savonneuse (2%)",
+      ph_range: "9.0-11.0",
+      corrosiveness: "Faible (Basique)",
+      temperature_limits: "15°C à +60°C",
+      surfactant_content: "2% agents actifs",
+      icon: "🧼",
+      compatibility: {
+        "excellent": {
+          materials: ["Stainless Steel", "PVC", "PP", "PTFE", "Polyuréthane", "EPDM"],
+          reasons: ["Résistance détergents", "Usage nettoyage standard", "Pas de dégradation"]
+        },
+        "good": {
+          materials: ["Aluminum Anodisé", "HDPE", "ABS", "Polycarbonate"],
+          reasons: ["Compatible détergents", "Résistance alcaline acceptable"]
+        },
+        "poor": {
+          materials: ["Aluminum Nu", "Magnésium", "Caoutchouc Naturel"],
+          reasons: ["Attaque alcaline légère", "Gonflement", "Dégradation lente"]
+        },
+        "incompatible": {
+          materials: ["Zinc", "Étain", "Plomb", "Matériaux Poreux"],
+          reasons: ["Corrosion alcaline", "Dissolution", "Absorption détergents"]
+        }
+      }
+    },
+
+    "fruit_juice": {
+      name: "Jus de Fruits (Orange)",
+      ph_range: "3.3-4.2",
+      corrosiveness: "Modérée (Acide Citrique)",
+      temperature_limits: "2°C à +85°C",
+      vitamin_c: "50 mg/100ml",
+      icon: "🧃",
+      compatibility: {
+        "excellent": {
+          materials: ["316L Stainless Steel", "Verre", "PTFE", "Silicone Food Grade", "Émail Porcelaine"],
+          reasons: ["Résistance acides de fruits", "Préservation vitamines", "Usage alimentaire certifié"]
+        },
+        "good": {
+          materials: ["304 Stainless Steel", "PP Food Grade", "HDPE Alimentaire", "Céramique"],
+          reasons: ["Compatible jus de fruits", "Résistance acide citrique"]
+        },
+        "poor": {
+          materials: ["Aluminum Anodisé", "PVC Food", "Résines Standard"],
+          reasons: ["Interaction acide faible", "Possible migration", "Altération légère"]
+        },
+        "incompatible": {
+          materials: ["Fer", "Cuivre", "Étain Nu", "Caoutchouc Naturel", "Plomb"],
+          reasons: ["Destruction vitamine C", "Contamination métallique", "Oxydation", "Goûts métalliques"]
+        }
+      }
     }
   };
 
