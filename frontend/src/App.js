@@ -3633,67 +3633,74 @@ const FormulaDatabase = () => {
 
       {/* Affichage détaillé de la formule sélectionnée */}
       {selectedFormula && (
-          filteredFormulas.map((formula) => (
-            <div 
-              key={`${formula.category}-${formula.id}`}
-              className={`bg-white rounded-lg shadow-lg border-l-4 ${formula.categoryColor.replace('bg-', 'border-').replace('-50', '-400')} overflow-hidden`}
-            >
-              <div className="p-6">
-                {/* En-tête formule */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{formula.categoryIcon}</span>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">{formula.name}</h3>
-                      <p className="text-sm text-gray-600">{formula.categoryName}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedFormula(selectedFormula === formula.id ? null : formula.id)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    {selectedFormula === formula.id ? 'Réduire' : 'Détails'}
-                  </button>
-                </div>
-
-                {/* Formule mathématique */}
-                <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                  <div className="text-sm text-gray-600 mb-2">Formule mathématique:</div>
-                  <div className="font-mono text-lg text-gray-900 font-medium">
-                    {formula.formula}
-                  </div>
-                </div>
-
-                {/* Variables (toujours visibles) */}
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-900 mb-2">📋 Variables et unités:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {Object.entries(formula.variables).map(([symbol, description], index) => (
-                      <div key={index} className="flex items-start space-x-2">
-                        <span className="font-mono font-bold text-blue-600 min-w-fit">{symbol}:</span>
-                        <span className="text-gray-700 text-sm">{description}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Détails (conditionnels) */}
-                {selectedFormula === formula.id && (
-                  <div className="border-t pt-4 mt-4 space-y-3">
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-1">🎯 Application pratique:</h4>
-                      <p className="text-gray-700">{formula.application}</p>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-1">📖 Références normatives:</h4>
-                      <p className="text-gray-700">{formula.references}</p>
-                    </div>
-                  </div>
-                )}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="border-l-4 border-blue-500 bg-blue-50 p-6 rounded-r-lg">
+            <h3 className="text-xl font-bold text-blue-900 mb-4">
+              📐 {selectedFormula.name}
+            </h3>
+            
+            {/* Formule principale */}
+            <div className="bg-white rounded-lg p-4 mb-6 shadow-inner">
+              <h4 className="font-semibold text-gray-700 mb-2">Formule :</h4>
+              <div className="text-lg font-mono bg-gray-100 p-3 rounded border">
+                {selectedFormula.formula}
               </div>
             </div>
-          ))
-        )}
+
+            {/* Variables */}
+            <div className="mb-6">
+              <h4 className="font-semibold text-gray-700 mb-3">Variables :</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {Object.entries(selectedFormula.variables).map(([variable, description]) => (
+                  <div key={variable} className="bg-white p-3 rounded border">
+                    <span className="font-mono font-bold text-blue-600">{variable}</span>
+                    <span className="text-gray-600 ml-2">: {description}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Application */}
+            <div className="mb-4">
+              <h4 className="font-semibold text-gray-700 mb-2">Application :</h4>
+              <div className="bg-green-50 border border-green-200 rounded p-3 text-green-800">
+                {selectedFormula.application}
+              </div>
+            </div>
+
+            {/* Références */}
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-2">Références normatives :</h4>
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-yellow-800 text-sm">
+                {selectedFormula.references}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message d'instruction */}
+      {!selectedCategory && (
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="text-gray-500 text-lg mb-2">
+            👆 Sélectionnez une catégorie ci-dessus pour voir les formules disponibles
+          </div>
+          <p className="text-gray-400">
+            Nouvelle interface : une seule formule affichée à la fois pour plus de clarté
+          </p>
+        </div>
+      )}
+
+      {selectedCategory && !selectedFormula && (
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="text-gray-500 text-lg mb-2">
+            👆 Choisissez une formule dans la catégorie "{formulaDatabase[selectedCategory].name}"
+          </div>
+          <p className="text-gray-400">
+            {formulaDatabase[selectedCategory].formulas.length} formule{formulaDatabase[selectedCategory].formulas.length > 1 ? 's' : ''} disponible{formulaDatabase[selectedCategory].formulas.length > 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
       </div>
     </div>
   );
