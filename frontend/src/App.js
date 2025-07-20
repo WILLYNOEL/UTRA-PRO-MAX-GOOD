@@ -1616,8 +1616,14 @@ const SolarExpertSystem = () => {
       )}
 
       {/* Section Résultats */}
-      {activeSection === 'results' && results && (
+      {activeSection === 'results' && (
         <div className="space-y-6">
+          {!results ? (
+            <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+              <p className="font-bold">🔄 Calculs en cours...</p>
+              <p>Les résultats apparaîtront automatiquement dès que tous les paramètres hydrauliques sont configurés.</p>
+            </div>
+          ) : (
           <div className="bg-green-50 rounded-xl p-6">
             <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
