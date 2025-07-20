@@ -1016,18 +1016,8 @@ const SolarExpertSystem = () => {
 
   // Mise à jour du graphique de capacité mensuelle
   useEffect(() => {
-    console.log("Monthly chart useEffect triggered", { 
-      results: !!results, 
-      monthly_performance: !!results?.monthly_performance,
-      water_production: results?.monthly_performance?.water_production,
-      pump_hours: results?.monthly_performance?.pump_hours,
-      ref: !!monthlyChartRef.current 
-    });
-    
     // Fonction pour créer le graphique avec un délai si nécessaire
     const createChart = (attempt = 1) => {
-      console.log(`Chart creation attempt ${attempt}, ref available:`, !!monthlyChartRef.current);
-      
       if (results && results.monthly_performance && results.monthly_performance.water_production && monthlyChartRef.current) {
         const ctx = monthlyChartRef.current.getContext('2d');
         
@@ -1037,11 +1027,6 @@ const SolarExpertSystem = () => {
 
         const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
                            'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-
-        console.log("Creating monthly chart with data:", {
-          water_production: results.monthly_performance.water_production,
-          pump_hours: results.monthly_performance.pump_hours
-        });
 
         try {
           monthlyChartInstance.current = new Chart(ctx, {
@@ -1128,14 +1113,12 @@ const SolarExpertSystem = () => {
             }
           });
           
-          console.log("Monthly chart created successfully on attempt", attempt);
           return true;
         } catch (error) {
           console.error("Error creating monthly chart:", error);
           return false;
         }
       }
-      console.log("Chart creation conditions not met on attempt", attempt);
       return false;
     };
     
@@ -1143,7 +1126,6 @@ const SolarExpertSystem = () => {
       // Essayer de créer le graphique immédiatement
       if (!createChart(1)) {
         // Si ça échoue, essayer après des délais de plus en plus longs
-        console.log("Chart creation failed, retrying after delay...");
         setTimeout(() => {
           if (!createChart(2)) {
             setTimeout(() => {
@@ -1152,8 +1134,6 @@ const SolarExpertSystem = () => {
           }
         }, 200);
       }
-    } else {
-      console.log("Monthly chart conditions not met");
     }
   }, [results, activeSection]);
 
