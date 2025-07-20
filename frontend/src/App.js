@@ -1625,10 +1625,25 @@ const SolarExpertSystem = () => {
       )}
 
       {/* Section Résultats */}
-      {activeSection === 'results' && results && (
+      {activeSection === 'results' && (
         <div className="space-y-6">
-          <div className="bg-green-50 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
+          {loading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+              <p className="text-green-600 mt-2">Calcul en cours...</p>
+            </div>
+          )}
+          
+          {!loading && !results && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
+              <p className="font-bold">⚠️ Aucun résultat disponible</p>
+              <p>Les calculs solaires n'ont pas encore été effectués. Vérifiez que tous les paramètres sont renseignés dans l'onglet Hydraulique.</p>
+            </div>
+          )}
+          
+          {!loading && results && (
+            <div className="bg-green-50 rounded-xl p-6">
+              <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
             {/* Alerte de chargement */}
             {loading && (
