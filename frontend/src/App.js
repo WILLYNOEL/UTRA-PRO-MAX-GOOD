@@ -4135,8 +4135,21 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 </label>
                 <input
                   type="number"
-                  value={inputData.useful_pressure}
-                  onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
+                  step="0.1"
+                  value={inputData.useful_pressure !== undefined && inputData.useful_pressure !== null ? inputData.useful_pressure : ''}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    let pressureValue;
+                    
+                    // Permettre les chaînes vides et les états intermédiaires pour une saisie fluide
+                    if (inputValue === '' || inputValue === '.') {
+                      pressureValue = 0;
+                    } else {
+                      pressureValue = parseFloat(inputValue) || 0;
+                    }
+                    
+                    handleInputChange('useful_pressure', inputValue === '' ? 0 : pressureValue);
+                  }}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
