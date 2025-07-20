@@ -4103,17 +4103,6 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             ))}
           </div>
       </ProfessionalSection>
-        
-        <div className="mt-6">
-          <button
-            onClick={calculateNPSHd}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
-          >
-            {loading ? 'Calcul en cours...' : 'Calculer NPSHd'}
-          </button>
-        </div>
-      </ProfessionalSection>
       
       {/* Résultats */}
       {result && (
