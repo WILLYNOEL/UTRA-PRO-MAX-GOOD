@@ -4715,6 +4715,10 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
           </div>
         </ProfessionalGrid>
       </ProfessionalSection>
+
+      {/* Tuyauteries */}
+      <div className="space-y-4">
+        <h3 className="font-medium text-gray-700">Tuyauteries</h3>
             
             <div className="space-y-3">
               {inputData.installation_type === 'surface' && (
