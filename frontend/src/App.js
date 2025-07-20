@@ -3941,107 +3941,97 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Débit (m³/h)
-                </label>
-                <input
+                <ProfessionalLabel required>Débit (m³/h)</ProfessionalLabel>
+                <ProfessionalInput
                   type="number"
                   value={inputData.flow_rate}
                   onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  placeholder="Ex: 50"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type de Fluide
-                </label>
-                <select
+                <ProfessionalLabel required>Type de Fluide</ProfessionalLabel>
+                <ProfessionalSelect
                   value={inputData.fluid_type}
                   onChange={(e) => handleInputChange('fluid_type', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
                 >
                   {fluids.map(fluid => (
-                    <option key={fluid.id} value={fluid.id}>{fluid.name}</option>
+                    <option key={fluid.id} value={fluid.id}>
+                      {fluid.icon} {fluid.name}
+                    </option>
                   ))}
-                </select>
+                </ProfessionalSelect>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Température (°C)
-                </label>
-                <input
+                <ProfessionalLabel required>Température (°C)</ProfessionalLabel>
+                <ProfessionalInput
                   type="number"
                   value={inputData.temperature}
                   onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  NPSH Requis (m) - Données Constructeur
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={inputData.npsh_required}
-                  onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Ex: 3.5"
+                  required
+                  placeholder="Ex: 20"
                 />
               </div>
             </div>
           </div>
           
-          <div className="space-y-4">
-            {/* Tuyauterie */}
-            <h3 className="font-medium text-gray-700">Tuyauterie d'Aspiration</h3>
+          <div className="space-y-6">
+            <div>
+              <ProfessionalLabel required>Diamètre de tuyauterie</ProfessionalLabel>
+              <ProfessionalSelect
+                value={inputData.pipe_diameter}
+                onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
+                required
+              >
+                {dnOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </ProfessionalSelect>
+            </div>
             
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Diamètre de tuyauterie
-                </label>
-                <select
-                  value={inputData.pipe_diameter}
-                  onChange={(e) => handleInputChange('pipe_diameter', parseInt(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {dnOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Matériau
-                </label>
-                <select
-                  value={inputData.pipe_material}
-                  onChange={(e) => handleInputChange('pipe_material', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {pipeMaterials.map(material => (
-                    <option key={material.id} value={material.id}>{material.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Longueur (m)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.pipe_length}
-                  onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+            <div>
+              <ProfessionalLabel>Matériau de Tuyauterie</ProfessionalLabel>
+              <ProfessionalSelect
+                value={inputData.pipe_material}
+                onChange={(e) => handleInputChange('pipe_material', e.target.value)}
+              >
+                {pipeMaterials.map(material => (
+                  <option key={material.id} value={material.id}>
+                    {material.name}
+                  </option>
+                ))}
+              </ProfessionalSelect>
+            </div>
+            
+            <div>
+              <ProfessionalLabel>Longueur Tuyauterie (m)</ProfessionalLabel>
+              <ProfessionalInput
+                type="number"
+                value={inputData.pipe_length}
+                onChange={(e) => handleInputChange('pipe_length', parseFloat(e.target.value))}
+                placeholder="Ex: 50"
+              />
+            </div>
+            
+            <div>
+              <ProfessionalLabel required>NPSH Requis (m)</ProfessionalLabel>
+              <ProfessionalInput
+                type="number"
+                value={inputData.npsh_required}
+                onChange={(e) => handleInputChange('npsh_required', parseFloat(e.target.value))}
+                required
+                placeholder="Ex: 3.5"
+              />
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+                <p className="text-xs text-yellow-800">
+                  <span className="font-semibold">💡 Info :</span> Valeur fournie par constructeur pompe
+                </p>
               </div>
             </div>
           </div>
