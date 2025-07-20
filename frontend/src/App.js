@@ -844,8 +844,8 @@ const SolarExpertSystem = () => {
   const [solarData, setSolarData] = useState({
     // Informations du projet
     project_name: 'Système de Pompage Solaire',
-    location_region: 'france',
-    location_subregion: 'centre',
+    location_region: 'cote_ivoire',
+    location_subregion: 'abidjan',
     
     // Besoins en eau et hydrauliques
     daily_water_need: 10,
@@ -859,13 +859,14 @@ const SolarExpertSystem = () => {
     tank_height: 5, // Hauteur du château d'eau
     static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: 5, // Pertes de charge dynamiques
-    useful_pressure_head: 0, // Pression utile convertie en hauteur
+    useful_pressure_bar: 0, // Pression utile en Bar (input utilisateur)
+    useful_pressure_head: 0, // Pression utile convertie en hauteur (calculée automatiquement)
     total_head: 25, // HMT totale calculée automatiquement
     pipe_diameter: 100, // DN calculé automatiquement basé sur débit
     pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
     
     // Paramètres solaires
-    panel_peak_power: 400, // Wc - puissance crête panneau
+    panel_peak_power: 270, // Wc - puissance crête panneau par défaut 270W
     
     // Contraintes du système
     autonomy_days: 2,
