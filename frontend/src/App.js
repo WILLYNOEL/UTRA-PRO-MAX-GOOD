@@ -8424,108 +8424,140 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-blue-900 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold">Calculateur de Pompe Hydraulique</h1>
+      {/* Header Professionnel */}
+      <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 shadow-2xl border-b border-blue-700">
+        <div className="max-w-7xl mx-auto">
+          {/* Ligne du titre et branding */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-blue-700/30">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/10 p-2 rounded-full">
+                <svg className="w-8 h-8 text-blue-200" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V19A2 2 0 0 0 5 21H19A2 2 0 0 0 21 19V9Z"/>
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white tracking-tight">
+                  ECO-PUMP AFRIK
+                </h1>
+                <p className="text-blue-200 text-sm font-medium">
+                  Calculateur Hydraulique Professionnel
+                </p>
               </div>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="bg-green-500/20 px-3 py-1 rounded-full">
+                <span className="text-green-200 text-xs font-medium">● ACTIF</span>
+              </div>
+              <div className="text-blue-200 text-sm">
+                v3.0 PRO
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation principale */}
+          <nav className="px-6 py-2">
+            <div className="flex items-center space-x-1 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('npshd')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'npshd'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🟦 NPSHd
+                <span className="text-lg">🔷</span>
+                <span>NPSHd</span>
               </button>
               <button
                 onClick={() => setActiveTab('hmt')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'hmt'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-emerald-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🟩 HMT
+                <span className="text-lg">🔶</span>
+                <span>HMT</span>
               </button>
               <button
                 onClick={() => setActiveTab('performance')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'performance'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-yellow-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🟨 Performance
+                <span className="text-lg">📊</span>
+                <span>Performance</span>
               </button>
               <button
                 onClick={() => setActiveTab('formulas')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'formulas'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-purple-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                📚 Formules
+                <span className="text-lg">📚</span>
+                <span>Formules</span>
               </button>
               <button
                 onClick={() => setActiveTab('chemical_compatibility')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'chemical_compatibility'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-teal-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🧪 Compatibilité
+                <span className="text-lg">🧪</span>
+                <span>Compatibilité</span>
               </button>
               <button
                 onClick={() => setActiveTab('audit')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'audit'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-indigo-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🔧 Audit
+                <span className="text-lg">🔧</span>
+                <span>Audit</span>
               </button>
               <button
                 onClick={() => setActiveTab('expert')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'expert'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-violet-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                🟣 Expert
+                <span className="text-lg">🎯</span>
+                <span>Expert</span>
               </button>
               <button
                 onClick={() => setActiveTab('solar')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'solar'
-                    ? 'bg-yellow-600 text-white'
-                    : 'text-blue-200 hover:bg-yellow-700'
+                    ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-gradient-to-r hover:from-orange-600 hover:to-yellow-600 hover:text-white'
                 }`}
               >
-                ☀️ Expert Solaire
+                <span className="text-lg">☀️</span>
+                <span>Expert Solaire</span>
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`px-4 py-2 rounded-md font-medium ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'history'
-                    ? 'bg-blue-700 text-white'
-                    : 'text-blue-200 hover:bg-blue-800'
+                    ? 'bg-slate-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                📋 Historique
+                <span className="text-lg">📋</span>
+                <span>Historique</span>
               </button>
             </div>
-          </div>
+          </nav>
         </div>
       </header>
 
