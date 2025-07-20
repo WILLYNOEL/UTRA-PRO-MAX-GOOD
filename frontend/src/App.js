@@ -862,7 +862,7 @@ const SolarExpertSystem = () => {
     useful_pressure_bar: 0, // Pression utile en Bar (input utilisateur)
     useful_pressure_head: 0, // Pression utile convertie en hauteur (calculée automatiquement)
     total_head: 25, // HMT totale calculée automatiquement
-    pipe_diameter: 100, // DN calculé automatiquement basé sur débit
+    pipe_diameter: 114.3, // DN calculé automatiquement basé sur débit
     pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
     
     // Paramètres solaires
