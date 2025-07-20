@@ -1645,6 +1645,12 @@ const SolarExpertSystem = () => {
             <div className="bg-green-50 rounded-xl p-6">
               <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
+              {/* Reste du contenu des résultats */}
+            </div>
+          )}
+        </div>
+      )}
+            
             {/* Alerte de chargement */}
             {loading && (
               <div className="bg-blue-100 border border-blue-300 text-blue-700 px-4 py-3 rounded-lg mb-4">
