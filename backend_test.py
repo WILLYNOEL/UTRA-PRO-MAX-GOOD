@@ -5834,6 +5834,141 @@ class HydraulicPumpTester:
         
         return overall_success
     
+    def test_pressure_conversion_bar_to_meters(self):
+        """Test the conversion of useful pressure from Bar to meters in HMT calculations"""
+        print("\n🔧 Testing Pressure Conversion Bar to Meters...")
+        
+        # Test data from review request
+        test_cases = [
+            {
+                "name": "3 Bar Pressure Conversion",
+                "data": {
+                    "installation_type": "surface",
+                    "suction_type": "flooded",
+                    "hasp": 3.0,  # 3m aspiration height
+                    "discharge_height": 25.0,  # 25m discharge height
+                    "useful_pressure": 3.0,  # 3 bar - should give ~30.6 m
+                    "suction_pipe_diameter": 100.0,  # 100mm aspiration
+                    "discharge_pipe_diameter": 80.0,  # 80mm discharge
+                    "suction_pipe_length": 10.0,  # 10m aspiration
+                    "discharge_pipe_length": 50.0,  # 50m discharge
+                    "suction_pipe_material": "pvc",
+                    "discharge_pipe_material": "pvc",
+                    "suction_fittings": [],
+                    "discharge_fittings": [],
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "flow_rate": 50.0  # 50 m³/h
+                },
+                "expected_pressure_head": 30.6  # 3 bar * 10.2 m/bar
+            },
+            {
+                "name": "2 Bar Pressure Conversion",
+                "data": {
+                    "installation_type": "surface",
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "discharge_height": 25.0,
+                    "useful_pressure": 2.0,  # 2 bar - should give ~20.4 m
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_pipe_length": 10.0,
+                    "discharge_pipe_length": 50.0,
+                    "suction_pipe_material": "pvc",
+                    "discharge_pipe_material": "pvc",
+                    "suction_fittings": [],
+                    "discharge_fittings": [],
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "flow_rate": 50.0
+                },
+                "expected_pressure_head": 20.4  # 2 bar * 10.2 m/bar
+            },
+            {
+                "name": "0 Bar Pressure (No Useful Pressure)",
+                "data": {
+                    "installation_type": "surface",
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "discharge_height": 25.0,
+                    "useful_pressure": 0.0,  # 0 bar - should give 0 m
+                    "suction_pipe_diameter": 100.0,
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_pipe_length": 10.0,
+                    "discharge_pipe_length": 50.0,
+                    "suction_pipe_material": "pvc",
+                    "discharge_pipe_material": "pvc",
+                    "suction_fittings": [],
+                    "discharge_fittings": [],
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "flow_rate": 50.0
+                },
+                "expected_pressure_head": 0.0  # 0 bar * 10.2 m/bar
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that useful_pressure_head is present in response
+                    useful_pressure_head = result.get("useful_pressure_head", None)
+                    if useful_pressure_head is None:
+                        self.log_test(f"Pressure Conversion - {case['name']} - Field Presence", False, 
+                                    "useful_pressure_head field missing from response")
+                        all_passed = False
+                        continue
+                    
+                    # Check the conversion accuracy (1 bar ≈ 10.2 m for water)
+                    expected_head = case["expected_pressure_head"]
+                    tolerance = 0.5  # Allow 0.5m tolerance for calculation variations
+                    
+                    if abs(useful_pressure_head - expected_head) > tolerance:
+                        self.log_test(f"Pressure Conversion - {case['name']} - Conversion Accuracy", False, 
+                                    f"Expected ~{expected_head:.1f} m, got {useful_pressure_head:.2f} m")
+                        all_passed = False
+                        continue
+                    
+                    # Check that HMT includes the pressure head
+                    hmt = result.get("hmt", 0)
+                    static_head = result.get("static_head", 0)
+                    total_head_loss = result.get("total_head_loss", 0)
+                    
+                    # HMT should be: static_head + total_head_loss + useful_pressure_head
+                    expected_hmt = static_head + total_head_loss + useful_pressure_head
+                    
+                    if abs(hmt - expected_hmt) > 0.1:
+                        self.log_test(f"Pressure Conversion - {case['name']} - HMT Integration", False, 
+                                    f"HMT calculation error: Expected {expected_hmt:.2f} m, got {hmt:.2f} m")
+                        all_passed = False
+                        continue
+                    
+                    # Verify the conversion factor (approximately 10.2 m/bar for water)
+                    if case["data"]["useful_pressure"] > 0:
+                        conversion_factor = useful_pressure_head / case["data"]["useful_pressure"]
+                        expected_factor = 10.2  # Theoretical: 1 bar = 100000 Pa / (1000 kg/m³ * 9.81 m/s²) ≈ 10.2 m
+                        
+                        if abs(conversion_factor - expected_factor) > 0.5:
+                            self.log_test(f"Pressure Conversion - {case['name']} - Conversion Factor", False, 
+                                        f"Expected factor ~{expected_factor:.1f} m/bar, got {conversion_factor:.2f} m/bar")
+                            all_passed = False
+                            continue
+                    
+                    self.log_test(f"Pressure Conversion - {case['name']}", True, 
+                                f"Pressure: {case['data']['useful_pressure']:.1f} bar → {useful_pressure_head:.2f} m, HMT: {hmt:.2f} m")
+                else:
+                    self.log_test(f"Pressure Conversion - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Pressure Conversion - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
