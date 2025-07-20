@@ -6010,13 +6010,24 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <input
                     type="number"
                     step="0.1"
-                    value={inputData.useful_pressure || ''}
-                    onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value) || 0)}
+                    value={inputData.useful_pressure !== undefined && inputData.useful_pressure !== null ? inputData.useful_pressure : ''}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      // Permettre les chaînes vides et les états intermédiaires
+                      if (inputValue === '' || inputValue === '.') {
+                        handleInputChange('useful_pressure', 0);
+                      } else {
+                        handleInputChange('useful_pressure', parseFloat(inputValue) || 0);
+                      }
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Pression supplémentaire"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Pression supplémentaire requise (processus, pression résiduelle)
+                    Pression supplémentaire requise (processus, pression résiduelle)<br/>
+                    <span className="font-medium text-blue-600">
+                      ≈ {((inputData.useful_pressure || 0) * 10.2).toFixed(1)} m (pour eau)
+                    </span>
                   </p>
                 </div>
                 
