@@ -2055,9 +2055,14 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     # Recommandations pour les vitesses d'écoulement
     velocity_recommendations = []
     if npshd_result.velocity > 3.0:
+        # Calculer diamètre optimal pour vitesse raisonnable
+        optimal_suction_diameter_velocity = input_data.suction_pipe_diameter * 1.2
+        current_suction_dn_velocity = get_closest_dn(input_data.suction_pipe_diameter)
+        recommended_suction_dn_velocity = get_closest_dn(optimal_suction_diameter_velocity)
+        
         velocity_recommendations.extend([
             f"Vitesse aspiration excessive: {npshd_result.velocity:.2f} m/s",
-            f"Augmenter diamètre aspiration: {input_data.suction_pipe_diameter}mm → {input_data.suction_pipe_diameter * 1.2:.0f}mm",
+            f"Augmenter diamètre aspiration: DN{current_suction_dn_velocity} → DN{recommended_suction_dn_velocity}",
             "Utiliser courbes à grand rayon (3D minimum)",
             "Installer supports anti-vibratoires",
             "Prévoir isolation acoustique"
