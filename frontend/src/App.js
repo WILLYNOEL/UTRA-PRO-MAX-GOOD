@@ -4807,7 +4807,8 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
         </div>
       </ProfessionalSection>
         
-        {/* Raccords */}
+      {/* Raccords */}
+      <ProfessionalSection title="Raccords" icon="🔧">
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Raccords aspiration */}
           {inputData.installation_type === 'surface' && (
