@@ -1362,7 +1362,7 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar === 0 && solarData.useful_pressure_bar !== "" ? "" : solarData.useful_pressure_bar}
+                  value={solarData.useful_pressure_bar}
                   onChange={(e) => {
                     const value = e.target.value;
                     // Permettre les valeurs vides temporairement
