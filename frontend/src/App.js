@@ -1064,10 +1064,19 @@ const SolarExpertSystem = () => {
       }
       
       // Recalcul automatique HMT pour autres champs
-      if (field === 'dynamic_losses' || field === 'useful_pressure_head') {
+      if (field === 'dynamic_losses' || field === 'useful_pressure_head' || field === 'useful_pressure_bar') {
         const losses = field === 'dynamic_losses' ? value : prev.dynamic_losses;
-        const pressure = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
-        updated.total_head = prev.static_head + losses + pressure;
+        let pressureHead;
+        
+        if (field === 'useful_pressure_bar') {
+          // Convertir Bar en mètres (1 bar = 10.2 m)
+          pressureHead = value * 10.2;
+          updated.useful_pressure_head = pressureHead;
+        } else {
+          pressureHead = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
+        }
+        
+        updated.total_head = prev.static_head + losses + pressureHead;
       }
       
       return updated;
