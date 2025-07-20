@@ -3732,7 +3732,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
     flow_rate: 50,
     fluid_type: 'water',
     temperature: 20,
-    pipe_diameter: 100,
+    pipe_diameter: 114.3,
     pipe_material: 'pvc',
     pipe_length: 50,
     suction_fittings: [],
