@@ -4633,90 +4633,88 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
           )}
         </ProfessionalGrid>
       </ProfessionalSection>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Hauteur d'Aspiration (m)
-                    </label>
-                    <input
-                      type="number"
-                      value={inputData.hasp}
-                      onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </>
-              )}
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hauteur de Refoulement (m)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.discharge_height}
-                  onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Pression Utile (bar)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.useful_pressure}
-                  onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">Pression de refoulement requise</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Débit (m³/h)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.flow_rate}
-                  onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type de Fluide
-                </label>
-                <select
-                  value={inputData.fluid_type}
-                  onChange={(e) => handleInputChange('fluid_type', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {fluids.map(fluid => (
-                    <option key={fluid.id} value={fluid.id}>{fluid.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Température (°C)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.temperature}
-                  onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+
+      {/* Paramètres Hydrauliques */}
+      <ProfessionalSection 
+        title="Paramètres Hydrauliques" 
+        icon="💧"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={3}>
+          {inputData.installation_type === 'surface' && (
+            <div>
+              <ProfessionalLabel required>Hauteur d'Aspiration (m)</ProfessionalLabel>
+              <ProfessionalInput
+                type="number"
+                value={inputData.hasp}
+                onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value) || 0)}
+                required
+                placeholder="Ex: 3.0"
+              />
+              <div className="text-xs text-blue-600 mt-1 font-medium">
+                {inputData.suction_type === 'flooded' ? 'Hauteur charge fluide' : 'Hauteur aspiration'}
               </div>
             </div>
+          )}
+
+          <div>
+            <ProfessionalLabel required>Hauteur de Refoulement (m)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.discharge_height}
+              onChange={(e) => handleInputChange('discharge_height', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 25"
+            />
+            <div className="text-xs text-green-600 mt-1 font-medium">
+              Hauteur géométrique totale
+            </div>
           </div>
-          
-          {/* Tuyauteries */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Tuyauteries</h3>
+
+          <div>
+            <ProfessionalLabel required>Débit (m³/h)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.flow_rate}
+              onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 50"
+            />
+            <div className="text-xs text-blue-600 mt-1 font-medium">
+              Débit nominal pompe
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Type de Fluide</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.fluid_type}
+              onChange={(e) => handleInputChange('fluid_type', e.target.value)}
+              required
+            >
+              {fluids.map(fluid => (
+                <option key={fluid.id} value={fluid.id}>
+                  {fluid.icon} {fluid.name}
+                </option>
+              ))}
+            </ProfessionalSelect>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Température (°C)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.temperature}
+              onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 20"
+            />
+            <div className="text-xs text-orange-600 mt-1 font-medium">
+              Influence propriétés fluide
+            </div>
+          </div>
+        </ProfessionalGrid>
+      </ProfessionalSection>
             
             <div className="space-y-3">
               {inputData.installation_type === 'surface' && (
