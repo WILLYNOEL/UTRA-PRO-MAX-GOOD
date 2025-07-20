@@ -1014,6 +1014,104 @@ const SolarExpertSystem = () => {
     }
   }, [results]);
 
+  // Mise à jour du graphique de capacité mensuelle
+  useEffect(() => {
+    if (results && results.monthly_performance && monthlyChartRef.current) {
+      const ctx = monthlyChartRef.current.getContext('2d');
+      
+      if (monthlyChartInstance.current) {
+        monthlyChartInstance.current.destroy();
+      }
+
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
+                         'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+      monthlyChartInstance.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: monthNames,
+          datasets: [{
+            label: 'Volume d\'eau (m³/jour)',
+            data: results.monthly_performance.water_production,
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: '#3B82F6',
+            borderWidth: 2,
+            yAxisID: 'y'
+          }, {
+            label: 'Heures de pompage (h/jour)',
+            data: results.monthly_performance.pump_hours,
+            backgroundColor: 'rgba(34, 197, 94, 0.7)',
+            borderColor: '#22C55E',
+            borderWidth: 2,
+            yAxisID: 'y1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Évolution mensuelle de la capacité de pompage',
+              font: {
+                size: 16
+              }
+            },
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.datasetIndex === 0) {
+                    label += context.formattedValue + ' m³/j';
+                  } else {
+                    label += context.formattedValue + ' h/j';
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Mois'
+              }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: {
+                display: true,
+                text: 'Volume (m³/jour)'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: {
+                display: true,
+                text: 'Heures (h/jour)'
+              },
+              grid: {
+                drawOnChartArea: false,
+              },
+            }
+          }
+        }
+      });
+    }
+  }, [results]);
+
   const handleInputChange = (field, value) => {
     setSolarData(prev => {
       const updated = { ...prev, [field]: value };
