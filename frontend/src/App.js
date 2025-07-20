@@ -3705,6 +3705,28 @@ const FormulaDatabase = () => {
   );
 };
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
+  // Options DN normalisées (diamètres nominaux ISO)
+  const dnOptions = [
+    { value: 15, label: "DN15 (15mm)" },
+    { value: 20, label: "DN20 (20mm)" },
+    { value: 25, label: "DN25 (25mm)" },
+    { value: 32, label: "DN32 (32mm)" },
+    { value: 40, label: "DN40 (40mm)" },
+    { value: 50, label: "DN50 (50mm)" },
+    { value: 65, label: "DN65 (65mm)" },
+    { value: 80, label: "DN80 (80mm)" },
+    { value: 100, label: "DN100 (100mm)" },
+    { value: 125, label: "DN125 (125mm)" },
+    { value: 150, label: "DN150 (150mm)" },
+    { value: 200, label: "DN200 (200mm)" },
+    { value: 250, label: "DN250 (250mm)" },
+    { value: 300, label: "DN300 (300mm)" },
+    { value: 350, label: "DN350 (350mm)" },
+    { value: 400, label: "DN400 (400mm)" },
+    { value: 500, label: "DN500 (500mm)" },
+    { value: 600, label: "DN600 (600mm)" }
+  ];
+
   const [inputData, setInputData] = useState({
     suction_type: 'flooded',
     hasp: 3.0,
