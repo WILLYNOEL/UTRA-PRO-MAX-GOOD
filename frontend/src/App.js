@@ -3902,7 +3902,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
         icon="⚙️"
         className="shadow-xl"
       >
-        <ProfessionalGrid cols={2}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-6">
             <div>
               <ProfessionalLabel required>Type d'Aspiration</ProfessionalLabel>
