@@ -5969,6 +5969,184 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_solar_pumping_endpoint(self):
+        """Test the /api/solar-pumping endpoint with default Expert Solaire data"""
+        print("\n🌞 Testing Solar Pumping Endpoint...")
+        
+        # Test data from the user request - Expert Solaire default values
+        test_data = {
+            "project_name": "Test Système Pompage Solaire",
+            "location_region": "france",
+            "location_subregion": "centre",
+            "daily_water_need": 10,  # m³/jour
+            "operating_hours": 8,    # heures/jour
+            "flow_rate": 1.25,       # m³/h (calculé: 10/8)
+            "seasonal_variation": 1.2,
+            "peak_months": [6, 7, 8],
+            "dynamic_level": 15,     # m
+            "tank_height": 5,        # m
+            "static_head": 20,       # m (niveau + château)
+            "dynamic_losses": 5,     # m
+            "useful_pressure_head": 0, # m
+            "total_head": 25,        # m
+            "pipe_diameter": 100,    # mm
+            "pipe_length": 50,       # m
+            "panel_peak_power": 400, # Wc
+            "autonomy_days": 2,
+            "system_voltage": 24,    # V
+            "installation_type": "submersible",
+            "electricity_cost": 0.15,
+            "project_lifetime": 25,
+            "maintenance_cost_annual": 0.02,
+            "grid_connection_available": False,
+            "ambient_temperature_avg": 25,
+            "dust_factor": 0.95,
+            "shading_factor": 1.0
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/solar-pumping", json=test_data, timeout=15)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Validate main structure
+                required_top_level_keys = [
+                    "input_data", "dimensioning", "solar_irradiation", 
+                    "system_efficiency", "pump_operating_hours", 
+                    "monthly_performance", "system_curves", "warnings", "critical_alerts"
+                ]
+                
+                missing_keys = [key for key in required_top_level_keys if key not in result]
+                if missing_keys:
+                    self.log_test("Solar Pumping - Response Structure", False, f"Missing keys: {missing_keys}")
+                    return False
+                
+                # Validate dimensioning section
+                dimensioning = result.get("dimensioning", {})
+                required_dimensioning_keys = [
+                    "recommended_pump", "solar_panels", "batteries", 
+                    "mppt_controller", "energy_production", "energy_consumption",
+                    "system_sizing", "economic_analysis", "technical_recommendations"
+                ]
+                
+                missing_dim_keys = [key for key in required_dimensioning_keys if key not in dimensioning]
+                if missing_dim_keys:
+                    self.log_test("Solar Pumping - Dimensioning Structure", False, f"Missing dimensioning keys: {missing_dim_keys}")
+                    return False
+                
+                # Validate pump recommendation
+                pump = dimensioning.get("recommended_pump", {})
+                if not pump.get("model") or pump.get("power", 0) <= 0:
+                    self.log_test("Solar Pumping - Pump Selection", False, "Invalid pump recommendation")
+                    return False
+                
+                # Validate solar panels
+                panels = dimensioning.get("solar_panels", {})
+                if not panels.get("model") or panels.get("quantity", 0) <= 0 or panels.get("total_power", 0) <= 0:
+                    self.log_test("Solar Pumping - Panel Selection", False, "Invalid panel recommendation")
+                    return False
+                
+                # Validate batteries
+                batteries = dimensioning.get("batteries", {})
+                if not batteries.get("model") or batteries.get("total_quantity", 0) <= 0:
+                    self.log_test("Solar Pumping - Battery Selection", False, "Invalid battery recommendation")
+                    return False
+                
+                # Validate MPPT controller
+                mppt = dimensioning.get("mppt_controller", {})
+                if not mppt.get("model") or mppt.get("quantity", 0) <= 0:
+                    self.log_test("Solar Pumping - MPPT Selection", False, "Invalid MPPT recommendation")
+                    return False
+                
+                # Validate economic analysis
+                economic = dimensioning.get("economic_analysis", {})
+                required_economic_keys = [
+                    "total_system_cost", "annual_savings", "payback_period", 
+                    "roi_percentage", "net_annual_savings"
+                ]
+                
+                missing_econ_keys = [key for key in required_economic_keys if key not in economic]
+                if missing_econ_keys:
+                    self.log_test("Solar Pumping - Economic Analysis", False, f"Missing economic keys: {missing_econ_keys}")
+                    return False
+                
+                # Validate monthly performance data
+                monthly_perf = result.get("monthly_performance", {})
+                required_monthly_keys = ["months", "irradiation", "production", "consumption", "pump_hours"]
+                
+                missing_monthly_keys = [key for key in required_monthly_keys if key not in monthly_perf]
+                if missing_monthly_keys:
+                    self.log_test("Solar Pumping - Monthly Performance", False, f"Missing monthly keys: {missing_monthly_keys}")
+                    return False
+                
+                # Check that monthly data has 12 months
+                for key in ["irradiation", "production", "consumption", "pump_hours"]:
+                    if len(monthly_perf.get(key, [])) != 12:
+                        self.log_test("Solar Pumping - Monthly Data Length", False, f"{key} should have 12 months of data")
+                        return False
+                
+                # Validate system curves
+                system_curves = result.get("system_curves", {})
+                if "power_curve" not in system_curves or "pump_curve" not in system_curves:
+                    self.log_test("Solar Pumping - System Curves", False, "Missing power_curve or pump_curve")
+                    return False
+                
+                # Validate solar irradiation data
+                solar_irr = result.get("solar_irradiation", {})
+                if not isinstance(solar_irr.get("annual"), (int, float)) or solar_irr.get("annual", 0) <= 0:
+                    self.log_test("Solar Pumping - Solar Irradiation", False, "Invalid solar irradiation data")
+                    return False
+                
+                # Check that calculations are reasonable
+                total_cost = economic.get("total_system_cost", 0)
+                if total_cost <= 0 or total_cost > 100000:  # Should be reasonable for a solar pumping system
+                    self.log_test("Solar Pumping - Cost Reasonableness", False, f"Unreasonable total cost: {total_cost}€")
+                    return False
+                
+                # Check that pump hours are reasonable (should be between 0 and 24 hours per day)
+                pump_hours = result.get("pump_operating_hours", {})
+                for month_key, hours in pump_hours.items():
+                    if hours < 0 or hours > 24:
+                        self.log_test("Solar Pumping - Pump Hours Range", False, f"Invalid pump hours for {month_key}: {hours}")
+                        return False
+                
+                # Check system efficiency is reasonable (should be between 0 and 1)
+                system_eff = result.get("system_efficiency", 0)
+                if system_eff <= 0 or system_eff > 1:
+                    self.log_test("Solar Pumping - System Efficiency", False, f"Invalid system efficiency: {system_eff}")
+                    return False
+                
+                # Log key results for verification
+                pump_model = pump.get("model", "Unknown")
+                panel_quantity = panels.get("quantity", 0)
+                panel_power = panels.get("total_power", 0)
+                battery_config = batteries.get("configuration", "Unknown")
+                total_system_cost = economic.get("total_system_cost", 0)
+                payback_period = economic.get("payback_period", 0)
+                
+                details = (f"Pump: {pump_model}, Panels: {panel_quantity}x{panel_power}W, "
+                          f"Batteries: {battery_config}, Cost: {total_system_cost:.0f}€, "
+                          f"Payback: {payback_period:.1f} years")
+                
+                self.log_test("Solar Pumping Endpoint", True, details)
+                return True
+                
+            else:
+                error_detail = ""
+                try:
+                    error_data = response.json()
+                    error_detail = error_data.get("detail", "Unknown error")
+                except:
+                    error_detail = response.text[:200] if response.text else "No error details"
+                
+                self.log_test("Solar Pumping Endpoint", False, f"Status: {response.status_code}, Error: {error_detail}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Solar Pumping Endpoint", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
