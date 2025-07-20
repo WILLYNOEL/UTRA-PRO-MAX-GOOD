@@ -37,10 +37,10 @@ class HydraulicPumpTester:
     def test_api_connectivity(self):
         """Test basic API connectivity"""
         try:
-            response = requests.get(f"{BACKEND_URL}/", timeout=10)
+            response = requests.get(f"{BACKEND_URL}/fluids", timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                self.log_test("API Connectivity", True, f"Response: {data}")
+                self.log_test("API Connectivity", True, f"Response: {data.get('fluids', [])[:2]}...")
                 return True
             else:
                 self.log_test("API Connectivity", False, f"Status: {response.status_code}")
