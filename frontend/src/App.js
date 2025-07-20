@@ -8661,27 +8661,33 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               ))}
             </ProfessionalSelect>
           </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Matériau de tuyauterie
-                </label>
-                <select
-                  value={inputData.pipe_material}
-                  onChange={(e) => handleInputChange('pipe_material', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {pipeMaterials.map(material => (
-                    <option key={material.id} value={material.id}>{material.name}</option>
-                  ))}
-                </select>
-              </div>
+        </ProfessionalGrid>
+      </ProfessionalSection>
+
+      {/* Bouton de Calcul */}
+      <div className="flex justify-center">
+        <button
+          onClick={calculatePerformance}
+          disabled={loading}
+          className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 
+                     disabled:opacity-50 text-white font-bold py-4 px-12 rounded-xl shadow-lg 
+                     transform transition-all duration-200 hover:scale-105 hover:shadow-xl
+                     disabled:hover:scale-100 disabled:hover:shadow-lg
+                     text-lg tracking-wide min-w-[200px]"
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+              Analyse en cours...
             </div>
-          </div>
-          
-          {/* Paramètres électriques */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Paramètres Électriques</h3>
+          ) : (
+            <div className="flex items-center justify-center">
+              <span className="mr-3">🟨</span>
+              Analyser Performance
+            </div>
+          )}
+        </button>
+      </div>
             
             <div className="space-y-3">
               <div>
