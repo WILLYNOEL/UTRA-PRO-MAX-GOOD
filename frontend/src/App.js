@@ -1054,7 +1054,9 @@ const SolarExpertSystem = () => {
       // Conversion Bar vers mètres pour la pression utile
       if (field === 'useful_pressure_bar') {
         // 1 Bar = 10.2 mètres de hauteur d'eau approximativement
-        updated.useful_pressure_head = value * 10.2;
+        // S'assurer que la valeur n'est pas NaN
+        const pressureBarValue = isNaN(value) ? 0 : value;
+        updated.useful_pressure_head = pressureBarValue * 10.2;
         
         // Recalcul automatique HMT avec la nouvelle pression convertie
         updated.total_head = prev.static_head + prev.dynamic_losses + updated.useful_pressure_head;
