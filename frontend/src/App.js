@@ -4037,13 +4037,28 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
           </div>
         </div>
         
-        <div className="mt-6">
+        {/* Bouton de Calcul Professionnel */}
+        <div className="flex justify-center mt-8">
           <button
             onClick={calculateNPSHd}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
+                       disabled:opacity-50 text-white font-bold py-4 px-12 rounded-xl shadow-lg 
+                       transform transition-all duration-200 hover:scale-105 hover:shadow-xl
+                       disabled:hover:scale-100 disabled:hover:shadow-lg
+                       text-lg tracking-wide min-w-[200px]"
           >
-            {loading ? 'Calcul en cours...' : 'Calculer NPSHd'}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Calcul en cours...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span className="mr-3">🔷</span>
+                Calculer NPSHd
+              </div>
+            )}
           </button>
         </div>
       </ProfessionalSection>
