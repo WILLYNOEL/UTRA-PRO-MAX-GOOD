@@ -6017,6 +6017,8 @@ class HydraulicPumpTester:
             self.test_expert_analysis_test_cases_enhanced,  # NEW: Test enhanced expert analysis test cases
             # SPECIFIC TEST FOR 0 AND 0.5 VALUES (from current review request)
             self.test_expert_analysis_zero_and_half_values,  # NEW: Test 0 and 0.5 values acceptance
+            # PRESSURE CONVERSION TEST (from current review request)
+            self.test_pressure_conversion_bar_to_meters,  # NEW: Test pressure conversion Bar to meters
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
