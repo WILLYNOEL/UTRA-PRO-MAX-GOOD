@@ -2102,7 +2102,14 @@ const SolarExpertSystem = () => {
       )}
 
       {/* Section Analyse Économique */}
-      {activeSection === 'economics' && results && (
+      {activeSection === 'economics' && (
+        <div>
+          {!results ? (
+            <div className="bg-purple-50 border-l-4 border-purple-500 text-purple-700 p-4 rounded">
+              <p className="font-bold">🔄 Calculs économiques en attente...</p>
+              <p>L'analyse économique sera disponible dès que les calculs hydrauliques et solaires seront terminés.</p>
+            </div>
+          ) : (
         <div className="bg-purple-50 rounded-xl p-6">
           <h3 className="text-xl font-bold text-purple-900 mb-4">💰 Analyse Économique Complète</h3>
           
