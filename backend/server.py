@@ -78,6 +78,26 @@ FITTING_COEFFICIENTS = {
     "exit": {"name": "Sortie", "k": 1.0}
 }
 
+# Table des DN normalisés (diamètres nominaux ISO)
+DN_STANDARDS = [15, 20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
+
+def get_closest_dn(diameter_mm):
+    """Convertit un diamètre en mm vers le DN normalisé le plus proche"""
+    if diameter_mm <= 0:
+        return DN_STANDARDS[0]
+    
+    # Trouver le DN le plus proche
+    closest_dn = min(DN_STANDARDS, key=lambda dn: abs(dn - diameter_mm))
+    
+    # Si le diamètre calculé est supérieur au DN trouvé et qu'il y a une différence significative,
+    # prendre le DN supérieur pour être sûr
+    if diameter_mm > closest_dn and diameter_mm - closest_dn > closest_dn * 0.1:
+        index = DN_STANDARDS.index(closest_dn)
+        if index < len(DN_STANDARDS) - 1:
+            closest_dn = DN_STANDARDS[index + 1]
+    
+    return closest_dn
+
 FLUID_PROPERTIES = {
     "water": {
         "name": "Eau",
