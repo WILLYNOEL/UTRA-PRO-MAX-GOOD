@@ -4088,6 +4088,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             ))}
           </div>
         </div>
+        </ProfessionalGrid>
         
         <div className="mt-6">
           <button
