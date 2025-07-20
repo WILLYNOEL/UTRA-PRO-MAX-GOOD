@@ -1358,26 +1358,24 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar !== undefined ? solarData.useful_pressure_bar : ''}
+                  value={solarData.useful_pressure_bar !== undefined && solarData.useful_pressure_bar !== null ? solarData.useful_pressure_bar : ''}
                   onChange={(e) => {
                     const inputValue = e.target.value;
-                    let barValue;
                     
-                    // Permettre les chaînes vides et les états intermédiaires
+                    // Permettre les chaînes vides et les états intermédiaires pour une saisie fluide
                     if (inputValue === '' || inputValue === '.') {
-                      barValue = 0;
+                      // Laisser le champ vide visuellement mais stocker 0 pour les calculs
+                      handleInputChange('useful_pressure_bar', '');
+                      handleInputChange('useful_pressure_head', 0);
                     } else {
-                      barValue = parseFloat(inputValue) || 0;
+                      const barValue = parseFloat(inputValue) || 0;
+                      const meterValue = barValue * 10.2;
+                      handleInputChange('useful_pressure_bar', barValue);
+                      handleInputChange('useful_pressure_head', meterValue);
                     }
-                    
-                    // Conversion automatique Bar -> mètres (1 bar = 10.2 m)
-                    const meterValue = barValue * 10.2;
-                    
-                    // Mettre à jour les deux valeurs
-                    handleInputChange('useful_pressure_bar', inputValue === '' ? 0 : barValue);
-                    handleInputChange('useful_pressure_head', meterValue);
                   }}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
+                  placeholder="0"
                 />
                 <p className="text-xs text-yellow-600 mt-1">
                   Pression résiduelle requise en sortie<br/>
