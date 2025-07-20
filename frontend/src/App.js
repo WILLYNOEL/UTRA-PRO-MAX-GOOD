@@ -4035,7 +4035,6 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
               </div>
             </div>
           </div>
-        </div>
         
         {/* Bouton de Calcul Professionnel */}
         <div className="flex justify-center mt-8">
