@@ -8373,14 +8373,19 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Diamètre de tuyauterie (mm)
+                  Diamètre de tuyauterie
                 </label>
-                <input
-                  type="number"
+                <select
                   value={inputData.pipe_diameter}
-                  onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange('pipe_diameter', parseInt(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+                >
+                  {dnOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               
               <div>
