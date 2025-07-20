@@ -3938,7 +3938,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
               <p className="text-xs text-gray-500 mt-1">
                 {inputData.suction_type === 'flooded' ? 'Hauteur de fluide au-dessus de la pompe' : 'Hauteur de dénivelé à aspirer'}
               </p>
-              </div>
+            </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
