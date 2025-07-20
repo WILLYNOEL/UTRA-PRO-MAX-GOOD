@@ -1387,10 +1387,10 @@ const SolarExpertSystem = () => {
             </div>
           </div>
 
-          {/* Paramètres solaires et conduites */}
+          {/* Paramètres solaires et DN automatique */}
           <div>
-            <h4 className="text-lg font-semibold text-yellow-800 mb-3">☀️ Paramètres Solaires & Conduites</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h4 className="text-lg font-semibold text-yellow-800 mb-3">☀️ Paramètres Solaires & DN Conduite</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-gradient-to-r from-yellow-100 to-orange-100 p-4 rounded-lg border-l-4 border-yellow-500">
                 <label className="block text-sm font-medium text-yellow-800 mb-2">Puissance crête panneau (Wc)</label>
                 <select
@@ -1410,28 +1410,28 @@ const SolarExpertSystem = () => {
               </div>
 
               <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-lg border-l-4 border-blue-600">
-                <label className="block text-sm font-medium text-blue-800 mb-2">DN Conduite (calculé auto)</label>
+                <label className="block text-sm font-medium text-blue-800 mb-2">DN Conduite (calculé temps réel)</label>
                 <input
                   type="text"
-                  value={`DN ${solarData.pipe_diameter}`}
+                  value={`DN ${(() => {
+                    // CALCUL DN VRAIMENT DYNAMIQUE basé sur débit actuel
+                    const flowM3h = solarData.flow_rate || 1;
+                    const flowM3s = flowM3h / 3600; // conversion en m³/s
+                    const velocity = 2.0; // vitesse optimale 2 m/s
+                    const diameterM = Math.sqrt((4 * flowM3s) / (Math.PI * velocity)); // diamètre en mètres
+                    const diameterMM = diameterM * 1000; // conversion en mm
+                    
+                    // Normalisation vers DN standard
+                    const standardDNs = [20, 25, 32, 40, 50, 63, 80, 100, 125, 150, 200, 250, 300];
+                    const calculatedDN = standardDNs.find(dn => dn >= diameterMM) || standardDNs[standardDNs.length - 1];
+                    
+                    return calculatedDN;
+                  })()}`}
                   readOnly
                   className="w-full p-3 border-2 border-blue-300 rounded-lg bg-blue-50 text-lg font-bold text-blue-800 cursor-not-allowed text-center"
                 />
                 <p className="text-xs text-blue-700 mt-1">
-                  Basé sur débit {solarData.flow_rate} m³/h (v=2m/s)
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg border-l-4 border-green-600">
-                <label className="block text-sm font-medium text-green-800 mb-2">Longueur estimée (m)</label>
-                <input
-                  type="text"
-                  value={`${solarData.pipe_length.toFixed(0)} m`}
-                  readOnly
-                  className="w-full p-3 border-2 border-green-300 rounded-lg bg-green-50 text-lg font-bold text-green-800 cursor-not-allowed text-center"
-                />
-                <p className="text-xs text-green-700 mt-1">
-                  Basé sur géométrie (hauteur × 1.5)
+                  Basé sur débit {solarData.flow_rate.toFixed(2)} m³/h (v=2m/s)
                 </p>
               </div>
             </div>
@@ -1440,22 +1440,37 @@ const SolarExpertSystem = () => {
             <div className="mt-4 bg-gray-50 p-4 rounded-lg border">
               <h5 className="text-sm font-semibold text-gray-700 mb-2">📋 Spécifications Techniques Conduite</h5>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="text-center">
-                  <div className="font-semibold text-blue-600">Vitesse</div>
-                  <div>{((solarData.flow_rate / 3600) / (Math.PI * Math.pow(solarData.pipe_diameter/2000, 2))).toFixed(1)} m/s</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-green-600">Matériau</div>
-                  <div>{solarData.pipe_diameter <= 63 ? 'PEHD' : 'PVC-U'}</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-orange-600">Pression</div>
-                  <div>PN {solarData.pipe_diameter <= 100 ? '16' : '10'} bar</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-semibold text-purple-600">Norme</div>
-                  <div>ISO 4427</div>
-                </div>
+                {(() => {
+                  const flowM3h = solarData.flow_rate || 1;
+                  const flowM3s = flowM3h / 3600;
+                  const velocity = 2.0;
+                  const diameterM = Math.sqrt((4 * flowM3s) / (Math.PI * velocity));
+                  const diameterMM = diameterM * 1000;
+                  const standardDNs = [20, 25, 32, 40, 50, 63, 80, 100, 125, 150, 200, 250, 300];
+                  const calculatedDN = standardDNs.find(dn => dn >= diameterMM) || standardDNs[standardDNs.length - 1];
+                  const actualVelocity = flowM3s / (Math.PI * Math.pow(calculatedDN/2000, 2));
+                  
+                  return (
+                    <>
+                      <div className="text-center">
+                        <div className="font-semibold text-blue-600">Vitesse réelle</div>
+                        <div>{actualVelocity.toFixed(2)} m/s</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-green-600">Matériau</div>
+                        <div>{calculatedDN <= 63 ? 'PEHD' : 'PVC-U'}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-orange-600">Pression</div>
+                        <div>PN {calculatedDN <= 100 ? '16' : '10'} bar</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-purple-600">Norme</div>
+                        <div>ISO 4427</div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
