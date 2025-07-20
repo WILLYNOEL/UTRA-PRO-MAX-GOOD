@@ -3995,8 +3995,8 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
           </div>
           
-          {/* Tuyauterie */}
           <div className="space-y-4">
+            {/* Tuyauterie */}
             <h3 className="font-medium text-gray-700">Tuyauterie d'Aspiration</h3>
             
             <div className="space-y-3">
