@@ -859,7 +859,6 @@ const SolarExpertSystem = () => {
     tank_height: 5, // Hauteur du château d'eau
     static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: 5, // Pertes de charge dynamiques
-    useful_pressure_bar: 0, // Pression utile en Bar (saisie utilisateur)
     useful_pressure_head: 0, // Pression utile convertie en hauteur
     total_head: 25, // HMT totale calculée automatiquement
     pipe_diameter: 100, // DN calculé automatiquement basé sur débit
@@ -1349,29 +1348,11 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar || ''}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    
-                    if (inputValue === '' || inputValue === '.') {
-                      handleInputChange('useful_pressure_bar', '');
-                      handleInputChange('useful_pressure_head', 0);
-                    } else {
-                      const barValue = parseFloat(inputValue) || 0;
-                      const meterValue = barValue * 10.2;
-                      handleInputChange('useful_pressure_bar', barValue);
-                      handleInputChange('useful_pressure_head', meterValue);
-                    }
-                  }}
+                  value={solarData.useful_pressure_head}
+                  onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
-                  placeholder="0"
                 />
-                <p className="text-xs text-yellow-600 mt-1">
-                  Pression résiduelle requise en sortie<br/>
-                  <span className="font-semibold text-yellow-800">
-                    = {((solarData.useful_pressure_bar || 0) * 10.2).toFixed(1)} m
-                  </span>
-                </p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
@@ -1616,14 +1597,8 @@ const SolarExpertSystem = () => {
       )}
 
       {/* Section Résultats */}
-      {activeSection === 'results' && (
+      {activeSection === 'results' && results && (
         <div className="space-y-6">
-          {!results ? (
-            <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
-              <p className="font-bold">🔄 Calculs en cours...</p>
-              <p>Les résultats apparaîtront automatiquement dès que tous les paramètres hydrauliques sont configurés.</p>
-            </div>
-          ) : (
           <div className="bg-green-50 rounded-xl p-6">
             <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
@@ -2097,19 +2072,11 @@ const SolarExpertSystem = () => {
               </div>
             </div>
           </div>
-          )}
         </div>
       )}
 
       {/* Section Analyse Économique */}
-      {activeSection === 'economics' && (
-        <div>
-          {!results ? (
-            <div className="bg-purple-50 border-l-4 border-purple-500 text-purple-700 p-4 rounded">
-              <p className="font-bold">🔄 Calculs économiques en attente...</p>
-              <p>L'analyse économique sera disponible dès que les calculs hydrauliques et solaires seront terminés.</p>
-            </div>
-          ) : (
+      {activeSection === 'economics' && results && (
         <div className="bg-purple-50 rounded-xl p-6">
           <h3 className="text-xl font-bold text-purple-900 mb-4">💰 Analyse Économique Complète</h3>
           
@@ -2242,8 +2209,6 @@ const SolarExpertSystem = () => {
             ))}
           </ul>
         </div>
-        )}
-      </div>
       )}
     </div>
   );
@@ -8390,9 +8355,8 @@ function App() {
     loadData();
   }, []);
 
-  const loadData = async (retryCount = 0) => {
+  const loadData = async () => {
     try {
-      console.log('🔄 Chargement des données, tentative:', retryCount + 1);
       const [fluidsRes, materialsRes, fittingsRes, historyRes] = await Promise.all([
         axios.get(`${API}/fluids`),
         axios.get(`${API}/pipe-materials`),
@@ -8400,27 +8364,12 @@ function App() {
         axios.get(`${API}/history`)
       ]);
       
-      console.log('✅ Données chargées:', {
-        fluids: fluidsRes.data.fluids?.length || 0,
-        materials: materialsRes.data.materials?.length || 0,
-        fittings: fittingsRes.data.fittings?.length || 0,
-        history: historyRes.data?.length || 0
-      });
-      
-      setFluids(fluidsRes.data.fluids || []);
-      setPipeMaterials(materialsRes.data.materials || []);
-      setFittings(fittingsRes.data.fittings || []);
-      setHistory(historyRes.data || []);
+      setFluids(fluidsRes.data.fluids);
+      setPipeMaterials(materialsRes.data.materials);
+      setFittings(fittingsRes.data.fittings);
+      setHistory(historyRes.data);
     } catch (error) {
-      console.error('❌ Erreur chargement données (tentative ' + (retryCount + 1) + '):', error);
-      
-      // Retry après 2 secondes, maximum 3 tentatives
-      if (retryCount < 2) {
-        console.log('🔄 Nouvelle tentative dans 2 secondes...');
-        setTimeout(() => loadData(retryCount + 1), 2000);
-      } else {
-        console.error('❌ Échec définitif du chargement des données');
-      }
+      console.error('Erreur chargement données:', error);
     }
   };
 
