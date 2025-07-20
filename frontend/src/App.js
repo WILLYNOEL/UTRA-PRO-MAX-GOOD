@@ -4604,13 +4604,18 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 <h4 className="font-medium text-green-800 mb-2">Refoulement</h4>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-xs text-green-700 mb-1">Diamètre (mm)</label>
-                    <input
-                      type="number"
+                    <label className="block text-xs text-green-700 mb-1">Diamètre</label>
+                    <select
                       value={inputData.discharge_pipe_diameter}
-                      onChange={(e) => handleInputChange('discharge_pipe_diameter', parseFloat(e.target.value))}
+                      onChange={(e) => handleInputChange('discharge_pipe_diameter', parseInt(e.target.value))}
                       className="w-full p-1 border border-green-300 rounded text-sm"
-                    />
+                    >
+                      {dnOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          DN{option.value}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs text-green-700 mb-1">Longueur (m)</label>
