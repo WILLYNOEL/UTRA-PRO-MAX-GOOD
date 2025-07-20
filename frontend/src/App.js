@@ -1359,8 +1359,24 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar}
-                  onChange={(e) => handleInputChange('useful_pressure_bar', parseFloat(e.target.value) || 0)}
+                  value={solarData.useful_pressure_bar === 0 && solarData.useful_pressure_bar !== "" ? "" : solarData.useful_pressure_bar}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Permettre les valeurs vides temporairement
+                    if (value === "") {
+                      handleInputChange('useful_pressure_bar', "");
+                    } else {
+                      const parsedValue = parseFloat(value);
+                      handleInputChange('useful_pressure_bar', isNaN(parsedValue) ? 0 : parsedValue);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Au blur, s'assurer qu'on a une valeur numérique
+                    const value = e.target.value;
+                    if (value === "" || isNaN(parseFloat(value))) {
+                      handleInputChange('useful_pressure_bar', 0);
+                    }
+                  }}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
                 />
                 <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie (convertie automatiquement en mètres)</p>
