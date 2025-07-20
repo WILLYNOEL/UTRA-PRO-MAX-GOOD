@@ -912,27 +912,17 @@ const SolarExpertSystem = () => {
 
   // Calcul automatique en temps réel
   useEffect(() => {
-    console.log('🔍 useEffect triggered with solarData:', {
-      daily_water_need: solarData.daily_water_need,
-      total_head: solarData.total_head,
-      condition_met: solarData.daily_water_need > 0 && solarData.total_head > 0
-    });
-    
     const calculateSolarSystem = async () => {
       if (solarData.daily_water_need > 0 && solarData.total_head > 0) {
-        console.log('✅ Calling solar API...');
         setLoading(true);
         try {
           const response = await axios.post(`${API}/solar-pumping`, solarData);
-          console.log('✅ Solar API response received:', response.data ? 'Success' : 'No data');
           setResults(response.data);
         } catch (error) {
-          console.error('❌ Erreur calcul solaire:', error);
+          console.error('Erreur calcul solaire:', error);
         } finally {
           setLoading(false);
         }
-      } else {
-        console.log('⚠️ Skipping API call - conditions not met');
       }
     };
 
