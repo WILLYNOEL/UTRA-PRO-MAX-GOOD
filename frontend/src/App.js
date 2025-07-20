@@ -859,6 +859,7 @@ const SolarExpertSystem = () => {
     tank_height: 5, // Hauteur du château d'eau
     static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: 5, // Pertes de charge dynamiques
+    useful_pressure_bar: 0, // Pression utile en Bar (saisie utilisateur)
     useful_pressure_head: 0, // Pression utile convertie en hauteur
     total_head: 25, // HMT totale calculée automatiquement
     pipe_diameter: 100, // DN calculé automatiquement basé sur débit
