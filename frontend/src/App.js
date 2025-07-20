@@ -3906,21 +3906,18 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
           <div className="space-y-6">
             <div>
               <ProfessionalLabel required>Type d'Aspiration</ProfessionalLabel>
-                </label>
-                <select
-                  value={inputData.suction_type}
-                  onChange={(e) => handleInputChange('suction_type', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="flooded">Aspiration en charge</option>
-                  <option value="suction_lift">Aspiration en dépression</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hauteur d'Aspiration Hasp (m)
-                </label>
+              <ProfessionalSelect
+                value={inputData.suction_type}
+                onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                required
+              >
+                <option value="flooded">🔵 Aspiration en charge</option>
+                <option value="suction_lift">🔴 Aspiration en dépression</option>
+              </ProfessionalSelect>
+            </div>
+            
+            <div>
+              <ProfessionalLabel required>Hauteur d'Aspiration Hasp (m)</ProfessionalLabel>
                 <input
                   type="number"
                   value={inputData.hasp}
