@@ -2238,6 +2238,16 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     
     # Analyse hydraulique avancée
     if npshd_result.velocity > 3.0:
+        # Calculer les diamètres optimaux
+        optimal_suction_diameter = input_data.suction_pipe_diameter * math.sqrt(npshd_result.velocity / 2.5)
+        optimal_discharge_diameter = input_data.discharge_pipe_diameter * math.sqrt(npshd_result.velocity / 3.0)
+        
+        # Convertir en DN normalisés
+        current_suction_dn = get_closest_dn(input_data.suction_pipe_diameter)
+        recommended_suction_dn = get_closest_dn(optimal_suction_diameter)
+        current_discharge_dn = get_closest_dn(input_data.discharge_pipe_diameter)
+        recommended_discharge_dn = get_closest_dn(optimal_discharge_diameter)
+        
         expert_recommendations.append({
             "type": "hydraulic",
             "priority": 3,
@@ -2245,8 +2255,8 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "description": f"Vitesse {npshd_result.velocity:.2f}m/s > 3m/s - Risque d'érosion et cavitation",
             "impact": "Usure prématurée, bruit, vibrations, perte de performance",
             "solutions": [
-                f"Diamètre aspiration: {input_data.suction_pipe_diameter:.0f}mm → {input_data.suction_pipe_diameter * math.sqrt(npshd_result.velocity / 2.5):.0f}mm",
-                f"Diamètre refoulement: {input_data.discharge_pipe_diameter:.0f}mm → {input_data.discharge_pipe_diameter * math.sqrt(npshd_result.velocity / 3.0):.0f}mm",
+                f"Diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn}",
+                f"Diamètre refoulement: DN{current_discharge_dn} → DN{recommended_discharge_dn}",
                 "Matériaux anti-érosion (inox, fonte)",
                 "Supports anti-vibratoires",
                 "Réduction débit si possible"
