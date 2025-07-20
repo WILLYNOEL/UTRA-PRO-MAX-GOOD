@@ -912,26 +912,16 @@ const SolarExpertSystem = () => {
   // Calcul automatique en temps réel
   useEffect(() => {
     const calculateSolarSystem = async () => {
-      console.log('🔍 Solar calculation triggered:', {
-        daily_water_need: solarData.daily_water_need,
-        total_head: solarData.total_head,
-        condition: solarData.daily_water_need > 0 && solarData.total_head > 0
-      });
-      
       if (solarData.daily_water_need > 0 && solarData.total_head > 0) {
         setLoading(true);
         try {
-          console.log('📡 Calling solar API with data:', solarData);
           const response = await axios.post(`${API}/solar-pumping`, solarData);
-          console.log('✅ Solar API response:', response.data);
           setResults(response.data);
         } catch (error) {
-          console.error('❌ Erreur calcul solaire:', error);
+          console.error('Erreur calcul solaire:', error);
         } finally {
           setLoading(false);
         }
-      } else {
-        console.log('⚠️ Solar calculation skipped - condition not met');
       }
     };
 
@@ -1358,29 +1348,11 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar || ''}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    
-                    if (inputValue === '' || inputValue === '.') {
-                      handleInputChange('useful_pressure_bar', '');
-                      handleInputChange('useful_pressure_head', 0);
-                    } else {
-                      const barValue = parseFloat(inputValue) || 0;
-                      const meterValue = barValue * 10.2;
-                      handleInputChange('useful_pressure_bar', barValue);
-                      handleInputChange('useful_pressure_head', meterValue);
-                    }
-                  }}
+                  value={solarData.useful_pressure_head}
+                  onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
-                  placeholder="0"
                 />
-                <p className="text-xs text-yellow-600 mt-1">
-                  Pression résiduelle requise en sortie<br/>
-                  <span className="font-semibold text-yellow-800">
-                    = {((solarData.useful_pressure_bar || 0) * 10.2).toFixed(1)} m
-                  </span>
-                </p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
@@ -1625,31 +1597,10 @@ const SolarExpertSystem = () => {
       )}
 
       {/* Section Résultats */}
-      {activeSection === 'results' && (
+      {activeSection === 'results' && results && (
         <div className="space-y-6">
-          {loading && (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-              <p className="text-green-600 mt-2">Calcul en cours...</p>
-            </div>
-          )}
-          
-          {!loading && !results && (
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
-              <p className="font-bold">⚠️ Aucun résultat disponible</p>
-              <p>Les calculs solaires n'ont pas encore été effectués. Vérifiez que tous les paramètres sont renseignés dans l'onglet Hydraulique.</p>
-            </div>
-          )}
-          
-          {!loading && results && (
-            <div className="bg-green-50 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
-            
-              {/* Reste du contenu des résultats */}
-            </div>
-          )}
-        </div>
-      )}
+          <div className="bg-green-50 rounded-xl p-6">
+            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
             {/* Alerte de chargement */}
             {loading && (
