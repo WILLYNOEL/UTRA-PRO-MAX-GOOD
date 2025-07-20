@@ -1155,7 +1155,7 @@ const SolarExpertSystem = () => {
     } else {
       console.log("Monthly chart conditions not met");
     }
-  }, [results]);
+  }, [results, activeSection]);
 
   const handleInputChange = (field, value) => {
     setSolarData(prev => {
