@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import './App.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -861,8 +859,7 @@ const SolarExpertSystem = () => {
     tank_height: 5, // Hauteur du château d'eau
     static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
     dynamic_losses: 5, // Pertes de charge dynamiques
-    useful_pressure_bar: 0, // Pression utile en Bar (saisie utilisateur)
-    useful_pressure_head: 0, // Pression utile convertie en hauteur (m)
+    useful_pressure_head: 0, // Pression utile convertie en hauteur
     total_head: 25, // HMT totale calculée automatiquement
     pipe_diameter: 100, // DN calculé automatiquement basé sur débit
     pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
@@ -1067,220 +1064,14 @@ const SolarExpertSystem = () => {
       }
       
       // Recalcul automatique HMT pour autres champs
-      if (field === 'dynamic_losses' || field === 'useful_pressure_head' || field === 'useful_pressure_bar') {
+      if (field === 'dynamic_losses' || field === 'useful_pressure_head') {
         const losses = field === 'dynamic_losses' ? value : prev.dynamic_losses;
-        let pressureHead;
-        
-        if (field === 'useful_pressure_bar') {
-          // Convertir Bar en mètres (1 bar = 10.2 m)
-          pressureHead = value * 10.2;
-          updated.useful_pressure_head = pressureHead;
-        } else {
-          pressureHead = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
-        }
-        
-        updated.total_head = prev.static_head + losses + pressureHead;
+        const pressure = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
+        updated.total_head = prev.static_head + losses + pressure;
       }
       
       return updated;
     });
-  };
-
-  // Fonction pour générer un rapport PDF des données solaires
-  const generateSolarReportPDF = async () => {
-    try {
-      // Créer un nouveau document PDF
-      const pdf = new jsPDF();
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      let yPosition = 20;
-
-      // En-tête du rapport
-      pdf.setFontSize(20);
-      pdf.setTextColor(255, 140, 0); // Orange
-      pdf.text('RAPPORT EXPERT SOLAIRE', pageWidth/2, yPosition, { align: 'center' });
-      
-      yPosition += 10;
-      pdf.setFontSize(14);
-      pdf.setTextColor(100);
-      pdf.text('Dimensionnement Système Pompage Solaire', pageWidth/2, yPosition, { align: 'center' });
-      
-      yPosition += 20;
-      pdf.setTextColor(0);
-      
-      // Date et heure du rapport
-      pdf.setFontSize(10);
-      pdf.text(`Généré le ${new Date().toLocaleString('fr-FR')}`, 20, yPosition);
-      yPosition += 15;
-
-      // Section Informations Projet
-      pdf.setFontSize(14);
-      pdf.setTextColor(70, 130, 180); // Bleu
-      pdf.text('📋 INFORMATIONS PROJET', 20, yPosition);
-      yPosition += 8;
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(0);
-      pdf.text(`• Nom du projet: ${solarData.project_name || 'Système de Pompage Solaire'}`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Région: ${solarData.region || 'Centre de la France (3.8 kWh/m²/j)'}`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Type d'installation: ${solarData.installation_type || 'Pompe Submersible'}`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Tension système: ${solarData.system_voltage || '24V DC'}`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Budget maximum: ${solarData.max_budget || '15000'}€`, 25, yPosition);
-      yPosition += 10;
-
-      // Section Données Hydrauliques
-      pdf.setFontSize(14);
-      pdf.setTextColor(0, 191, 255); // Cyan
-      pdf.text('💧 DONNÉES HYDRAULIQUES', 20, yPosition);
-      yPosition += 8;
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(0);
-      pdf.text(`• Volume quotidien: ${solarData.daily_water_need || 10} m³/jour`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Heures fonctionnement: ${solarData.operating_hours || 8} h/jour`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Débit calculé: ${solarData.flow_rate?.toFixed(2) || '1.25'} m³/h`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Niveau dynamique: ${solarData.dynamic_level || 15} m`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Hauteur château: ${solarData.tank_height || 5} m`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Hauteur géométrique: ${solarData.static_head || 20} m`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Pertes de charge: ${solarData.dynamic_losses || 5} m`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Pression utile: ${solarData.useful_pressure_bar || 0} bar (${((solarData.useful_pressure_bar || 0) * 10.2).toFixed(1)} m)`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• HMT TOTALE: ${solarData.total_head?.toFixed(1) || 25} m`, 25, yPosition);
-      yPosition += 10;
-
-      // Section Configuration Solaire
-      pdf.setFontSize(14);
-      pdf.setTextColor(255, 165, 0); // Orange
-      pdf.text('☀️ CONFIGURATION SOLAIRE', 20, yPosition);
-      yPosition += 8;
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(0);
-      pdf.text(`• Puissance crête panneau: ${solarData.panel_peak_power || 400} Wc`, 25, yPosition);
-      yPosition += 5;
-      
-      // Calculs de puissance (similaires à ceux du frontend)
-      const hydraulicPower = ((solarData.flow_rate || 1.25) * (solarData.total_head || 25) * 1000 * 9.81) / 3600 / 1000;
-      const electricalPower = hydraulicPower / 0.75;
-      const requiredPanels = Math.ceil(electricalPower * 1000 / (solarData.panel_peak_power || 400));
-      
-      pdf.text(`• Puissance hydraulique: ${hydraulicPower.toFixed(2)} kW`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Puissance électrique: ${electricalPower.toFixed(2)} kW`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Nombre de panneaux: ${requiredPanels} panneau(x)`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Configuration: 1S${requiredPanels}P (${requiredPanels} parallèle)`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Surface requise: ${(requiredPanels * 2.0).toFixed(1)} m²`, 25, yPosition);
-      yPosition += 10;
-
-      // Nouvelle page si nécessaire
-      if (yPosition > pageHeight - 40) {
-        pdf.addPage();
-        yPosition = 20;
-      }
-
-      // Section Estimation Coûts
-      pdf.setFontSize(14);
-      pdf.setTextColor(255, 193, 7); // Jaune/Gold
-      pdf.text('💰 ESTIMATION COÛTS', 20, yPosition);
-      yPosition += 8;
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(0);
-      
-      const panelUnitPrice = 280;
-      const panelTotalCost = requiredPanels * panelUnitPrice;
-      const pumpCost = 980;
-      const batteryCost = 1920;
-      const totalCost = panelTotalCost + pumpCost + batteryCost + 875; // Autres coûts
-      
-      pdf.text(`• Prix unitaire panneau: ${panelUnitPrice}€`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Coût panneaux: ${panelTotalCost}€`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Coût pompe: ${pumpCost}€`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Coût batteries: ${batteryCost}€`, 25, yPosition);
-      yPosition += 5;
-      pdf.text(`• Autres coûts: 875€`, 25, yPosition);
-      yPosition += 5;
-      pdf.setFontSize(12);
-      pdf.setTextColor(220, 20, 60); // Rouge
-      pdf.text(`• COÛT TOTAL: ${totalCost}€`, 25, yPosition);
-      yPosition += 15;
-
-      // Section Spécifications Techniques
-      pdf.setFontSize(14);
-      pdf.setTextColor(75, 0, 130); // Indigo
-      pdf.text('🔧 SPÉCIFICATIONS TECHNIQUES', 20, yPosition);
-      yPosition += 8;
-      
-      pdf.setFontSize(10);
-      pdf.setTextColor(0);
-      pdf.text('Pompe Solaire Recommandée:', 25, yPosition);
-      yPosition += 4;
-      pdf.text('  • Type: Pompe submersible DC', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Débit nominal: ' + (solarData.flow_rate?.toFixed(1) || '1.3') + ' m³/h', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • HMT: ' + (solarData.total_head?.toFixed(0) || '25') + ' m', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Puissance: ' + electricalPower.toFixed(1) + ' kW', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Tension: 24V DC', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Protection: IP68', 30, yPosition);
-      yPosition += 8;
-
-      pdf.text('Système de Stockage:', 25, yPosition);
-      yPosition += 4;
-      pdf.text('  • Type: Batteries Gel/AGM', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Capacité: 200 Ah', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Tension: 24V', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Durée de vie: 8-12 ans', 30, yPosition);
-      yPosition += 8;
-
-      pdf.text('Régulateur MPPT:', 25, yPosition);
-      yPosition += 4;
-      pdf.text('  • Courant max: 40A', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Tension PV: 100V max', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Efficacité: >98%', 30, yPosition);
-      yPosition += 4;
-      pdf.text('  • Protection: IP67', 30, yPosition);
-
-      // Pied de page
-      pdf.setFontSize(8);
-      pdf.setTextColor(128);
-      pdf.text('Rapport généré par ECO-PUMP AFRIK - Expert Solaire', pageWidth/2, pageHeight - 10, { align: 'center' });
-
-      // Sauvegarder le PDF
-      const fileName = `Rapport_Solaire_${solarData.project_name?.replace(/\s+/g, '_') || 'Système'}_${new Date().toISOString().slice(0, 10)}.pdf`;
-      pdf.save(fileName);
-      
-      console.log('Rapport PDF généré avec succès:', fileName);
-      
-    } catch (error) {
-      console.error('Erreur lors de la génération du PDF:', error);
-      alert('Erreur lors de la génération du rapport PDF: ' + error.message);
-    }
   };
 
   const formatCurrency = (value) => {
@@ -1557,31 +1348,11 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_bar !== undefined && solarData.useful_pressure_bar !== null ? solarData.useful_pressure_bar : ''}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    
-                    // Permettre les chaînes vides et les états intermédiaires pour une saisie fluide
-                    if (inputValue === '' || inputValue === '.') {
-                      // Laisser le champ vide visuellement mais stocker 0 pour les calculs
-                      handleInputChange('useful_pressure_bar', '');
-                      handleInputChange('useful_pressure_head', 0);
-                    } else {
-                      const barValue = parseFloat(inputValue) || 0;
-                      const meterValue = barValue * 10.2;
-                      handleInputChange('useful_pressure_bar', barValue);
-                      handleInputChange('useful_pressure_head', meterValue);
-                    }
-                  }}
+                  value={solarData.useful_pressure_head}
+                  onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
-                  placeholder="0"
                 />
-                <p className="text-xs text-yellow-600 mt-1">
-                  Pression résiduelle requise en sortie<br/>
-                  <span className="font-semibold text-yellow-800">
-                    = {((solarData.useful_pressure_bar || 0) * 10.2).toFixed(1)} m
-                  </span>
-                </p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
@@ -1829,20 +1600,7 @@ const SolarExpertSystem = () => {
       {activeSection === 'results' && results && (
         <div className="space-y-6">
           <div className="bg-green-50 rounded-xl p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-green-900">📊 Installation Optimale - Résultats Automatiques</h3>
-              
-              {/* Bouton de génération de rapport PDF */}
-              <button
-                onClick={generateSolarReportPDF}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 font-semibold"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Rapport PDF
-              </button>
-            </div>
+            <h3 className="text-xl font-bold text-green-900 mb-4">📊 Installation Optimale - Résultats Automatiques</h3>
             
             {/* Alerte de chargement */}
             {loading && (
@@ -4260,6 +4018,17 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
   };
 
   const calculateHMT = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/calculate-hmt`, inputData);
+      setResult(response.data);
+    } catch (error) {
+      console.error('Erreur calcul HMT:', error);
+      alert('Erreur lors du calcul HMT: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -4334,29 +4103,11 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 </label>
                 <input
                   type="number"
-                  step="0.1"
-                  value={inputData.useful_pressure !== undefined && inputData.useful_pressure !== null ? inputData.useful_pressure : ''}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    let pressureValue;
-                    
-                    // Permettre les chaînes vides et les états intermédiaires pour une saisie fluide
-                    if (inputValue === '' || inputValue === '.') {
-                      pressureValue = 0;
-                    } else {
-                      pressureValue = parseFloat(inputValue) || 0;
-                    }
-                    
-                    handleInputChange('useful_pressure', inputValue === '' ? 0 : pressureValue);
-                  }}
+                  value={inputData.useful_pressure}
+                  onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Pression de refoulement requise<br/>
-                  <span className="font-medium text-blue-600">
-                    ≈ {((inputData.useful_pressure || 0) * 10.2).toFixed(1)} m (pour eau)
-                  </span>
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Pression de refoulement requise</p>
               </div>
               
               <div>
@@ -6209,24 +5960,13 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <input
                     type="number"
                     step="0.1"
-                    value={inputData.useful_pressure !== undefined && inputData.useful_pressure !== null ? inputData.useful_pressure : ''}
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-                      // Permettre les chaînes vides et les états intermédiaires
-                      if (inputValue === '' || inputValue === '.') {
-                        handleInputChange('useful_pressure', 0);
-                      } else {
-                        handleInputChange('useful_pressure', parseFloat(inputValue) || 0);
-                      }
-                    }}
+                    value={inputData.useful_pressure || ''}
+                    onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value) || 0)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Pression supplémentaire"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Pression supplémentaire requise (processus, pression résiduelle)<br/>
-                    <span className="font-medium text-blue-600">
-                      ≈ {((inputData.useful_pressure || 0) * 10.2).toFixed(1)} m (pour eau)
-                    </span>
+                    Pression supplémentaire requise (processus, pression résiduelle)
                   </p>
                 </div>
                 
