@@ -3053,10 +3053,10 @@ const ChemicalCompatibility = () => {
 };
 const FormulaDatabase = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedFormula, setSelectedFormula] = useState(null);
 
-  // Base de données complète des formules hydrauliques utilisées
+  // Base de données complète des formules hydrauliques et électriques utilisées
   const formulaDatabase = {
     // 1. FORMULES NPSHD
     npshd: {
