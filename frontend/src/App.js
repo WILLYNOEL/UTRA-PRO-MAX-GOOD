@@ -4047,17 +4047,27 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
           </div>
         </div>
         
-        {/* Raccords */}
         <div className="mt-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-medium text-gray-700">Raccords d'Aspiration</h3>
-            <button
-              onClick={addFitting}
-              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-            >
-              + Ajouter Raccord
-            </button>
-          </div>
+          <button
+            onClick={calculateNPSHd}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+          >
+            {loading ? 'Calcul en cours...' : 'Calculer NPSHd'}
+          </button>
+        </div>
+      </ProfessionalSection>
+
+      {/* Raccords */}
+      <ProfessionalSection title="Raccords d'Aspiration" icon="🔧">
+        <div className="flex justify-between items-center mb-3">
+          <button
+            onClick={addFitting}
+            className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+          >
+            + Ajouter Raccord
+          </button>
+        </div>
           
           <div className="space-y-2">
             {inputData.suction_fittings.map((fitting, index) => (
