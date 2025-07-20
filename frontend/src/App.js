@@ -1411,7 +1411,7 @@ const SolarExpertSystem = () => {
                     <span>Pression utile:</span>
                     <span className="font-semibold">
                       {solarData.useful_pressure_head.toFixed(1)}m 
-                      ({solarData.useful_pressure_bar.toFixed(1)} Bar)
+                      ({(solarData.useful_pressure_bar === "" || isNaN(solarData.useful_pressure_bar) ? 0 : parseFloat(solarData.useful_pressure_bar)).toFixed(1)} Bar)
                       ({((solarData.useful_pressure_head / solarData.total_head) * 100).toFixed(0)}%)
                     </span>
                   </div>
