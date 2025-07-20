@@ -1051,6 +1051,15 @@ const SolarExpertSystem = () => {
         updated.pipe_diameter = recommendedDN;
       }
       
+      // Conversion Bar vers mètres pour la pression utile
+      if (field === 'useful_pressure_bar') {
+        // 1 Bar = 10.2 mètres de hauteur d'eau approximativement
+        updated.useful_pressure_head = value * 10.2;
+        
+        // Recalcul automatique HMT avec la nouvelle pression convertie
+        updated.total_head = prev.static_head + prev.dynamic_losses + updated.useful_pressure_head;
+      }
+      
       // Calcul automatique de la hauteur géométrique
       if (field === 'dynamic_level' || field === 'tank_height') {
         const dynamicLevel = field === 'dynamic_level' ? value : prev.dynamic_level;
@@ -1064,11 +1073,10 @@ const SolarExpertSystem = () => {
         updated.pipe_length = Math.max(30, updated.static_head * 1.5);
       }
       
-      // Recalcul automatique HMT pour autres champs
-      if (field === 'dynamic_losses' || field === 'useful_pressure_head') {
+      // Recalcul automatique HMT pour autres champs (sauf useful_pressure_head qui est calculé automatiquement)
+      if (field === 'dynamic_losses') {
         const losses = field === 'dynamic_losses' ? value : prev.dynamic_losses;
-        const pressure = field === 'useful_pressure_head' ? value : prev.useful_pressure_head;
-        updated.total_head = prev.static_head + losses + pressure;
+        updated.total_head = prev.static_head + losses + prev.useful_pressure_head;
       }
       
       return updated;
