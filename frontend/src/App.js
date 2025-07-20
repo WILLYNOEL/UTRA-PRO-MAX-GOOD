@@ -4441,8 +4441,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
       console.error('Erreur lors de la génération du PDF:', error);
       alert('Erreur lors de la génération du rapport PDF: ' + error.message);
     }
-  // Fonction pour générer un rapport PDF des données solaires
-  const generateSolarReportPDF = async () => {
+  };
     try {
       // Créer un nouveau document PDF
       const pdf = new jsPDF();
