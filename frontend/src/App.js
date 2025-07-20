@@ -1016,7 +1016,15 @@ const SolarExpertSystem = () => {
 
   // Mise à jour du graphique de capacité mensuelle
   useEffect(() => {
-    if (results && results.monthly_performance && monthlyChartRef.current) {
+    console.log("Monthly chart useEffect triggered", { 
+      results: !!results, 
+      monthly_performance: !!results?.monthly_performance,
+      water_production: results?.monthly_performance?.water_production,
+      pump_hours: results?.monthly_performance?.pump_hours,
+      ref: !!monthlyChartRef.current 
+    });
+    
+    if (results && results.monthly_performance && results.monthly_performance.water_production && monthlyChartRef.current) {
       const ctx = monthlyChartRef.current.getContext('2d');
       
       if (monthlyChartInstance.current) {
@@ -1025,6 +1033,11 @@ const SolarExpertSystem = () => {
 
       const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
                          'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+      console.log("Creating monthly chart with data:", {
+        water_production: results.monthly_performance.water_production,
+        pump_hours: results.monthly_performance.pump_hours
+      });
 
       monthlyChartInstance.current = new Chart(ctx, {
         type: 'bar',
@@ -1109,6 +1122,10 @@ const SolarExpertSystem = () => {
           }
         }
       });
+      
+      console.log("Monthly chart created successfully");
+    } else {
+      console.log("Monthly chart conditions not met");
     }
   }, [results]);
 
