@@ -2242,6 +2242,8 @@ const SolarExpertSystem = () => {
             ))}
           </ul>
         </div>
+        )}
+      </div>
       )}
     </div>
   );
