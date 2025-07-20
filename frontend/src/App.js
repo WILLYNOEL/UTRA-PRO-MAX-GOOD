@@ -1357,11 +1357,11 @@ const SolarExpertSystem = () => {
                 <input
                   type="number"
                   step="0.1"
-                  value={solarData.useful_pressure_head}
-                  onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
+                  value={solarData.useful_pressure_bar}
+                  onChange={(e) => handleInputChange('useful_pressure_bar', parseFloat(e.target.value))}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
                 />
-                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie</p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie (convertie automatiquement en mètres)</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
