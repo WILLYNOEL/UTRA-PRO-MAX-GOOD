@@ -1024,106 +1024,122 @@ const SolarExpertSystem = () => {
       ref: !!monthlyChartRef.current 
     });
     
-    if (results && results.monthly_performance && results.monthly_performance.water_production && monthlyChartRef.current) {
-      const ctx = monthlyChartRef.current.getContext('2d');
-      
-      if (monthlyChartInstance.current) {
-        monthlyChartInstance.current.destroy();
-      }
+    // Fonction pour créer le graphique avec un délai si nécessaire
+    const createChart = () => {
+      if (results && results.monthly_performance && results.monthly_performance.water_production && monthlyChartRef.current) {
+        const ctx = monthlyChartRef.current.getContext('2d');
+        
+        if (monthlyChartInstance.current) {
+          monthlyChartInstance.current.destroy();
+        }
 
-      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
-                         'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 
+                           'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-      console.log("Creating monthly chart with data:", {
-        water_production: results.monthly_performance.water_production,
-        pump_hours: results.monthly_performance.pump_hours
-      });
+        console.log("Creating monthly chart with data:", {
+          water_production: results.monthly_performance.water_production,
+          pump_hours: results.monthly_performance.pump_hours
+        });
 
-      monthlyChartInstance.current = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: monthNames,
-          datasets: [{
-            label: 'Volume d\'eau (m³/jour)',
-            data: results.monthly_performance.water_production,
-            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-            borderColor: '#3B82F6',
-            borderWidth: 2,
-            yAxisID: 'y'
-          }, {
-            label: 'Heures de pompage (h/jour)',
-            data: results.monthly_performance.pump_hours,
-            backgroundColor: 'rgba(34, 197, 94, 0.7)',
-            borderColor: '#22C55E',
-            borderWidth: 2,
-            yAxisID: 'y1'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: 'Évolution mensuelle de la capacité de pompage',
-              font: {
-                size: 16
-              }
-            },
-            legend: {
-              display: true,
-              position: 'top'
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
+        monthlyChartInstance.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: monthNames,
+            datasets: [{
+              label: 'Volume d\'eau (m³/jour)',
+              data: results.monthly_performance.water_production,
+              backgroundColor: 'rgba(59, 130, 246, 0.7)',
+              borderColor: '#3B82F6',
+              borderWidth: 2,
+              yAxisID: 'y'
+            }, {
+              label: 'Heures de pompage (h/jour)',
+              data: results.monthly_performance.pump_hours,
+              backgroundColor: 'rgba(34, 197, 94, 0.7)',
+              borderColor: '#22C55E',
+              borderWidth: 2,
+              yAxisID: 'y1'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Évolution mensuelle de la capacité de pompage',
+                font: {
+                  size: 16
+                }
+              },
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.datasetIndex === 0) {
+                      label += context.formattedValue + ' m³/j';
+                    } else {
+                      label += context.formattedValue + ' h/j';
+                    }
+                    return label;
                   }
-                  if (context.datasetIndex === 0) {
-                    label += context.formattedValue + ' m³/j';
-                  } else {
-                    label += context.formattedValue + ' h/j';
-                  }
-                  return label;
                 }
               }
-            }
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Mois'
-              }
             },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Mois'
+                }
+              },
+              y: {
+                type: 'linear',
                 display: true,
-                text: 'Volume (m³/jour)'
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Volume (m³/jour)'
+                }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                  display: true,
+                  text: 'Heures (h/jour)'
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
               }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Heures (h/jour)'
-              },
-              grid: {
-                drawOnChartArea: false,
-              },
             }
           }
-        }
-      });
-      
-      console.log("Monthly chart created successfully");
+        });
+        
+        console.log("Monthly chart created successfully");
+        return true;
+      }
+      return false;
+    };
+    
+    if (results && results.monthly_performance && results.monthly_performance.water_production) {
+      // Essayer de créer le graphique immédiatement
+      if (!createChart()) {
+        // Si ça échoue, essayer après un délai
+        console.log("Chart creation failed, retrying after delay...");
+        setTimeout(() => {
+          createChart();
+        }, 100);
+      }
     } else {
       console.log("Monthly chart conditions not met");
     }
