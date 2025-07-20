@@ -6,6 +6,99 @@ import './App.css';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// ==============================
+// COMPOSANTS UI PROFESSIONNELS
+// ==============================
+
+// Composant Label Professionnel avec étoile rouge pour champs obligatoires
+const ProfessionalLabel = ({ children, required = false, className = "" }) => (
+  <label className={`block text-sm font-semibold text-gray-800 mb-2 leading-tight ${className}`}>
+    {children}
+    {required && <span className="text-red-500 ml-1 font-bold">*</span>}
+  </label>
+);
+
+// Composant Input Professionnel avec styles unifiés
+const ProfessionalInput = ({ 
+  type = "text", 
+  value, 
+  onChange, 
+  placeholder = "", 
+  required = false,
+  className = "",
+  ...props 
+}) => (
+  <input
+    type={type}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    required={required}
+    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-lg 
+                focus:border-blue-500 focus:ring-4 focus:ring-blue-100 
+                transition-all duration-200 text-gray-800 font-medium
+                placeholder-gray-400 shadow-sm hover:border-gray-300
+                ${required ? 'border-red-200 focus:border-red-500 focus:ring-red-100' : ''}
+                ${className}`}
+    {...props}
+  />
+);
+
+// Composant Select Professionnel
+const ProfessionalSelect = ({ 
+  value, 
+  onChange, 
+  children, 
+  required = false,
+  className = "",
+  ...props 
+}) => (
+  <select
+    value={value}
+    onChange={onChange}
+    required={required}
+    className={`w-full px-4 py-3 border-2 border-gray-200 rounded-lg 
+                focus:border-blue-500 focus:ring-4 focus:ring-blue-100 
+                transition-all duration-200 text-gray-800 font-medium
+                bg-white shadow-sm hover:border-gray-300 cursor-pointer
+                ${required ? 'border-red-200 focus:border-red-500 focus:ring-red-100' : ''}
+                ${className}`}
+    {...props}
+  >
+    {children}
+  </select>
+);
+
+// Composant Section Professionnelle avec titre
+const ProfessionalSection = ({ title, icon = "", children, className = "" }) => (
+  <div className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden ${className}`}>
+    {title && (
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+        <h3 className="text-lg font-bold text-gray-800 flex items-center">
+          {icon && <span className="mr-3 text-xl">{icon}</span>}
+          {title}
+        </h3>
+      </div>
+    )}
+    <div className="p-6">
+      {children}
+    </div>
+  </div>
+);
+
+// Composant Grid Professionnel responsive
+const ProfessionalGrid = ({ children, cols = 2, className = "" }) => (
+  <div className={`grid grid-cols-1 md:grid-cols-${cols} gap-6 ${className}`}>
+    {children}
+  </div>
+);
+
+// Styles CSS supplémentaires (à ajouter dans un style tag ou CSS file)
+const professionalStyles = {
+  fontFamily: "'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif",
+  letterSpacing: '-0.025em'
+};
+
 // Component pour Onglet AUDIT - Analyses Hydraulique et Énergétique Avancées
 const AuditSystem = () => {
   const [activeAuditTab, setActiveAuditTab] = useState('hydraulic');
