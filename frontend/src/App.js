@@ -4128,7 +4128,12 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-xs text-gray-500 mt-1">Pression de refoulement requise</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Pression de refoulement requise<br/>
+                  <span className="font-medium text-blue-600">
+                    ≈ {((inputData.useful_pressure || 0) * 10.2).toFixed(1)} m (pour eau)
+                  </span>
+                </p>
               </div>
               
               <div>
