@@ -4049,7 +4049,202 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }));
   };
 
-  const calculateHMT = async () => {
+  // Fonction pour générer un rapport PDF des données solaires
+  const generateSolarReportPDF = async () => {
+    try {
+      // Créer un nouveau document PDF
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let yPosition = 20;
+
+      // En-tête du rapport
+      pdf.setFontSize(20);
+      pdf.setTextColor(255, 140, 0); // Orange
+      pdf.text('RAPPORT EXPERT SOLAIRE', pageWidth/2, yPosition, { align: 'center' });
+      
+      yPosition += 10;
+      pdf.setFontSize(14);
+      pdf.setTextColor(100);
+      pdf.text('Dimensionnement Système Pompage Solaire', pageWidth/2, yPosition, { align: 'center' });
+      
+      yPosition += 20;
+      pdf.setTextColor(0);
+      
+      // Date et heure du rapport
+      pdf.setFontSize(10);
+      pdf.text(`Généré le ${new Date().toLocaleString('fr-FR')}`, 20, yPosition);
+      yPosition += 15;
+
+      // Section Informations Projet
+      pdf.setFontSize(14);
+      pdf.setTextColor(70, 130, 180); // Bleu
+      pdf.text('📋 INFORMATIONS PROJET', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      pdf.text(`• Nom du projet: ${solarData.project_name || 'Système de Pompage Solaire'}`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Région: ${solarData.region || 'Centre de la France (3.8 kWh/m²/j)'}`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Type d'installation: ${solarData.installation_type || 'Pompe Submersible'}`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Tension système: ${solarData.system_voltage || '24V DC'}`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Budget maximum: ${solarData.max_budget || '15000'}€`, 25, yPosition);
+      yPosition += 10;
+
+      // Section Données Hydrauliques
+      pdf.setFontSize(14);
+      pdf.setTextColor(0, 191, 255); // Cyan
+      pdf.text('💧 DONNÉES HYDRAULIQUES', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      pdf.text(`• Volume quotidien: ${solarData.daily_volume || 10} m³/jour`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Heures fonctionnement: ${solarData.operating_hours || 8} h/jour`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Débit calculé: ${solarData.flow_rate?.toFixed(2) || '1.25'} m³/h`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Niveau dynamique: ${solarData.dynamic_level || 15} m`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Hauteur château: ${solarData.tank_height || 5} m`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Hauteur géométrique: ${solarData.static_head || 20} m`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Pertes de charge: ${solarData.dynamic_losses || 5} m`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Pression utile: ${solarData.useful_pressure_bar || 0} bar (${((solarData.useful_pressure_bar || 0) * 10.2).toFixed(1)} m)`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• HMT TOTALE: ${solarData.total_head?.toFixed(1) || 25} m`, 25, yPosition);
+      yPosition += 10;
+
+      // Section Configuration Solaire
+      pdf.setFontSize(14);
+      pdf.setTextColor(255, 165, 0); // Orange
+      pdf.text('☀️ CONFIGURATION SOLAIRE', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      pdf.text(`• Puissance crête panneau: ${solarData.panel_peak_power || 400} Wc`, 25, yPosition);
+      yPosition += 5;
+      
+      // Calculs de puissance (similaires à ceux du frontend)
+      const hydraulicPower = ((solarData.flow_rate || 1.25) * (solarData.total_head || 25) * 1000 * 9.81) / 3600 / 1000;
+      const electricalPower = hydraulicPower / 0.75;
+      const requiredPanels = Math.ceil(electricalPower * 1000 / (solarData.panel_peak_power || 400));
+      
+      pdf.text(`• Puissance hydraulique: ${hydraulicPower.toFixed(2)} kW`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Puissance électrique: ${electricalPower.toFixed(2)} kW`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Nombre de panneaux: ${requiredPanels} panneau(x)`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Configuration: 1S${requiredPanels}P (${requiredPanels} parallèle)`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Surface requise: ${(requiredPanels * 2.0).toFixed(1)} m²`, 25, yPosition);
+      yPosition += 10;
+
+      // Nouvelle page si nécessaire
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      // Section Estimation Coûts
+      pdf.setFontSize(14);
+      pdf.setTextColor(255, 193, 7); // Jaune/Gold
+      pdf.text('💰 ESTIMATION COÛTS', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      
+      const panelUnitPrice = 280;
+      const panelTotalCost = requiredPanels * panelUnitPrice;
+      const pumpCost = 980;
+      const batteryCost = 1920;
+      const totalCost = panelTotalCost + pumpCost + batteryCost + 875; // Autres coûts
+      
+      pdf.text(`• Prix unitaire panneau: ${panelUnitPrice}€`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Coût panneaux: ${panelTotalCost}€`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Coût pompe: ${pumpCost}€`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Coût batteries: ${batteryCost}€`, 25, yPosition);
+      yPosition += 5;
+      pdf.text(`• Autres coûts: 875€`, 25, yPosition);
+      yPosition += 5;
+      pdf.setFontSize(12);
+      pdf.setTextColor(220, 20, 60); // Rouge
+      pdf.text(`• COÛT TOTAL: ${totalCost}€`, 25, yPosition);
+      yPosition += 15;
+
+      // Section Spécifications Techniques
+      pdf.setFontSize(14);
+      pdf.setTextColor(75, 0, 130); // Indigo
+      pdf.text('🔧 SPÉCIFICATIONS TECHNIQUES', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      pdf.text('Pompe Solaire Recommandée:', 25, yPosition);
+      yPosition += 4;
+      pdf.text('  • Type: Pompe submersible DC', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Débit nominal: ' + (solarData.flow_rate?.toFixed(1) || '1.3') + ' m³/h', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • HMT: ' + (solarData.total_head?.toFixed(0) || '25') + ' m', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Puissance: ' + electricalPower.toFixed(1) + ' kW', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Tension: 24V DC', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Protection: IP68', 30, yPosition);
+      yPosition += 8;
+
+      pdf.text('Système de Stockage:', 25, yPosition);
+      yPosition += 4;
+      pdf.text('  • Type: Batteries Gel/AGM', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Capacité: 200 Ah', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Tension: 24V', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Durée de vie: 8-12 ans', 30, yPosition);
+      yPosition += 8;
+
+      pdf.text('Régulateur MPPT:', 25, yPosition);
+      yPosition += 4;
+      pdf.text('  • Courant max: 40A', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Tension PV: 100V max', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Efficacité: >98%', 30, yPosition);
+      yPosition += 4;
+      pdf.text('  • Protection: IP67', 30, yPosition);
+
+      // Pied de page
+      pdf.setFontSize(8);
+      pdf.setTextColor(128);
+      pdf.text('Rapport généré par ECO-PUMP AFRIK - Expert Solaire', pageWidth/2, pageHeight - 10, { align: 'center' });
+
+      // Sauvegarder le PDF
+      const fileName = `Rapport_Solaire_${solarData.project_name?.replace(/\s+/g, '_') || 'Système'}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      pdf.save(fileName);
+      
+      console.log('Rapport PDF généré avec succès:', fileName);
+      
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error);
+      alert('Erreur lors de la génération du rapport PDF: ' + error.message);
+    }
+  };
     setLoading(true);
     try {
       const response = await axios.post(`${API}/calculate-hmt`, inputData);
