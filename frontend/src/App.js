@@ -2089,22 +2089,14 @@ const SolarExpertSystem = () => {
               <canvas ref={chartRef} style={{maxHeight: '400px'}}></canvas>
             </div>
 
-            {/* Capacité de pompage mensuelle */}
+            {/* Graphique de pompage mensuelle */}
             <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
               <h4 className="font-semibold text-gray-800 mb-3">💧 Capacité de Pompage Mensuelle</h4>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-sm">
-                {['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'].map((month, idx) => (
-                  <div key={month} className="bg-blue-50 p-2 rounded text-center border">
-                    <div className="font-medium text-blue-800">{month}</div>
-                    <div className="text-blue-600">
-                      {results.monthly_performance.water_production[idx].toFixed(1)} m³/j
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {results.monthly_performance.pump_hours[idx].toFixed(1)}h
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <canvas 
+                ref={monthlyChartRef} 
+                style={{maxHeight: '400px'}}
+                className="w-full"
+              ></canvas>
             </div>
           </div>
         </div>
