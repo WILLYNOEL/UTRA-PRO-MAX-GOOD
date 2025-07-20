@@ -4352,26 +4352,25 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
 // Component pour Tab 2 - Calcul HMT
 const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
-  // Options DN normalisées (diamètres nominaux ISO)
+  // Options DN normalisées (diamètres extérieurs réels selon standards)
   const dnOptions = [
-    { value: 15, label: "DN15 (15mm)" },
-    { value: 20, label: "DN20 (20mm)" },
-    { value: 25, label: "DN25 (25mm)" },
-    { value: 32, label: "DN32 (32mm)" },
-    { value: 40, label: "DN40 (40mm)" },
-    { value: 50, label: "DN50 (50mm)" },
-    { value: 65, label: "DN65 (65mm)" },
-    { value: 80, label: "DN80 (80mm)" },
-    { value: 100, label: "DN100 (100mm)" },
-    { value: 125, label: "DN125 (125mm)" },
-    { value: 150, label: "DN150 (150mm)" },
-    { value: 200, label: "DN200 (200mm)" },
-    { value: 250, label: "DN250 (250mm)" },
-    { value: 300, label: "DN300 (300mm)" },
-    { value: 350, label: "DN350 (350mm)" },
-    { value: 400, label: "DN400 (400mm)" },
-    { value: 500, label: "DN500 (500mm)" },
-    { value: 600, label: "DN600 (600mm)" }
+    { value: 26.9, label: "DN20 (26.9mm)" },
+    { value: 33.7, label: "DN25 (33.7mm)" },
+    { value: 42.4, label: "DN32 (42.4mm)" },
+    { value: 48.3, label: "DN40 (48.3mm)" },
+    { value: 60.3, label: "DN50 (60.3mm)" },
+    { value: 76.1, label: "DN65 (76.1mm)" },
+    { value: 88.9, label: "DN80 (88.9mm)" },
+    { value: 114.3, label: "DN100 (114.3mm)" },
+    { value: 139.7, label: "DN125 (139.7mm)" },
+    { value: 168.3, label: "DN150 (168.3mm)" },
+    { value: 219.1, label: "DN200 (219.1mm)" },
+    { value: 273.1, label: "DN250 (273.1mm)" },
+    { value: 323.9, label: "DN300 (323.9mm)" },
+    { value: 355.6, label: "DN350 (355.6mm)" },
+    { value: 406.4, label: "DN400 (406.4mm)" },
+    { value: 457.2, label: "DN450 (457.2mm)" },
+    { value: 508, label: "DN500 (508mm)" }
   ];
 
   const [inputData, setInputData] = useState({
