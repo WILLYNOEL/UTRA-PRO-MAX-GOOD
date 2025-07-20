@@ -895,6 +895,8 @@ const SolarExpertSystem = () => {
   const [activeSection, setActiveSection] = useState('project');
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const monthlyChartRef = useRef(null);
+  const monthlyChartInstance = useRef(null);
 
   // Charger les régions disponibles
   useEffect(() => {
