@@ -4099,7 +4099,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
             {loading ? 'Calcul en cours...' : 'Calculer NPSHd'}
           </button>
         </div>
-      </div>
+      </ProfessionalSection>
       
       {/* Résultats */}
       {result && (
