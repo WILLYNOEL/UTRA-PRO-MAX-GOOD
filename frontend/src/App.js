@@ -1344,7 +1344,7 @@ const SolarExpertSystem = () => {
             {/* Deuxième ligne : Calcul final */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white p-4 rounded-lg border-l-4 border-yellow-500">
-                <label className="block text-sm font-medium text-yellow-700 mb-2">Pression utile (m)</label>
+                <label className="block text-sm font-medium text-yellow-700 mb-2">Pression utile (Bar)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -1352,7 +1352,7 @@ const SolarExpertSystem = () => {
                   onChange={(e) => handleInputChange('useful_pressure_head', parseFloat(e.target.value))}
                   className="w-full p-3 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-lg font-semibold"
                 />
-                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise</p>
+                <p className="text-xs text-yellow-600 mt-1">Pression résiduelle requise en sortie</p>
               </div>
 
               <div className="bg-gradient-to-r from-green-200 to-green-300 p-4 rounded-lg border-l-4 border-green-700 shadow-lg">
