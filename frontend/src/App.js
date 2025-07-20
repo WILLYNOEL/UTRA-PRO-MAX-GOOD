@@ -4906,7 +4906,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             {loading ? 'Calcul en cours...' : 'Calculer HMT'}
           </button>
         </div>
-      </div>
+      </ProfessionalSection>
       
       {/* Résultats */}
       {result && (
