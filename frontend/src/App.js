@@ -4807,6 +4807,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
           </div>
         </div>
+      </div>
         
         {/* Raccords */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
