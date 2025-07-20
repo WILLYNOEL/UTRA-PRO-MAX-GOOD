@@ -8688,8 +8688,6 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
           )}
         </button>
       </div>
-            
-
       
       {/* Résultats */}
       {result && (
