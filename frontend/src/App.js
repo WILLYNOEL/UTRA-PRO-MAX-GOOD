@@ -3541,59 +3541,54 @@ const FormulaDatabase = () => {
     <div className="space-y-6">
       {/* En-tête */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-        <h2 className="text-2xl font-bold mb-2">📚 BASE DE DONNÉES DES FORMULES HYDRAULIQUES</h2>
+        <h2 className="text-2xl font-bold mb-2">📚 BASE DE DONNÉES DES FORMULES TECHNIQUES</h2>
         <p className="text-blue-100">
-          Référentiel technique complet des équations utilisées dans les calculs de pompes centrifuges
+          Référentiel complet des équations hydrauliques, électriques et de dimensionnement
         </p>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
           <div>✅ Conformité ISO 17769</div>
           <div>✅ Standards API 610</div>
-          <div>✅ Normes Hydraulic Institute</div>
+          <div>✅ Normes CEI & NFC</div>
         </div>
       </div>
 
-      {/* Filtres et recherche */}
+      {/* Sélection de catégorie */}
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Recherche */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              🔍 Recherche dans les formules
-            </label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Rechercher par nom, formule ou variable..."
-            />
-          </div>
-
-          {/* Filtre par catégorie */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              📂 Catégorie de formules
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">Toutes les formules ({Object.values(formulaDatabase).reduce((acc, cat) => acc + cat.formulas.length, 0)})</option>
-              {Object.entries(formulaDatabase).map(([key, category]) => (
-                <option key={key} value={key}>
-                  {category.icon} {category.name} ({category.formulas.length})
-                </option>
-              ))}
-            </select>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">🗂️ Sélectionner une Catégorie de Formules</h3>
+          
+          {/* Grille des catégories */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(formulaDatabase).map(([key, category]) => (
+              <button
+                key={key}
+                onClick={() => {
+                  setSelectedCategory(key);
+                  setSelectedFormula(null); // Reset sélection formule
+                }}
+                className={`p-4 rounded-lg border-2 text-left transition-all duration-200 hover:scale-105 ${
+                  selectedCategory === key
+                    ? 'border-blue-500 bg-blue-50 shadow-lg'
+                    : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-25'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{category.icon}</span>
+                  <div>
+                    <div className="font-semibold text-gray-800">{category.name}</div>
+                    <div className="text-sm text-gray-600">{category.formulas.length} formule{category.formulas.length > 1 ? 's' : ''}</div>
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-
+        
         {/* Statistiques */}
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-blue-50 rounded-lg p-3 text-center">
-            <div className="text-2xl font-bold text-blue-600">{filteredFormulas.length}</div>
-            <div className="text-sm text-blue-800">Formules trouvées</div>
+            <div className="text-2xl font-bold text-blue-600">{Object.values(formulaDatabase).reduce((acc, cat) => acc + cat.formulas.length, 0)}</div>
+            <div className="text-sm text-blue-800">Total Formules</div>
           </div>
           <div className="bg-green-50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-green-600">{Object.keys(formulaDatabase).length}</div>
@@ -3610,18 +3605,34 @@ const FormulaDatabase = () => {
         </div>
       </div>
 
-      {/* Liste des formules */}
-      <div className="grid grid-cols-1 gap-6">
-        {filteredFormulas.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="text-gray-500 text-lg">
-              🔍 Aucune formule trouvée pour "{searchTerm}"
-            </div>
-            <p className="text-gray-400 mt-2">
-              Essayez avec d'autres termes de recherche ou sélectionnez une autre catégorie
-            </p>
+      {/* Sélection de formule dans la catégorie */}
+      {selectedCategory && (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            {formulaDatabase[selectedCategory].icon} {formulaDatabase[selectedCategory].name}
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {formulaDatabase[selectedCategory].formulas.map((formula) => (
+              <button
+                key={formula.id}
+                onClick={() => setSelectedFormula(formula)}
+                className={`p-3 rounded-lg border text-left transition-all duration-200 ${
+                  selectedFormula?.id === formula.id
+                    ? 'border-green-500 bg-green-50 shadow-lg'
+                    : 'border-gray-200 bg-gray-50 hover:border-green-300 hover:bg-green-25'
+                }`}
+              >
+                <div className="font-medium text-gray-800">{formula.name}</div>
+                <div className="text-sm text-gray-600 mt-1 font-mono">{formula.formula}</div>
+              </button>
+            ))}
           </div>
-        ) : (
+        </div>
+      )}
+
+      {/* Affichage détaillé de la formule sélectionnée */}
+      {selectedFormula && (
           filteredFormulas.map((formula) => (
             <div 
               key={`${formula.category}-${formula.id}`}
