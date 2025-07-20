@@ -4615,7 +4615,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     >
                       {dnOptions.map(option => (
                         <option key={option.value} value={option.value}>
-                          DN{option.value}
+                          {option.label.split(' ')[0]}
                         </option>
                       ))}
                     </select>
