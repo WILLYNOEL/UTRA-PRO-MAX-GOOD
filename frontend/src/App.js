@@ -3701,7 +3701,6 @@ const FormulaDatabase = () => {
           </p>
         </div>
       )}
-      </div>
     </div>
   );
 };
