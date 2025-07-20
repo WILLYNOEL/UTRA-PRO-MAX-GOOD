@@ -3312,6 +3312,196 @@ const FormulaDatabase = () => {
           references: "Système international d'unités"
         }
       ]
+    },
+
+    // 7. FORMULES ÉLECTRIQUES - CÂBLES
+    electrical_cables: {
+      name: "Calculs Électriques - Câbles et Alimentation",
+      color: "bg-orange-50 border-orange-200",
+      icon: "⚡",
+      formulas: [
+        {
+          id: "cable_section",
+          name: "Section de Câble - Chute de Tension",
+          formula: "S = (ρ × L × I) / (ΔU × √3)",
+          variables: {
+            "S": "Section du conducteur (mm²)",
+            "ρ": "Résistivité du cuivre (0.017 Ω.mm²/m à 20°C)",
+            "L": "Longueur du câble (m)",
+            "I": "Courant nominal (A)",
+            "ΔU": "Chute de tension admissible (V)",
+            "√3": "Facteur pour triphasé (1 pour monophasé)"
+          },
+          application: "Dimensionnement section câble pour limiter chute tension (≤3% en éclairage, ≤5% en force)",
+          references: "NFC 15-100, CEI 60364"
+        },
+        {
+          id: "cable_current_capacity",
+          name: "Courant Admissible - Échauffement",
+          formula: "Iz = In × K1 × K2 × K3",
+          variables: {
+            "Iz": "Courant admissible en service (A)",
+            "In": "Courant nominal du câble (A)",
+            "K1": "Facteur température ambiante",
+            "K2": "Facteur groupement des circuits",
+            "K3": "Facteur mode de pose"
+          },
+          application: "Vérification échauffement câble selon conditions d'installation",
+          references: "NFC 15-100, tableau 52C à 52K"
+        },
+        {
+          id: "short_circuit_current",
+          name: "Courant de Court-Circuit",
+          formula: "Icc = U / √(R² + X²)",
+          variables: {
+            "Icc": "Courant de court-circuit efficace (A)",
+            "U": "Tension entre phases (V)",
+            "R": "Résistance totale du circuit (Ω)",
+            "X": "Réactance totale du circuit (Ω)"
+          },
+          application: "Calcul pouvoir de coupure disjoncteurs et fusibles",
+          references: "CEI 60909, NFC 13-200"
+        }
+      ]
+    },
+
+    // 8. FORMULES ÉLECTRIQUES - MOTEURS
+    electrical_motors: {
+      name: "Calculs Électriques - Moteurs",
+      color: "bg-indigo-50 border-indigo-200",
+      icon: "🔌",
+      formulas: [
+        {
+          id: "motor_power_selection",
+          name: "Puissance Moteur - Dimensionnement",
+          formula: "Pmoteur = (Ph × Fs) / (ηpompe × ηmoteur)",
+          variables: {
+            "Pmoteur": "Puissance moteur nécessaire (kW)",
+            "Ph": "Puissance hydraulique requise (kW)",
+            "Fs": "Facteur de service (1.15 à 1.25)",
+            "ηpompe": "Rendement pompe (%)",
+            "ηmoteur": "Rendement moteur (%)"
+          },
+          application: "Choix puissance moteur avec marge sécurité",
+          references: "CEI 60034, NEMA MG1"
+        },
+        {
+          id: "starting_current",
+          name: "Courant de Démarrage",
+          formula: "Id = Ka × In",
+          variables: {
+            "Id": "Courant de démarrage (A)",
+            "Ka": "Rapport intensité démarrage/nominale (5-8)",
+            "In": "Courant nominal moteur (A)"
+          },
+          application: "Dimensionnement protection démarrage moteur",
+          references: "CEI 60947-4-1"
+        },
+        {
+          id: "motor_slip",
+          name: "Glissement Moteur Asynchrone",
+          formula: "g = (ns - nr) / ns × 100",
+          variables: {
+            "g": "Glissement (%)",
+            "ns": "Vitesse synchrone (tr/min)",
+            "nr": "Vitesse rotor en charge (tr/min)"
+          },
+          application: "Calcul glissement pour dimensionnement variateur",
+          references: "Théorie machines électriques"
+        }
+      ]
+    },
+
+    // 9. FORMULES DIMENSIONNEMENT SYSTÈMES
+    system_sizing: {
+      name: "Dimensionnement et Sélection Systèmes",
+      color: "bg-pink-50 border-pink-200",
+      icon: "⚙️",
+      formulas: [
+        {
+          id: "pipe_diameter_selection",
+          name: "Diamètre Conduite Optimal",
+          formula: "D = √((4 × Q) / (π × V))",
+          variables: {
+            "D": "Diamètre intérieur optimal (m)",
+            "Q": "Débit volumique (m³/s)",
+            "V": "Vitesse recommandée (1.5-3 m/s)",
+            "π": "Pi (3.14159)"
+          },
+          application: "Choix diamètre pour vitesse économique (aspiration: 1-1.5 m/s, refoulement: 2-3 m/s)",
+          references: "Guides techniques pompage"
+        },
+        {
+          id: "reservoir_sizing",
+          name: "Volume Réservoir - Anti-bélier",
+          formula: "V = Q × t / (4 × n)",
+          variables: {
+            "V": "Volume réservoir minimal (m³)",
+            "Q": "Débit pompe (m³/h)",
+            "t": "Temps cycle min recommandé (15 min)",
+            "n": "Nombre démarrages/heure max (4)"
+          },
+          application: "Éviter démarrages répétitifs et coups de bélier",
+          references: "Standards pompage industriel"
+        },
+        {
+          id: "thermal_protection",
+          name: "Protection Thermique Moteur",
+          formula: "Irth = In × (1 + 0.25 × Fs)",
+          variables: {
+            "Irth": "Seuil protection thermique (A)",
+            "In": "Courant nominal moteur (A)",
+            "Fs": "Facteur service (sans unité)"
+          },
+          application: "Réglage relais thermique protection moteur",
+          references: "NFC 15-100, CEI 60947-4-1"
+        }
+      ]
+    },
+
+    // 10. FORMULES MAINTENANCE ET DIAGNOSTIC
+    maintenance: {
+      name: "Maintenance et Diagnostic",
+      color: "bg-gray-50 border-gray-200",
+      icon: "🔧",
+      formulas: [
+        {
+          id: "bearing_life",
+          name: "Durée de Vie Roulements",
+          formula: "L10 = (C / P)³ × 10⁶",
+          variables: {
+            "L10": "Durée vie nominale (tours)",
+            "C": "Charge dynamique base (N)",
+            "P": "Charge équivalente (N)"
+          },
+          application: "Planification maintenance préventive roulements",
+          references: "ISO 281, SKF General Catalogue"
+        },
+        {
+          id: "vibration_analysis",
+          name: "Analyse Vibratoire - RMS",
+          formula: "Vrms = √(Σ(Vi²) / n)",
+          variables: {
+            "Vrms": "Valeur efficace vibration (mm/s)",
+            "Vi": "Valeurs instantanées",
+            "n": "Nombre mesures"
+          },
+          application: "Diagnostic état machine (bon: <2.8, acceptable: 2.8-7.1, mauvais: >7.1 mm/s)",
+          references: "ISO 10816, NF E90-300"
+        },
+        {
+          id: "efficiency_degradation",
+          name: "Dégradation Rendement",
+          formula: "Δη = (η0 - ηt) / η0 × 100",
+          variables: {
+            "Δη": "Dégradation rendement (%)",
+            "η0": "Rendement initial (%)",
+            "ηt": "Rendement actuel (%)"
+          },
+          application: "Indicateur usure pompe (>10% = maintenance requise)",
+          references: "Hydraulic Institute, ANSI/API 610"
+        }
+      ]
     }
   };
 
