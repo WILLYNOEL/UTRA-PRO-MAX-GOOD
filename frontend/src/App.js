@@ -8553,71 +8553,114 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟨 Analyse de Performance & Calculs Électriques</h2>
+    <div className="space-y-8 font-inter" style={professionalStyles}>
+      {/* En-tête professionnel Performance */}
+      <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 rounded-2xl shadow-xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2 tracking-tight">
+              🟨 Analyse Performance Professionelle
+            </h2>
+            <p className="text-amber-100 text-lg font-medium">
+              Courbes de Performance & Calculs Électriques - Optimisation expert
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <div className="text-right">
+              <div className="text-2xl font-bold">Q/H</div>
+              <div className="text-sm opacity-90">Conformité ISO 9906</div>
+            </div>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Paramètres hydrauliques */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Paramètres Hydrauliques</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Débit (m³/h)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.flow_rate}
-                  onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  HMT (m)
-                </label>
-                <input
-                  type="number"
-                  value={inputData.hmt}
-                  onChange={(e) => handleInputChange('hmt', parseFloat(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Diamètre de tuyauterie
-                </label>
-                <select
-                  value={inputData.pipe_diameter}
-                  onChange={(e) => handleInputChange('pipe_diameter', parseInt(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {dnOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type de fluide
-                </label>
-                <select
-                  value={inputData.fluid_type}
-                  onChange={(e) => handleInputChange('fluid_type', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {fluids.map(fluid => (
-                    <option key={fluid.id} value={fluid.id}>{fluid.name}</option>
-                  ))}
-                </select>
-              </div>
+        {/* Indicateurs de conformité Performance */}
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">ISO</div>
+            <div className="text-xs opacity-90">9906</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">API</div>
+            <div className="text-xs opacity-90">610</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">Q/H</div>
+            <div className="text-xs opacity-90">Curves</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">Analysis</div>
+            <div className="text-xs opacity-90">Expert</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Paramètres de Performance */}
+      <ProfessionalSection 
+        title="Paramètres de Performance Hydraulique" 
+        icon="💧"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={3}>
+          <div>
+            <ProfessionalLabel required>Débit (m³/h)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.flow_rate}
+              onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 50"
+            />
+            <div className="text-xs text-blue-600 mt-1 font-medium">
+              Point de fonctionnement nominal
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>HMT (m)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.hmt}
+              onChange={(e) => handleInputChange('hmt', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 25"
+            />
+            <div className="text-xs text-green-600 mt-1 font-medium">
+              Hauteur manométrique totale
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Diamètre de tuyauterie</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.pipe_diameter}
+              onChange={(e) => handleInputChange('pipe_diameter', parseInt(e.target.value))}
+              required
+            >
+              {dnOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </ProfessionalSelect>
+            <div className="text-xs text-purple-600 mt-1 font-medium">
+              Diamètre nominal standard
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Type de fluide</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.fluid_type}
+              onChange={(e) => handleInputChange('fluid_type', e.target.value)}
+              required
+            >
+              {fluids.map(fluid => (
+                <option key={fluid.id} value={fluid.id}>
+                  {fluid.icon} {fluid.name}
+                </option>
+              ))}
+            </ProfessionalSelect>
+          </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
