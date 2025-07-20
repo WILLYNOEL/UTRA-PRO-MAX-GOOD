@@ -844,8 +844,8 @@ const SolarExpertSystem = () => {
   const [solarData, setSolarData] = useState({
     // Informations du projet
     project_name: 'Système de Pompage Solaire',
-    location_region: 'cote_ivoire',
-    location_subregion: 'abidjan',
+    location_region: 'afrique',
+    location_subregion: 'cote_ivoire',
     
     // Besoins en eau et hydrauliques
     daily_water_need: 10,
