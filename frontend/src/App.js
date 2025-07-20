@@ -3875,19 +3875,37 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟦 Calcul NPSHd (Net Positive Suction Head Available)</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Paramètres principaux */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Paramètres Principaux</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type d'Aspiration
+    <div className="space-y-8 font-inter" style={professionalStyles}>
+      {/* En-tête professionnel */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl shadow-xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2 tracking-tight">
+              🔷 Calcul NPSHd Professionnel
+            </h2>
+            <p className="text-blue-100 text-lg font-medium">
+              Net Positive Suction Head Available - Analyse de cavitation critique
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <div className="text-right">
+              <div className="text-2xl font-bold">NPSHd</div>
+              <div className="text-sm opacity-90">Conformité ISO 17769</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section Parameters Principaux */}
+      <ProfessionalSection 
+        title="Paramètres Principaux" 
+        icon="⚙️"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={2}>
+          <div className="space-y-6">
+            <div>
+              <ProfessionalLabel required>Type d'Aspiration</ProfessionalLabel>
                 </label>
                 <select
                   value={inputData.suction_type}
