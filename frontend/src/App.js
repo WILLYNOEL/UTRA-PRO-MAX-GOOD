@@ -1709,21 +1709,32 @@ const SolarExpertSystem = () => {
                   </div>
                 </div>
 
-                {/* Configuration série/parallèle - CALCULS DYNAMIQUES RÉELS */}
+                {/* Configuration série/parallèle - CALCULS VRAIMENT DYNAMIQUES */}
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h5 className="font-semibold text-blue-700 mb-2">🔗 Config. Série/Parallèle</h5>
                   <div className="space-y-2 text-sm">
                     {(() => {
-                      // Calcul dynamique de la configuration RÉELLE
+                      // CALCULS VRAIMENT DYNAMIQUES ET CORRECTS
                       const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000;
                       const electricalPowerKW = hydraulicPowerKW / 0.75;
                       const peakPowerW = (electricalPowerKW / 0.8) * 1000;
                       const totalPanels = Math.ceil(peakPowerW / solarData.panel_peak_power);
-                      const systemVoltage = solarData.system_voltage;
-                      const panelVoltage = solarData.panel_peak_power >= 400 ? 48 : 24;
                       
-                      const panelsInSeries = Math.ceil(systemVoltage / panelVoltage);
-                      const strings = Math.ceil(totalPanels / panelsInSeries);
+                      // CORRECTION LOGIQUE SÉRIE/PARALLÈLE
+                      const systemVoltage = solarData.system_voltage; // 12V, 24V, 48V ou 96V
+                      
+                      // Tension panneau selon puissance (logique réelle)
+                      let panelVoltage;
+                      if (solarData.panel_peak_power <= 200) panelVoltage = 12;
+                      else if (solarData.panel_peak_power <= 400) panelVoltage = 24; 
+                      else panelVoltage = 48;
+                      
+                      // CALCUL CORRECT panneaux en série
+                      const panelsInSeries = Math.max(1, Math.ceil(systemVoltage / panelVoltage));
+                      
+                      // CALCUL CORRECT strings en parallèle  
+                      const strings = Math.max(1, Math.ceil(totalPanels / panelsInSeries));
+                      
                       const stringVoltage = panelsInSeries * panelVoltage;
                       
                       return (
@@ -1731,6 +1742,10 @@ const SolarExpertSystem = () => {
                           <div className="flex justify-between">
                             <span>Panneaux total:</span>
                             <span className="font-bold text-gray-600">{totalPanels}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Tension panneau:</span>
+                            <span className="font-bold text-green-600">{panelVoltage}V</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Panneaux/série:</span>
@@ -1746,7 +1761,7 @@ const SolarExpertSystem = () => {
                           </div>
                           <div className="bg-blue-50 p-2 rounded mt-2">
                             <div className="text-xs text-blue-700 text-center">
-                              Tension string: {stringVoltage}V
+                              Tension string: {stringVoltage}V → Système {systemVoltage}V
                             </div>
                           </div>
                         </>
