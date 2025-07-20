@@ -2005,6 +2005,11 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     
     # Analyse critique de cavitation
     if npshd_result.cavitation_risk:
+        # Calculer diamètre optimal pour éviter la cavitation
+        optimal_suction_diameter_cavitation = input_data.suction_pipe_diameter * 1.3
+        current_suction_dn = get_closest_dn(input_data.suction_pipe_diameter)
+        recommended_suction_dn_cavitation = get_closest_dn(optimal_suction_diameter_cavitation)
+        
         expert_recommendations.append({
             "type": "critical",
             "priority": 1,
@@ -2013,7 +2018,7 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "impact": "DESTRUCTION DE LA POMPE - Arrêt immédiat requis",
             "solutions": [
                 f"Réduire hauteur d'aspiration de {hasp:.1f}m à {max(0, hasp - abs(npshd_result.npsh_margin) - 0.5):.1f}m",
-                f"Augmenter diamètre aspiration de {input_data.suction_pipe_diameter:.0f}mm à {input_data.suction_pipe_diameter * 1.3:.0f}mm",
+                f"Augmenter diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn_cavitation}",
                 f"Réduire longueur aspiration de {input_data.suction_length:.0f}m à {input_data.suction_length * 0.7:.0f}m",
                 "Supprimer raccords non essentiels sur aspiration",
                 "Installer pompe en charge si possible",
