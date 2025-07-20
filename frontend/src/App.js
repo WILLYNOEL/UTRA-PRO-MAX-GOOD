@@ -8390,8 +8390,9 @@ function App() {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const loadData = async (retryCount = 0) => {
     try {
+      console.log('🔄 Chargement des données, tentative:', retryCount + 1);
       const [fluidsRes, materialsRes, fittingsRes, historyRes] = await Promise.all([
         axios.get(`${API}/fluids`),
         axios.get(`${API}/pipe-materials`),
@@ -8399,12 +8400,27 @@ function App() {
         axios.get(`${API}/history`)
       ]);
       
-      setFluids(fluidsRes.data.fluids);
-      setPipeMaterials(materialsRes.data.materials);
-      setFittings(fittingsRes.data.fittings);
-      setHistory(historyRes.data);
+      console.log('✅ Données chargées:', {
+        fluids: fluidsRes.data.fluids?.length || 0,
+        materials: materialsRes.data.materials?.length || 0,
+        fittings: fittingsRes.data.fittings?.length || 0,
+        history: historyRes.data?.length || 0
+      });
+      
+      setFluids(fluidsRes.data.fluids || []);
+      setPipeMaterials(materialsRes.data.materials || []);
+      setFittings(fittingsRes.data.fittings || []);
+      setHistory(historyRes.data || []);
     } catch (error) {
-      console.error('Erreur chargement données:', error);
+      console.error('❌ Erreur chargement données (tentative ' + (retryCount + 1) + '):', error);
+      
+      // Retry après 2 secondes, maximum 3 tentatives
+      if (retryCount < 2) {
+        console.log('🔄 Nouvelle tentative dans 2 secondes...');
+        setTimeout(() => loadData(retryCount + 1), 2000);
+      } else {
+        console.error('❌ Échec définitif du chargement des données');
+      }
     }
   };
 
