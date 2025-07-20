@@ -4546,45 +4546,93 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">🟩 Calcul HMT (Hauteur Manométrique Totale)</h2>
+    <div className="space-y-8 font-inter" style={professionalStyles}>
+      {/* En-tête professionnel HMT */}
+      <div className="bg-gradient-to-r from-emerald-600 via-green-700 to-teal-700 rounded-2xl shadow-xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2 tracking-tight">
+              🟢 Calcul HMT Professionnel
+            </h2>
+            <p className="text-emerald-100 text-lg font-medium">
+              Hauteur Manométrique Totale - Dimensionnement hydraulique expert
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <div className="text-right">
+              <div className="text-2xl font-bold">HMT</div>
+              <div className="text-sm opacity-90">Conformité API 610</div>
+            </div>
+          </div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Paramètres généraux */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-700">Paramètres Généraux</h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Type d'Installation
-                </label>
-                <select
-                  value={inputData.installation_type}
-                  onChange={(e) => handleInputChange('installation_type', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="surface">Installation en surface</option>
-                  <option value="submersible">Installation submersible</option>
-                </select>
-              </div>
-              
-              {inputData.installation_type === 'surface' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Type d'Aspiration
-                    </label>
-                    <select
-                      value={inputData.suction_type}
-                      onChange={(e) => handleInputChange('suction_type', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="flooded">Aspiration en charge</option>
-                      <option value="suction_lift">Aspiration en dépression</option>
-                    </select>
-                  </div>
+        {/* Indicateurs de conformité */}
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">API</div>
+            <div className="text-xs opacity-90">610</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">ISO</div>
+            <div className="text-xs opacity-90">5199</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">HMT</div>
+            <div className="text-xs opacity-90">Expert</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+            <div className="font-bold text-lg">Analysis</div>
+            <div className="text-xs opacity-90">Pro</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Configuration Installation */}
+      <ProfessionalSection 
+        title="Configuration Installation" 
+        icon="⚙️"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={2}>
+          <div>
+            <ProfessionalLabel required>Type d'Installation</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.installation_type}
+              onChange={(e) => handleInputChange('installation_type', e.target.value)}
+              required
+            >
+              <option value="surface">🏠 Installation en surface</option>
+              <option value="submersible">🌊 Installation submersible</option>
+            </ProfessionalSelect>
+            <p className="text-xs text-gray-500 mt-2 italic">
+              {inputData.installation_type === 'surface' ? 
+                '✓ Pompe en surface - Configuration standard' : 
+                '⚠️ Pompe immergée - Configuration spécialisée'
+              }
+            </p>
+          </div>
+
+          {inputData.installation_type === 'surface' && (
+            <div>
+              <ProfessionalLabel required>Type d'Aspiration</ProfessionalLabel>
+              <ProfessionalSelect
+                value={inputData.suction_type}
+                onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                required
+              >
+                <option value="flooded">🔵 Aspiration en charge</option>
+                <option value="suction_lift">🔴 Aspiration en dépression</option>
+              </ProfessionalSelect>
+              <p className="text-xs text-gray-500 mt-2 italic">
+                {inputData.suction_type === 'flooded' ? 
+                  '✓ Pompe sous niveau - NPSHd optimal' : 
+                  '⚠️ Pompe au-dessus - Vérification NPSHd critique'
+                }
+              </p>
+            </div>
+          )}
+        </ProfessionalGrid>
+      </ProfessionalSection>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
