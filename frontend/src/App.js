@@ -1370,7 +1370,7 @@ const SolarExpertSystem = () => {
                 <label className="block text-sm font-medium text-green-900 mb-2">🎯 HMT TOTALE (m)</label>
                 <input
                   type="text"
-                  value={solarData.total_head.toFixed(2)}
+                  value={isNaN(solarData.total_head) ? '0.00' : solarData.total_head.toFixed(2)}
                   readOnly
                   className="w-full p-3 border-2 border-green-400 rounded-lg bg-green-100 text-2xl font-bold text-green-900 cursor-not-allowed text-center"
                 />
