@@ -6867,6 +6867,156 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_pression_utile_field_integration(self):
+        """Test the newly added Pression Utile field integration with HMT calculations"""
+        print("\n🔧 Testing Pression Utile Field Integration with HMT Calculations...")
+        
+        # Test data from review request
+        base_test_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 3.0,
+            "discharge_height": 25.0,
+            "suction_pipe_diameter": 114.3,
+            "discharge_pipe_diameter": 88.9,
+            "suction_pipe_length": 10,
+            "discharge_pipe_length": 50,
+            "suction_pipe_material": "pvc",
+            "discharge_pipe_material": "pvc",
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "water",
+            "temperature": 20,
+            "flow_rate": 50
+        }
+        
+        # Test cases with different useful_pressure values
+        test_cases = [
+            {
+                "name": "Default Useful Pressure (0)",
+                "useful_pressure": 0,
+                "expected_behavior": "baseline HMT calculation"
+            },
+            {
+                "name": "Positive Useful Pressure (5.0)",
+                "useful_pressure": 5.0,
+                "expected_behavior": "higher HMT than baseline"
+            },
+            {
+                "name": "Decimal Useful Pressure (2.5)",
+                "useful_pressure": 2.5,
+                "expected_behavior": "moderate HMT increase"
+            }
+        ]
+        
+        all_passed = True
+        baseline_hmt = None
+        
+        for case in test_cases:
+            try:
+                # Create test data with specific useful_pressure
+                test_data = base_test_data.copy()
+                test_data["useful_pressure"] = case["useful_pressure"]
+                
+                response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=test_data, timeout=10)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # 1. Test parameter acceptance
+                    input_data = result.get("input_data", {})
+                    if "useful_pressure" not in input_data:
+                        self.log_test(f"Pression Utile Parameter Acceptance - {case['name']}", False, 
+                                    "useful_pressure field missing from input_data")
+                        all_passed = False
+                        continue
+                    
+                    # 2. Test parameter preservation
+                    preserved_useful_pressure = input_data.get("useful_pressure", -1)
+                    if abs(preserved_useful_pressure - case["useful_pressure"]) > 0.001:
+                        self.log_test(f"Pression Utile Parameter Preservation - {case['name']}", False, 
+                                    f"Expected {case['useful_pressure']}, got {preserved_useful_pressure}")
+                        all_passed = False
+                        continue
+                    
+                    # 3. Test calculation integration
+                    hmt = result.get("hmt", 0)
+                    useful_pressure_head = result.get("useful_pressure_head", 0)
+                    
+                    if hmt <= 0:
+                        self.log_test(f"Pression Utile HMT Calculation - {case['name']}", False, 
+                                    f"Invalid HMT value: {hmt}")
+                        all_passed = False
+                        continue
+                    
+                    # Check useful pressure head calculation (bar to meters)
+                    expected_pressure_head = (case["useful_pressure"] * 100000) / (1000 * 9.81)  # bar to m for water
+                    if abs(useful_pressure_head - expected_pressure_head) > 0.1:
+                        self.log_test(f"Pression Utile Head Conversion - {case['name']}", False, 
+                                    f"Expected {expected_pressure_head:.2f}m, got {useful_pressure_head:.2f}m")
+                        all_passed = False
+                        continue
+                    
+                    # 4. Test result validation - compare with baseline
+                    if case["useful_pressure"] == 0:
+                        baseline_hmt = hmt
+                        self.log_test(f"Pression Utile Integration - {case['name']}", True, 
+                                    f"Baseline HMT: {hmt:.2f}m, Pressure Head: {useful_pressure_head:.2f}m")
+                    else:
+                        if baseline_hmt is None:
+                            self.log_test(f"Pression Utile Comparison - {case['name']}", False, 
+                                        "Baseline HMT not established")
+                            all_passed = False
+                            continue
+                        
+                        # Higher useful_pressure should result in higher HMT
+                        expected_hmt_increase = expected_pressure_head
+                        actual_hmt_increase = hmt - baseline_hmt
+                        
+                        if abs(actual_hmt_increase - expected_hmt_increase) > 0.1:
+                            self.log_test(f"Pression Utile HMT Impact - {case['name']}", False, 
+                                        f"Expected HMT increase: {expected_hmt_increase:.2f}m, got {actual_hmt_increase:.2f}m")
+                            all_passed = False
+                            continue
+                        
+                        if case["useful_pressure"] > 0 and hmt <= baseline_hmt:
+                            self.log_test(f"Pression Utile HMT Logic - {case['name']}", False, 
+                                        f"HMT ({hmt:.2f}m) should be higher than baseline ({baseline_hmt:.2f}m)")
+                            all_passed = False
+                            continue
+                        
+                        self.log_test(f"Pression Utile Integration - {case['name']}", True, 
+                                    f"HMT: {hmt:.2f}m (+{actual_hmt_increase:.2f}m), Pressure Head: {useful_pressure_head:.2f}m")
+                    
+                    # 5. Test complete response structure
+                    required_fields = ["input_data", "fluid_properties", "hmt", "total_head_loss", 
+                                     "static_head", "useful_pressure_head"]
+                    missing_fields = [f for f in required_fields if f not in result]
+                    if missing_fields:
+                        self.log_test(f"Pression Utile Response Structure - {case['name']}", False, 
+                                    f"Missing fields: {missing_fields}")
+                        all_passed = False
+                        continue
+                    
+                else:
+                    self.log_test(f"Pression Utile Integration - {case['name']}", False, 
+                                f"HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Pression Utile Integration - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        # Summary test
+        if all_passed and baseline_hmt is not None:
+            self.log_test("Pression Utile Field Integration", True, 
+                        f"All test cases passed. Baseline: {baseline_hmt:.2f}m, Integration working correctly")
+        else:
+            self.log_test("Pression Utile Field Integration", False, 
+                        "One or more test cases failed")
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
