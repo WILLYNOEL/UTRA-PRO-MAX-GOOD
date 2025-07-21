@@ -2083,17 +2083,20 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         
         # Debug pour voir les valeurs de vitesse
         print(f"🔍 DEBUG VITESSE ASPIRATION:")
-        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{current_suction_dn_velocity}")
+        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{input_data.suction_dn or get_closest_dn(input_data.suction_pipe_diameter)}")
         print(f"  Aspiration recommandée: {optimal_suction_diameter_velocity:.1f}mm → DN{recommended_suction_dn_velocity}")
         print(f"  Vitesse calculée: {npshd_result.velocity:.2f} m/s")
+        
+        # Utiliser la valeur DN sélectionnée par l'utilisateur si disponible
+        current_suction_dn_selected = input_data.suction_dn if input_data.suction_dn is not None else get_closest_dn(input_data.suction_pipe_diameter)
         
         velocity_solutions = [f"Vitesse aspiration excessive: {npshd_result.velocity:.2f} m/s"]
         
         # Recommander changement de diamètre seulement si nécessaire
-        if current_suction_dn_velocity < recommended_suction_dn_velocity:
-            velocity_solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_velocity} → DN{recommended_suction_dn_velocity}")
+        if current_suction_dn_selected < recommended_suction_dn_velocity:
+            velocity_solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_velocity}")
         else:
-            velocity_solutions.append(f"Diamètre aspiration DN{current_suction_dn_velocity} adapté - optimiser tracé")
+            velocity_solutions.append(f"Diamètre aspiration DN{current_suction_dn_selected} adapté - optimiser tracé")
             
         velocity_solutions.extend([
             "Utiliser courbes à grand rayon (3D minimum)",
