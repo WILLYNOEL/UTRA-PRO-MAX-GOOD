@@ -4802,8 +4802,6 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
         </div>
       </ProfessionalSection>
         
