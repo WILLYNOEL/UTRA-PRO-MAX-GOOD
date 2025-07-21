@@ -3037,6 +3037,8 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
     hourly_flow_avg = input_data.flow_rate  # m³/h - débit réel calculé par le frontend
     hourly_flow_peak = hourly_flow_avg * input_data.seasonal_variation  # m³/h avec variation saisonnière
     
+    print(f"🔍 DEBUG SOLAR: daily_water_need={input_data.daily_water_need}, flow_rate={input_data.flow_rate}, hourly_flow_peak={hourly_flow_peak}")
+    
     # Puissance hydraulique requise
     hydraulic_power_avg = (hourly_flow_avg * input_data.total_head * 1000 * 9.81) / 3600  # Watts
     hydraulic_power_peak = (hourly_flow_peak * input_data.total_head * 1000 * 9.81) / 3600  # Watts
