@@ -6620,6 +6620,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     <select
                       value={inputData.suction_pipe_diameter}
                       onChange={(e) => {
+                        console.log('DROPDOWN CHANGE - Selected value:', e.target.value);
+                        console.log('DROPDOWN CHANGE - Current state:', inputData.suction_pipe_diameter);
                         const selectedMm = parseFloat(e.target.value);
                         handleInputChange('suction_pipe_diameter', selectedMm);
                         // Trouve et met à jour le DN correspondant
@@ -6627,6 +6629,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                         if (selectedDn) {
                           handleInputChange('suction_dn', parseInt(selectedDn.dn.replace('DN', '')));
                         }
+                        console.log('DROPDOWN CHANGE - New value set:', selectedMm);
                       }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
