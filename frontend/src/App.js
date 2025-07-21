@@ -5218,6 +5218,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   const [loading, setLoading] = useState(false);
   const [autoCalculate, setAutoCalculate] = useState(true);
   const [activeSection, setActiveSection] = useState('all');
+  const [showSingularities, setShowSingularities] = useState(false); // État pour les singularités collapsibles
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
