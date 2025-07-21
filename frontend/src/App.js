@@ -6459,43 +6459,43 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
           </div>
 
-          {/* Paramètres hydrauliques */}
+          {/* Paramètres hydrauliques - Plus compact */}
           {(activeSection === 'all' || activeSection === 'hydraulic') && (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4 text-blue-600 flex items-center">
+            <div className="bg-white rounded-lg shadow-lg p-4">
+              <h3 className="text-md font-semibold mb-3 text-blue-600 flex items-center">
                 💧 Paramètres Hydrauliques
               </h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       ⭐ Débit (m³/h)
                     </label>
                     <input
                       type="number"
                       value={inputData.flow_rate || ''}
                       onChange={(e) => handleInputChange('flow_rate', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
-                      placeholder="Saisissez le débit"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50 text-sm"
+                      placeholder="Débit"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       ⭐ Température (°C)
                     </label>
                     <input
                       type="number"
                       value={inputData.temperature || ''}
                       onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 0)}
-                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
-                      placeholder="Température du fluide"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50 text-sm"
+                      placeholder="Temp."
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Fluide
                   </label>
                   <select
