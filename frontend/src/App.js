@@ -6644,10 +6644,9 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       value={inputData.discharge_pipe_diameter}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value);
-                        const selectedDn = dnSizes.find(size => size.mm === selectedMm);
-                        
-                        // Utiliser handleInputChange pour respecter la logique du composant
                         handleInputChange('discharge_pipe_diameter', selectedMm);
+                        // Trouve et met à jour le DN correspondant
+                        const selectedDn = dnSizes.find(size => size.mm === selectedMm);
                         if (selectedDn) {
                           handleInputChange('discharge_dn', parseInt(selectedDn.dn.replace('DN', '')));
                         }
