@@ -6430,6 +6430,194 @@ class HydraulicPumpTester:
             self.log_test("Expert Solaire - Pump Selection Logic", False, f"Error: {str(e)}")
             return False
     
+    def test_critical_material_analysis_feature(self):
+        """Test the new critical material analysis feature in Expert Analysis with specific fluid-material combinations"""
+        print("\n🔬 Testing Critical Material Analysis Feature...")
+        
+        test_cases = [
+            {
+                "name": "ACID + STEEL (Severe Warnings Expected)",
+                "data": {
+                    "fluid_type": "acid",
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "temperature": 40,
+                    "flow_rate": 30,
+                    "suction_height": 2,
+                    "discharge_height": 10,
+                    "suction_pipe_diameter": 100,
+                    "discharge_pipe_diameter": 80,
+                    "npsh_required": 3,
+                    "suction_length": 20,
+                    "discharge_length": 50,
+                    "total_length": 70,
+                    "useful_pressure": 0,
+                    "pump_efficiency": 75,
+                    "motor_efficiency": 90,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "cable_length": 50,
+                    "cable_material": "copper"
+                },
+                "expected_warnings": ["CORROSIF", "ACIDE", "INOX", "316L", "URGENT"]
+            },
+            {
+                "name": "SEAWATER + PVC",
+                "data": {
+                    "fluid_type": "seawater",
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "temperature": 35,
+                    "flow_rate": 50,
+                    "suction_height": 2,
+                    "discharge_height": 10,
+                    "suction_pipe_diameter": 100,
+                    "discharge_pipe_diameter": 80,
+                    "npsh_required": 3,
+                    "suction_length": 20,
+                    "discharge_length": 50,
+                    "total_length": 70,
+                    "useful_pressure": 0,
+                    "pump_efficiency": 75,
+                    "motor_efficiency": 90,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "cable_length": 50,
+                    "cable_material": "copper"
+                },
+                "expected_warnings": ["EAU DE MER", "SALINE", "CHLORURE", "DUPLEX"]
+            },
+            {
+                "name": "MILK + STEEL (Food Safety Warnings Expected)",
+                "data": {
+                    "fluid_type": "milk",
+                    "suction_material": "steel",
+                    "discharge_material": "steel",
+                    "temperature": 15,
+                    "flow_rate": 25,
+                    "suction_height": 2,
+                    "discharge_height": 10,
+                    "suction_pipe_diameter": 100,
+                    "discharge_pipe_diameter": 80,
+                    "npsh_required": 3,
+                    "suction_length": 20,
+                    "discharge_length": 50,
+                    "total_length": 70,
+                    "useful_pressure": 0,
+                    "pump_efficiency": 75,
+                    "motor_efficiency": 90,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "cable_length": 50,
+                    "cable_material": "copper"
+                },
+                "expected_warnings": ["ALIMENTAIRE", "SANITAIRE", "FDA", "CE", "CIP", "HACCP"]
+            },
+            {
+                "name": "GASOLINE + PVC (Dangerous Incompatibility Expected)",
+                "data": {
+                    "fluid_type": "gasoline",
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "temperature": 30,
+                    "flow_rate": 40,
+                    "suction_height": 2,
+                    "discharge_height": 10,
+                    "suction_pipe_diameter": 100,
+                    "discharge_pipe_diameter": 80,
+                    "npsh_required": 3,
+                    "suction_length": 20,
+                    "discharge_length": 50,
+                    "total_length": 70,
+                    "useful_pressure": 0,
+                    "pump_efficiency": 75,
+                    "motor_efficiency": 90,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "cable_length": 50,
+                    "cable_material": "copper"
+                },
+                "expected_warnings": ["INCOMPATIBLE", "INTERDIT", "DISSOLUTION", "DANGER", "FUITE", "INCENDIE"]
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that expert_recommendations section exists
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not expert_recommendations:
+                        self.log_test(f"Critical Material Analysis - {case['name']} - Structure", False, 
+                                    "Missing expert_recommendations section")
+                        all_passed = False
+                        continue
+                    
+                    # Convert all recommendations to uppercase text for case-insensitive search
+                    all_recommendations_text = ""
+                    for rec in expert_recommendations:
+                        if isinstance(rec, dict):
+                            all_recommendations_text += str(rec.get("title", "")).upper() + " "
+                            all_recommendations_text += str(rec.get("description", "")).upper() + " "
+                            solutions = rec.get("solutions", [])
+                            if isinstance(solutions, list):
+                                all_recommendations_text += " ".join([str(s).upper() for s in solutions]) + " "
+                        else:
+                            all_recommendations_text += str(rec).upper() + " "
+                    
+                    # Check for expected warning keywords
+                    found_warnings = []
+                    missing_warnings = []
+                    
+                    for expected_warning in case["expected_warnings"]:
+                        if expected_warning.upper() in all_recommendations_text:
+                            found_warnings.append(expected_warning)
+                        else:
+                            missing_warnings.append(expected_warning)
+                    
+                    # Check critical analysis is properly formatted
+                    has_structured_recommendations = False
+                    for rec in expert_recommendations:
+                        if isinstance(rec, dict) and "type" in rec and "priority" in rec:
+                            has_structured_recommendations = True
+                            break
+                    
+                    if not has_structured_recommendations:
+                        self.log_test(f"Critical Material Analysis - {case['name']} - Format", False, 
+                                    "Recommendations not properly structured with type/priority")
+                        all_passed = False
+                        continue
+                    
+                    # Evaluate success based on found warnings
+                    if len(found_warnings) >= len(case["expected_warnings"]) // 2:  # At least half of expected warnings
+                        self.log_test(f"Critical Material Analysis - {case['name']}", True, 
+                                    f"Found warnings: {found_warnings}, Recommendations: {len(expert_recommendations)}")
+                    else:
+                        self.log_test(f"Critical Material Analysis - {case['name']}", False, 
+                                    f"Missing critical warnings: {missing_warnings}, Found: {found_warnings}")
+                        all_passed = False
+                    
+                    # Additional check: verify contextual and detailed recommendations
+                    total_recommendation_length = len(all_recommendations_text)
+                    if total_recommendation_length < 100:  # Should have substantial content
+                        self.log_test(f"Critical Material Analysis - {case['name']} - Detail", False, 
+                                    f"Recommendations too brief ({total_recommendation_length} chars)")
+                        all_passed = False
+                
+                else:
+                    self.log_test(f"Critical Material Analysis - {case['name']}", False, 
+                                f"HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Critical Material Analysis - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
