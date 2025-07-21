@@ -5262,6 +5262,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       suction_type: 'flooded',
       suction_pipe_diameter: 0,
       discharge_pipe_diameter: 0,
+      suction_dn: null,  // DN sélectionné pour aspiration
+      discharge_dn: null,  // DN sélectionné pour refoulement
       suction_height: 0,
       discharge_height: 0,
       suction_length: 0,
