@@ -6617,7 +6617,14 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <select
                       value={inputData.suction_pipe_diameter || ''}
-                      onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const selectedMm = parseFloat(e.target.value) || 0;
+                        const selectedDn = dnSizes.find(size => size.mm === selectedMm);
+                        handleInputChange('suction_pipe_diameter', selectedMm);
+                        if (selectedDn) {
+                          handleInputChange('suction_dn', parseInt(selectedDn.dn.replace('DN', '')));
+                        }
+                      }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
                       <option value="">Sélectionnez un diamètre</option>
@@ -6633,7 +6640,14 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </label>
                     <select
                       value={inputData.discharge_pipe_diameter || ''}
-                      onChange={(e) => handleInputChange('discharge_pipe_diameter', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const selectedMm = parseFloat(e.target.value) || 0;
+                        const selectedDn = dnSizes.find(size => size.mm === selectedMm);
+                        handleInputChange('discharge_pipe_diameter', selectedMm);
+                        if (selectedDn) {
+                          handleInputChange('discharge_dn', parseInt(selectedDn.dn.replace('DN', '')));
+                        }
+                      }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
                       <option value="">Sélectionnez un diamètre</option>
