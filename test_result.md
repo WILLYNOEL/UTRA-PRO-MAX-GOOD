@@ -516,15 +516,18 @@ frontend:
 
   - task: "Add Pression Utile Field to HMT Tab"
     implemented: true
-    working: "NA"
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "✅ IMPLEMENTED: Successfully added missing 'Pression Utile (m)' input field to HMT tab in Paramètres Hydrauliques section. Field is connected to existing useful_pressure state variable with proper styling and validation. Interface screenshot confirms field is visible and functional. Ready for backend testing to verify integration with HMT calculations."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Pression Utile Field Integration working perfectly! Comprehensive validation completed with 100% success rate (3/3 test cases passed). ✅ PARAMETER ACCEPTANCE: useful_pressure field properly accepted by /api/calculate-hmt endpoint for all test values (0, 5.0, 2.5). ✅ PARAMETER PRESERVATION: All useful_pressure values correctly preserved in input_data section of API response. ✅ CALCULATION INTEGRATION: useful_pressure properly integrated into HMT calculations with correct conversion from bar to meters (5.0 bar = 50.97m head, 2.5 bar = 25.48m head). ✅ RESULT VALIDATION: Higher useful_pressure values result in proportionally higher HMT totals as expected (Baseline: 23.92m, +5.0 bar: 74.89m, +2.5 bar: 49.41m). ✅ RESPONSE STRUCTURE: Complete API response structure with all required fields (input_data, fluid_properties, hmt, total_head_loss, static_head, useful_pressure_head). ✅ MATHEMATICAL ACCURACY: Pressure head conversion formula working correctly (bar × 100000 / (ρ × g) = meters). Backend integration of Pression Utile field is production-ready and meets all requirements from review request."
 metadata:
   created_by: "main_agent"
   version: "1.0"
