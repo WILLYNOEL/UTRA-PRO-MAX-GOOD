@@ -4806,7 +4806,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   <label className="block text-xs text-blue-700 mb-1">Diamètre</label>
                   <select
                     value={inputData.suction_pipe_diameter}
-                    onChange={(e) => handleInputChange('suction_pipe_diameter', parseInt(e.target.value))}
+                    onChange={(e) => handleInputChange('suction_pipe_diameter', parseFloat(e.target.value))}
                     className="w-full p-1 border border-blue-300 rounded text-sm"
                   >
                     {dnOptions.map(option => (
