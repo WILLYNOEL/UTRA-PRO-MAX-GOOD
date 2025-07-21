@@ -4003,7 +4003,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
               >
                 {pipeMaterials.map(material => (
                   <option key={material.id} value={material.id}>
-                    {material.name}
+                    {material.name} (ε = {material.roughness} mm)
                   </option>
                 ))}
               </ProfessionalSelect>
