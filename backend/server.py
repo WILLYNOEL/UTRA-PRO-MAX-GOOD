@@ -137,7 +137,7 @@ def get_closest_dn(diameter_mm):
     
     return closest_dn
 
-def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_m3h, current_velocity, pipe_length_m):
+def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_m3h, current_velocity, pipe_length_m, is_suction_pipe=False):
     """
     Calcule des recommandations graduées d'augmentation de diamètre avec analyse coût-bénéfice
     respectant les vitesses hydrauliques normalisées selon le type de conduite
@@ -177,15 +177,25 @@ def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_
         }
     }
     
-    # Déterminer le type de conduite selon la longueur et la vitesse actuelle
-    if pipe_length_m > 100:
-        conduite_type = "longue_distance"
-    elif current_velocity > 3.0:
-        conduite_type = "metallique_court"
-    elif pipe_length_m < 20:
-        conduite_type = "circuits_fermes"
+    # Déterminer le type de conduite selon la longueur, la vitesse actuelle et le type de pipe
+    if is_suction_pipe:
+        # Pour les conduites d'aspiration, priorité aux limites d'aspiration
+        if pipe_length_m < 20:
+            conduite_type = "aspiration"
+        elif pipe_length_m > 100:
+            conduite_type = "longue_distance"
+        else:
+            conduite_type = "aspiration"  # Par défaut aspiration pour les conduites de succion
     else:
-        conduite_type = "refoulement"
+        # Pour les conduites de refoulement, logique existante
+        if pipe_length_m > 100:
+            conduite_type = "longue_distance"
+        elif current_velocity > 3.0:
+            conduite_type = "metallique_court"
+        elif pipe_length_m < 20:
+            conduite_type = "circuits_fermes"
+        else:
+            conduite_type = "refoulement"
     
     target_velocity = velocity_limits[conduite_type]["optimal"]
     max_velocity = velocity_limits[conduite_type]["max_safe"]
