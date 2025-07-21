@@ -8623,7 +8623,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             <ProfessionalInput
               type="number"
               value={inputData.hmt}
-              onChange={(e) => handleInputChange('hmt', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('hmt', parseFloat(e.target.value))}
               required
               placeholder="Ex: 25"
             />
