@@ -487,7 +487,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "ECO PUMP EXPERT API Endpoints"
+    - "Expert Solaire High Flow Rates (205, 210, 250 m³/j)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
