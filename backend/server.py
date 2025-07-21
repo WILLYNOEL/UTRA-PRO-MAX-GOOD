@@ -1455,7 +1455,12 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
             pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
             required_area = (input_data.flow_rate / 3600) / 1.5
             required_diameter = math.sqrt(4 * required_area / math.pi) * 1000
-            recommendations.append(f"• Augmenter le diamètre de {input_data.pipe_diameter:.0f}mm à {required_diameter:.0f}mm")
+            
+            # Convert diameters to DN equivalents
+            current_dn = get_dn_from_diameter(input_data.pipe_diameter)
+            required_dn = get_dn_from_diameter(required_diameter)
+            
+            recommendations.append(f"• Augmenter le diamètre de DN{current_dn} à DN{required_dn}")
         
         # 3. Reduce pipe length
         if input_data.pipe_length > 20:
