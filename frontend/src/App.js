@@ -933,55 +933,121 @@ const AuditSystem = () => {
 
 // Component pour Onglet EXPERT SOLAIRE - Dimensionnement Pompage Solaire
 const SolarExpertSystem = () => {
-  // États pour les données d'entrée
-  const [solarData, setSolarData] = useState({
-    // Informations du projet
-    project_name: 'Système de Pompage Solaire',
-    location_region: 'afrique',
-    location_subregion: 'cote_ivoire',
+  // Fonction pour charger les données depuis localStorage
+  const loadSolarDataFromStorage = () => {
+    try {
+      const saved = localStorage.getItem('ecoExpertSolarData');
+      if (saved) {
+        const parsedData = JSON.parse(saved);
+        // Fusionner avec les valeurs par défaut pour s'assurer que tous les champs existent
+        return {
+          // Valeurs par défaut
+          project_name: 'Système de Pompage Solaire',
+          location_region: 'afrique',
+          location_subregion: 'cote_ivoire',
+          
+          // Besoins en eau et hydrauliques
+          daily_water_need: 10,
+          operating_hours: 8,
+          flow_rate: 1.25,
+          seasonal_variation: 1.2,
+          peak_months: [6, 7, 8],
+          
+          // Paramètres hydrauliques pour calcul HMT restructuré
+          dynamic_level: 15,
+          tank_height: 5,
+          static_head: 20,
+          dynamic_losses: 5,
+          useful_pressure_bar: 0,
+          useful_pressure_head: 0,
+          total_head: 25,
+          pipe_diameter: 114.3,
+          pipe_length: 50,
+          
+          // Paramètres solaires
+          panel_peak_power: 270,
+          
+          // Contraintes du système
+          autonomy_days: 2,
+          system_voltage: 24,
+          installation_type: 'submersible',
+          
+          // Paramètres économiques
+          electricity_cost: 0.15,
+          project_lifetime: 25,
+          maintenance_cost_annual: 0.02,
+          
+          // Contraintes d'installation
+          available_surface: 100,
+          max_budget: 15000,
+          grid_connection_available: false,
+          
+          // Paramètres environnementaux
+          ambient_temperature_avg: 25,
+          dust_factor: 0.95,
+          shading_factor: 1.0,
+          
+          // Écraser avec les données sauvegardées
+          ...parsedData
+        };
+      }
+    } catch (error) {
+      console.warn('Erreur lors du chargement des données solaires:', error);
+    }
     
-    // Besoins en eau et hydrauliques
-    daily_water_need: 10,
-    operating_hours: 8, // Nouvelles heures de fonctionnement
-    flow_rate: 1.25, // m³/h - calculé automatiquement (10/8)
-    seasonal_variation: 1.2,
-    peak_months: [6, 7, 8],
-    
-    // Paramètres hydrauliques pour calcul HMT restructuré
-    dynamic_level: 15, // Niveau dynamique (profondeur pompage)
-    tank_height: 5, // Hauteur du château d'eau
-    static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
-    dynamic_losses: 5, // Pertes de charge dynamiques
-    useful_pressure_bar: 0, // Pression utile en Bar (input utilisateur)
-    useful_pressure_head: 0, // Pression utile convertie en hauteur (calculée automatiquement)
-    total_head: 25, // HMT totale calculée automatiquement
-    pipe_diameter: 114.3, // DN calculé automatiquement basé sur débit
-    pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
-    
-    // Paramètres solaires
-    panel_peak_power: 270, // Wc - puissance crête panneau par défaut 270W
-    
-    // Contraintes du système
-    autonomy_days: 2,
-    system_voltage: 24,
-    installation_type: 'submersible',
-    
-    // Paramètres économiques
-    electricity_cost: 0.15,
-    project_lifetime: 25,
-    maintenance_cost_annual: 0.02,
-    
-    // Contraintes d'installation
-    available_surface: 100,
-    max_budget: 15000,
-    grid_connection_available: false,
-    
-    // Paramètres environnementaux
-    ambient_temperature_avg: 25,
-    dust_factor: 0.95,
-    shading_factor: 1.0
-  });
+    // Retourner les valeurs par défaut si pas de données sauvegardées
+    return {
+      // Informations du projet
+      project_name: 'Système de Pompage Solaire',
+      location_region: 'afrique',
+      location_subregion: 'cote_ivoire',
+      
+      // Besoins en eau et hydrauliques
+      daily_water_need: 10,
+      operating_hours: 8, // Nouvelles heures de fonctionnement
+      flow_rate: 1.25, // m³/h - calculé automatiquement (10/8)
+      seasonal_variation: 1.2,
+      peak_months: [6, 7, 8],
+      
+      // Paramètres hydrauliques pour calcul HMT restructuré
+      dynamic_level: 15, // Niveau dynamique (profondeur pompage)
+      tank_height: 5, // Hauteur du château d'eau
+      static_head: 20, // Hauteur géométrique (calculée auto: niveau + château)
+      dynamic_losses: 5, // Pertes de charge dynamiques
+      useful_pressure_bar: 0, // Pression utile en Bar (input utilisateur)
+      useful_pressure_head: 0, // Pression utile convertie en hauteur (calculée automatiquement)
+      total_head: 25, // HMT totale calculée automatiquement
+      pipe_diameter: 114.3, // DN calculé automatiquement basé sur débit
+      pipe_length: 50, // Longueur estimée automatiquement basée sur géométrie
+      
+      // Paramètres solaires
+      panel_peak_power: 270, // Wc - puissance crête panneau par défaut 270W
+      
+      // Contraintes du système
+      autonomy_days: 2,
+      system_voltage: 24,
+      installation_type: 'submersible',
+      
+      // Paramètres économiques
+      electricity_cost: 0.15,
+      project_lifetime: 25,
+      maintenance_cost_annual: 0.02,
+      
+      // Contraintes d'installation
+      available_surface: 100,
+      max_budget: 15000,
+      grid_connection_available: false,
+      
+      // Paramètres environnementaux
+      ambient_temperature_avg: 25,
+      dust_factor: 0.95,
+      shading_factor: 1.0
+    };
+  };
 
+  // États pour les données d'entrée avec chargement localStorage
+  const [solarData, setSolarData] = useState(loadSolarDataFromStorage);
+  
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [availableRegions, setAvailableRegions] = useState([]);
