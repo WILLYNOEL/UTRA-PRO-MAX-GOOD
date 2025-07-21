@@ -506,7 +506,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Expert Solaire High Flow Rates (205, 210, 250 m³/j)"
+    - "Critical Material Analysis Testing - Review Request"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
