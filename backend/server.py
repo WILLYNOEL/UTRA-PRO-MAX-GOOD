@@ -2098,26 +2098,228 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         input_data.temperature
     )
     
-    # Intégrer les résultats de l'analyse de compatibilité
-    if compatibility_analysis["recommendations"]:
-        material_recommendations.extend([
-            f"🧪 ANALYSE DE COMPATIBILITÉ CHIMIQUE - {compatibility_analysis['fluid_name']}"
+    # ===============================================================================================
+    # ANALYSE CRITIQUE APPROFONDIE DU CHOIX MATÉRIAU-FLUIDE - POINT DE VUE EXPERT
+    # ===============================================================================================
+    
+    critical_analysis = []
+    
+    # Analyse critique spécifique selon le fluide pompé
+    if input_data.fluid_type == "acid":
+        critical_analysis.extend([
+            "🧪 CRITIQUE EXPERT - FLUIDE ACIDE:",
+            "❌ ERREUR FRÉQUENTE: Utiliser l'acier standard (catastrophique - corrosion rapide)",
+            "❌ SOUS-ESTIMATION: PVC standard insuffisant pour acides concentrés >70%",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
         ])
-        material_recommendations.extend(compatibility_analysis["recommendations"])
+        if input_data.suction_material in ["steel", "steel_galvanized", "cast_iron"]:
+            critical_analysis.extend([
+                "🚨 CHOIX INADÉQUAT: Matériau ferreux avec acide = DÉSASTRE GARANTI",
+                "💀 RISQUE: Corrosion perforante en 3-6 mois maximum",
+                "💰 COÛT: Remplacement complet + décontamination = x10 du prix initial",
+                "🏗️  OBLIGATION: Inox 316L minimum ou PTFE/PFA pour acides forts"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🟡 CHOIX DISCUTABLE: PVC limité à 60°C et pH 2-12",
+                "⚠️  ATTENTION: Fluage du PVC sous pression + température",
+                "📊 RECOMMANDATION: PVDF ou Inox 316L plus fiables",
+                "🔬 VÉRIFICATION: Tester compatibilité avec échantillon fluide réel"
+            ])
+        elif input_data.suction_material in ["stainless_steel_316", "stainless_steel_304"]:
+            critical_analysis.extend([
+                "✅ CHOIX PERTINENT: Inox adapté mais attention aux détails",
+                "⚠️  NUANCE CRITIQUE: 316L > 304L pour résistance chlorures",
+                "🔧 ASSEMBLAGE: Soudures TIG obligatoires, pas de vis acier standard",
+                "💡 OPTIMISATION: Finition électropolie recommandée (rugosité <0.4µm)"
+            ])
+    
+    elif input_data.fluid_type == "seawater":
+        critical_analysis.extend([
+            "🌊 CRITIQUE EXPERT - EAU DE MER:",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "steel":
+            critical_analysis.extend([
+                "🚨 CHOIX CATASTROPHIQUE: Acier + eau de mer = corrosion galvanique massive",
+                "⏱️  DURÉE DE VIE: 2-4 mois avant perforation",
+                "💰 ERREUR COÛTEUSE: Maintenance corrective permanente",
+                "🏗️  OBLIGATION: Duplex 2205 minimum ou revêtement époxy"
+            ])
+        elif input_data.suction_material == "cast_iron":
+            critical_analysis.extend([
+                "❌ ERREUR MAJEURE: Fonte + chlorures marins = destruction rapide",
+                "🧪 RÉALITÉ CHIMIQUE: Piqûres de corrosion en 30-60 jours",
+                "🔧 SOLUTION FORCÉE: Revêtement céramique ou remplacement complet",
+                "💡 CONSEIL: Inox duplex ou PEHD PE100 selon la pression"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🟢 CHOIX ACCEPTABLE mais avec réserves importantes:",
+                "⚠️  LIMITE TEMPÉRATURE: PVC fragile >40°C (climats tropicaux)",
+                "🌡️  DILATATION: Coefficient 8x supérieur à l'acier - prévoir joints",
+                "🔧 ASSEMBLAGE: Collage PVC sensible à la température de mise en œuvre",
+                "💡 AMÉLIORATION: PEHD PE100 plus résistant aux chocs thermiques"
+            ])
+        elif input_data.suction_material == "stainless_steel_316":
+            critical_analysis.extend([
+                "✅ EXCELLENT CHOIX avec optimisations possibles:",
+                "⚙️  DÉTAIL CRITIQUE: Inox 316L supérieur au 316 standard",
+                "🔬 COMPOSITION: Mo >2% obligatoire pour résistance chlorures",
+                "🏗️  ASSEMBLAGE: Éviter contact galvanique avec autres métaux",
+                "💎 PERFECTION: Duplex 2507 pour conditions extrêmes"
+            ])
+    
+    elif input_data.fluid_type in ["gasoline", "diesel"]:
+        fuel_name = "Essence" if input_data.fluid_type == "gasoline" else "Diesel"
+        critical_analysis.extend([
+            f"⛽ CRITIQUE EXPERT - {fuel_name.upper()}:",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🚨 ERREUR DANGEREUSE: PVC gonflé et fragilisé par hydrocarbures",
+                "💀 SÉCURITÉ: Risque fuite + incendie/explosion",
+                "📏 DÉFORMATION: Gonflement PVC jusqu'à 15% en volume",
+                "🏗️  OBLIGATION: Acier ou composite spécialisé hydrocarbures"
+            ])
+        elif input_data.suction_material == "steel":
+            critical_analysis.extend([
+                "✅ CHOIX STANDARD mais attention aux détails:",
+                "⚠️  REVÊTEMENT: Acier nu sensible à corrosion par eau contenue",
+                "🔧 ASSEMBLAGE: Soudures continues obligatoires - pas de filetage",
+                "💡 OPTIMISATION: Revêtement époxy ou galvanisation à chaud",
+                "📊 NORME: API 650 pour stockage, ATEX pour pompage"
+            ])
+        elif input_data.suction_material in ["aluminum", "copper"]:
+            critical_analysis.extend([
+                "❌ INCOMPATIBILITÉ CHIMIQUE: Métaux non-ferreux + hydrocarbures",
+                "🧪 PROBLÈME: Formation de composés organométalliques",
+                "⚡ ÉLECTROSTATIQUE: Accumulation charges + risque étincelles",
+                "🏗️  REMPLACEMENT: Acier revêtu ou inox 316L obligatoire"
+            ])
+    
+    elif input_data.fluid_type in ["milk", "honey", "wine", "fruit_juice"]:
+        food_type = {"milk": "LAIT", "honey": "MIEL", "wine": "VIN", "fruit_juice": "JUS DE FRUIT"}[input_data.fluid_type]
+        critical_analysis.extend([
+            f"🍯 CRITIQUE EXPERT - {food_type} (AGRO-ALIMENTAIRE):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material in ["steel", "steel_galvanized"]:
+            critical_analysis.extend([
+                "❌ INACCEPTABLE ALIMENTAIRE: Acier standard INTERDIT contact alimentaire",
+                "🦠 CONTAMINATION: Corrosion + développement bactérien",
+                "⚖️  RÉGLEMENTATION: Non-conforme FDA/CE/HACCP",
+                "🏗️  OBLIGATION: Inox 316L poli sanitaire (Ra <0.8µm) minimum"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🟡 CHOIX LIMITÉ: PVC standard inadéquat contact alimentaire",
+                "📜 CERTIFICATION: PVC-U alimentaire obligatoire (sans plomb/cadmium)",
+                "🌡️  LIMITATION: PVC fragile aux nettoyages haute température",
+                "💡 AMÉLIORATION: Inox 316L ou PEHD alimentaire plus adapté"
+            ])
+        elif input_data.suction_material == "stainless_steel_316":
+            critical_analysis.extend([
+                "✅ EXCELLENT CHOIX avec finitions critiques:",
+                "🔬 ÉTAT SURFACE: Polissage électrolytique Ra <0.4µm OBLIGATOIRE",
+                "🧽 NETTOYAGE: Compatible CIP/SIP (150°C max)",
+                "📜 CERTIFICATIONS: 3.1B + FDA/CE alimentaire obligatoires",
+                "💎 PERFECTION: 316L avec finition miroir pour produits sensibles"
+            ])
+    
+    elif input_data.fluid_type == "hydraulic_oil":
+        critical_analysis.extend([
+            "🔧 CRITIQUE EXPERT - HUILE HYDRAULIQUE:",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "❌ INCOMPATIBILITÉ MAJEURE: PVC dégradé par additifs d'huile",
+                "⚗️  RÉACTION CHIMIQUE: Plastifiants PVC dissous dans l'huile",
+                "🔧 CONSÉQUENCE: Durcissement + fissuration du PVC",
+                "🏗️  SOLUTION: Acier inox ou tubes hydrauliques haute pression"
+            ])
+        elif input_data.suction_material == "steel":
+            critical_analysis.extend([
+                "✅ CHOIX ADAPTÉ avec précautions d'usage:",
+                "💧 CONTAMINATION: Éviter traces d'eau (corrosion interne)",
+                "🌡️  TEMPÉRATURE: Prévoir dilatation différentielle acier/huile",
+                "🔧 FILTRATION: Filtre 25µm obligatoire protection pompe",
+                "💡 OPTIMISATION: Passivation acier pour huiles haute performance"
+            ])
+    
+    elif input_data.fluid_type == "water":
+        critical_analysis.extend([
+            "💧 CRITIQUE EXPERT - EAU (apparemment simple mais...):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "steel":
+            critical_analysis.extend([
+                "🟡 CHOIX CLASSIQUE mais attention aux détails:",
+                "🦠 PROBLÈME SOUS-ESTIMÉ: Corrosion biologique (bactéries sulfato-réductrices)",
+                "📊 QUALITÉ EAU: pH, O2, CO2, chlorures déterminants pour durée de vie",
+                "🔧 PROTECTION: Revêtement époxy ou cathodique selon contexte",
+                "💡 CONSEIL: Analyse eau complète avant dimensionnement définitif"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "✅ CHOIX PERTINENT avec réserves de température:",
+                "🌡️  LIMITE CRITIQUE: PVC ramollit >60°C (eau chaude sanitaire)",
+                "☀️  DÉGRADATION UV: Tubes PVC extérieurs noircissent + fragilisent",
+                "💡 AMÉLIORATION: PVC surdimensionné ou PEHD selon température",
+                "🔧 ASSEMBLAGE: Colle PVC sensible température - respecter temps séchage"
+            ])
+    
+    # Analyse critique de la température de fonctionnement
+    if input_data.temperature > 60:
+        critical_analysis.extend([
+            f"🌡️  ANALYSE TEMPÉRATURE CRITIQUE ({input_data.temperature}°C):",
+        ])
+        if input_data.suction_material == "pvc" and input_data.temperature > 60:
+            critical_analysis.extend([
+                f"🚨 DANGER IMMINENT: PVC à {input_data.temperature}°C = RUPTURE PROGRAMMÉE",
+                "📉 PROPRIÉTÉS: Résistance mécanique divisée par 3 à 70°C",
+                "⏱️  DURÉE DE VIE: 50-80% réduite au-delà de 60°C",
+                "🏗️  REMPLACEMENT URGENT: PEHD PE100 ou inox selon pression"
+            ])
+        elif input_data.temperature > 80:
+            critical_analysis.extend([
+                "⚠️  HAUTE TEMPÉRATURE: Tous matériaux affectés >80°C",
+                "🔧 JOINTS: Graphite ou PTFE obligatoires (EPDM insuffisant)",
+                "📏 DILATATION: Calcul des contraintes thermiques obligatoire",
+                "🏗️  SUPPORTS: Compensateurs et guides de dilatation nécessaires"
+            ])
+    
+    # Recommandations d'amélioration critiques
+    improvement_recommendations = []
+    
+    # Analyse du contexte d'installation
+    if input_data.fluid_type in ["acid", "seawater", "gasoline", "diesel"]:
+        improvement_recommendations.extend([
+            "🏗️  RECOMMANDATIONS AMÉLIORATION CRITIQUES:",
+            "🔍 AUDIT: Analyse de défaillance sur installations similaires",
+            "📊 TESTS: Essais de corrosion accélérée sur échantillons",
+            "⚖️  CONFORMITÉ: Vérification réglementaire (ATEX, alimentaire, etc.)",
+            "👷 FORMATION: Personnel sensibilisé aux risques spécifiques du fluide",
+            "📋 MAINTENANCE: Plan préventif adapté à l'agressivité du fluide"
+        ])
+    
+    if input_data.temperature > 40:
+        improvement_recommendations.extend([
+            "🌡️  SPÉCIFICATIONS TEMPÉRATURE:",
+            f"🧪 MATÉRIAU: Coefficient de dilatation critique à {input_data.temperature}°C",
+            "🔧 SUPPORTS: Compensateurs de dilatation tous les 15-20m",
+            "📏 CALCULS: Contraintes thermiques selon Eurocode EN1993",
+            "🌡️  ISOLATION: Réduire déperditions et protéger personnel"
+        ])
         
-        # Ajouter les recommandations de joints
-        if compatibility_analysis["seal_recommendations"]:
-            material_recommendations.extend(compatibility_analysis["seal_recommendations"])
-        
-        # Ajouter les conseils hydrauliques avancés
-        if compatibility_analysis["hydraulic_advice"]:
-            material_recommendations.extend(compatibility_analysis["hydraulic_advice"])
-        
-        # Ajouter les matériaux optimaux
-        if compatibility_analysis["optimal_materials"]:
-            material_recommendations.append(
-                f"🏗️ MATÉRIAUX OPTIMAUX: {', '.join(compatibility_analysis['optimal_materials'][:3])}"
-            )
+    # Ajouter l'analyse critique aux recommandations
+    if critical_analysis:
+        material_recommendations.extend([""] + critical_analysis)  # Ligne vide pour séparer
+    
+    if improvement_recommendations:
+        material_recommendations.extend([""] + improvement_recommendations)
     
     # Recommandations générales pour certains fluides (complément)
     if input_data.fluid_type == "acid":
