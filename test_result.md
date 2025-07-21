@@ -57,8 +57,8 @@
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
 ## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+##    - agent: "main"
+##      message: "✅ CHAMP PRESSION UTILE AJOUTÉ: J'ai implémenté avec succès le champ manquant 'Pression Utile (m)' dans l'onglet HMT. Le champ est maintenant visible dans la section 'Paramètres Hydrauliques' entre le débit et le type de fluide. Interface utilisateur vérifiée par capture d'écran - le champ apparaît correctement avec styling professionnel. Variable d'état useful_pressure déjà existante, maintenant connectée à l'interface. Prêt pour tests backend pour vérifier intégration avec calculs HMT."
 
 # Protocol Guidelines for Main agent
 #
