@@ -3071,34 +3071,6 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
         selected_pump = SOLAR_PUMP_DATABASE[selected_pump_id]
         required_electrical_power = 1200  # Watts par défaut
     else:
-        # DEBUG: Afficher les pompes compatibles et leurs scores
-        pump_scores = []
-        for pump in suitable_pumps:
-            # Score basé sur l'efficacité, le coût et l'adéquation au débit
-            efficiency_score = pump["efficiency_score"]
-            cost_per_flow = pump["data"]["price_eur"] / max(pump["data"]["flow_range"])
-            
-            # Pénalité pour surdimensionnement (pompe trop grosse pour le besoin)
-            flow_adequacy = hourly_flow_peak / max(pump["data"]["flow_range"])
-            oversizing_penalty = 1.0 if flow_adequacy > 0.3 else (2.0 - flow_adequacy * 3.0)
-            
-            # Score combiné (plus bas = meilleur)
-            total_score = (cost_per_flow * oversizing_penalty) / efficiency_score
-            
-            pump_scores.append({
-                'id': pump['id'],
-                'cost': pump['data']['price_eur'],
-                'flow_range': pump['data']['flow_range'],
-                'score': total_score,
-                'flow_adequacy': flow_adequacy,
-                'oversizing_penalty': oversizing_penalty
-            })
-        
-        # Trier par score pour voir l'ordre
-        pump_scores.sort(key=lambda x: x['score'])
-        for i, ps in enumerate(pump_scores[:3]):  # Top 3
-            warnings.append(f"Rank {i+1}: {ps['id']} - Score: {ps['score']:.3f}, Coût: {ps['cost']}€, Débit: {ps['flow_range']}, Adequacy: {ps['flow_adequacy']:.3f}, Penalty: {ps['oversizing_penalty']:.3f}")
-        
         # Sélection de la pompe optimale - ALGORITHME CORRIGÉ
         def pump_score(pump):
             # Critères de sélection (plus bas = meilleur)
