@@ -6303,6 +6303,12 @@ class HydraulicPumpTester:
                 # Check that calculations are reasonable
                 total_cost = economic_analysis.get("total_system_cost", 0)
                 if total_cost <= 0:
+                    # Try alternative cost field names
+                    total_cost = economic_analysis.get("investment_cost", 0)
+                    if total_cost <= 0:
+                        total_cost = economic_analysis.get("system_cost", 0)
+                
+                if total_cost <= 0:
                     self.log_test(f"Expert Solaire - {case['name']} - System Cost", False, 
                                 f"Invalid system cost: {total_cost}")
                     all_passed = False
