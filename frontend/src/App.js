@@ -4754,7 +4754,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     className="w-full p-1 border border-blue-300 rounded text-sm"
                   >
                     {pipeMaterials.map(material => (
-                      <option key={material.id} value={material.id}>{material.name}</option>
+                      <option key={material.id} value={material.id}>{material.name} (ε = {material.roughness} mm)</option>
                     ))}
                   </select>
                 </div>
