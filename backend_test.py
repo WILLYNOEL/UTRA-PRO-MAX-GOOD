@@ -6465,6 +6465,9 @@ class HydraulicPumpTester:
             self.test_expert_analysis_zero_and_half_values,  # NEW: Test 0 and 0.5 values acceptance
             # PERFORMANCE ENDPOINT CORRECTED PARAMETERS TEST (from current review request)
             self.test_performance_endpoint_corrected_parameters,  # NEW: Test /api/calculate-performance with corrected parameters
+            # EXPERT SOLAIRE HIGH FLOW RATES TESTS (from current review request)
+            self.test_expert_solaire_high_flow_rates,  # NEW: Test Expert Solaire with high flow rates (205, 210, 250 m³/j)
+            self.test_expert_solaire_pump_selection_logic,  # NEW: Test pump selection logic and fallback mechanism
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
