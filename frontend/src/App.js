@@ -4767,7 +4767,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
           </div>
 
           <div>
-            <ProfessionalLabel>Pression Utile (m)</ProfessionalLabel>
+            <ProfessionalLabel>Pression Utile (bar)</ProfessionalLabel>
             <ProfessionalInput
               type="number"
               value={inputData.useful_pressure}
