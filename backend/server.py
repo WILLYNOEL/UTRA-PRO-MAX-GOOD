@@ -1496,19 +1496,30 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
             else:
                 recommendations.append(f"• Passer en aspiration en charge (pompe sous le niveau du liquide)")
         
-        # 2. Increase pipe diameter
+        # 2. Increase pipe diameter with graduated recommendations
         current_velocity = velocity
         if current_velocity > 1.5:
-            # Calculate required diameter for velocity <= 1.5 m/s
-            pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
-            required_area = (input_data.flow_rate / 3600) / 1.5
-            required_diameter = math.sqrt(4 * required_area / math.pi) * 1000
-            
-            # Convert diameters to DN equivalents
             current_dn = get_dn_from_diameter(input_data.pipe_diameter)
-            required_dn = get_dn_from_diameter(required_diameter)
             
-            recommendations.append(f"• Augmenter le diamètre de DN{current_dn} à DN{required_dn}")
+            # Calculer plusieurs options de diamètre avec analyse coût-bénéfice
+            diameter_options = calculate_graduated_diameter_recommendations(
+                input_data.pipe_diameter, 
+                input_data.flow_rate, 
+                current_velocity,
+                input_data.pipe_length
+            )
+            
+            if diameter_options:
+                recommendations.append("• OPTIMISATION DIAMÈTRE - Options graduées :")
+                for option in diameter_options:
+                    recommendations.append(f"  {option}")
+            else:
+                # Fallback vers l'ancienne méthode si pas d'options
+                pipe_area = math.pi * (input_data.pipe_diameter / 1000 / 2) ** 2
+                required_area = (input_data.flow_rate / 3600) / 1.5
+                required_diameter = math.sqrt(4 * required_area / math.pi) * 1000
+                required_dn = get_dn_from_diameter(required_diameter)
+                recommendations.append(f"• Augmenter le diamètre de DN{current_dn} à DN{required_dn}")
         
         # 3. Reduce pipe length
         if input_data.pipe_length > 20:
