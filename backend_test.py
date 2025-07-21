@@ -7290,6 +7290,233 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_diameter_recommendation_fixes(self):
+        """Test diameter recommendation fixes to verify correct DN values are used"""
+        print("\n🔧 Testing Diameter Recommendation Fixes...")
+        
+        test_cases = [
+            {
+                "name": "DN65 User Selection Test",
+                "data": {
+                    "flow_rate": 50.0,  # Higher flow to trigger velocity warnings
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 65.0,  # DN65 selected by user
+                    "discharge_pipe_diameter": 65.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn": 65
+            },
+            {
+                "name": "DN80 User Selection Test",
+                "data": {
+                    "flow_rate": 50.0,
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 80.0,  # DN80 selected by user
+                    "discharge_pipe_diameter": 80.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn": 80
+            },
+            {
+                "name": "High Flow Rate Small Diameter Test",
+                "data": {
+                    "flow_rate": 100.0,  # Very high flow
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "suction_type": "flooded",
+                    "suction_pipe_diameter": 50.0,  # Small diameter
+                    "discharge_pipe_diameter": 50.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn": 50,
+                "should_recommend_increase": True
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check input data preservation
+                    input_data = result.get("input_data", {})
+                    actual_suction_diameter = input_data.get("suction_pipe_diameter", 0)
+                    actual_discharge_diameter = input_data.get("discharge_pipe_diameter", 0)
+                    
+                    # Verify diameter values are preserved correctly
+                    if actual_suction_diameter != case["expected_dn"]:
+                        self.log_test(f"Diameter Preservation - {case['name']}", False, 
+                                    f"Expected suction diameter {case['expected_dn']}, got {actual_suction_diameter}")
+                        all_passed = False
+                        continue
+                    
+                    if actual_discharge_diameter != case["expected_dn"]:
+                        self.log_test(f"Diameter Preservation - {case['name']}", False, 
+                                    f"Expected discharge diameter {case['expected_dn']}, got {actual_discharge_diameter}")
+                        all_passed = False
+                        continue
+                    
+                    # Check expert recommendations for diameter-related advice
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    diameter_recommendations = []
+                    
+                    for rec in expert_recommendations:
+                        if isinstance(rec, dict):
+                            title = rec.get("title", "").lower()
+                            description = rec.get("description", "").lower()
+                            if any(keyword in title + description for keyword in ["diamètre", "diameter", "dn", "vitesse", "velocity"]):
+                                diameter_recommendations.append(rec)
+                    
+                    # For high flow rate with small diameter, should recommend increase
+                    if case.get("should_recommend_increase", False):
+                        if not diameter_recommendations:
+                            self.log_test(f"Diameter Recommendations - {case['name']}", False, 
+                                        "Expected diameter increase recommendations but found none")
+                            all_passed = False
+                            continue
+                        
+                        # Check that recommendations mention current DN correctly
+                        found_correct_dn = False
+                        for rec in diameter_recommendations:
+                            rec_text = str(rec.get("description", "")).lower()
+                            if f"dn{case['expected_dn']}" in rec_text or f"dn {case['expected_dn']}" in rec_text:
+                                found_correct_dn = True
+                                break
+                        
+                        if not found_correct_dn:
+                            self.log_test(f"DN Reference in Recommendations - {case['name']}", False, 
+                                        f"Recommendations should reference DN{case['expected_dn']}")
+                            all_passed = False
+                            continue
+                    
+                    # For adequate diameters, check for appropriate language
+                    else:
+                        appropriate_phrases = ["approprié", "adapté", "optimiser", "adequate", "suitable"]
+                        if diameter_recommendations:
+                            # Check if recommendations use appropriate language for adequate diameters
+                            found_appropriate_language = False
+                            for rec in diameter_recommendations:
+                                rec_text = str(rec.get("description", "")).lower()
+                                if any(phrase in rec_text for phrase in appropriate_phrases):
+                                    found_appropriate_language = True
+                                    break
+                            
+                            # If there are diameter recommendations but no appropriate language, it might be incorrect
+                            if not found_appropriate_language:
+                                # This is acceptable - just log for information
+                                print(f"   Info: {case['name']} has diameter recommendations without 'appropriate' language")
+                    
+                    # Check velocity calculations to ensure they're based on correct diameters
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    velocity = npshd_analysis.get("velocity", 0)
+                    
+                    if velocity <= 0:
+                        self.log_test(f"Velocity Calculation - {case['name']}", False, 
+                                    "Velocity should be positive")
+                        all_passed = False
+                        continue
+                    
+                    # Calculate expected velocity based on diameter
+                    flow_rate_m3s = case["data"]["flow_rate"] / 3600  # Convert m³/h to m³/s
+                    diameter_m = case["expected_dn"] / 1000  # Convert mm to m
+                    pipe_area = 3.14159 * (diameter_m / 2) ** 2
+                    expected_velocity = flow_rate_m3s / pipe_area
+                    
+                    if abs(velocity - expected_velocity) > 0.2:  # Allow some tolerance
+                        self.log_test(f"Velocity Accuracy - {case['name']}", False, 
+                                    f"Expected velocity ~{expected_velocity:.2f} m/s, got {velocity:.2f} m/s")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Diameter Recommendation Fix - {case['name']}", True, 
+                                f"DN{case['expected_dn']} correctly used, velocity: {velocity:.2f} m/s, {len(diameter_recommendations)} diameter recommendations")
+                else:
+                    self.log_test(f"Diameter Recommendation Fix - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Diameter Recommendation Fix - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including Phase 3 additions and Critical Material Analysis"""
         print("=" * 80)
