@@ -2014,19 +2014,22 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         
         # Debug pour voir les valeurs de cavitation
         print(f"🔍 DEBUG DIAMÈTRES CAVITATION:")
-        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{current_suction_dn}")
+        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{input_data.suction_dn or get_closest_dn(input_data.suction_pipe_diameter)}")
         print(f"  Aspiration recommandée: {optimal_suction_diameter_cavitation:.1f}mm → DN{recommended_suction_dn_cavitation}")
         print(f"  NPSHd calculé: {npshd_result.npshd:.2f}m vs NPSH requis: {input_data.npsh_required:.2f}m")
+        
+        # Utiliser la valeur DN sélectionnée par l'utilisateur si disponible
+        current_suction_dn_selected = input_data.suction_dn if input_data.suction_dn is not None else get_closest_dn(input_data.suction_pipe_diameter)
         
         solutions = [
             f"Réduire hauteur d'aspiration de {hasp:.1f}m à {max(0, hasp - abs(npshd_result.npsh_margin) - 0.5):.1f}m",
         ]
         
         # Ajouter recommandation de diamètre seulement si nécessaire
-        if current_suction_dn < recommended_suction_dn_cavitation:
-            solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn_cavitation}")
+        if current_suction_dn_selected < recommended_suction_dn_cavitation:
+            solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_cavitation}")
         else:
-            solutions.append(f"Diamètre aspiration DN{current_suction_dn} approprié - optimiser autre paramètres")
+            solutions.append(f"Diamètre aspiration DN{current_suction_dn_selected} approprié - optimiser autre paramètres")
             
         solutions.extend([
             f"Réduire longueur aspiration de {input_data.suction_length:.0f}m à {input_data.suction_length * 0.7:.0f}m",
