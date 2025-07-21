@@ -1588,7 +1588,8 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
                 input_data.pipe_diameter, 
                 input_data.flow_rate, 
                 current_velocity,
-                input_data.pipe_length
+                input_data.pipe_length,
+                is_suction_pipe=True  # This is called from NPSHd calculation, so it's a suction pipe
             )
             
             if diameter_options:
