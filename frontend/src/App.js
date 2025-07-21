@@ -6629,14 +6629,17 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       ⭐ ⌀ Aspiration (DN)
                     </label>
                     <select
-                      value={inputData.suction_pipe_diameter || 114.3}
+                      value={inputData.suction_pipe_diameter}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value);
                         const selectedDn = dnSizes.find(size => size.mm === selectedMm);
-                        handleInputChange('suction_pipe_diameter', selectedMm);
-                        if (selectedDn) {
-                          handleInputChange('suction_dn', parseInt(selectedDn.dn.replace('DN', '')));
-                        }
+                        
+                        // Mise à jour immédiate synchrone
+                        setInputData(prev => ({
+                          ...prev,
+                          suction_pipe_diameter: selectedMm,
+                          suction_dn: selectedDn ? parseInt(selectedDn.dn.replace('DN', '')) : null
+                        }));
                       }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
