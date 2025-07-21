@@ -6408,15 +6408,20 @@ class HydraulicPumpTester:
                 
                 # Check system efficiency calculations
                 system_efficiency = result.get("system_efficiency", {})
-                overall_efficiency = system_efficiency.get("overall", 0)
+                if isinstance(system_efficiency, dict):
+                    overall_efficiency = system_efficiency.get("overall", 0)
+                else:
+                    # system_efficiency might be a float value directly
+                    overall_efficiency = system_efficiency if isinstance(system_efficiency, (int, float)) else 0
                 
                 if overall_efficiency <= 0 or overall_efficiency > 100:
                     self.log_test("Expert Solaire - System Efficiency", False, 
                                 f"Invalid overall efficiency: {overall_efficiency}%")
                     return False
                 
+                pump_name = pump_specs.get("name", pump_model)
                 self.log_test("Expert Solaire - Pump Selection Logic", True, 
-                            f"Pump: {pump_specs.get('model', 'Unknown')}, Efficiency: {overall_efficiency:.1f}%")
+                            f"Pump: {pump_name}, Efficiency: {overall_efficiency:.1f}%")
                 return True
             else:
                 self.log_test("Expert Solaire - Pump Selection Logic", False, f"Status: {response.status_code}")
