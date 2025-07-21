@@ -4767,6 +4767,20 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
           </div>
 
           <div>
+            <ProfessionalLabel>Pression Utile (m)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.useful_pressure}
+              onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value) || 0)}
+              placeholder="Ex: 0"
+              step="0.1"
+            />
+            <div className="text-xs text-purple-600 mt-1 font-medium">
+              Pression supplémentaire requise
+            </div>
+          </div>
+
+          <div>
             <ProfessionalLabel required>Type de Fluide</ProfessionalLabel>
             <ProfessionalSelect
               value={inputData.fluid_type}
