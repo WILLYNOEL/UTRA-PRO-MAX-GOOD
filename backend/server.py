@@ -745,8 +745,10 @@ class ExpertAnalysisInput(BaseModel):
     suction_type: str = "flooded"  # "flooded" ou "suction_lift"
     
     # Géométrie
-    suction_pipe_diameter: float  # mm
-    discharge_pipe_diameter: float  # mm
+    suction_pipe_diameter: float  # mm (pour calculs)
+    discharge_pipe_diameter: float  # mm (pour calculs)
+    suction_dn: Optional[int] = None  # DN sélectionné par l'utilisateur (pour recommandations)
+    discharge_dn: Optional[int] = None  # DN sélectionné par l'utilisateur (pour recommandations)
     suction_height: float  # m
     discharge_height: float  # m
     suction_length: float  # m
