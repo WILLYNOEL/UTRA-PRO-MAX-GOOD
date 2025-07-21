@@ -4772,7 +4772,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             >
               {fluids.map(fluid => (
                 <option key={fluid.id} value={fluid.id}>
-                  {fluid.icon} {fluid.name}
+                  {fluid.name}
                 </option>
               ))}
             </ProfessionalSelect>
