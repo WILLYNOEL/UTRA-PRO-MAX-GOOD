@@ -2249,6 +2249,188 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
                 "💡 OPTIMISATION: Passivation acier pour huiles haute performance"
             ])
     
+    elif input_data.fluid_type == "bleach":
+        critical_analysis.extend([
+            "🧽 CRITIQUE EXPERT - EAU DE JAVEL (Agent de blanchiment):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material in ["steel", "cast_iron", "steel_galvanized"]:
+            critical_analysis.extend([
+                "🚨 CHOIX CATASTROPHIQUE: Métaux ferreux + chlore = corrosion par piqûres",
+                "⚗️  RÉACTION CHIMIQUE: Hypochlorite + fer = formation FeCl3 (rouille active)",
+                "⏱️  DÉGRADATION: Perforations en 15-30 jours selon concentration",
+                "💀 RISQUE SANITAIRE: Contamination par ions ferriques",
+                "🏗️  SOLUTION OBLIGATOIRE: PVC-U ou PEHD exclusivement pour eau de javel"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "✅ CHOIX OPTIMAL: PVC résistant au chlore jusqu'à 1000 ppm",
+                "🔬 CHIMIE: PVC-U non-plastifié obligatoire (pas PVC souple)",
+                "🌡️  TEMPÉRATURE: Limité à 40°C avec eau de javel (dégagement Cl2)",
+                "💡 PRÉCAUTION: Ventilation obligatoire - gaz chloré toxique",
+                "🔧 ASSEMBLAGE: Joints EPDM spécial chlore, éviter NBR"
+            ])
+        elif input_data.suction_material == "stainless_steel_316":
+            critical_analysis.extend([
+                "🟡 CHOIX ACCEPTABLE avec réserves:",
+                "⚠️  CONCENTRATION: Inox 316L limité à 200 ppm chlore libre",
+                "🧪 CORROSION: Piqûres possibles si >500 ppm ou pH <7",
+                "🏗️  ALTERNATIVE: Duplex 2205 ou Hastelloy C-276 pour fortes concentrations",
+                "🔧 JOINTS: PTFE ou FKM obligatoires (pas EPDM standard)"
+            ])
+    
+    elif input_data.fluid_type == "tomato_sauce":
+        critical_analysis.extend([
+            "🍅 CRITIQUE EXPERT - SAUCE TOMATE (Produit alimentaire acide):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material in ["steel", "steel_galvanized", "cast_iron"]:
+            critical_analysis.extend([
+                "❌ TRIPLE VIOLATION: Alimentaire + Acide + Température",
+                "🦠 CONTAMINATION: Fer + tomate = goût métallique + noircissement",
+                "⚖️  RÉGLEMENTATION: Interdit FDA/CE contact alimentaire direct",
+                "🧪 pH CRITIQUE: Sauce tomate pH 4.0-4.6 (acide) attaque métaux ferreux",
+                "🏗️  OBLIGATION: Inox 316L poli sanitaire Ra <0.4µm exclusivement"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🟡 CHOIX LIMITÉ: PVC alimentaire possible mais non optimal",
+                "🌡️  TEMPÉRATURE: Sauce chaude >60°C problématique pour PVC",
+                "📜 CERTIFICATION: PVC-U alimentaire sans phtalates obligatoire",
+                "🧽 NETTOYAGE: Difficile - rugosité PVC retient résidus",
+                "💡 RECOMMANDATION: Inox 316L préférable pour viscosité + température"
+            ])
+        elif input_data.suction_material == "stainless_steel_316":
+            critical_analysis.extend([
+                "✅ CHOIX EXCELLENT: Inox 316L optimal produits alimentaires acides",
+                "🔬 RÉSISTANCE: pH 4.0-4.6 + température + viscosité = parfait",
+                "🧽 NETTOYAGE: Surface lisse compatible CIP haute température",
+                "📜 CONFORMITÉ: Certifications 3.1B + FDA alimentaire disponibles",
+                "💎 FINITION: Électropolissage Ra <0.4µm pour viscosité élevée"
+            ])
+    
+    elif input_data.fluid_type == "soap_solution":
+        critical_analysis.extend([
+            "🧴 CRITIQUE EXPERT - SOLUTION SAVONNEUSE (Agent tensioactif):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material in ["steel", "cast_iron"]:
+            critical_analysis.extend([
+                "⚠️  PROBLÈME DE SAPONIFICATION: Savon + métaux ferreux",
+                "🧪 RÉACTION: Formation savons métalliques (précipités)",
+                "🔧 ENCRASSEMENT: Dépôts calcaires amplifiés par savons métalliques",
+                "💧 pH ÉLEVÉ: Solutions savonneuses basiques (pH 9-11) attaquent fonte",
+                "🏗️  AMÉLIORATION: Revêtement époxy ou passage inox 304"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "✅ CHOIX ADAPTÉ: PVC résistant tensioactifs et pH basique",
+                "🧽 AVANTAGE: Surface lisse limite adhésion résidus savonneux",
+                "🌡️  TEMPÉRATURE: Attention solutions chaudes >50°C (dégraissage)",
+                "🔧 ENTRETIEN: Rinçage périodique éviter accumulation résidus"
+            ])
+    
+    elif input_data.fluid_type == "yogurt":
+        critical_analysis.extend([
+            "🥛 CRITIQUE EXPERT - YAOURT (Produit laitier fermenté):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material in ["steel", "steel_galvanized"]:
+            critical_analysis.extend([
+                "❌ INACCEPTABLE: Acier standard + acide lactique = contamination",
+                "🦠 BACTÉRIES: Corrosion favorise développement pathogènes",
+                "🧪 pH ACIDE: Yaourt pH 4.0-4.4 attaque métaux ferreux",
+                "⚖️  RÉGLEMENTATION: Non conforme HACCP et FDA/CE",
+                "🏗️  OBLIGATION: Inox 316L poli sanitaire obligatoire"
+            ])
+        elif input_data.suction_material == "stainless_steel_316":
+            critical_analysis.extend([
+                "✅ CHOIX PARFAIT: Inox 316L optimal produits laitiers fermentés",
+                "🔬 RÉSISTANCE: Acide lactique + viscosité + nettoyage vapeur",
+                "🧽 HYGIÈNE: Surface électropolie compatible ferments lactiques",
+                "🌡️  TEMPÉRATURE: Résistant stérilisation 135°C (UHT/CIP)"
+            ])
+    
+    elif input_data.fluid_type == "glycerol":
+        critical_analysis.extend([
+            "🍯 CRITIQUE EXPERT - GLYCÉROL (Viscosité extrême):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🟡 CHOIX DISCUTABLE: PVC + viscosité élevée = contraintes mécaniques",
+                "🔧 PRESSION: Glycérol visqueux génère surpressions - PVC fragile",
+                "🌡️  TEMPÉRATURE: Glycérol chauffé (fluidification) > limite PVC",
+                "💡 AMÉLIORATION: Acier ou inox pour applications glycérol concentré"
+            ])
+        elif input_data.suction_material in ["steel", "stainless_steel_316"]:
+            critical_analysis.extend([
+                "✅ CHOIX OPTIMAL: Métaux résistants viscosité + pression",
+                "🔧 DIMENSIONNEMENT: Prévoir surpressions dues viscosité",
+                "🌡️  CHAUFFAGE: Traçage thermique pour fluidification si nécessaire",
+                "💡 CONSEIL: Pompes volumétriques préférables au centrifuge"
+            ])
+    
+    elif input_data.fluid_type == "methanol":
+        critical_analysis.extend([
+            "🧪 CRITIQUE EXPERT - MÉTHANOL (Alcool toxique):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "❌ INCOMPATIBILITÉ: PVC gonflé par méthanol (solvant)",
+                "💀 SÉCURITÉ: Méthanol + PVC dégradé = fuite toxique",
+                "⚡ ÉLECTROSTATIQUE: Méthanol conducteur + PVC isolant = charges",
+                "🏗️  OBLIGATION: Acier inox ou PTFE exclusivement"
+            ])
+        elif input_data.suction_material in ["steel", "stainless_steel_316"]:
+            critical_analysis.extend([
+                "✅ CHOIX ADAPTÉ: Métaux résistants méthanol",
+                "💀 SÉCURITÉ: Méthanol très toxique - étanchéité parfaite obligatoire",
+                "⚡ ÉLECTROSTATIQUE: Mise à terre complète installation",
+                "🔧 JOINTS: FKM (Viton) exclusivement, pas NBR"
+            ])
+    
+    elif input_data.fluid_type == "ethanol":
+        critical_analysis.extend([
+            "🍺 CRITIQUE EXPERT - ÉTHANOL (Alcool éthylique):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "⚠️  GONFLEMENT: PVC + éthanol = déformation progressive",
+                "🔧 ASSEMBLAGE: Colles PVC dissoutes par éthanol concentré",
+                "🌡️  ÉVAPORATION: Éthanol volatile - pertes par perméation PVC",
+                "🏗️  AMÉLIORATION: Acier inox si éthanol >70% concentration"
+            ])
+        elif input_data.suction_material in ["steel", "stainless_steel_316"]:
+            critical_analysis.extend([
+                "✅ CHOIX EXCELLENT: Métaux parfaitement compatibles éthanol",
+                "🍺 ALIMENTAIRE: Inox 316L si usage alimentaire (spiritueux)",
+                "🔧 JOINTS: NBR acceptable, FKM optimal",
+                "⚡ ATEX: Zone Ex si éthanol >40% - équipements antidéflagrants"
+            ])
+    
+    elif input_data.fluid_type == "palm_oil":
+        critical_analysis.extend([
+            "🌴 CRITIQUE EXPERT - HUILE DE PALME (Huile végétale):",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        if input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "❌ INCOMPATIBILITÉ: Huile de palme dissout plastifiants PVC",
+                "🔧 DÉGRADATION: Durcissement + fissuration PVC au contact huile",
+                "🌡️  TEMPÉRATURE: Huile de palme chaude (fluidification) détruit PVC",
+                "🏗️  SOLUTION: Acier inox exclusivement pour huiles végétales"
+            ])
+        elif input_data.suction_material in ["steel", "stainless_steel_316"]:
+            critical_analysis.extend([
+                "✅ CHOIX OPTIMAL: Métaux compatibles huiles végétales",
+                "🌡️  CHAUFFAGE: Traçage thermique nécessaire (solidification 35°C)",
+                "🧽 ENTRETIEN: Nettoyage dégraissants alcalins périodique",
+                "📜 ALIMENTAIRE: Inox 316L si usage alimentaire obligatoire"
+            ])
+    
     elif input_data.fluid_type == "water":
         critical_analysis.extend([
             "💧 CRITIQUE EXPERT - EAU (apparemment simple mais...):",
@@ -2270,6 +2452,66 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
                 "💡 AMÉLIORATION: PVC surdimensionné ou PEHD selon température",
                 "🔧 ASSEMBLAGE: Colle PVC sensible température - respecter temps séchage"
             ])
+        elif input_data.suction_material == "cast_iron":
+            critical_analysis.extend([
+                "🟡 CHOIX TRADITIONNEL avec surveillance nécessaire:",
+                "🦠 BIOFILM: Fonte rugueuse favorise développement bactéries",
+                "💧 QUALITÉ EAU: Eau douce agressive (pH <7) attaque fonte",
+                "🔧 PROTECTION: Revêtement ciment ou époxy recommandé",
+                "📊 SURVEILLANCE: Contrôle qualité eau et épaisseur fonte régulier"
+            ])
+    
+    # CAS PAR DÉFAUT - ANALYSE OBLIGATOIRE POUR TOUS LES FLUIDES NON COUVERTS
+    else:
+        # S'assurer qu'une analyse apparaît toujours
+        fluid_name_display = input_data.fluid_type.replace('_', ' ').upper()
+        critical_analysis.extend([
+            f"🔬 ANALYSE CRITIQUE - {fluid_name_display}:",
+            f"⚠️  ÉVALUATION MATÉRIAU CHOISI ({input_data.suction_material}):",
+        ])
+        
+        # Analyse générique basée sur les propriétés du matériau
+        if input_data.suction_material in ["steel", "steel_galvanized", "cast_iron"]:
+            critical_analysis.extend([
+                "⚠️  MATÉRIAUX FERREUX: Sensibilité corrosion selon fluide",
+                "💧 HUMIDITÉ: Éviter stagnation - favorise corrosion",
+                "🔧 PROTECTION: Revêtement ou traitement anti-corrosion recommandé",
+                "📊 SURVEILLANCE: Contrôle épaisseur et état surface périodique"
+            ])
+        elif input_data.suction_material == "pvc":
+            critical_analysis.extend([
+                "🌡️  PVC - LIMITATIONS GÉNÉRALES:",
+                "⚠️  TEMPÉRATURE: Limite 60°C - vérifier compatibilité fluide chaud",
+                "🧪 SOLVANTS: PVC sensible hydrocarbures et solvants organiques", 
+                "☀️  UV: Protection nécessaire exposition extérieure",
+                "🔧 ASSEMBLAGE: Technique collage critique pour étanchéité"
+            ])
+        elif input_data.suction_material in ["stainless_steel_316", "stainless_steel_304"]:
+            critical_analysis.extend([
+                "✅ INOX - CHOIX POLYVALENT:",
+                "🔬 NUANCE: 316L supérieur à 304 pour résistance corrosion",
+                "🧽 ÉTAT SURFACE: Polissage améliore résistance et nettoyage",
+                "💰 COÛT: Investissement initial élevé mais durabilité supérieure",
+                "🔧 ASSEMBLAGE: Soudage TIG recommandé pour applications critiques"
+            ])
+        elif input_data.suction_material == "pehd":
+            critical_analysis.extend([
+                "💪 PEHD - PLASTIQUE TECHNIQUE:",
+                "✅ RÉSISTANCE: Chimique supérieure au PVC",
+                "🌡️  TEMPÉRATURE: Meilleure tenue que PVC (-40°C à +80°C)",
+                "🔧 SOUDAGE: Techniques spécialisées (bout à bout, électrosoudage)",
+                "⚡ ÉLECTROSTATIQUE: Mise à terre si fluides conducteurs"
+            ])
+        
+        # Ajouter toujours des recommandations générales
+        critical_analysis.extend([
+            "",  # Ligne vide pour séparation
+            "📋 RECOMMANDATIONS GÉNÉRALES COMPATIBILITÉ:",
+            "🧪 TEST: Essai de compatibilité sur échantillon recommandé",
+            "📊 ANALYSE: Vérifier composition chimique exacte du fluide",
+            "🌡️  TEMPÉRATURE: Considérer variations saisonnières/process",
+            "⚖️  NORMES: Vérifier conformité réglementaire selon application"
+        ])
     
     # Analyse critique de la température de fonctionnement
     if input_data.temperature > 60:
