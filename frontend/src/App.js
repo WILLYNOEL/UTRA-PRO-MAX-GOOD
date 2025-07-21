@@ -6619,7 +6619,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       ⭐ ⌀ Aspiration (DN)
                     </label>
                     <select
-                      value={inputData.suction_pipe_diameter > 0 ? inputData.suction_pipe_diameter : ''}
+                      value={inputData.suction_pipe_diameter || 0}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value) || 0;
                         if (selectedMm > 0) {
