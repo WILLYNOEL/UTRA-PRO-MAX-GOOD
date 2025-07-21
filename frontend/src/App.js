@@ -8594,7 +8594,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
         </div>
       </div>
 
-      {/* Paramètres de Performance */}
+      {/* Paramètres Hydrauliques */}
       <ProfessionalSection 
         title="Paramètres de Performance Hydraulique" 
         icon="💧"
@@ -8660,6 +8660,158 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
                 </option>
               ))}
             </ProfessionalSelect>
+            <div className="text-xs text-cyan-600 mt-1 font-medium">
+              Propriétés physiques du fluide
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Matériau de tuyauterie</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.pipe_material}
+              onChange={(e) => handleInputChange('pipe_material', e.target.value)}
+              required
+            >
+              {pipeMaterials.map(material => (
+                <option key={material.id} value={material.id}>
+                  {material.name} (ε = {material.roughness} mm)
+                </option>
+              ))}
+            </ProfessionalSelect>
+            <div className="text-xs text-orange-600 mt-1 font-medium">
+              Rugosité pour calculs de pertes
+            </div>
+          </div>
+        </ProfessionalGrid>
+      </ProfessionalSection>
+
+      {/* Paramètres de Rendement */}
+      <ProfessionalSection 
+        title="Rendements et Performance" 
+        icon="⚙️"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={2}>
+          <div>
+            <ProfessionalLabel required>Rendement Pompe (%)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.pump_efficiency}
+              onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 75"
+              min="40"
+              max="95"
+            />
+            <div className="text-xs text-green-600 mt-1 font-medium">
+              Rendement hydraulique de la pompe
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Rendement Moteur (%)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.motor_efficiency}
+              onChange={(e) => handleInputChange('motor_efficiency', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 90"
+              min="70"
+              max="98"
+            />
+            <div className="text-xs text-blue-600 mt-1 font-medium">
+              Rendement électrique du moteur
+            </div>
+          </div>
+        </ProfessionalGrid>
+      </ProfessionalSection>
+
+      {/* Paramètres Électriques */}
+      <ProfessionalSection 
+        title="Configuration Électrique" 
+        icon="⚡"
+        className="shadow-xl"
+      >
+        <ProfessionalGrid cols={3}>
+          <div>
+            <ProfessionalLabel required>Tension (V)</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.voltage}
+              onChange={(e) => handleInputChange('voltage', parseInt(e.target.value))}
+              required
+            >
+              <option value={230}>230V (Monophasé)</option>
+              <option value={400}>400V (Triphasé)</option>
+              <option value={690}>690V (Industriel)</option>
+            </ProfessionalSelect>
+            <div className="text-xs text-red-600 mt-1 font-medium">
+              Tension d'alimentation
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Facteur de Puissance</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.power_factor}
+              onChange={(e) => handleInputChange('power_factor', parseFloat(e.target.value))}
+              required
+            >
+              <option value={0.7}>0.7 (Faible)</option>
+              <option value={0.8}>0.8 (Standard)</option>
+              <option value={0.85}>0.85 (Bon)</option>
+              <option value={0.9}>0.9 (Excellent)</option>
+              <option value={0.95}>0.95 (Optimal)</option>
+            </ProfessionalSelect>
+            <div className="text-xs text-yellow-600 mt-1 font-medium">
+              Cos φ du système
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Méthode de Démarrage</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.starting_method}
+              onChange={(e) => handleInputChange('starting_method', e.target.value)}
+              required
+            >
+              <option value="direct">Démarrage Direct</option>
+              <option value="star_delta">Étoile-Triangle</option>
+              <option value="soft_start">Démarreur Progressif</option>
+              <option value="vfd">Variateur de Fréquence</option>
+            </ProfessionalSelect>
+            <div className="text-xs text-purple-600 mt-1 font-medium">
+              Type de démarreur électrique
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Longueur de Câble (m)</ProfessionalLabel>
+            <ProfessionalInput
+              type="number"
+              value={inputData.cable_length}
+              onChange={(e) => handleInputChange('cable_length', parseFloat(e.target.value) || 0)}
+              required
+              placeholder="Ex: 50"
+              min="1"
+            />
+            <div className="text-xs text-indigo-600 mt-1 font-medium">
+              Distance entre tableau et moteur
+            </div>
+          </div>
+
+          <div>
+            <ProfessionalLabel required>Matériau de Câble</ProfessionalLabel>
+            <ProfessionalSelect
+              value={inputData.cable_material}
+              onChange={(e) => handleInputChange('cable_material', e.target.value)}
+              required
+            >
+              <option value="copper">Cuivre (Cu)</option>
+              <option value="aluminum">Aluminium (Al)</option>
+            </ProfessionalSelect>
+            <div className="text-xs text-gray-600 mt-1 font-medium">
+              Conducteur électrique
+            </div>
           </div>
         </ProfessionalGrid>
       </ProfessionalSection>
