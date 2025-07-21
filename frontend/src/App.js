@@ -6509,29 +6509,27 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </select>
                 </div>
                 
-                {/* Propriétés du fluide affichées automatiquement */}
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
-                    🧪 Propriétés du Fluide à {inputData.temperature}°C
+                {/* Propriétés du fluide - Version compacte */}
+                <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="text-xs font-semibold text-blue-800 mb-2">
+                    🧪 Propriétés à {inputData.temperature}°C
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="bg-white p-3 rounded border">
-                      <div className="font-medium text-gray-700">Masse Volumique</div>
-                      <div className="text-lg font-bold text-blue-600">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="bg-white p-2 rounded border text-center">
+                      <div className="font-medium text-gray-700">Densité</div>
+                      <div className="text-sm font-bold text-blue-600">
                         {(() => {
-                          // Utiliser la nouvelle fonction universelle
                           const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
-                          return fluidProps.density.toFixed(1);
+                          return fluidProps.density.toFixed(0);
                         })()}
                       </div>
                       <div className="text-xs text-gray-500">kg/m³</div>
                     </div>
                     
-                    <div className="bg-white p-3 rounded border">
+                    <div className="bg-white p-2 rounded border text-center">
                       <div className="font-medium text-gray-700">Viscosité</div>
-                      <div className="text-lg font-bold text-green-600">
+                      <div className="text-sm font-bold text-green-600">
                         {(() => {
-                          // Utiliser la nouvelle fonction universelle
                           const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
                           return fluidProps.viscosity.toFixed(4);
                         })()}
@@ -6539,16 +6537,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       <div className="text-xs text-gray-500">Pa·s</div>
                     </div>
                     
-                    <div className="bg-white p-3 rounded border">
-                      <div className="font-medium text-gray-700">Pression Vapeur</div>
-                      <div className="text-lg font-bold text-red-600">
+                    <div className="bg-white p-2 rounded border text-center">
+                      <div className="font-medium text-gray-700">P. Vapeur</div>
+                      <div className="text-sm font-bold text-red-600">
                         {(() => {
-                          // Utiliser la nouvelle fonction universelle
                           const fluidProps = calculateFluidProperties(inputData.fluid_type, inputData.temperature);
-                          return fluidProps.vapor_pressure.toFixed(0);
+                          return (fluidProps.vapor_pressure/1000).toFixed(1);
                         })()}
                       </div>
-                      <div className="text-xs text-gray-500">Pa</div>
+                      <div className="text-xs text-gray-500">kPa</div>
                     </div>
                   </div>
                 </div>
