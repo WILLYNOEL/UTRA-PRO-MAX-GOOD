@@ -8792,7 +8792,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             <ProfessionalInput
               type="number"
               value={inputData.cable_length}
-              onChange={(e) => handleInputChange('cable_length', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('cable_length', parseFloat(e.target.value))}
               required
               placeholder="Ex: 50"
               min="1"
