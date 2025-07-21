@@ -3046,21 +3046,11 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
     # 3. Sélection automatique de la pompe optimale
     suitable_pumps = []
     
-    # DEBUG: Ajouter les valeurs de sélection
-    warnings.append(f"Recherche pompe - Débit: {hourly_flow_peak:.1f} m³/h, HMT: {input_data.total_head}m, Type: {input_data.installation_type}")
-    
     for pump_id, pump_data in SOLAR_PUMP_DATABASE.items():
-        # DEBUG: Afficher chaque pompe testée avec toutes les conditions
-        power_ok = hydraulic_power_peak <= max(pump_data["power_range"])
-        flow_ok = hourly_flow_peak <= max(pump_data["flow_range"])
-        head_ok = input_data.total_head <= max(pump_data["head_range"])
-        type_ok = pump_data["type"] == input_data.installation_type
-        
-        is_compatible = power_ok and flow_ok and head_ok and type_ok
-        
-        warnings.append(f"Test {pump_id}: Puissance ok={power_ok} ({hydraulic_power_peak:.0f}W<={max(pump_data['power_range'])}W), Débit ok={flow_ok}, HMT ok={head_ok}, Type ok={type_ok}, Compatible={is_compatible}")
-        
-        if is_compatible:
+        if (pump_data["type"] == input_data.installation_type and
+            hydraulic_power_peak <= max(pump_data["power_range"]) and
+            hourly_flow_peak <= max(pump_data["flow_range"]) and
+            input_data.total_head <= max(pump_data["head_range"])):
             
             # Calculer l'efficacité du point de fonctionnement
             power_ratio = hydraulic_power_peak / max(pump_data["power_range"])
