@@ -1071,6 +1071,15 @@ const SolarExpertSystem = () => {
     fetchRegions();
   }, []);
 
+  // Sauvegarde automatique dans localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('ecoExpertSolarData', JSON.stringify(solarData));
+    } catch (error) {
+      console.warn('Erreur lors de la sauvegarde des données solaires:', error);
+    }
+  }, [solarData]);
+
   // Calcul automatique en temps réel
   useEffect(() => {
     const calculateSolarSystem = async () => {
