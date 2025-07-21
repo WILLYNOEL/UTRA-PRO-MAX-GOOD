@@ -6156,6 +6156,265 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_expert_solaire_high_flow_rates(self):
+        """Test Expert Solaire functionality with high flow rates that previously caused 500 errors"""
+        print("\n🌞 Testing Expert Solaire High Flow Rates (Previously Failed)...")
+        
+        test_cases = [
+            {
+                "name": "205 m³/j Flow Rate (Previously Failed)",
+                "data": {
+                    "daily_water_need": 205,  # m³/j
+                    "operating_hours": 8,
+                    "total_head": 65.8,
+                    "efficiency_pump": 75,
+                    "efficiency_motor": 90,
+                    "region": "dakar"
+                },
+                "expected_status": 200,
+                "should_have_fallback": True
+            },
+            {
+                "name": "210 m³/j Flow Rate (Previously Failed)",
+                "data": {
+                    "daily_water_need": 210,  # m³/j
+                    "operating_hours": 8,
+                    "total_head": 65.8,
+                    "efficiency_pump": 75,
+                    "efficiency_motor": 90,
+                    "region": "dakar"
+                },
+                "expected_status": 200,
+                "should_have_fallback": True
+            },
+            {
+                "name": "250 m³/j Flow Rate (Should Work)",
+                "data": {
+                    "daily_water_need": 250,  # m³/j
+                    "operating_hours": 8,
+                    "total_head": 25,  # Lower head
+                    "efficiency_pump": 75,
+                    "efficiency_motor": 90,
+                    "region": "dakar"
+                },
+                "expected_status": 200,
+                "should_have_fallback": False
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/solar-pumping", json=case["data"], timeout=15)
+                
+                # Check HTTP status
+                if response.status_code != case["expected_status"]:
+                    self.log_test(f"Expert Solaire - {case['name']} - HTTP Status", False, 
+                                f"Expected {case['expected_status']}, got {response.status_code}")
+                    all_passed = False
+                    continue
+                
+                result = response.json()
+                
+                # Check required sections are present
+                required_sections = [
+                    "input_data", "dimensioning", "economic_analysis", 
+                    "solar_irradiation", "system_efficiency", "pump_operating_hours",
+                    "monthly_performance", "system_curves", "warnings", "critical_alerts"
+                ]
+                
+                missing_sections = []
+                for section in required_sections:
+                    if section not in result:
+                        missing_sections.append(section)
+                
+                if missing_sections:
+                    self.log_test(f"Expert Solaire - {case['name']} - Required Sections", False, 
+                                f"Missing sections: {missing_sections}")
+                    all_passed = False
+                    continue
+                
+                # Check dimensioning section structure
+                dimensioning = result.get("dimensioning", {})
+                required_dimensioning_fields = [
+                    "recommended_pump", "solar_panels", "batteries", 
+                    "mppt_controller", "energy_production"
+                ]
+                
+                missing_dimensioning = []
+                for field in required_dimensioning_fields:
+                    if field not in dimensioning:
+                        missing_dimensioning.append(field)
+                
+                if missing_dimensioning:
+                    self.log_test(f"Expert Solaire - {case['name']} - Dimensioning Fields", False, 
+                                f"Missing dimensioning fields: {missing_dimensioning}")
+                    all_passed = False
+                    continue
+                
+                # Check economic analysis structure
+                economic_analysis = result.get("economic_analysis", {})
+                required_economic_fields = [
+                    "total_system_cost", "annual_savings", "payback_period", "roi"
+                ]
+                
+                missing_economic = []
+                for field in required_economic_fields:
+                    if field not in economic_analysis:
+                        missing_economic.append(field)
+                
+                if missing_economic:
+                    self.log_test(f"Expert Solaire - {case['name']} - Economic Fields", False, 
+                                f"Missing economic fields: {missing_economic}")
+                    all_passed = False
+                    continue
+                
+                # Check for fallback pump when no suitable pumps found
+                recommended_pump = dimensioning.get("recommended_pump", {})
+                pump_model = recommended_pump.get("model", "")
+                
+                if case["should_have_fallback"]:
+                    # For high flow rates, should fall back to sp_46a_40_rsi
+                    if pump_model != "sp_46a_40_rsi":
+                        self.log_test(f"Expert Solaire - {case['name']} - Fallback Pump", False, 
+                                    f"Expected fallback pump 'sp_46a_40_rsi', got '{pump_model}'")
+                        all_passed = False
+                        continue
+                    
+                    # Check for critical alerts when using fallback
+                    critical_alerts = result.get("critical_alerts", [])
+                    if not critical_alerts:
+                        self.log_test(f"Expert Solaire - {case['name']} - Critical Alerts", False, 
+                                    "Missing critical alerts for fallback pump scenario")
+                        all_passed = False
+                        continue
+                    
+                    # Check that critical alert mentions pump selection issue
+                    pump_alert_found = False
+                    for alert in critical_alerts:
+                        if "pump" in alert.lower() or "pompe" in alert.lower():
+                            pump_alert_found = True
+                            break
+                    
+                    if not pump_alert_found:
+                        self.log_test(f"Expert Solaire - {case['name']} - Pump Alert Content", False, 
+                                    "Critical alerts don't mention pump selection issue")
+                        all_passed = False
+                        continue
+                
+                # Check that calculations are reasonable
+                total_cost = economic_analysis.get("total_system_cost", 0)
+                if total_cost <= 0:
+                    self.log_test(f"Expert Solaire - {case['name']} - System Cost", False, 
+                                f"Invalid system cost: {total_cost}")
+                    all_passed = False
+                    continue
+                
+                # Check solar panels configuration
+                solar_panels = dimensioning.get("solar_panels", {})
+                panel_count = solar_panels.get("quantity", 0)
+                if panel_count <= 0:
+                    self.log_test(f"Expert Solaire - {case['name']} - Solar Panels", False, 
+                                f"Invalid panel count: {panel_count}")
+                    all_passed = False
+                    continue
+                
+                # Check monthly performance data
+                monthly_performance = result.get("monthly_performance", [])
+                if len(monthly_performance) != 12:
+                    self.log_test(f"Expert Solaire - {case['name']} - Monthly Performance", False, 
+                                f"Expected 12 months of data, got {len(monthly_performance)}")
+                    all_passed = False
+                    continue
+                
+                # Log success with key metrics
+                flow_rate = case["data"]["daily_water_need"] / case["data"]["operating_hours"]  # m³/h
+                self.log_test(f"Expert Solaire - {case['name']}", True, 
+                            f"Flow: {flow_rate:.1f} m³/h, Pump: {pump_model}, Cost: {total_cost:.0f}€, Panels: {panel_count}")
+                
+            except Exception as e:
+                self.log_test(f"Expert Solaire - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_expert_solaire_pump_selection_logic(self):
+        """Test the pump selection logic and fallback mechanism"""
+        print("\n🔧 Testing Expert Solaire Pump Selection Logic...")
+        
+        # Test with backend debug logs to verify pump selection logic
+        test_data = {
+            "daily_water_need": 205,  # High flow rate that should trigger fallback
+            "operating_hours": 8,
+            "total_head": 65.8,
+            "efficiency_pump": 75,
+            "efficiency_motor": 90,
+            "region": "dakar"
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/solar-pumping", json=test_data, timeout=15)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check pump selection details
+                dimensioning = result.get("dimensioning", {})
+                recommended_pump = dimensioning.get("recommended_pump", {})
+                
+                # Verify pump specifications
+                pump_specs = recommended_pump.get("specifications", {})
+                required_pump_fields = ["model", "max_flow", "max_head", "power", "efficiency"]
+                
+                missing_pump_fields = []
+                for field in required_pump_fields:
+                    if field not in pump_specs:
+                        missing_pump_fields.append(field)
+                
+                if missing_pump_fields:
+                    self.log_test("Expert Solaire - Pump Selection - Specifications", False, 
+                                f"Missing pump specification fields: {missing_pump_fields}")
+                    return False
+                
+                # Check that pump selection reasoning is provided
+                selection_reason = recommended_pump.get("selection_reason", "")
+                if not selection_reason:
+                    self.log_test("Expert Solaire - Pump Selection - Reasoning", False, 
+                                "Missing pump selection reasoning")
+                    return False
+                
+                # Check critical alerts for pump selection issues
+                critical_alerts = result.get("critical_alerts", [])
+                pump_selection_alert = False
+                for alert in critical_alerts:
+                    if "pump" in alert.lower() or "pompe" in alert.lower():
+                        pump_selection_alert = True
+                        break
+                
+                if not pump_selection_alert:
+                    self.log_test("Expert Solaire - Pump Selection - Alerts", False, 
+                                "Missing pump selection alert in critical_alerts")
+                    return False
+                
+                # Check system efficiency calculations
+                system_efficiency = result.get("system_efficiency", {})
+                overall_efficiency = system_efficiency.get("overall", 0)
+                
+                if overall_efficiency <= 0 or overall_efficiency > 100:
+                    self.log_test("Expert Solaire - System Efficiency", False, 
+                                f"Invalid overall efficiency: {overall_efficiency}%")
+                    return False
+                
+                self.log_test("Expert Solaire - Pump Selection Logic", True, 
+                            f"Pump: {pump_specs.get('model', 'Unknown')}, Efficiency: {overall_efficiency:.1f}%")
+                return True
+            else:
+                self.log_test("Expert Solaire - Pump Selection Logic", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Expert Solaire - Pump Selection Logic", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
