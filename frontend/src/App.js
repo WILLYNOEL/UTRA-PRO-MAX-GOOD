@@ -6309,6 +6309,17 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     }
   }, []);
 
+  // Force la synchronisation des valeurs par défaut pour les dropdowns DN
+  React.useEffect(() => {
+    // S'assurer que les valeurs par défaut DN sont correctement synchronisées
+    if (inputData.suction_pipe_diameter === 114.3 && inputData.suction_dn !== 100) {
+      handleInputChange('suction_dn', 100);
+    }
+    if (inputData.discharge_pipe_diameter === 88.9 && inputData.discharge_dn !== 80) {
+      handleInputChange('discharge_dn', 80);
+    }
+  }, [inputData.suction_pipe_diameter, inputData.discharge_pipe_diameter]);
+
   return (
     <div className="space-y-4">
       {/* Header Expert - Plus compact */}
