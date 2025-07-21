@@ -541,6 +541,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "NPSHd DN Recommendations Display"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: NPSHd DN Recommendations Display working perfectly! Comprehensive validation completed with 100% success rate (8/8 tests passed). ✅ DN FORMAT CONVERSION: Recommendations now correctly display DN equivalents instead of raw millimeter values. Test case DN32 (42.4mm) with high flow rate (100 m³/h) shows 'DN32 à DN150' format instead of '42mm à 76mm' format. ✅ VELOCITY CALCULATIONS: Velocity calculations working correctly (DN32: 19.67 m/s, DN20: 73.32 m/s, DN100: 2.71 m/s). ✅ RECOMMENDATION LOGIC: System appropriately generates diameter recommendations only when velocity > 1.5 m/s. DN32 and DN20 with high flow rates trigger recommendations, DN100 with adequate diameter shows no recommendations. ✅ DN CONVERSION FUNCTIONS: get_dn_from_diameter() function working correctly - exact DN matches (42.4mm → DN32), superior DN selection (45.0mm → DN40), large diameters (200.0mm → DN200), minimum DN handling (15.0mm → DN20). ✅ CURRENT DN REFERENCE: Recommendations correctly reference user-selected DN values in format 'DN{current} à DN{recommended}'. ✅ NO MM FORMAT: Old millimeter format completely eliminated from recommendations. ✅ MATHEMATICAL ACCURACY: DN conversion mathematically correct and uses superior DN when needed. ✅ EXTREME CASES: System handles extreme cases correctly (DN20 with 150 m³/h shows 'DN20 à DN200'). NPSHd DN recommendations functionality is production-ready and meets all requirements from review request."
+
   - task: "Diameter Recommendation Fixes Testing"
     implemented: true
     working: true
