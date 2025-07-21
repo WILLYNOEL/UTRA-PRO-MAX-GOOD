@@ -2518,7 +2518,12 @@ async def get_pipe_materials():
     """Obtenir la liste des matériaux de tuyauterie"""
     return {
         "materials": [
-            {"id": key, "name": value["name"], "description": value["description"]}
+            {
+                "id": key, 
+                "name": value["name"], 
+                "description": value["description"],
+                "roughness": value["roughness"]
+            }
             for key, value in PIPE_MATERIALS.items()
         ]
     }
