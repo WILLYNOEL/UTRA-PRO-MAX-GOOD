@@ -3071,9 +3071,9 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
         selected_pump = SOLAR_PUMP_DATABASE[selected_pump_id]
         required_electrical_power = 1200  # Watts par défaut
     else:
-        # Sélection de la pompe optimale basée sur l'adéquation au débit requis
-        # Privilégier les pompes dont le débit max est proche du débit requis (éviter le surdimensionnement)
-        def pump_score(pump):
+        # DEBUG: Afficher les pompes compatibles et leurs scores
+        pump_scores = []
+        for pump in suitable_pumps:
             # Score basé sur l'efficacité, le coût et l'adéquation au débit
             efficiency_score = pump["efficiency_score"]
             cost_per_flow = pump["data"]["price_eur"] / max(pump["data"]["flow_range"])
@@ -3083,6 +3083,28 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
             oversizing_penalty = 1.0 if flow_adequacy > 0.3 else (2.0 - flow_adequacy * 3.0)
             
             # Score combiné (plus bas = meilleur)
+            total_score = (cost_per_flow * oversizing_penalty) / efficiency_score
+            
+            pump_scores.append({
+                'id': pump['id'],
+                'cost': pump['data']['price_eur'],
+                'flow_range': pump['data']['flow_range'],
+                'score': total_score,
+                'flow_adequacy': flow_adequacy,
+                'oversizing_penalty': oversizing_penalty
+            })
+        
+        # Trier par score pour voir l'ordre
+        pump_scores.sort(key=lambda x: x['score'])
+        for i, ps in enumerate(pump_scores[:3]):  # Top 3
+            warnings.append(f"Rank {i+1}: {ps['id']} - Score: {ps['score']:.3f}, Coût: {ps['cost']}€, Débit: {ps['flow_range']}, Adequacy: {ps['flow_adequacy']:.3f}, Penalty: {ps['oversizing_penalty']:.3f}")
+        
+        # Sélection de la pompe optimale basée sur l'adéquation au débit requis
+        def pump_score(pump):
+            efficiency_score = pump["efficiency_score"]
+            cost_per_flow = pump["data"]["price_eur"] / max(pump["data"]["flow_range"])
+            flow_adequacy = hourly_flow_peak / max(pump["data"]["flow_range"])
+            oversizing_penalty = 1.0 if flow_adequacy > 0.3 else (2.0 - flow_adequacy * 3.0)
             return (cost_per_flow * oversizing_penalty) / efficiency_score
         
         best_pump = min(suitable_pumps, key=pump_score)
