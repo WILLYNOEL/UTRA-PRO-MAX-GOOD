@@ -6647,12 +6647,11 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                         const selectedMm = parseFloat(e.target.value);
                         const selectedDn = dnSizes.find(size => size.mm === selectedMm);
                         
-                        // Mise à jour immédiate synchrone
-                        setInputData(prev => ({
-                          ...prev,
-                          discharge_pipe_diameter: selectedMm,
-                          discharge_dn: selectedDn ? parseInt(selectedDn.dn.replace('DN', '')) : null
-                        }));
+                        // Utiliser handleInputChange pour respecter la logique du composant
+                        handleInputChange('discharge_pipe_diameter', selectedMm);
+                        if (selectedDn) {
+                          handleInputChange('discharge_dn', parseInt(selectedDn.dn.replace('DN', '')));
+                        }
                       }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
