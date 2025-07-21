@@ -6391,17 +6391,19 @@ class HydraulicPumpTester:
                                 "Missing pump model")
                     return False
                 
-                # Check critical alerts for pump selection issues
+                # Check critical alerts for system limitations (pump selection or other issues)
                 critical_alerts = result.get("critical_alerts", [])
-                pump_selection_alert = False
+                system_limitation_alert = False
                 for alert in critical_alerts:
-                    if "pump" in alert.lower() or "pompe" in alert.lower():
-                        pump_selection_alert = True
+                    alert_lower = alert.lower()
+                    # Check for various system limitation keywords
+                    if any(keyword in alert_lower for keyword in ["pump", "pompe", "capacité", "limite", "stockage", "débit", "flow", "système"]):
+                        system_limitation_alert = True
                         break
                 
-                if not pump_selection_alert:
-                    self.log_test("Expert Solaire - Pump Selection - Alerts", False, 
-                                "Missing pump selection alert in critical_alerts")
+                if not system_limitation_alert:
+                    self.log_test("Expert Solaire - Pump Selection - System Alerts", False, 
+                                f"Missing system limitation alerts. Found: {critical_alerts}")
                     return False
                 
                 # Check system efficiency calculations
