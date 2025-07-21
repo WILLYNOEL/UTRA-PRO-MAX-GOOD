@@ -7425,6 +7425,173 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_graduated_diameter_recommendations(self):
+        """Test graduated diameter recommendations system to avoid oversized pipes"""
+        print("\n🎯 Testing Graduated Diameter Recommendations System...")
+        
+        # Test case 1: DN32 with high flow rate (120 m³/h) - should trigger multiple DN options
+        test_case_1 = {
+            "name": "DN32 High Flow Rate (120 m³/h)",
+            "data": {
+                "suction_type": "flooded",
+                "hasp": 3.0,
+                "flow_rate": 120,  # High flow to trigger multiple DN options
+                "pipe_diameter": 42.4,  # DN32 - small diameter
+                "pipe_material": "pvc",
+                "pipe_length": 50,
+                "fluid_type": "water",
+                "temperature": 20,
+                "npsh_required": 3.5,
+                "suction_fittings": []
+            }
+        }
+        
+        # Test case 2: Extreme case with very high flow rate (200 m³/h)
+        test_case_2 = {
+            "name": "DN32 Extreme Flow Rate (200 m³/h)",
+            "data": {
+                "suction_type": "flooded",
+                "hasp": 3.0,
+                "flow_rate": 200,  # Very high flow
+                "pipe_diameter": 42.4,  # DN32 - small diameter
+                "pipe_material": "pvc",
+                "pipe_length": 50,
+                "fluid_type": "water",
+                "temperature": 20,
+                "npsh_required": 3.5,
+                "suction_fittings": []
+            }
+        }
+        
+        test_cases = [test_case_1, test_case_2]
+        all_passed = True
+        
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check velocity calculation
+                    velocity = result.get("velocity", 0)
+                    if velocity <= 1.5:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Velocity Check", False, 
+                                    f"Velocity {velocity:.2f} m/s should be > 1.5 m/s to trigger recommendations")
+                        all_passed = False
+                        continue
+                    
+                    # Check for recommendations
+                    recommendations = result.get("recommendations", [])
+                    if not recommendations:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Recommendations Present", False, 
+                                    "No recommendations found for high velocity scenario")
+                        all_passed = False
+                        continue
+                    
+                    # Look for graduated diameter recommendations
+                    graduated_recommendations_found = False
+                    optimal_found = False
+                    recommended_found = False
+                    costly_found = False
+                    
+                    for rec in recommendations:
+                        if "OPTIMISATION DIAMÈTRE - Options graduées" in rec:
+                            graduated_recommendations_found = True
+                        if "🟢 OPTIMAL" in rec and "DN32→DN" in rec:
+                            optimal_found = True
+                            # Check format: DN32→DN40: Vitesse X.Xm/s (-XX%), Coût +XX%
+                            if "Vitesse" in rec and "m/s" in rec and "%" in rec and "Coût" in rec:
+                                self.log_test(f"Graduated Recommendations - {case['name']} - OPTIMAL Format", True, 
+                                            f"Found properly formatted OPTIMAL recommendation: {rec}")
+                            else:
+                                self.log_test(f"Graduated Recommendations - {case['name']} - OPTIMAL Format", False, 
+                                            f"OPTIMAL recommendation format incorrect: {rec}")
+                                all_passed = False
+                        if "🟡 RECOMMANDÉ" in rec and "DN32→DN" in rec:
+                            recommended_found = True
+                        if "🔴 COÛTEUX" in rec and "DN32→DN" in rec:
+                            costly_found = True
+                    
+                    # Verify graduated recommendations system is working
+                    if not graduated_recommendations_found:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - System Header", False, 
+                                    "Missing 'OPTIMISATION DIAMÈTRE - Options graduées' header")
+                        all_passed = False
+                        continue
+                    
+                    # Check that we have multiple DN options with proper categorization
+                    categories_found = sum([optimal_found, recommended_found, costly_found])
+                    if categories_found < 2:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Multiple Categories", False, 
+                                    f"Expected multiple categories (🟢/🟡/🔴), found {categories_found}")
+                        all_passed = False
+                        continue
+                    
+                    # Verify no jump to oversized pipes (should not recommend DN350 directly)
+                    oversized_jump = False
+                    for rec in recommendations:
+                        if "DN32→DN350" in rec or "DN32→DN300" in rec or "DN32→DN250" in rec:
+                            oversized_jump = True
+                            break
+                    
+                    if oversized_jump:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - No Oversized Jump", False, 
+                                    "System should not jump directly to oversized pipes")
+                        all_passed = False
+                        continue
+                    
+                    # Check for cost-benefit analysis in recommendations
+                    cost_benefit_found = False
+                    velocity_reduction_found = False
+                    for rec in recommendations:
+                        if "Coût +" in rec and "%" in rec:
+                            cost_benefit_found = True
+                        if "Vitesse" in rec and "m/s" in rec and "-" in rec and "%" in rec:
+                            velocity_reduction_found = True
+                    
+                    if not cost_benefit_found:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Cost Analysis", False, 
+                                    "Missing cost increase percentages in recommendations")
+                        all_passed = False
+                        continue
+                    
+                    if not velocity_reduction_found:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Velocity Reduction", False, 
+                                    "Missing velocity reduction percentages in recommendations")
+                        all_passed = False
+                        continue
+                    
+                    # Check that system provides reasonable DN progression (not jumping too far)
+                    dn_progression_reasonable = True
+                    for rec in recommendations:
+                        if "DN32→DN" in rec:
+                            # Extract target DN
+                            import re
+                            match = re.search(r'DN32→DN(\d+)', rec)
+                            if match:
+                                target_dn = int(match.group(1))
+                                if target_dn > 150:  # Should not jump beyond DN150 for first recommendations
+                                    dn_progression_reasonable = False
+                                    break
+                    
+                    if not dn_progression_reasonable:
+                        self.log_test(f"Graduated Recommendations - {case['name']} - Reasonable Progression", False, 
+                                    "DN progression should be gradual, not jumping to very large diameters")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Graduated Recommendations - {case['name']}", True, 
+                                f"Velocity: {velocity:.2f} m/s, Categories found: {categories_found}, Graduated system working")
+                    
+                else:
+                    self.log_test(f"Graduated Recommendations - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Graduated Recommendations - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
