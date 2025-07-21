@@ -6639,7 +6639,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       ⭐ ⌀ Refoulement (DN)
                     </label>
                     <select
-                      value={inputData.discharge_pipe_diameter || ''}
+                      value={inputData.discharge_pipe_diameter > 0 ? inputData.discharge_pipe_diameter : ''}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value) || 0;
                         const selectedDn = dnSizes.find(size => size.mm === selectedMm);
