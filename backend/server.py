@@ -3099,13 +3099,26 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
         for i, ps in enumerate(pump_scores[:3]):  # Top 3
             warnings.append(f"Rank {i+1}: {ps['id']} - Score: {ps['score']:.3f}, Coût: {ps['cost']}€, Débit: {ps['flow_range']}, Adequacy: {ps['flow_adequacy']:.3f}, Penalty: {ps['oversizing_penalty']:.3f}")
         
-        # Sélection de la pompe optimale basée sur l'adéquation au débit requis
+        # Sélection de la pompe optimale - ALGORITHME CORRIGÉ
         def pump_score(pump):
+            # Critères de sélection (plus bas = meilleur)
             efficiency_score = pump["efficiency_score"]
-            cost_per_flow = pump["data"]["price_eur"] / max(pump["data"]["flow_range"])
-            flow_adequacy = hourly_flow_peak / max(pump["data"]["flow_range"])
-            oversizing_penalty = 1.0 if flow_adequacy > 0.3 else (2.0 - flow_adequacy * 3.0)
-            return (cost_per_flow * oversizing_penalty) / efficiency_score
+            base_cost = pump["data"]["price_eur"]
+            max_flow = max(pump["data"]["flow_range"])
+            
+            # 1. Pénalité forte pour surdimensionnement
+            flow_adequacy = hourly_flow_peak / max_flow
+            if flow_adequacy < 0.1:  # Pompe 10x trop grosse
+                oversizing_penalty = 10.0
+            elif flow_adequacy < 0.2:  # Pompe 5x trop grosse  
+                oversizing_penalty = 5.0
+            elif flow_adequacy < 0.4:  # Pompe 2.5x trop grosse
+                oversizing_penalty = 2.0
+            else:  # Pompe bien dimensionnée
+                oversizing_penalty = 1.0
+            
+            # 2. Score final : coût pénalisé divisé par efficacité (plus bas = meilleur)
+            return (base_cost * oversizing_penalty) / efficiency_score
         
         best_pump = min(suitable_pumps, key=pump_score)
         selected_pump_id = best_pump["id"]
