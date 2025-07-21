@@ -1085,11 +1085,13 @@ const SolarExpertSystem = () => {
     const calculateSolarSystem = async () => {
       if (solarData.daily_water_need > 0 && solarData.total_head > 0) {
         setLoading(true);
+        setResults(null); // Force la réinitialisation des résultats avant nouveau calcul
         try {
           const response = await axios.post(`${API}/solar-pumping`, solarData);
           setResults(response.data);
         } catch (error) {
           console.error('Erreur calcul solaire:', error);
+          setResults(null); // Réinitialiser aussi en cas d'erreur
         } finally {
           setLoading(false);
         }
