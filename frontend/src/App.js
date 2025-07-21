@@ -9103,6 +9103,7 @@ function App() {
   }, []);
 
   const loadData = async () => {
+    console.log('🔄 Chargement des données...', { BACKEND_URL, API });
     try {
       const [fluidsRes, materialsRes, fittingsRes, historyRes] = await Promise.all([
         axios.get(`${API}/fluids`),
@@ -9111,12 +9112,20 @@ function App() {
         axios.get(`${API}/history`)
       ]);
       
-      setFluids(fluidsRes.data.fluids);
-      setPipeMaterials(materialsRes.data.materials);
-      setFittings(fittingsRes.data.fittings);
-      setHistory(historyRes.data);
+      console.log('✅ Données reçues:', {
+        fluids: fluidsRes.data.fluids?.length || 0,
+        materials: materialsRes.data.materials?.length || 0,
+        fittings: fittingsRes.data.fittings?.length || 0,
+        history: historyRes.data?.length || 0
+      });
+      
+      setFluids(fluidsRes.data.fluids || []);
+      setPipeMaterials(materialsRes.data.materials || []);
+      setFittings(fittingsRes.data.fittings || []);
+      setHistory(historyRes.data || []);
     } catch (error) {
-      console.error('Erreur chargement données:', error);
+      console.error('❌ Erreur chargement données:', error);
+      console.error('❌ Détails erreur:', error.response?.status, error.response?.data);
     }
   };
 
