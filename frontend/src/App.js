@@ -5229,6 +5229,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
     // Permettre les valeurs 0, 0.5, les chaînes vides, et toutes les autres valeurs numériques valides
     let processedValue = value;
     
+    console.log(`DEBUG: handleInputChange - field: ${field}, value: ${value}, current suction_pipe_diameter: ${inputData.suction_pipe_diameter}, current discharge_pipe_diameter: ${inputData.discharge_pipe_diameter}`);
+    
     // Pour les champs numériques, conserver les chaînes vides comme telles pour l'affichage
     if (typeof value === 'string' && value === '') {
       processedValue = ''; // Garder vide pour l'affichage
