@@ -6644,12 +6644,6 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     </select>
                   </div>
                 </div>
-                      {dnSizes.map(size => (
-                        <option key={size.mm} value={size.mm}>{size.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
