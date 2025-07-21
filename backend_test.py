@@ -7305,6 +7305,9 @@ class HydraulicPumpTester:
             self.test_critical_material_analysis_feature,  # NEW: Test critical material analysis with specific fluid-material combinations
             # DN RECOMMENDATION FIXES TEST (from current review request)
             self.test_diameter_recommendation_fixes,  # NEW: Test DN recommendation system fixes
+            # NPSHd DN RECOMMENDATIONS TEST (from current review request)
+            self.test_npshd_dn_recommendations,  # NEW: Test NPSHd recommendations display DN equivalents
+            self.test_dn_conversion_functions,  # NEW: Test DN conversion functions
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
