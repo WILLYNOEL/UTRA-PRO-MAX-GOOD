@@ -653,6 +653,66 @@ backend:
           agent: "testing"
           comment: "✅ TESTED: Critical Material Analysis Feature working excellently! Comprehensive validation completed with 100% success rate (4/4 test cases passed). ✅ ACID + STEEL: Severe warnings correctly generated with critical recommendations including 'CORROSIF', 'ACIDE', 'INOX', '316L' keywords. Materials analysis provides 18 detailed solutions for corrosive fluid handling. ✅ SEAWATER + PVC: Marine environment warnings correctly generated with 'EAU DE MER' analysis and 15 solutions for saltwater applications. ✅ MILK + STEEL: Food safety warnings perfectly generated including 'ALIMENTAIRE', 'SANITAIRE', 'FDA', 'CE', 'CIP', 'HACCP' compliance requirements with 7 specialized food-grade solutions. ✅ GASOLINE + PVC: Dangerous incompatibility warnings correctly generated including 'DANGER', 'FUITE', 'INCENDIE' with critical safety alerts about PVC dissolution and fire/explosion risks. ✅ HTTP 200 RESPONSES: All test cases return HTTP 200 with complete response structure including all 13 required sections. ✅ EXPERT RECOMMENDATIONS: All cases generate 3 comprehensive expert recommendations with proper structure (type, priority, title, description, solutions). ✅ CONTEXTUAL ANALYSIS: Critical analysis is properly formatted, informative, and contextual to each fluid-material combination. ✅ DETAILED RECOMMENDATIONS: Each case provides substantial detailed content with material-specific solutions ranging from 7-18 items per case. Critical material analysis feature is production-ready and provides comprehensive engineering guidance for material selection and safety compliance."
 
+  - task: "Critical Material Analysis - BLEACH + CAST_IRON"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: BLEACH + CAST_IRON Critical Analysis working excellently! System correctly detects severe chlorine corrosion incompatibility with cast iron. Generated 3 comprehensive recommendations including critical materials analysis: 'CHOIX CATASTROPHIQUE: Métaux ferreux + chlore = corrosion par piqûres', 'RÉACTION CHIMIQUE: Hypochlorite + fer = formation FeCl3 (rouille active)', 'DÉGRADATION: Perforations en 15-30 jours selon concentration', 'SOLUTION OBLIGATOIRE: PVC-U ou PEHD exclusivement pour eau de javel'. System provides severe warnings about chlorine corrosion, detects material incompatibility, and recommends appropriate material replacements (PVC, PEHD). All required analysis sections present (npshd_analysis, hmt_analysis, performance_analysis, electrical_analysis, expert_recommendations). Critical material analysis is production-ready for bleach applications."
+
+  - task: "Critical Material Analysis - TOMATO_SAUCE + PVC"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: TOMATO_SAUCE + PVC Critical Analysis working perfectly! System generates 5 comprehensive recommendations with food-grade analysis. Provides specific recommendations for food processing applications including FDA/CE compliance, sanitaire requirements, HACCP protocols, and CIP cleaning procedures. Temperature compatibility analysis for PVC at 60°C processing temperature. Material compatibility recommendations include 316L stainless steel alternatives. All required analysis sections present. Food-grade critical analysis is production-ready."
+
+  - task: "Critical Material Analysis - GLYCEROL + STEEL"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: GLYCEROL + STEEL Critical Analysis working perfectly! System generates 5 comprehensive recommendations with viscosity-specific analysis. Provides detailed recommendations for high-viscosity fluid handling including diameter optimization, velocity reduction, temperature management, and pump type considerations. Viscosity-related recommendations include prechauffage, diamètre majoré, and pompe volumétrique alternatives. All required analysis sections present. High-viscosity critical analysis is production-ready."
+
+  - task: "Critical Material Analysis - WATER + PEHD Default Case"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: WATER + PEHD Default Case Analysis working well! System generates 3 meaningful recommendations even for standard water applications. Provides hydraulic optimization recommendations, material compatibility analysis for PEHD, and comprehensive maintenance guidelines. Recommendations include installation hydraulique optimizations, matériaux et température compatibility assessment, and maintenance préventive protocols. All required analysis sections present. Default case analysis provides useful engineering guidance."
+
+  - task: "Material Recommendations Always Populated"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Material Recommendations Always Populated working perfectly! Comprehensive validation completed with 100% success rate (4/4 test cases passed). ✅ CORROSIVE FLUID CASE: Generated 3 meaningful material recommendations with acid compatibility analysis. ✅ FOOD GRADE CASE: Generated 3 meaningful material recommendations with FDA/CE compliance requirements. ✅ HIGH TEMPERATURE CASE: Generated 3 meaningful material recommendations with temperature compatibility warnings. ✅ STANDARD CASE: Generated 3 meaningful material recommendations with general engineering guidance. No empty recommendations found in any test case. All recommendations contain meaningful material-specific content including compatibility analysis, joint specifications, and alternative material suggestions. Material recommendations section is always populated with useful engineering content."
+
 agent_communication:
     - agent: "testing"
       message: "🎯 EXPERT SOLAIRE HIGH FLOW RATES TESTING COMPLETED SUCCESSFULLY! Comprehensive validation of high flow rates that previously caused 500 errors with 100% success rate (5/5 tests passed). ✅ 205 m³/j & 210 m³/j FLOW RATES: Previously failing scenarios now return HTTP 200 with complete responses. System properly handles high flow rates (25.6-26.2 m³/h) with appropriate pump selection (Grundfos SQF 0.6-2), cost calculations (4895€), and solar panel configurations (3 panels). ✅ 250 m³/j FLOW RATE: Working correctly with optimized configuration (31.2 m³/h flow, 4060€ cost, 2 panels). ✅ NO MORE 500 ERRORS: All previously failing high flow rate scenarios now return HTTP 200 with complete system dimensioning, economic analysis, solar irradiation data, system efficiency calculations, monthly performance data, and critical alerts. ✅ PUMP SELECTION LOGIC: System properly selects pumps based on flow requirements and generates appropriate critical alerts when system limitations are reached ('Capacité de stockage limite atteinte'). ✅ FALLBACK MECHANISM: System handles high flow rates gracefully without falling back to generic pumps - instead selects appropriate commercial pumps with proper specifications. ✅ COMPLETE RESPONSE STRUCTURE: All required sections present (input_data, dimensioning with economic_analysis, solar_irradiation, system_efficiency, pump_operating_hours, monthly_performance, system_curves, warnings, critical_alerts). Expert Solaire functionality is production-ready for professional solar pumping system design with high flow rates."
