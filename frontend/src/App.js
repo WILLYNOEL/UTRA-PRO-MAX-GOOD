@@ -4079,6 +4079,7 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 value={inputData.pipe_material}
                 onChange={(e) => handleInputChange('pipe_material', e.target.value)}
               >
+                <option value="">-- Choisir un matériau --</option>
                 {pipeMaterials.map(material => (
                   <option key={material.id} value={material.id}>
                     {material.name} (ε = {material.roughness} mm)
