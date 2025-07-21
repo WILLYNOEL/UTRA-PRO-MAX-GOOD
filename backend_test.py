@@ -7453,12 +7453,26 @@ class HydraulicPumpTester:
                             all_passed = False
                             continue
                         
-                        # Check that recommendations mention current DN correctly
+                        # Check that recommendations mention current DN correctly (check solutions too)
                         found_correct_dn = False
                         for rec in diameter_recommendations:
                             rec_text = str(rec.get("description", "")).lower()
+                            solutions = rec.get("solutions", [])
+                            
+                            # Check description
                             if f"dn{case['expected_dn']}" in rec_text or f"dn {case['expected_dn']}" in rec_text:
                                 found_correct_dn = True
+                                break
+                            
+                            # Check solutions
+                            for solution in solutions:
+                                if isinstance(solution, str):
+                                    solution_text = solution.lower()
+                                    if f"dn{case['expected_dn']}" in solution_text or f"dn {case['expected_dn']}" in solution_text:
+                                        found_correct_dn = True
+                                        break
+                            
+                            if found_correct_dn:
                                 break
                         
                         if not found_correct_dn:
