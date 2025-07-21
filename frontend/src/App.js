@@ -6380,15 +6380,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Panneau de saisie - Colonne 1 */}
-        <div className="xl:col-span-1 space-y-6">
-          {/* Informations du projet */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-indigo-600 flex items-center">
-              👤 Informations du Projet
+        {/* Panneau de saisie - Colonne 1 - Plus compact */}
+        <div className="xl:col-span-1 space-y-4">
+          {/* Informations du projet - Plus compact */}
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <h3 className="text-md font-semibold mb-3 text-indigo-600 flex items-center">
+              👤 Informations Projet
             </h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nom
