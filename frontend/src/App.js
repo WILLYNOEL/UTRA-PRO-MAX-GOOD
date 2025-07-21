@@ -8700,7 +8700,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             <ProfessionalInput
               type="number"
               value={inputData.pump_efficiency}
-              onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('pump_efficiency', parseFloat(e.target.value))}
               required
               placeholder="Ex: 75"
               min="40"
