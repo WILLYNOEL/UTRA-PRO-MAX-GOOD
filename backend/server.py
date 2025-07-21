@@ -3059,11 +3059,18 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
         selected_pump = SOLAR_PUMP_DATABASE[selected_pump_id]
         required_electrical_power = 1200  # Watts par défaut
     else:
+        # DEBUG: Ajouter info sur les pompes trouvées
+        pump_names = [pump["id"] for pump in suitable_pumps]
+        warnings.append(f"Pompes compatibles trouvées: {', '.join(pump_names)}")
+        
         # Sélection de la pompe avec le meilleur compromis efficacité/coût
         best_pump = min(suitable_pumps, key=lambda x: x["required_power"] * x["cost_score"])
         selected_pump_id = best_pump["id"]
         selected_pump = best_pump["data"]
         required_electrical_power = best_pump["required_power"]
+        
+        # DEBUG: Ajouter info sur la pompe sélectionnée
+        warnings.append(f"Pompe sélectionnée: {selected_pump_id} (Débit: {selected_pump['flow_range']} m³/h, Coût: {selected_pump['price_eur']}€)")
     
     # 4. Dimensionnement des panneaux solaires
     # Facteur de dégradation et pertes système
