@@ -4800,7 +4800,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <ProfessionalInput
               type="number"
               value={inputData.temperature}
-              onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}
               required
               placeholder="Ex: 20"
             />
