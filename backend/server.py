@@ -81,6 +81,45 @@ FITTING_COEFFICIENTS = {
 # Table des DN normalisés (diamètres nominaux ISO)
 DN_STANDARDS = [15, 20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000]
 
+# Table de correspondance DN vers diamètres extérieurs réels (mm)
+DN_TO_DIAMETER = {
+    20: 26.9,
+    25: 33.7,
+    32: 42.4,
+    40: 48.3,
+    50: 60.3,
+    65: 76.1,
+    80: 88.9,
+    100: 114.3,
+    125: 139.7,
+    150: 168.3,
+    200: 219.1,
+    250: 273.1,
+    300: 323.9,
+    350: 355.6,
+    400: 406.4,
+    450: 457.2,
+    500: 508.0
+}
+
+def get_dn_from_diameter(diameter_mm):
+    """Convertit un diamètre en mm vers le DN correspondant le plus proche"""
+    if diameter_mm <= 0:
+        return 20
+    
+    # Trouver le DN dont le diamètre réel est le plus proche
+    closest_dn = min(DN_TO_DIAMETER.keys(), key=lambda dn: abs(DN_TO_DIAMETER[dn] - diameter_mm))
+    
+    # Si le diamètre calculé est supérieur au DN trouvé, prendre le DN supérieur pour être sûr
+    if diameter_mm > DN_TO_DIAMETER[closest_dn]:
+        # Trouver le DN supérieur
+        available_dns = sorted(DN_TO_DIAMETER.keys())
+        current_index = available_dns.index(closest_dn)
+        if current_index < len(available_dns) - 1:
+            closest_dn = available_dns[current_index + 1]
+    
+    return closest_dn
+
 def get_closest_dn(diameter_mm):
     """Convertit un diamètre en mm vers le DN normalisé le plus proche"""
     if diameter_mm <= 0:
