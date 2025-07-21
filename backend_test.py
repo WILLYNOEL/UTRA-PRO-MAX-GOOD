@@ -7291,9 +7291,9 @@ class HydraulicPumpTester:
         return all_passed
 
     def run_all_tests(self):
-        """Run all tests including Phase 3 additions"""
+        """Run all tests including Phase 3 additions and Critical Material Analysis"""
         print("=" * 80)
-        print("HYDRAULIC PUMP CALCULATION API - PHASE 3 COMPREHENSIVE TESTING")
+        print("HYDRAULIC PUMP CALCULATION API - COMPREHENSIVE TESTING WITH CRITICAL MATERIAL ANALYSIS")
         print("=" * 80)
         print()
         
@@ -7304,8 +7304,15 @@ class HydraulicPumpTester:
         
         print()
         
-        # Run all tests - prioritizing Phase 3 additions and specific corrections
+        # Run all tests - prioritizing Critical Material Analysis tests from review request
         tests = [
+            # CRITICAL MATERIAL ANALYSIS TESTS - NEW FROM REVIEW REQUEST
+            self.test_critical_material_analysis_bleach_cast_iron,  # NEW: BLEACH + CAST_IRON specific case
+            self.test_critical_material_analysis_tomato_sauce_pvc,  # NEW: TOMATO_SAUCE + PVC newly added
+            self.test_critical_material_analysis_glycerol_steel,    # NEW: GLYCEROL + STEEL high viscosity
+            self.test_critical_material_analysis_water_pehd_default, # NEW: WATER + PEHD default case
+            self.test_material_recommendations_always_populated,    # NEW: Verify no empty recommendations
+            
             # PHASE 3 TESTS - NEW INDUSTRIAL FLUIDS AND EXPERT ANALYSIS
             self.test_phase3_new_industrial_fluids_properties,  # NEW: Test new fluids properties
             self.test_phase3_expert_analysis_new_fluids,  # NEW: Test expert analysis with new fluids
@@ -7330,7 +7337,7 @@ class HydraulicPumpTester:
         
         # Summary
         print("\n" + "=" * 80)
-        print("PHASE 3 TEST SUMMARY")
+        print("COMPREHENSIVE TEST SUMMARY - INCLUDING CRITICAL MATERIAL ANALYSIS")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -7349,14 +7356,35 @@ class HydraulicPumpTester:
         success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
         print(f"\nSuccess Rate: {success_rate:.1f}%")
         
+        # Special focus on Critical Material Analysis results
+        critical_tests = [
+            "BLEACH + CAST_IRON Critical Analysis",
+            "TOMATO_SAUCE + PVC Critical Analysis", 
+            "GLYCEROL + STEEL Critical Analysis",
+            "WATER + PEHD Default Case Analysis",
+            "Material Recommendations - Corrosive Fluid Case",
+            "Material Recommendations - Food Grade Case",
+            "Material Recommendations - High Temperature Case",
+            "Material Recommendations - Standard Case"
+        ]
+        
+        critical_passed = sum(1 for result in self.test_results 
+                            if result["passed"] and any(critical in result["test"] for critical in critical_tests))
+        critical_total = sum(1 for result in self.test_results 
+                           if any(critical in result["test"] for critical in critical_tests))
+        
+        if critical_total > 0:
+            critical_success_rate = (critical_passed / critical_total) * 100
+            print(f"\nCritical Material Analysis Success Rate: {critical_success_rate:.1f}% ({critical_passed}/{critical_total})")
+        
         if success_rate >= 90:
-            print("\n🎉 EXCELLENT: Phase 3 hydraulic application is working very well!")
+            print("\n🎉 EXCELLENT: Hydraulic application with critical material analysis is working very well!")
         elif success_rate >= 75:
-            print("\n✅ GOOD: Phase 3 hydraulic application is mostly working with minor issues")
+            print("\n✅ GOOD: Hydraulic application with critical material analysis is mostly working with minor issues")
         elif success_rate >= 50:
-            print("\n⚠️  MODERATE: Phase 3 hydraulic application has significant issues that need attention")
+            print("\n⚠️  MODERATE: Hydraulic application has significant issues that need attention")
         else:
-            print("\n❌ CRITICAL: Phase 3 hydraulic application has major problems that must be fixed")
+            print("\n❌ CRITICAL: Hydraulic application has major problems that must be fixed")
         
         return success_rate >= 75
 
