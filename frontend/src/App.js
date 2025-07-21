@@ -4728,7 +4728,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
               <ProfessionalInput
                 type="number"
                 value={inputData.hasp}
-                onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('hasp', parseFloat(e.target.value))}
                 required
                 placeholder="Ex: 3.0"
               />
