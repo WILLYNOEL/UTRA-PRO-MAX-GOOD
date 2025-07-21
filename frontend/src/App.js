@@ -6617,6 +6617,7 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       ⭐ ⌀ Aspiration (DN)
                     </label>
+                    {console.log('RENDER DEBUG - suction_pipe_diameter:', inputData.suction_pipe_diameter)}
                     <select
                       value={inputData.suction_pipe_diameter}
                       onChange={(e) => {
