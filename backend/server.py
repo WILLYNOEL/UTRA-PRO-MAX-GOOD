@@ -2777,7 +2777,7 @@ SOLAR_PUMP_DATABASE = {
     # Pompes industrielles (150+ m³/h)
     "grundfos_sqflex_150": {
         "name": "Grundfos SQFlex 150-7",
-        "power_range": [8000, 15000],  # Watts
+        "power_range": [8000, 20000],  # Watts - augmenté à 20kW
         "flow_range": [80, 200],  # m³/h
         "head_range": [60, 350],  # mètres
         "efficiency": 0.65,
@@ -2787,13 +2787,24 @@ SOLAR_PUMP_DATABASE = {
     },
     "surface_solar_15kw": {
         "name": "Pompe Surface Solaire 15kW",
-        "power_range": [10000, 15000],  # Watts
+        "power_range": [10000, 18000],  # Watts - ajusté à 18kW
         "flow_range": [100, 250],  # m³/h
         "head_range": [40, 200],  # mètres
         "efficiency": 0.62,
         "voltage": [600, 800],  # DC volts
         "price_eur": 28000,
         "type": "surface"
+    },
+    # Pompe très haute performance pour gros débits
+    "industrial_solar_25kw": {
+        "name": "Pompe Industrielle Solaire 25kW",
+        "power_range": [15000, 25000],  # Watts
+        "flow_range": [150, 350],  # m³/h
+        "head_range": [30, 250],  # mètres
+        "efficiency": 0.68,
+        "voltage": [800, 1000],  # DC volts
+        "price_eur": 35000,
+        "type": "submersible"
     }
 }
 
