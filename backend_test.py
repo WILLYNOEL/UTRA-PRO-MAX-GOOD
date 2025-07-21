@@ -7592,6 +7592,435 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_graduated_diameter_recommendations_velocity_limits(self):
+        """Test improved graduated diameter recommendations system with velocity limits compliance"""
+        print("\n🎯 Testing Graduated Diameter Recommendations with Velocity Limits Compliance...")
+        
+        # Test cases from review request
+        test_cases = [
+            {
+                "name": "Case 1 - Very High Velocity (Aspiration Limits)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 150.0,  # High flow rate
+                    "pipe_diameter": 26.9,  # DN20 - small diameter
+                    "pipe_length": 20.0,  # Short pipe
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_pipe_type": "aspiration",
+                "expected_velocity_limits": {"optimal": 1.2, "max": 1.5},
+                "should_trigger_recommendations": True
+            },
+            {
+                "name": "Case 2 - Long Distance Pipe (Long Distance Limits)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 100.0,
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 150.0,  # Long pipe > 100m
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_pipe_type": "longue_distance",
+                "expected_velocity_limits": {"optimal": 1.5, "max": 2.0},
+                "should_trigger_recommendations": True
+            },
+            {
+                "name": "Case 3 - Standard Refoulement",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 120.0,
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 50.0,  # Standard length
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_pipe_type": "refoulement",
+                "expected_velocity_limits": {"optimal": 2.0, "max": 2.5},
+                "should_trigger_recommendations": True
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check velocity calculation
+                    velocity = result.get("velocity", 0)
+                    recommendations = result.get("recommendations", [])
+                    
+                    if velocity <= 0:
+                        self.log_test(f"Velocity Limits - {case['name']} - Velocity Calculation", False, 
+                                    "Velocity is zero or negative")
+                        all_passed = False
+                        continue
+                    
+                    # Check if recommendations are triggered when expected
+                    has_velocity_warnings = any("VITESSE EXCESSIVE" in rec for rec in recommendations)
+                    has_velocity_targets = any("VITESSE CIBLE" in rec for rec in recommendations)
+                    has_compliance_status = any("✅ CONFORME" in rec or "⚠️ ACCEPTABLE" in rec for rec in recommendations)
+                    
+                    if case["should_trigger_recommendations"]:
+                        if not has_velocity_warnings:
+                            self.log_test(f"Velocity Limits - {case['name']} - Velocity Warnings", False, 
+                                        f"Expected velocity warnings for {velocity:.1f} m/s but none found")
+                            all_passed = False
+                            continue
+                        
+                        if not has_velocity_targets:
+                            self.log_test(f"Velocity Limits - {case['name']} - Velocity Targets", False, 
+                                        "Expected velocity target information but none found")
+                            all_passed = False
+                            continue
+                        
+                        if not has_compliance_status:
+                            self.log_test(f"Velocity Limits - {case['name']} - Compliance Status", False, 
+                                        "Expected compliance status (✅ CONFORME or ⚠️ ACCEPTABLE) but none found")
+                            all_passed = False
+                            continue
+                    
+                    # Check for professional velocity limit compliance
+                    max_recommended_velocity = case["expected_velocity_limits"]["max"]
+                    has_excessive_recommendations = False
+                    
+                    for rec in recommendations:
+                        # Extract velocity values from recommendations
+                        if "m/s" in rec and ("DN" in rec or "SOLUTION DIRECTE" in rec):
+                            # Look for velocity values in format "X.X m/s"
+                            import re
+                            velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', rec)
+                            for vel_str in velocity_matches:
+                                rec_velocity = float(vel_str)
+                                if rec_velocity > max_recommended_velocity:
+                                    has_excessive_recommendations = True
+                                    break
+                    
+                    if has_excessive_recommendations:
+                        self.log_test(f"Velocity Limits - {case['name']} - Professional Standards", False, 
+                                    f"Found recommendations exceeding max velocity {max_recommended_velocity} m/s")
+                        all_passed = False
+                        continue
+                    
+                    # Check for proper pipe type detection based on length and velocity
+                    pipe_type_detected = False
+                    expected_descriptions = {
+                        "aspiration": "ASPIRATION",
+                        "longue_distance": "CONDUITES PRINCIPALES", 
+                        "refoulement": "REFOULEMENT",
+                        "circuits_fermes": "RÉSEAUX SOUS PRESSION",
+                        "metallique_court": "TUYAUTERIES MÉTALLIQUES"
+                    }
+                    
+                    expected_desc = expected_descriptions.get(case["expected_pipe_type"], "")
+                    if expected_desc:
+                        pipe_type_detected = any(expected_desc in rec.upper() for rec in recommendations)
+                    
+                    # Check for graduated options (not direct jumps to oversized pipes)
+                    has_graduated_options = any("DN" in rec and "→" in rec for rec in recommendations)
+                    has_oversized_jumps = any("DN350" in rec or "DN300" in rec or "DN250" in rec for rec in recommendations)
+                    
+                    if case["should_trigger_recommendations"] and not has_graduated_options:
+                        self.log_test(f"Velocity Limits - {case['name']} - Graduated Options", False, 
+                                    "Expected graduated DN options but none found")
+                        all_passed = False
+                        continue
+                    
+                    if has_oversized_jumps:
+                        self.log_test(f"Velocity Limits - {case['name']} - No Oversized Jumps", False, 
+                                    "Found oversized pipe recommendations (DN250+)")
+                        all_passed = False
+                        continue
+                    
+                    # Check for cost-benefit analysis in recommendations
+                    has_cost_analysis = any("coût" in rec.lower() and "%" in rec for rec in recommendations)
+                    has_velocity_reduction = any("réduction" in rec.lower() and "%" in rec for rec in recommendations)
+                    
+                    if case["should_trigger_recommendations"] and has_graduated_options:
+                        if not has_cost_analysis:
+                            self.log_test(f"Velocity Limits - {case['name']} - Cost Analysis", False, 
+                                        "Expected cost analysis in recommendations but none found")
+                            all_passed = False
+                            continue
+                        
+                        if not has_velocity_reduction:
+                            self.log_test(f"Velocity Limits - {case['name']} - Velocity Reduction", False, 
+                                        "Expected velocity reduction percentages but none found")
+                            all_passed = False
+                            continue
+                    
+                    self.log_test(f"Velocity Limits - {case['name']}", True, 
+                                f"Velocity: {velocity:.1f} m/s, Recommendations: {len(recommendations)}, "
+                                f"Warnings: {has_velocity_warnings}, Targets: {has_velocity_targets}, "
+                                f"Compliance: {has_compliance_status}")
+                else:
+                    self.log_test(f"Velocity Limits - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Velocity Limits - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_velocity_limits_compliance_detailed(self):
+        """Test detailed velocity limits compliance with specific pipe types"""
+        print("\n🔍 Testing Detailed Velocity Limits Compliance...")
+        
+        # Test specific scenarios for each pipe type
+        detailed_cases = [
+            {
+                "name": "Aspiration Type Detection (Short + High Velocity)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 200.0,  # Very high flow
+                    "pipe_diameter": 26.9,  # DN20 - very small
+                    "pipe_length": 15.0,  # Short pipe
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_limits": {"optimal": 1.2, "max": 1.5},
+                "expected_type": "aspiration"
+            },
+            {
+                "name": "Long Distance Type Detection (Length > 100m)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 80.0,
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 120.0,  # Long distance
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_limits": {"optimal": 1.5, "max": 2.0},
+                "expected_type": "longue_distance"
+            },
+            {
+                "name": "Circuits Fermés Type Detection (Short + Moderate Velocity)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 60.0,
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 15.0,  # Very short
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_limits": {"optimal": 2.0, "max": 3.0},
+                "expected_type": "circuits_fermes"
+            },
+            {
+                "name": "Métallique Court Type Detection (Very High Velocity)",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 300.0,  # Extremely high flow
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 30.0,  # Medium length
+                    "pipe_material": "steel",  # Metallic material
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_limits": {"optimal": 3.0, "max": 4.0},
+                "expected_type": "metallique_court"
+            }
+        ]
+        
+        all_passed = True
+        for case in detailed_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    velocity = result.get("velocity", 0)
+                    recommendations = result.get("recommendations", [])
+                    
+                    # Check velocity calculation
+                    if velocity <= 0:
+                        self.log_test(f"Detailed Velocity - {case['name']} - Velocity", False, 
+                                    "Velocity is zero or negative")
+                        all_passed = False
+                        continue
+                    
+                    # Check for velocity limit information matching expected type
+                    expected_optimal = case["expected_limits"]["optimal"]
+                    expected_max = case["expected_limits"]["max"]
+                    
+                    has_correct_limits = False
+                    for rec in recommendations:
+                        if "VITESSE CIBLE" in rec:
+                            # Check if the recommendation contains the expected limits
+                            if f"{expected_optimal:.1f} m/s" in rec and f"{expected_max:.1f} m/s" in rec:
+                                has_correct_limits = True
+                                break
+                    
+                    if not has_correct_limits and velocity > expected_max:
+                        self.log_test(f"Detailed Velocity - {case['name']} - Correct Limits", False, 
+                                    f"Expected limits {expected_optimal}/{expected_max} m/s not found in recommendations")
+                        all_passed = False
+                        continue
+                    
+                    # Check that no recommendations exceed the maximum velocity for the detected type
+                    exceeds_limits = False
+                    for rec in recommendations:
+                        if "m/s" in rec and ("✅ CONFORME" in rec or "⚠️ ACCEPTABLE" in rec):
+                            import re
+                            velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', rec)
+                            for vel_str in velocity_matches:
+                                rec_velocity = float(vel_str)
+                                if rec_velocity > expected_max:
+                                    exceeds_limits = True
+                                    break
+                    
+                    if exceeds_limits:
+                        self.log_test(f"Detailed Velocity - {case['name']} - Limit Compliance", False, 
+                                    f"Found recommendations exceeding max velocity {expected_max} m/s for {case['expected_type']}")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Detailed Velocity - {case['name']}", True, 
+                                f"Velocity: {velocity:.1f} m/s, Type: {case['expected_type']}, "
+                                f"Limits: {expected_optimal}/{expected_max} m/s")
+                else:
+                    self.log_test(f"Detailed Velocity - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Detailed Velocity - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_compliance_status_formatting(self):
+        """Test that compliance status is properly formatted with ✅ CONFORME or ⚠️ ACCEPTABLE"""
+        print("\n✅ Testing Compliance Status Formatting...")
+        
+        test_cases = [
+            {
+                "name": "Optimal Velocity Achievement",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 100.0,
+                    "pipe_diameter": 42.4,  # DN32
+                    "pipe_length": 50.0,
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                },
+                "expected_status_types": ["✅ CONFORME", "⚠️ ACCEPTABLE"]
+            },
+            {
+                "name": "High Velocity Scenario",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 150.0,
+                    "pipe_diameter": 33.7,  # DN25
+                    "pipe_length": 40.0,
+                    "pipe_material": "pvc",
+                    "fluid_type": "water",
+                    "temperature": 20.0,
+                    "npsh_required": 3.5,
+                    "suction_fittings": []
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    recommendations = result.get("recommendations", [])
+                    velocity = result.get("velocity", 0)
+                    
+                    # Check for compliance status indicators
+                    has_conforme = any("✅ CONFORME" in rec for rec in recommendations)
+                    has_acceptable = any("⚠️ ACCEPTABLE" in rec for rec in recommendations)
+                    has_compliance_status = has_conforme or has_acceptable
+                    
+                    # Check for proper formatting of recommendations
+                    has_proper_format = False
+                    for rec in recommendations:
+                        if ("DN" in rec and "→" in rec and "m/s" in rec and 
+                            ("✅ CONFORME" in rec or "⚠️ ACCEPTABLE" in rec)):
+                            has_proper_format = True
+                            break
+                    
+                    if velocity > 2.0:  # High velocity should trigger recommendations
+                        if not has_compliance_status:
+                            self.log_test(f"Compliance Status - {case['name']} - Status Indicators", False, 
+                                        "Expected compliance status indicators but none found")
+                            all_passed = False
+                            continue
+                        
+                        if not has_proper_format:
+                            self.log_test(f"Compliance Status - {case['name']} - Proper Format", False, 
+                                        "Expected properly formatted recommendations with compliance status")
+                            all_passed = False
+                            continue
+                    
+                    # Check for velocity target information
+                    has_velocity_target = any("🎯 VITESSE CIBLE" in rec for rec in recommendations)
+                    has_velocity_warning = any("⚠️ VITESSE EXCESSIVE" in rec for rec in recommendations)
+                    
+                    if velocity > 2.5:  # Very high velocity should have warnings and targets
+                        if not has_velocity_target:
+                            self.log_test(f"Compliance Status - {case['name']} - Velocity Target", False, 
+                                        "Expected velocity target information for high velocity")
+                            all_passed = False
+                            continue
+                        
+                        if not has_velocity_warning:
+                            self.log_test(f"Compliance Status - {case['name']} - Velocity Warning", False, 
+                                        "Expected velocity warning for excessive velocity")
+                            all_passed = False
+                            continue
+                    
+                    self.log_test(f"Compliance Status - {case['name']}", True, 
+                                f"Velocity: {velocity:.1f} m/s, Conforme: {has_conforme}, "
+                                f"Acceptable: {has_acceptable}, Format: {has_proper_format}")
+                else:
+                    self.log_test(f"Compliance Status - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Compliance Status - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
