@@ -2634,177 +2634,175 @@ SOLAR_IRRADIATION_DATABASE = {
     }
 }
 
-# Base de données des pompes solaires
+# Base de données des pompes solaires - APPROCHE GRUNDFOS RÉALISTE
 SOLAR_PUMP_DATABASE = {
-    # Petites pompes (jusqu'à 10 m³/h)
-    "grundfos_sqflex": {
-        "name": "Grundfos SQFlex 2.5-2",
-        "power_range": [180, 400],  # Watts
-        "flow_range": [1, 8],  # m³/h
-        "head_range": [10, 120],  # mètres
-        "efficiency": 0.45,
+    # ===== POMPES SQF (Solar avec convertisseur intégré) - Petits débits =====
+    "sqf_0_6": {
+        "name": "Grundfos SQF 0.6-2",
+        "power_range": [90, 280],  # Watts
+        "flow_range": [0.1, 2.5],  # m³/h
+        "head_range": [15, 75],  # mètres
+        "efficiency": 0.38,
+        "voltage": [24],  # DC volts
+        "price_eur": 890,
+        "type": "submersible",
+        "category": "sqf_integrated"
+    },
+    "sqf_2_5": {
+        "name": "Grundfos SQF 2.5-2",
+        "power_range": [180, 450],  # Watts
+        "flow_range": [0.5, 6],  # m³/h
+        "head_range": [20, 110],  # mètres
+        "efficiency": 0.42,
         "voltage": [24, 48],  # DC volts
         "price_eur": 1250,
-        "type": "submersible"
+        "type": "submersible",
+        "category": "sqf_integrated"
     },
-    "grundfos_sqflex_high": {
-        "name": "Grundfos SQFlex 5-7",
+    "sqf_5_7": {
+        "name": "Grundfos SQF 5-7",
+        "power_range": [350, 850],  # Watts
+        "flow_range": [1, 12],  # m³/h
+        "head_range": [25, 140],  # mètres
+        "efficiency": 0.48,
+        "voltage": [48, 96],  # DC volts
+        "price_eur": 1890,
+        "type": "submersible",
+        "category": "sqf_integrated"
+    },
+    "sqf_8_5": {
+        "name": "Grundfos SQF 8.5-5",
         "power_range": [500, 1200],  # Watts
-        "flow_range": [2, 15],  # m³/h
-        "head_range": [20, 180],  # mètres
+        "flow_range": [2, 18],  # m³/h
+        "head_range": [30, 120],  # mètres
         "efficiency": 0.52,
         "voltage": [48, 96],  # DC volts
-        "price_eur": 2150,
-        "type": "submersible"
-    },
-    "lorentz_ps": {
-        "name": "Lorentz PS2-600",
-        "power_range": [150, 600],  # Watts
-        "flow_range": [0.5, 12],  # m³/h
-        "head_range": [5, 140],  # mètres
-        "efficiency": 0.48,
-        "voltage": [24, 48],  # DC volts
-        "price_eur": 980,
-        "type": "submersible"
+        "price_eur": 2350,
+        "type": "submersible",
+        "category": "sqf_integrated"
     },
     
-    # Pompes moyennes (10-40 m³/h)
-    "grundfos_sqflex_15": {
-        "name": "Grundfos SQFlex 15-5",
+    # ===== POMPES SP + RSI (Standard + Convertisseur externe) - Gros débits =====
+    "sp_3a_15_rsi": {
+        "name": "Grundfos SP 3A-15 + RSI",
         "power_range": [1000, 2200],  # Watts
-        "flow_range": [5, 25],  # m³/h
-        "head_range": [30, 200],  # mètres
-        "efficiency": 0.55,
-        "voltage": [48, 96],  # DC volts
-        "price_eur": 3450,
-        "type": "submersible"
-    },
-    "lorentz_ps_1800": {
-        "name": "Lorentz PS2-1800",
-        "power_range": [800, 1800],  # Watts
-        "flow_range": [8, 35],  # m³/h
-        "head_range": [15, 160],  # mètres
-        "efficiency": 0.53,
-        "voltage": [48, 96],  # DC volts
-        "price_eur": 2980,
-        "type": "submersible"
-    },
-    "surface_solar": {
-        "name": "Pompe Surface Solaire 1kW",
-        "power_range": [300, 1000],  # Watts
-        "flow_range": [5, 25],  # m³/h
-        "head_range": [15, 80],  # mètres
-        "efficiency": 0.42,
-        "voltage": [48, 96],  # DC volts
-        "price_eur": 1450,
-        "type": "surface"
-    },
-    "surface_solar_3kw": {
-        "name": "Pompe Surface Solaire 3kW",
-        "power_range": [1500, 3000],  # Watts
-        "flow_range": [15, 40],  # m³/h
-        "head_range": [20, 100],  # mètres
-        "efficiency": 0.48,
-        "voltage": [96, 192],  # DC volts
-        "price_eur": 4200,
-        "type": "surface"
-    },
-    
-    # Grosses pompes (40-80 m³/h)
-    "grundfos_sqflex_40": {
-        "name": "Grundfos SQFlex 40-3",
-        "power_range": [2500, 5000],  # Watts
-        "flow_range": [20, 60],  # m³/h
-        "head_range": [40, 250],  # mètres
+        "flow_range": [8, 25],  # m³/h
+        "head_range": [40, 180],  # mètres
         "efficiency": 0.58,
         "voltage": [96, 192],  # DC volts
-        "price_eur": 6800,
-        "type": "submersible"
+        "price_eur": 3450,  # SP (1850€) + RSI (1600€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 1850,
+        "rsi_cost": 1600
     },
-    "lorentz_ps_4000": {
-        "name": "Lorentz PS2-4000",
-        "power_range": [2200, 4000],  # Watts
-        "flow_range": [25, 70],  # m³/h
-        "head_range": [25, 180],  # mètres
-        "efficiency": 0.56,
-        "voltage": [96, 192],  # DC volts
-        "price_eur": 5900,
-        "type": "submersible"
-    },
-    "surface_solar_5kw": {
-        "name": "Pompe Surface Solaire 5kW",
-        "power_range": [3000, 5000],  # Watts
-        "flow_range": [30, 80],  # m³/h
-        "head_range": [25, 120],  # mètres
-        "efficiency": 0.52,
-        "voltage": [192, 384],  # DC volts
-        "price_eur": 7500,
-        "type": "surface"
-    },
-    
-    # Très grosses pompes (80-150 m³/h)
-    "grundfos_sqflex_80": {
-        "name": "Grundfos SQFlex 80-5",
-        "power_range": [4000, 8000],  # Watts
-        "flow_range": [40, 120],  # m³/h
-        "head_range": [50, 300],  # mètres
+    "sp_5a_18_rsi": {
+        "name": "Grundfos SP 5A-18 + RSI",
+        "power_range": [1500, 3200],  # Watts
+        "flow_range": [12, 40],  # m³/h
+        "head_range": [50, 220],  # mètres
         "efficiency": 0.62,
         "voltage": [192, 384],  # DC volts
-        "price_eur": 12500,
-        "type": "submersible"
+        "price_eur": 4850,  # SP (2650€) + RSI (2200€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 2650,
+        "rsi_cost": 2200
     },
-    "lorentz_ps_7500": {
-        "name": "Lorentz PS2-7500",
-        "power_range": [5000, 7500],  # Watts
-        "flow_range": [50, 150],  # m³/h
-        "head_range": [30, 220],  # mètres
-        "efficiency": 0.60,
-        "voltage": [192, 384],  # DC volts
-        "price_eur": 9800,
-        "type": "submersible"
-    },
-    "surface_solar_10kw": {
-        "name": "Pompe Surface Solaire 10kW",
-        "power_range": [6000, 10000],  # Watts
-        "flow_range": [60, 150],  # m³/h
-        "head_range": [30, 150],  # mètres
-        "efficiency": 0.58,
-        "voltage": [384, 600],  # DC volts
-        "price_eur": 15000,
-        "type": "surface"
-    },
-    
-    # Pompes industrielles (150+ m³/h)
-    "grundfos_sqflex_150": {
-        "name": "Grundfos SQFlex 150-7",
-        "power_range": [8000, 20000],  # Watts - augmenté à 20kW
-        "flow_range": [80, 200],  # m³/h
-        "head_range": [60, 350],  # mètres
+    "sp_8a_22_rsi": {
+        "name": "Grundfos SP 8A-22 + RSI",
+        "power_range": [2500, 5500],  # Watts
+        "flow_range": [20, 65],  # m³/h
+        "head_range": [60, 280],  # mètres
         "efficiency": 0.65,
-        "voltage": [384, 600],  # DC volts
-        "price_eur": 22000,
-        "type": "submersible"
+        "voltage": [192, 384],  # DC volts
+        "price_eur": 7200,  # SP (3800€) + RSI (3400€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 3800,
+        "rsi_cost": 3400
     },
-    "surface_solar_15kw": {
-        "name": "Pompe Surface Solaire 15kW",
-        "power_range": [10000, 18000],  # Watts - ajusté à 18kW
-        "flow_range": [100, 250],  # m³/h
-        "head_range": [40, 200],  # mètres
-        "efficiency": 0.62,
-        "voltage": [600, 800],  # DC volts
-        "price_eur": 28000,
-        "type": "surface"
-    },
-    # Pompe très haute performance pour gros débits
-    "industrial_solar_25kw": {
-        "name": "Pompe Industrielle Solaire 25kW",
-        "power_range": [15000, 25000],  # Watts
-        "flow_range": [150, 350],  # m³/h
-        "head_range": [30, 250],  # mètres
+    "sp_11a_25_rsi": {
+        "name": "Grundfos SP 11A-25 + RSI",
+        "power_range": [4000, 8500],  # Watts
+        "flow_range": [35, 95],  # m³/h
+        "head_range": [70, 350],  # mètres
         "efficiency": 0.68,
-        "voltage": [800, 1000],  # DC volts
-        "price_eur": 35000,
-        "type": "submersible"
+        "voltage": [384, 600],  # DC volts
+        "price_eur": 11500,  # SP (6200€) + RSI (5300€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 6200,
+        "rsi_cost": 5300
+    },
+    "sp_17a_30_rsi": {
+        "name": "Grundfos SP 17A-30 + RSI",
+        "power_range": [6000, 12000],  # Watts
+        "flow_range": [60, 150],  # m³/h
+        "head_range": [80, 400],  # mètres
+        "efficiency": 0.72,
+        "voltage": [384, 800],  # DC volts
+        "price_eur": 16800,  # SP (9200€) + RSI (7600€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 9200,
+        "rsi_cost": 7600
+    },
+    "sp_25a_35_rsi": {
+        "name": "Grundfos SP 25A-35 + RSI",
+        "power_range": [8000, 18000],  # Watts
+        "flow_range": [100, 220],  # m³/h
+        "head_range": [90, 480],  # mètres
+        "efficiency": 0.75,
+        "voltage": [600, 1000],  # DC volts
+        "price_eur": 24500,  # SP (14200€) + RSI (10300€)
+        "type": "submersible",
+        "category": "sp_rsi",
+        "pump_cost": 14200,
+        "rsi_cost": 10300
+    },
+    
+    # ===== POMPES SP TRÈS GROSSES + RSI INDUSTRIEL - Applications industrielles =====
+    "sp_46a_40_rsi": {
+        "name": "Grundfos SP 46A-40 + RSI Industriel",
+        "power_range": [15000, 30000],  # Watts
+        "flow_range": [180, 350],  # m³/h
+        "head_range": [100, 600],  # mètres
+        "efficiency": 0.78,
+        "voltage": [800, 1200],  # DC volts
+        "price_eur": 42000,  # SP (26000€) + RSI Industriel (16000€)
+        "type": "submersible",
+        "category": "sp_rsi_industrial",
+        "pump_cost": 26000,
+        "rsi_cost": 16000
+    },
+    
+    # ===== POMPES DE SURFACE POUR APPLICATIONS SPÉCIALES =====
+    "cr_3_rsi": {
+        "name": "Grundfos CR 3 + RSI Surface",
+        "power_range": [750, 2200],  # Watts
+        "flow_range": [5, 30],  # m³/h
+        "head_range": [20, 120],  # mètres
+        "efficiency": 0.55,
+        "voltage": [96, 384],  # DC volts
+        "price_eur": 3200,  # CR (1800€) + RSI (1400€)
+        "type": "surface",
+        "category": "cr_rsi_surface",
+        "pump_cost": 1800,
+        "rsi_cost": 1400
+    },
+    "cr_10_rsi": {
+        "name": "Grundfos CR 10 + RSI Surface",
+        "power_range": [2200, 5500],  # Watts
+        "flow_range": [20, 85],  # m³/h
+        "head_range": [25, 180],  # mètres
+        "efficiency": 0.62,
+        "voltage": [384, 600],  # DC volts
+        "price_eur": 6800,  # CR (3800€) + RSI (3000€)
+        "type": "surface",
+        "category": "cr_rsi_surface",
+        "pump_cost": 3800,
+        "rsi_cost": 3000
     }
 }
 
