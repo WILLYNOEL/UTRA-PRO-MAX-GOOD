@@ -3184,34 +3184,78 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
             "total_cost": 1800
         }
     
-    # 6. Sélection du régulateur MPPT
-    max_pv_current = recommended_panels["quantity"] * recommended_panels["panel_data"]["current_nominal"]
-    max_pv_voltage = recommended_panels["panel_data"]["voltage_nominal"] * 1.25  # facteur de sécurité
-    
-    suitable_mppt = []
-    for mppt_id, mppt_data in MPPT_CONTROLLER_DATABASE.items():
-        if (mppt_data["max_current"] >= max_pv_current * 1.25 and
-            mppt_data["max_pv_voltage"] >= max_pv_voltage):
-            suitable_mppt.append({
-                "id": mppt_id,
-                "data": mppt_data,
-                "cost_efficiency": mppt_data["price_eur"] / mppt_data["max_power"]
-            })
-    
-    if suitable_mppt:
-        best_mppt = min(suitable_mppt, key=lambda x: x["cost_efficiency"])
+    # 6. Sélection du système de contrôle adapté au type de pompe
+    if selected_pump.get("category") == "sqf_integrated":
+        # Pour les SQF : convertisseur intégré, pas de régulateur séparé
         recommended_mppt = {
-            "mppt_data": best_mppt["data"],
+            "mppt_data": {
+                "name": "Convertisseur intégré SQF",
+                "description": "Convertisseur de fréquence intégré dans la pompe",
+                "max_power": required_electrical_power,
+                "voltage_range": selected_pump.get("voltage", [48]),
+                "price_eur": 0  # Inclus dans le prix de la pompe
+            },
             "quantity": 1,
-            "total_cost": best_mppt["data"]["price_eur"]
+            "total_cost": 0
+        }
+    elif selected_pump.get("category") in ["sp_rsi", "sp_rsi_industrial"]:
+        # Pour les SP + RSI : le RSI EST le régulateur, coût inclus dans la pompe
+        rsi_cost = selected_pump.get("rsi_cost", 0)
+        recommended_mppt = {
+            "mppt_data": {
+                "name": "Convertisseur RSI Grundfos",
+                "description": f"RSI externe pour pompe SP - {required_electrical_power}W",
+                "max_power": required_electrical_power,
+                "voltage_range": selected_pump.get("voltage", [192]),
+                "price_eur": rsi_cost
+            },
+            "quantity": 1,
+            "total_cost": rsi_cost
         }
     else:
-        warnings.append("Régulateur MPPT par défaut utilisé")
-        recommended_mppt = {
-            "mppt_data": MPPT_CONTROLLER_DATABASE["victron_100_30"],
-            "quantity": 1,
-            "total_cost": 180
-        }
+        # Pour les autres pompes : régulateur MPPT solaire classique
+        max_pv_current = recommended_panels["quantity"] * recommended_panels["panel_data"]["current_nominal"]
+        max_pv_voltage = recommended_panels["panel_data"]["voltage_nominal"] * 1.25  # facteur de sécurité
+        
+        suitable_mppt = []
+        for mppt_id, mppt_data in MPPT_CONTROLLER_DATABASE.items():
+            if (mppt_data["max_current"] >= max_pv_current * 1.25 and
+                mppt_data["max_pv_voltage"] >= max_pv_voltage):
+                suitable_mppt.append({
+                    "id": mppt_id,
+                    "data": mppt_data,
+                    "cost_efficiency": mppt_data["price_eur"] / mppt_data["max_power"]
+                })
+        
+        if suitable_mppt:
+            best_mppt = min(suitable_mppt, key=lambda x: x["cost_efficiency"])
+            recommended_mppt = {
+                "mppt_data": best_mppt["data"],
+                "quantity": 1,
+                "total_cost": best_mppt["data"]["price_eur"]
+            }
+        else:
+            # Régulateur par défaut adapté à la puissance
+            if required_electrical_power < 1000:
+                default_cost = 180
+            elif required_electrical_power < 3000:
+                default_cost = 450
+            elif required_electrical_power < 8000:
+                default_cost = 850
+            else:
+                default_cost = 1500
+                
+            warnings.append("Régulateur par défaut utilisé - dimensionner selon puissance réelle")
+            recommended_mppt = {
+                "mppt_data": {
+                    "name": f"Régulateur MPPT {required_electrical_power}W",
+                    "description": f"Régulateur adapté à {required_electrical_power}W",
+                    "max_power": required_electrical_power * 1.2,
+                    "price_eur": default_cost
+                },
+                "quantity": 1,
+                "total_cost": default_cost
+            }
     
     # 7. Calculs de performance mensuelle
     monthly_irradiation = []
