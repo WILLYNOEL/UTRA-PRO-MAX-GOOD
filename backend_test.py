@@ -6076,9 +6076,9 @@ class HydraulicPumpTester:
             self.log_test("ECO PUMP - GET /api/pipe-materials", False, f"Error: {str(e)}")
             all_passed = False
         
-        # Test 3: GET /api/regions/solar (should return solar regions)
+        # Test 3: GET /api/solar-regions (should return solar regions)
         try:
-            response = requests.get(f"{BACKEND_URL}/regions/solar", timeout=10)
+            response = requests.get(f"{BACKEND_URL}/solar-regions", timeout=10)
             if response.status_code == 200:
                 data = response.json()
                 regions = data.get("regions", [])
@@ -6086,17 +6086,17 @@ class HydraulicPumpTester:
                     # Check if Dakar is in the regions
                     region_names = [r.get("id", "") for r in regions]
                     if "dakar" in region_names:
-                        self.log_test("ECO PUMP - GET /api/regions/solar", True, f"Found {len(regions)} solar regions including Dakar")
+                        self.log_test("ECO PUMP - GET /api/solar-regions", True, f"Found {len(regions)} solar regions including Dakar")
                     else:
-                        self.log_test("ECO PUMP - GET /api/regions/solar", True, f"Found {len(regions)} solar regions (Dakar not found but other regions available)")
+                        self.log_test("ECO PUMP - GET /api/solar-regions", True, f"Found {len(regions)} solar regions (Dakar not found but other regions available)")
                 else:
-                    self.log_test("ECO PUMP - GET /api/regions/solar", False, "No solar regions found")
+                    self.log_test("ECO PUMP - GET /api/solar-regions", False, "No solar regions found")
                     all_passed = False
             else:
-                self.log_test("ECO PUMP - GET /api/regions/solar", False, f"Status: {response.status_code}")
+                self.log_test("ECO PUMP - GET /api/solar-regions", False, f"Status: {response.status_code}")
                 all_passed = False
         except Exception as e:
-            self.log_test("ECO PUMP - GET /api/regions/solar", False, f"Error: {str(e)}")
+            self.log_test("ECO PUMP - GET /api/solar-regions", False, f"Error: {str(e)}")
             all_passed = False
         
         # Test 4: POST /api/solar-pumping (Expert Solaire calculations)
