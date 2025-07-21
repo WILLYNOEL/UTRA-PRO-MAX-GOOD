@@ -2735,22 +2735,26 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         
         # Debug pour voir les valeurs exactes utilisées
         print(f"🔍 DEBUG DIAMÈTRES VITESSE:")
-        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{current_suction_dn}")
+        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{input_data.suction_dn or get_closest_dn(input_data.suction_pipe_diameter)}")
         print(f"  Aspiration recommandée: {optimal_suction_diameter:.1f}mm → DN{recommended_suction_dn}")
-        print(f"  Refoulement sélectionné: {input_data.discharge_pipe_diameter}mm → DN{current_discharge_dn}")
+        print(f"  Refoulement sélectionné: {input_data.discharge_pipe_diameter}mm → DN{input_data.discharge_dn or get_closest_dn(input_data.discharge_pipe_diameter)}")
         print(f"  Refoulement recommandé: {optimal_discharge_diameter:.1f}mm → DN{recommended_discharge_dn}")
         print(f"  Vitesse calculée: {npshd_result.velocity:.2f}m/s")
         
+        # Utiliser les valeurs DN sélectionnées par l'utilisateur si disponibles
+        current_suction_dn_selected = input_data.suction_dn if input_data.suction_dn is not None else get_closest_dn(input_data.suction_pipe_diameter)
+        current_discharge_dn_selected = input_data.discharge_dn if input_data.discharge_dn is not None else get_closest_dn(input_data.discharge_pipe_diameter)
+        
         # Vérifier si les recommandations sont vraiment nécessaires
         # (éviter de recommander un changement si le DN sélectionné est déjà approprié)
-        need_suction_change = current_suction_dn < recommended_suction_dn
-        need_discharge_change = current_discharge_dn < recommended_discharge_dn
+        need_suction_change = current_suction_dn_selected < recommended_suction_dn
+        need_discharge_change = current_discharge_dn_selected < recommended_discharge_dn
         
         solutions = []
         if need_suction_change:
-            solutions.append(f"Diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn}")
+            solutions.append(f"Diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn}")
         if need_discharge_change:
-            solutions.append(f"Diamètre refoulement: DN{current_discharge_dn} → DN{recommended_discharge_dn}")
+            solutions.append(f"Diamètre refoulement: DN{current_discharge_dn_selected} → DN{recommended_discharge_dn}")
             
         # Ajouter recommandations générales seulement si changement nécessaire
         if need_suction_change or need_discharge_change:
@@ -2762,7 +2766,7 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         else:
             # Pas de changement de diamètre nécessaire mais vitesse encore élevée
             solutions.extend([
-                f"Diamètres actuels (DN{current_suction_dn}/DN{current_discharge_dn}) appropriés",
+                f"Diamètres actuels (DN{current_suction_dn_selected}/DN{current_discharge_dn_selected}) appropriés",
                 "Optimiser tracé hydraulique (courbes 3D)",
                 "Matériaux résistants à l'érosion",
                 "Supports anti-vibratoires renforcés"
