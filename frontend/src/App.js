@@ -4771,7 +4771,7 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             <ProfessionalInput
               type="number"
               value={inputData.useful_pressure}
-              onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value) || 0)}
+              onChange={(e) => handleInputChange('useful_pressure', parseFloat(e.target.value))}
               placeholder="Ex: 0"
               step="0.1"
             />
