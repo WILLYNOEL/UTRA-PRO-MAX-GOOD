@@ -8735,7 +8735,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             >
               {fluids.map(fluid => (
                 <option key={fluid.id} value={fluid.id}>
-                  {fluid.icon} {fluid.name}
+                  {fluid.name}
                 </option>
               ))}
             </ProfessionalSelect>
