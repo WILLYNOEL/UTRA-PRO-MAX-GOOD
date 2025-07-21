@@ -140,18 +140,80 @@ def get_closest_dn(diameter_mm):
 def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_m3h, current_velocity, pipe_length_m):
     """
     Calcule des recommandations graduées d'augmentation de diamètre avec analyse coût-bénéfice
+    respectant les vitesses hydrauliques normalisées selon le type de conduite
     """
     recommendations = []
     
     # Obtenir le DN actuel
     current_dn = get_dn_from_diameter(current_diameter_mm)
     
+    # Vitesses recommandées selon les normes hydrauliques professionnelles
+    # Basé sur la documentation technique fournie
+    velocity_limits = {
+        "aspiration": {
+            "optimal": 1.2,      # Vitesse optimale aspiration
+            "max_safe": 1.5,     # Maximum pour éviter cavitation
+            "description": "Aspiration (éviter cavitation)"
+        },
+        "refoulement": {
+            "optimal": 2.0,      # Vitesse optimale refoulement
+            "max_safe": 2.5,     # Maximum recommandé
+            "description": "Refoulement standard"
+        },
+        "longue_distance": {
+            "optimal": 1.5,      # Vitesse optimale longues distances
+            "max_safe": 2.0,     # Maximum pour limiter pertes
+            "description": "Conduites principales"
+        },
+        "circuits_fermes": {
+            "optimal": 2.0,      # Vitesse optimale circuits fermés
+            "max_safe": 3.0,     # Maximum tolérable
+            "description": "Réseaux sous pression"
+        },
+        "metallique_court": {
+            "optimal": 3.0,      # Vitesse acceptable tuyauteries résistantes
+            "max_safe": 4.0,     # Maximum absolu (cas spéciaux)
+            "description": "Tuyauteries métalliques courtes"
+        }
+    }
+    
+    # Déterminer le type de conduite selon la longueur et la vitesse actuelle
+    if pipe_length_m > 100:
+        conduite_type = "longue_distance"
+    elif current_velocity > 3.0:
+        conduite_type = "metallique_court"
+    elif pipe_length_m < 20:
+        conduite_type = "circuits_fermes"
+    else:
+        conduite_type = "refoulement"
+    
+    target_velocity = velocity_limits[conduite_type]["optimal"]
+    max_velocity = velocity_limits[conduite_type]["max_safe"]
+    conduite_description = velocity_limits[conduite_type]["description"]
+    
     # Liste des DN disponibles triés
     available_dns = sorted(DN_TO_DIAMETER.keys())
     current_index = available_dns.index(current_dn) if current_dn in available_dns else 0
     
-    # Calculer les options pour les 3 prochains DN
-    for i in range(1, min(4, len(available_dns) - current_index)):
+    # Si la vitesse actuelle est acceptable, pas de recommandations
+    if current_velocity <= max_velocity:
+        return []
+    
+    # Calculer le diamètre requis pour atteindre la vitesse cible
+    required_area = (flow_rate_m3h / 3600) / target_velocity
+    required_diameter_mm = math.sqrt(4 * required_area / math.pi) * 1000
+    target_dn = get_dn_from_diameter(required_diameter_mm)
+    
+    # Ajouter un en-tête explicatif
+    recommendations.append(f"⚠️ VITESSE EXCESSIVE ({current_velocity:.1f} m/s) - {conduite_description.upper()}")
+    recommendations.append(f"🎯 VITESSE CIBLE: {target_velocity:.1f} m/s (MAX: {max_velocity:.1f} m/s)")
+    
+    # Calculer les options graduées jusqu'à atteindre la vitesse cible
+    options_count = 0
+    for i in range(1, len(available_dns) - current_index):
+        if options_count >= 3:  # Limiter à 3 options maximum
+            break
+            
         next_dn = available_dns[current_index + i]
         next_diameter = DN_TO_DIAMETER[next_dn]
         
@@ -159,29 +221,39 @@ def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_
         new_area = math.pi * (next_diameter / 1000 / 2) ** 2
         new_velocity = (flow_rate_m3h / 3600) / new_area
         
-        # Calculer la réduction de pertes de charge (approximation)
-        velocity_reduction = ((current_velocity ** 2) - (new_velocity ** 2)) / (current_velocity ** 2) * 100
-        
-        # Estimation du coût relatif (basé sur le diamètre)
+        # Ne pas proposer d'options qui dépassent encore les limites
+        if new_velocity > max_velocity:
+            continue
+            
+        # Calculer la réduction de vitesse et l'augmentation de coût
+        velocity_reduction = ((current_velocity - new_velocity) / current_velocity) * 100
         cost_increase = ((next_diameter / current_diameter_mm) ** 2 - 1) * 100
         
-        # Efficacité (réduction pertes / augmentation coût)
+        # Efficacité (réduction vitesse / augmentation coût)
         efficiency_ratio = velocity_reduction / cost_increase if cost_increase > 0 else 0
         
-        # Formatage de la recommandation
-        if efficiency_ratio > 0.5:  # Très efficace
+        # Déterminer la priorité selon la vitesse atteinte
+        if new_velocity <= target_velocity:
             priority = "🟢 OPTIMAL"
-        elif efficiency_ratio > 0.2:  # Efficace
+        elif new_velocity <= target_velocity * 1.2:
             priority = "🟡 RECOMMANDÉ"
-        else:  # Moins efficace
-            priority = "🔴 COÛTEUX"
+        else:
+            priority = "🔴 LIMITE"
         
-        recommendation = f"{priority} DN{current_dn}→DN{next_dn}: Vitesse {new_velocity:.1f}m/s (-{velocity_reduction:.0f}%), Coût +{cost_increase:.0f}%"
+        # Formatage de la recommandation avec conformité aux normes
+        norm_status = "✅ CONFORME" if new_velocity <= target_velocity else "⚠️ ACCEPTABLE"
+        recommendation = f"{priority} DN{current_dn}→DN{next_dn}: {new_velocity:.1f}m/s {norm_status} (réduction -{velocity_reduction:.0f}%, coût +{cost_increase:.0f}%)"
         recommendations.append(recommendation)
         
-        # Arrêter si on atteint une vitesse acceptable
-        if new_velocity <= 1.5:
+        options_count += 1
+        
+        # Arrêter si on a atteint une vitesse optimale
+        if new_velocity <= target_velocity:
             break
+    
+    # Si aucune option n'est proposée, calculer directement le DN nécessaire
+    if options_count == 0:
+        recommendations.append(f"🔧 SOLUTION DIRECTE: DN{current_dn}→DN{target_dn} pour atteindre {target_velocity:.1f} m/s")
     
     return recommendations
 
