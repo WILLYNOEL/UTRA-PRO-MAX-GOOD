@@ -7652,6 +7652,8 @@ class HydraulicPumpTester:
             # NPSHd DN RECOMMENDATIONS TEST (from current review request)
             self.test_npshd_dn_recommendations,  # NEW: Test NPSHd recommendations display DN equivalents
             self.test_dn_conversion_functions,  # NEW: Test DN conversion functions
+            # GRADUATED DIAMETER RECOMMENDATIONS TEST (from current review request)
+            self.test_graduated_diameter_recommendations,  # NEW: Test graduated diameter recommendations system to avoid oversized pipes
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
