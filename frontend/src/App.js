@@ -6306,15 +6306,15 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Header Expert */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-2">🧠 ANALYSE HYDRAULIQUE EXPERTE</h2>
-        <p className="text-purple-100 mb-4">
+    <div className="space-y-4">
+      {/* Header Expert - Plus compact */}
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white p-4 rounded-lg shadow-lg">
+        <h2 className="text-xl font-bold mb-1">🧠 ANALYSE HYDRAULIQUE EXPERTE</h2>
+        <p className="text-purple-100 text-sm mb-3">
           Calculs avancés temps réel • Diagnostics automatiques • Recommandations professionnelles
         </p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center space-x-3">
             <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -6322,72 +6322,64 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                 onChange={(e) => setAutoCalculate(e.target.checked)}
                 className="rounded"
               />
-              <span className="text-sm font-medium">Calcul automatique</span>
+              <span className="text-sm font-medium">Auto</span>
             </label>
             {!autoCalculate && (
               <button
                 onClick={() => calculateExpertAnalysis()}
-                className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+                className="bg-white text-purple-600 px-3 py-1 rounded-md font-medium hover:bg-purple-50 transition-colors text-sm"
                 disabled={loading}
               >
                 {loading ? 'Calcul...' : 'Calculer'}
               </button>
             )}
             
-            {/* Bouton de remise à zéro */}
             <button
               onClick={resetAllFields}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center space-x-2"
-              title="Remettre à zéro tous les champs"
+              className="bg-red-500 text-white px-3 py-1 rounded-md font-medium hover:bg-red-600 transition-colors text-sm"
+              title="Remettre à zéro"
             >
-              <span>🔄</span>
-              <span>Réinitialiser</span>
+              🔄 RAZ
             </button>
             
-            {/* Bouton Export PDF */}
             <button
               onClick={() => exportToPDF()}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center space-x-2"
-              title="Exporter en PDF"
+              className="bg-blue-500 text-white px-3 py-1 rounded-md font-medium hover:bg-blue-600 transition-colors text-sm"
               disabled={!results}
             >
-              <span>📄</span>
-              <span>PDF</span>
+              📄 PDF
             </button>
             
-            {/* Bouton Export Excel */}
             <button
               onClick={() => exportToExcel()}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center space-x-2"
-              title="Exporter en Excel"
+              className="bg-green-500 text-white px-3 py-1 rounded-md font-medium hover:bg-green-600 transition-colors text-sm"
               disabled={!results}
             >
-              <span>📊</span>
-              <span>Excel</span>
+              📊 Excel
             </button>
           </div>
           
-          <div className="flex space-x-2">
+          <div className="flex space-x-1">
             {['all', 'hydraulic', 'electrical', 'analysis'].map(section => (
               <button
                 key={section}
                 onClick={() => setActiveSection(section)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                   activeSection === section 
                     ? 'bg-white text-purple-600' 
                     : 'bg-purple-500 text-white hover:bg-purple-400'
                 }`}
               >
                 {section === 'all' ? 'Tout' : 
-                 section === 'hydraulic' ? 'Hydraulique' : 
-                 section === 'electrical' ? 'Électrique' : 'Analyse'}
+                 section === 'hydraulic' ? 'Hydr.' : 
+                 section === 'electrical' ? 'Élec.' : 'Analyse'}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Panneau de saisie - Colonne 1 */}
         <div className="xl:col-span-1 space-y-6">
           {/* Informations du projet */}
