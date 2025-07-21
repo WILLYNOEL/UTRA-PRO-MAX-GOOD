@@ -5263,10 +5263,10 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
       
       // Géométrie installation
       suction_type: 'flooded',
-      suction_pipe_diameter: 0,
-      discharge_pipe_diameter: 0,
-      suction_dn: null,  // DN sélectionné pour aspiration
-      discharge_dn: null,  // DN sélectionné pour refoulement
+      suction_pipe_diameter: 114.3, // DN100 par défaut
+      discharge_pipe_diameter: 88.9, // DN80 par défaut  
+      suction_dn: 100,  // DN sélectionné pour aspiration
+      discharge_dn: 80,  // DN sélectionné pour refoulement
       suction_height: 0,
       discharge_height: 0,
       suction_length: 0,
