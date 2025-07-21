@@ -2636,6 +2636,7 @@ SOLAR_IRRADIATION_DATABASE = {
 
 # Base de données des pompes solaires
 SOLAR_PUMP_DATABASE = {
+    # Petites pompes (jusqu'à 10 m³/h)
     "grundfos_sqflex": {
         "name": "Grundfos SQFlex 2.5-2",
         "power_range": [180, 400],  # Watts
@@ -2666,6 +2667,28 @@ SOLAR_PUMP_DATABASE = {
         "price_eur": 980,
         "type": "submersible"
     },
+    
+    # Pompes moyennes (10-40 m³/h)
+    "grundfos_sqflex_15": {
+        "name": "Grundfos SQFlex 15-5",
+        "power_range": [1000, 2200],  # Watts
+        "flow_range": [5, 25],  # m³/h
+        "head_range": [30, 200],  # mètres
+        "efficiency": 0.55,
+        "voltage": [48, 96],  # DC volts
+        "price_eur": 3450,
+        "type": "submersible"
+    },
+    "lorentz_ps_1800": {
+        "name": "Lorentz PS2-1800",
+        "power_range": [800, 1800],  # Watts
+        "flow_range": [8, 35],  # m³/h
+        "head_range": [15, 160],  # mètres
+        "efficiency": 0.53,
+        "voltage": [48, 96],  # DC volts
+        "price_eur": 2980,
+        "type": "submersible"
+    },
     "surface_solar": {
         "name": "Pompe Surface Solaire 1kW",
         "power_range": [300, 1000],  # Watts
@@ -2674,6 +2697,102 @@ SOLAR_PUMP_DATABASE = {
         "efficiency": 0.42,
         "voltage": [48, 96],  # DC volts
         "price_eur": 1450,
+        "type": "surface"
+    },
+    "surface_solar_3kw": {
+        "name": "Pompe Surface Solaire 3kW",
+        "power_range": [1500, 3000],  # Watts
+        "flow_range": [15, 40],  # m³/h
+        "head_range": [20, 100],  # mètres
+        "efficiency": 0.48,
+        "voltage": [96, 192],  # DC volts
+        "price_eur": 4200,
+        "type": "surface"
+    },
+    
+    # Grosses pompes (40-80 m³/h)
+    "grundfos_sqflex_40": {
+        "name": "Grundfos SQFlex 40-3",
+        "power_range": [2500, 5000],  # Watts
+        "flow_range": [20, 60],  # m³/h
+        "head_range": [40, 250],  # mètres
+        "efficiency": 0.58,
+        "voltage": [96, 192],  # DC volts
+        "price_eur": 6800,
+        "type": "submersible"
+    },
+    "lorentz_ps_4000": {
+        "name": "Lorentz PS2-4000",
+        "power_range": [2200, 4000],  # Watts
+        "flow_range": [25, 70],  # m³/h
+        "head_range": [25, 180],  # mètres
+        "efficiency": 0.56,
+        "voltage": [96, 192],  # DC volts
+        "price_eur": 5900,
+        "type": "submersible"
+    },
+    "surface_solar_5kw": {
+        "name": "Pompe Surface Solaire 5kW",
+        "power_range": [3000, 5000],  # Watts
+        "flow_range": [30, 80],  # m³/h
+        "head_range": [25, 120],  # mètres
+        "efficiency": 0.52,
+        "voltage": [192, 384],  # DC volts
+        "price_eur": 7500,
+        "type": "surface"
+    },
+    
+    # Très grosses pompes (80-150 m³/h)
+    "grundfos_sqflex_80": {
+        "name": "Grundfos SQFlex 80-5",
+        "power_range": [4000, 8000],  # Watts
+        "flow_range": [40, 120],  # m³/h
+        "head_range": [50, 300],  # mètres
+        "efficiency": 0.62,
+        "voltage": [192, 384],  # DC volts
+        "price_eur": 12500,
+        "type": "submersible"
+    },
+    "lorentz_ps_7500": {
+        "name": "Lorentz PS2-7500",
+        "power_range": [5000, 7500],  # Watts
+        "flow_range": [50, 150],  # m³/h
+        "head_range": [30, 220],  # mètres
+        "efficiency": 0.60,
+        "voltage": [192, 384],  # DC volts
+        "price_eur": 9800,
+        "type": "submersible"
+    },
+    "surface_solar_10kw": {
+        "name": "Pompe Surface Solaire 10kW",
+        "power_range": [6000, 10000],  # Watts
+        "flow_range": [60, 150],  # m³/h
+        "head_range": [30, 150],  # mètres
+        "efficiency": 0.58,
+        "voltage": [384, 600],  # DC volts
+        "price_eur": 15000,
+        "type": "surface"
+    },
+    
+    # Pompes industrielles (150+ m³/h)
+    "grundfos_sqflex_150": {
+        "name": "Grundfos SQFlex 150-7",
+        "power_range": [8000, 15000],  # Watts
+        "flow_range": [80, 200],  # m³/h
+        "head_range": [60, 350],  # mètres
+        "efficiency": 0.65,
+        "voltage": [384, 600],  # DC volts
+        "price_eur": 22000,
+        "type": "submersible"
+    },
+    "surface_solar_15kw": {
+        "name": "Pompe Surface Solaire 15kW",
+        "power_range": [10000, 15000],  # Watts
+        "flow_range": [100, 250],  # m³/h
+        "head_range": [40, 200],  # mètres
+        "efficiency": 0.62,
+        "voltage": [600, 800],  # DC volts
+        "price_eur": 28000,
         "type": "surface"
     }
 }
