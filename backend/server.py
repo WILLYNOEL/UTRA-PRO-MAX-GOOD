@@ -1500,6 +1500,62 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
             warnings.append(f"NPSHd calculé ({npshd:.2f} m) >> NPSH requis ({npsh_required:.2f} m)")
             warnings.append(f"Marge de sécurité: {npsh_margin:.2f} m (EXCELLENTE)")
     
+    # ========================================================================================================
+    # ANALYSE DE COMPATIBILITÉ CHIMIQUE INTÉGRÉE DANS NPSHd
+    # ========================================================================================================
+    
+    # Analyser la compatibilité chimique entre le fluide et le matériau de tuyauterie
+    compatibility_analysis = analyze_chemical_compatibility(
+        input_data.fluid_type, 
+        input_data.pipe_material, 
+        input_data.pipe_material,  # Même matériau pour aspiration
+        input_data.temperature
+    )
+    
+    # Intégrer les recommandations de compatibilité chimique dans les recommendations NPSHd
+    if compatibility_analysis["recommendations"]:
+        recommendations.append("\n🧪 COMPATIBILITÉ CHIMIQUE FLUIDE-MATÉRIAU:")
+        recommendations.extend([f"  {rec}" for rec in compatibility_analysis["recommendations"]])
+    
+    # Intégrer les recommandations de joints
+    if compatibility_analysis["seal_recommendations"]:
+        recommendations.append("\n🔧 RECOMMANDATIONS DE JOINTS:")
+        recommendations.extend([f"  {rec}" for rec in compatibility_analysis["seal_recommendations"]])
+    
+    # Vérifications spécifiques de compatibilité
+    if compatibility_analysis["suction_material_status"] == "incompatible":
+        warnings.append("🚨 INCOMPATIBILITÉ CHIMIQUE DÉTECTÉE!")
+        warnings.append(f"Le matériau {PIPE_MATERIALS[input_data.pipe_material]['name']} n'est pas compatible avec {compatibility_analysis['fluid_name']}")
+        recommendations.append(f"\n⚠️ CHANGEMENT DE MATÉRIAU URGENT REQUIS:")
+        
+        # Suggérer des matériaux compatibles
+        if compatibility_analysis["compatible_materials"]:
+            compatible_materials_names = []
+            material_mapping = {
+                "stainless_steel": "Acier inoxydable 316L",
+                "pvc": "PVC",
+                "pehd": "PEHD", 
+                "steel": "Acier au carbone",
+                "bronze": "Bronze",
+                "ptfe": "PTFE",
+                "viton": "Joints Viton/FKM"
+            }
+            
+            for mat in compatibility_analysis["compatible_materials"]:
+                if mat in material_mapping:
+                    compatible_materials_names.append(material_mapping[mat])
+            
+            if compatible_materials_names:
+                recommendations.append(f"  • Matériaux compatibles recommandés: {', '.join(compatible_materials_names)}")
+    
+    elif compatibility_analysis["suction_material_status"] == "compatible":
+        recommendations.append(f"\n✅ COMPATIBILITÉ CHIMIQUE: {PIPE_MATERIALS[input_data.pipe_material]['name']} compatible avec {compatibility_analysis['fluid_name']}")
+    
+    # Ajouter conseils hydrauliques spécifiques au fluide
+    if compatibility_analysis["hydraulic_advice"]:
+        recommendations.append("\n💧 CONSEILS HYDRAULIQUES SPÉCIFIQUES:")
+        recommendations.extend([f"  {advice}" for advice in compatibility_analysis["hydraulic_advice"]])
+    
     return NPSHdResult(
         input_data=input_data,
         fluid_properties=fluid_props,
