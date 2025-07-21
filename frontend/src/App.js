@@ -4035,9 +4035,10 @@ const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   onChange={(e) => handleInputChange('fluid_type', e.target.value)}
                   required
                 >
+                  <option value="">-- Choisir un fluide --</option>
                   {fluids.map(fluid => (
                     <option key={fluid.id} value={fluid.id}>
-                      {fluid.icon} {fluid.name}
+                      {fluid.name}
                     </option>
                   ))}
                 </ProfessionalSelect>
