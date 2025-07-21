@@ -3066,11 +3066,11 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
     
     if not suitable_pumps:
         print(f"❌ AUCUNE POMPE TROUVÉE: hourly_flow_peak={hourly_flow_peak}, total_head={input_data.total_head}")
-        critical_alerts.append("Aucune pompe compatible trouvée pour ces spécifications")
-        # Sélection de la pompe la plus puissante par défaut
-        selected_pump_id = "grundfos_sqflex_high"
+        critical_alerts.append("Aucune pompe compatible trouvée pour ces spécifications. Utilisation de la pompe la plus puissante disponible.")
+        # Sélection de la pompe la plus puissante par défaut (SP 46A-40)
+        selected_pump_id = "sp_46a_40_rsi"
         selected_pump = SOLAR_PUMP_DATABASE[selected_pump_id]
-        required_electrical_power = 1200  # Watts par défaut
+        required_electrical_power = max(selected_pump["power_range"])  # Puissance maximale de cette pompe
     else:
         print(f"✅ POMPES TROUVÉES: {len(suitable_pumps)} pompes compatibles")
         # Sélection de la pompe optimale - ALGORITHME CORRIGÉ
