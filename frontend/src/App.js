@@ -4896,7 +4896,9 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
             </div>
           </div>
         </div>
+      </ProfessionalSection>
         
+      <ProfessionalSection title="Calcul" icon="🚀" className="shadow-xl">
         <div className="mt-6">
           <button
             onClick={calculateHMT}
