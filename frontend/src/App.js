@@ -8713,7 +8713,7 @@ const PerformanceAnalysis = ({ fluids, pipeMaterials }) => {
             <ProfessionalLabel required>Diamètre de tuyauterie</ProfessionalLabel>
             <ProfessionalSelect
               value={inputData.pipe_diameter}
-              onChange={(e) => handleInputChange('pipe_diameter', parseInt(e.target.value))}
+              onChange={(e) => handleInputChange('pipe_diameter', parseFloat(e.target.value))}
               required
             >
               {dnOptions.map(option => (
