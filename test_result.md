@@ -506,10 +506,23 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Critical Material Analysis Testing - Review Request"
+    - "Diameter Recommendation Fixes Testing - COMPLETED"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+
+backend:
+  - task: "Diameter Recommendation Fixes Testing"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Diameter Recommendation Fixes working perfectly! Comprehensive validation completed with 100% success rate (3/3 test cases passed). ✅ DN65 USER SELECTION: System correctly preserves DN65 input, calculates velocity as 4.19 m/s, and shows 'DN65 → DN80' in recommendations (correctly referencing current DN65). ✅ DN80 USER SELECTION: System correctly preserves DN80 input, calculates velocity as 2.76 m/s (acceptable), and generates no diameter recommendations (appropriate for adequate diameter). ✅ HIGH FLOW SMALL DIAMETER: System correctly preserves DN50 input, calculates very high velocity (14.15 m/s), and shows 'DN50 → DN65', 'DN50 → DN125', 'DN50 → DN100' in recommendations (correctly referencing current DN50). ✅ DEBUG OUTPUT VERIFICATION: Backend logs clearly show actual diameter values used ('Aspiration sélectionnée: 50.0mm → DN50', 'Aspiration sélectionnée: 65.0mm → DN65'). ✅ CORRECT DN REFERENCES: All recommendations correctly reference the user-selected DN values in format 'DN{current} → DN{recommended}'. ✅ APPROPRIATE LOGIC: System only suggests diameter increases when current DN < recommended DN, and shows no diameter recommendations when diameter is adequate. ✅ NO INCORRECT MAPPINGS: No more incorrect 'DN80 → DN100' when user selected DN65 - system correctly shows 'DN65 → DN80'. ✅ VELOCITY CALCULATIONS: All velocity calculations are based on correct user-selected diameters. Diameter recommendation fixes are production-ready and working as specified in review request."
 
   - task: "Expert Analysis Comprehensive Test"
     implemented: true
