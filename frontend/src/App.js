@@ -5197,7 +5197,6 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
 
   // Table de correspondance DN/mm (diamètres intérieurs réels)
   const dnSizes = [
-    { dn: '', mm: 0, label: 'Sélectionnez un diamètre' },
     { dn: 'DN20', mm: 26.9, label: 'DN20 (26.9mm)' },
     { dn: 'DN25', mm: 33.7, label: 'DN25 (33.7mm)' },
     { dn: 'DN32', mm: 42.4, label: 'DN32 (42.4mm)' },
