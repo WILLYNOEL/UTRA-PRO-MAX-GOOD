@@ -8396,6 +8396,9 @@ class HydraulicPumpTester:
         
         # Run all tests - prioritizing Critical Material Analysis tests from review request
         tests = [
+            # NPSHD CHEMICAL COMPATIBILITY INTEGRATION TEST - FROM REVIEW REQUEST
+            self.test_npshd_chemical_compatibility_integration,  # NEW: Test chemical compatibility integration
+            
             # CRITICAL MATERIAL ANALYSIS TESTS - NEW FROM REVIEW REQUEST
             self.test_critical_material_analysis_bleach_cast_iron,  # NEW: BLEACH + CAST_IRON specific case
             self.test_critical_material_analysis_tomato_sauce_pvc,  # NEW: TOMATO_SAUCE + PVC newly added
