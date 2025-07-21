@@ -7782,6 +7782,8 @@ class HydraulicPumpTester:
         print("\n🔍 Testing Detailed Velocity Limits Compliance...")
         
         # Test specific scenarios for each pipe type
+        # NOTE: Since these are all tested via NPSHd endpoint (suction pipes), 
+        # they should ALL use aspiration limits for safety
         detailed_cases = [
             {
                 "name": "Aspiration Type Detection (Short + High Velocity)",
@@ -7801,7 +7803,7 @@ class HydraulicPumpTester:
                 "expected_type": "aspiration"
             },
             {
-                "name": "Long Distance Type Detection (Length > 100m)",
+                "name": "Long Distance Suction Pipe (Length > 100m)",
                 "data": {
                     "suction_type": "flooded",
                     "hasp": 3.0,
@@ -7818,7 +7820,7 @@ class HydraulicPumpTester:
                 "expected_type": "longue_distance"
             },
             {
-                "name": "Circuits Fermés Type Detection (Short + Moderate Velocity)",
+                "name": "Short Suction Pipe (Should Use Aspiration Limits)",
                 "data": {
                     "suction_type": "flooded",
                     "hasp": 3.0,
@@ -7831,11 +7833,11 @@ class HydraulicPumpTester:
                     "npsh_required": 3.5,
                     "suction_fittings": []
                 },
-                "expected_limits": {"optimal": 2.0, "max": 3.0},
-                "expected_type": "circuits_fermes"
+                "expected_limits": {"optimal": 1.2, "max": 1.5},  # Corrected: aspiration limits for suction pipes
+                "expected_type": "aspiration"  # Corrected: suction pipes should use aspiration type
             },
             {
-                "name": "Métallique Court Type Detection (Very High Velocity)",
+                "name": "High Velocity Suction Pipe (Should Use Aspiration Limits)",
                 "data": {
                     "suction_type": "flooded",
                     "hasp": 3.0,
@@ -7848,8 +7850,8 @@ class HydraulicPumpTester:
                     "npsh_required": 3.5,
                     "suction_fittings": []
                 },
-                "expected_limits": {"optimal": 3.0, "max": 4.0},
-                "expected_type": "metallique_court"
+                "expected_limits": {"optimal": 1.2, "max": 1.5},  # Corrected: aspiration limits for suction pipes
+                "expected_type": "aspiration"  # Corrected: suction pipes should use aspiration type
             }
         ]
         
