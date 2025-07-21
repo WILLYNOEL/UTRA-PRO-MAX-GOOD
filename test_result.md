@@ -463,7 +463,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Expert Solaire CALCULS DYNAMIQUES - Nouvelles Optimisations Majeures"
+    - "ECO PUMP EXPERT API Endpoints"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
