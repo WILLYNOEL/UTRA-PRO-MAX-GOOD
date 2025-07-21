@@ -6034,6 +6034,128 @@ class HydraulicPumpTester:
         
         return overall_success
     
+    def test_eco_pump_expert_endpoints(self):
+        """Test specific ECO PUMP EXPERT endpoints as requested in review"""
+        print("\n🌱 Testing ECO PUMP EXPERT Endpoints...")
+        
+        all_passed = True
+        
+        # Test 1: GET /api/fluids (should return 20 fluids)
+        try:
+            response = requests.get(f"{BACKEND_URL}/fluids", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                fluids = data.get("fluids", [])
+                if len(fluids) == 20:
+                    self.log_test("ECO PUMP - GET /api/fluids", True, f"Found {len(fluids)} fluids as expected")
+                else:
+                    self.log_test("ECO PUMP - GET /api/fluids", False, f"Expected 20 fluids, found {len(fluids)}")
+                    all_passed = False
+            else:
+                self.log_test("ECO PUMP - GET /api/fluids", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("ECO PUMP - GET /api/fluids", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 2: GET /api/pipe-materials (should return pipe materials)
+        try:
+            response = requests.get(f"{BACKEND_URL}/pipe-materials", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                materials = data.get("materials", [])
+                if len(materials) > 0:
+                    self.log_test("ECO PUMP - GET /api/pipe-materials", True, f"Found {len(materials)} pipe materials")
+                else:
+                    self.log_test("ECO PUMP - GET /api/pipe-materials", False, "No pipe materials found")
+                    all_passed = False
+            else:
+                self.log_test("ECO PUMP - GET /api/pipe-materials", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("ECO PUMP - GET /api/pipe-materials", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 3: GET /api/regions/solar (should return solar regions)
+        try:
+            response = requests.get(f"{BACKEND_URL}/regions/solar", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                regions = data.get("regions", [])
+                if len(regions) > 0:
+                    # Check if Dakar is in the regions
+                    region_names = [r.get("id", "") for r in regions]
+                    if "dakar" in region_names:
+                        self.log_test("ECO PUMP - GET /api/regions/solar", True, f"Found {len(regions)} solar regions including Dakar")
+                    else:
+                        self.log_test("ECO PUMP - GET /api/regions/solar", True, f"Found {len(regions)} solar regions (Dakar not found but other regions available)")
+                else:
+                    self.log_test("ECO PUMP - GET /api/regions/solar", False, "No solar regions found")
+                    all_passed = False
+            else:
+                self.log_test("ECO PUMP - GET /api/regions/solar", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("ECO PUMP - GET /api/regions/solar", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 4: POST /api/solar-pumping (Expert Solaire calculations)
+        solar_test_data = {
+            "daily_water_need": 800,
+            "operating_hours": 8,
+            "total_head": 25,
+            "efficiency_pump": 75,
+            "efficiency_motor": 90,
+            "region": "dakar"
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/solar-pumping", json=solar_test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check for required sections in response
+                required_sections = ["results", "economy"]
+                missing_sections = []
+                
+                for section in required_sections:
+                    if section not in result:
+                        missing_sections.append(section)
+                
+                if missing_sections:
+                    self.log_test("ECO PUMP - POST /api/solar-pumping", False, f"Missing sections: {missing_sections}")
+                    all_passed = False
+                else:
+                    # Check if results contain meaningful data
+                    results = result.get("results", {})
+                    economy = result.get("economy", {})
+                    
+                    # Verify results section has key calculations
+                    if "power_required" in results or "panel_configuration" in results or "system_voltage" in results:
+                        results_valid = True
+                    else:
+                        results_valid = False
+                    
+                    # Verify economy section has financial data
+                    if "investment_cost" in economy or "annual_savings" in economy or "payback_period" in economy:
+                        economy_valid = True
+                    else:
+                        economy_valid = False
+                    
+                    if results_valid and economy_valid:
+                        self.log_test("ECO PUMP - POST /api/solar-pumping", True, "Solar pumping calculations working with Results and Economy sections")
+                    else:
+                        self.log_test("ECO PUMP - POST /api/solar-pumping", False, f"Invalid data - Results valid: {results_valid}, Economy valid: {economy_valid}")
+                        all_passed = False
+            else:
+                self.log_test("ECO PUMP - POST /api/solar-pumping", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("ECO PUMP - POST /api/solar-pumping", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
