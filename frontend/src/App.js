@@ -6654,14 +6654,17 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       ⭐ ⌀ Refoulement (DN)
                     </label>
                     <select
-                      value={inputData.discharge_pipe_diameter || 88.9}
+                      value={inputData.discharge_pipe_diameter}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value);
                         const selectedDn = dnSizes.find(size => size.mm === selectedMm);
-                        handleInputChange('discharge_pipe_diameter', selectedMm);
-                        if (selectedDn) {
-                          handleInputChange('discharge_dn', parseInt(selectedDn.dn.replace('DN', '')));
-                        }
+                        
+                        // Mise à jour immédiate synchrone
+                        setInputData(prev => ({
+                          ...prev,
+                          discharge_pipe_diameter: selectedMm,
+                          discharge_dn: selectedDn ? parseInt(selectedDn.dn.replace('DN', '')) : null
+                        }));
                       }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
