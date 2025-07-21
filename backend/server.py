@@ -2695,19 +2695,48 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         current_discharge_dn = get_closest_dn(input_data.discharge_pipe_diameter)
         recommended_discharge_dn = get_closest_dn(optimal_discharge_diameter)
         
+        # Debug pour voir les valeurs exactes utilisées
+        print(f"🔍 DEBUG DIAMÈTRES VITESSE:")
+        print(f"  Aspiration sélectionnée: {input_data.suction_pipe_diameter}mm → DN{current_suction_dn}")
+        print(f"  Aspiration recommandée: {optimal_suction_diameter:.1f}mm → DN{recommended_suction_dn}")
+        print(f"  Refoulement sélectionné: {input_data.discharge_pipe_diameter}mm → DN{current_discharge_dn}")
+        print(f"  Refoulement recommandé: {optimal_discharge_diameter:.1f}mm → DN{recommended_discharge_dn}")
+        print(f"  Vitesse calculée: {npshd_result.velocity:.2f}m/s")
+        
+        # Vérifier si les recommandations sont vraiment nécessaires
+        # (éviter de recommander un changement si le DN sélectionné est déjà approprié)
+        need_suction_change = current_suction_dn < recommended_suction_dn
+        need_discharge_change = current_discharge_dn < recommended_discharge_dn
+        
+        solutions = []
+        if need_suction_change:
+            solutions.append(f"Diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn}")
+        if need_discharge_change:
+            solutions.append(f"Diamètre refoulement: DN{current_discharge_dn} → DN{recommended_discharge_dn}")
+            
+        # Ajouter recommandations générales seulement si changement nécessaire
+        if need_suction_change or need_discharge_change:
+            solutions.extend([
+                "Matériaux anti-érosion (inox, fonte)",
+                "Supports anti-vibratoires", 
+                "Réduction débit si possible"
+            ])
+        else:
+            # Pas de changement de diamètre nécessaire mais vitesse encore élevée
+            solutions.extend([
+                f"Diamètres actuels (DN{current_suction_dn}/DN{current_discharge_dn}) appropriés",
+                "Optimiser tracé hydraulique (courbes 3D)",
+                "Matériaux résistants à l'érosion",
+                "Supports anti-vibratoires renforcés"
+            ])
+        
         expert_recommendations.append({
             "type": "hydraulic",
             "priority": 3,
             "title": "🌊 VITESSE EXCESSIVE",
             "description": f"Vitesse {npshd_result.velocity:.2f}m/s > 3m/s - Risque d'érosion et cavitation",
             "impact": "Usure prématurée, bruit, vibrations, perte de performance",
-            "solutions": [
-                f"Diamètre aspiration: DN{current_suction_dn} → DN{recommended_suction_dn}",
-                f"Diamètre refoulement: DN{current_discharge_dn} → DN{recommended_discharge_dn}",
-                "Matériaux anti-érosion (inox, fonte)",
-                "Supports anti-vibratoires",
-                "Réduction débit si possible"
-            ],
+            "solutions": solutions,
             "urgency": "MOYENNE",
             "cost_impact": "MODÉRÉ"
         })
