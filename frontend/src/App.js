@@ -3877,6 +3877,7 @@ const FormulaDatabase = () => {
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   // Options DN normalisées (diamètres extérieurs réels selon standards)
   const dnOptions = [
+    { value: '', label: "Sélectionnez un diamètre" },
     { value: 26.9, label: "DN20 (26.9mm)" },
     { value: 33.7, label: "DN25 (33.7mm)" },
     { value: 42.4, label: "DN32 (42.4mm)" },
