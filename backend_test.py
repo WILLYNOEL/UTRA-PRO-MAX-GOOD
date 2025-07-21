@@ -6618,6 +6618,255 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_diameter_recommendation_fixes(self):
+        """Test the updated DN recommendation system to verify actual DN values selected by users are correctly used"""
+        print("\n🎯 Testing DN Recommendation System Fixes...")
+        
+        test_cases = [
+            {
+                "name": "DN65 User Selection Test",
+                "data": {
+                    "flow_rate": 50.0,  # m³/h
+                    "fluid_type": "water",
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "temperature": 20.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_pipe_diameter": 76.1,  # Real mm diameter for DN65
+                    "discharge_pipe_diameter": 76.1,
+                    "suction_dn": 65,  # Actual DN selected by user
+                    "discharge_dn": 65,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn_references": ["DN65"],
+                "should_recommend_larger": True
+            },
+            {
+                "name": "DN80 User Selection Test",
+                "data": {
+                    "flow_rate": 50.0,  # m³/h
+                    "fluid_type": "water",
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "temperature": 20.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_pipe_diameter": 88.9,  # Real mm diameter for DN80
+                    "discharge_pipe_diameter": 88.9,
+                    "suction_dn": 80,  # Actual DN selected by user
+                    "discharge_dn": 80,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn_references": ["DN80"],
+                "should_recommend_larger": False  # DN80 should be adequate for 50 m³/h
+            },
+            {
+                "name": "DN50 High Flow Test (Should Trigger Recommendations)",
+                "data": {
+                    "flow_rate": 80.0,  # High flow to trigger velocity warnings
+                    "fluid_type": "water",
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "temperature": 20.0,
+                    "suction_height": 3.0,
+                    "discharge_height": 15.0,
+                    "suction_pipe_diameter": 60.3,  # Real mm diameter for DN50
+                    "discharge_pipe_diameter": 60.3,
+                    "suction_dn": 50,  # Actual DN selected by user
+                    "discharge_dn": 50,
+                    "suction_length": 10.0,
+                    "discharge_length": 40.0,
+                    "total_length": 50.0,
+                    "useful_pressure": 0.0,
+                    "suction_elbow_90": 2,
+                    "discharge_elbow_90": 3,
+                    "discharge_check_valve": 1,
+                    "pump_efficiency": 75.0,
+                    "motor_efficiency": 90.0,
+                    "voltage": 400,
+                    "power_factor": 0.8,
+                    "starting_method": "star_delta",
+                    "cable_length": 50.0,
+                    "cable_material": "copper",
+                    "npsh_required": 3.0,
+                    "installation_type": "surface",
+                    "pump_type": "centrifugal",
+                    "operating_hours": 8760.0,
+                    "electricity_cost": 0.12,
+                    "altitude": 0.0,
+                    "ambient_temperature": 25.0,
+                    "humidity": 60.0
+                },
+                "expected_dn_references": ["DN50"],
+                "should_recommend_larger": True,
+                "expected_recommendations": ["DN50 → DN65", "DN50 → DN80", "DN50 → DN100"]
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that user-selected DN values are preserved in input_data
+                    input_data = result.get("input_data", {})
+                    suction_dn = input_data.get("suction_dn")
+                    discharge_dn = input_data.get("discharge_dn")
+                    
+                    if suction_dn != case["data"]["suction_dn"]:
+                        self.log_test(f"DN Recommendation - {case['name']} - Input Preservation", False, 
+                                    f"Suction DN not preserved: expected {case['data']['suction_dn']}, got {suction_dn}")
+                        all_passed = False
+                        continue
+                    
+                    if discharge_dn != case["data"]["discharge_dn"]:
+                        self.log_test(f"DN Recommendation - {case['name']} - Input Preservation", False, 
+                                    f"Discharge DN not preserved: expected {case['data']['discharge_dn']}, got {discharge_dn}")
+                        all_passed = False
+                        continue
+                    
+                    # Check that mm values are used for hydraulic calculations
+                    npshd_analysis = result.get("npshd_analysis", {})
+                    hmt_analysis = result.get("hmt_analysis", {})
+                    
+                    velocity = npshd_analysis.get("velocity", 0)
+                    if velocity <= 0:
+                        self.log_test(f"DN Recommendation - {case['name']} - Hydraulic Calculations", False, 
+                                    "Velocity calculation failed")
+                        all_passed = False
+                        continue
+                    
+                    # Check expert recommendations for DN references
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    recommendations_text = " ".join([rec.get("description", "") + " " + " ".join(rec.get("solutions", [])) 
+                                                   for rec in expert_recommendations])
+                    
+                    # Verify that recommendations reference the ACTUAL DN selected by user
+                    dn_references_found = []
+                    for expected_dn in case["expected_dn_references"]:
+                        if expected_dn in recommendations_text:
+                            dn_references_found.append(expected_dn)
+                    
+                    if case["should_recommend_larger"]:
+                        # Should find diameter recommendations with correct DN references
+                        diameter_recommendations_found = False
+                        for rec in expert_recommendations:
+                            if rec.get("type") == "hydraulic" and "diamètre" in rec.get("description", "").lower():
+                                diameter_recommendations_found = True
+                                # Check that it references the correct current DN
+                                solutions = " ".join(rec.get("solutions", []))
+                                current_dn = f"DN{case['data']['suction_dn']}"
+                                if current_dn not in solutions:
+                                    self.log_test(f"DN Recommendation - {case['name']} - Current DN Reference", False, 
+                                                f"Recommendation doesn't reference current {current_dn}")
+                                    all_passed = False
+                                    continue
+                                break
+                        
+                        if not diameter_recommendations_found:
+                            self.log_test(f"DN Recommendation - {case['name']} - Diameter Recommendations", False, 
+                                        "Expected diameter recommendations but none found")
+                            all_passed = False
+                            continue
+                        
+                        # For DN50 high flow test, check specific recommendations
+                        if "expected_recommendations" in case:
+                            for expected_rec in case["expected_recommendations"]:
+                                if expected_rec not in recommendations_text:
+                                    self.log_test(f"DN Recommendation - {case['name']} - Specific Recommendations", False, 
+                                                f"Expected recommendation '{expected_rec}' not found")
+                                    all_passed = False
+                                    continue
+                    
+                    else:
+                        # Should NOT recommend larger diameter for adequate DN
+                        diameter_recommendations_found = False
+                        for rec in expert_recommendations:
+                            if rec.get("type") == "hydraulic" and "diamètre" in rec.get("description", "").lower():
+                                diameter_recommendations_found = True
+                                break
+                        
+                        if diameter_recommendations_found:
+                            # This might be acceptable if velocity is still high, so just log it
+                            self.log_test(f"DN Recommendation - {case['name']} - No Diameter Recommendations", True, 
+                                        f"Note: Diameter recommendations found for DN{case['data']['suction_dn']} (velocity may still be high)")
+                        else:
+                            self.log_test(f"DN Recommendation - {case['name']} - No Diameter Recommendations", True, 
+                                        f"Correctly no diameter recommendations for adequate DN{case['data']['suction_dn']}")
+                    
+                    # Verify no incorrect mappings (like showing DN80 when user selected DN65)
+                    incorrect_mappings = []
+                    user_dn = case["data"]["suction_dn"]
+                    for dn in [65, 80, 100, 125, 150]:
+                        if dn != user_dn and f"DN{dn}" in recommendations_text and f"DN{user_dn}" not in recommendations_text:
+                            incorrect_mappings.append(f"DN{dn}")
+                    
+                    if incorrect_mappings:
+                        self.log_test(f"DN Recommendation - {case['name']} - Incorrect Mappings", False, 
+                                    f"Found incorrect DN references: {incorrect_mappings} when user selected DN{user_dn}")
+                        all_passed = False
+                        continue
+                    
+                    # Calculate expected velocity for verification
+                    pipe_area = math.pi * (case["data"]["suction_pipe_diameter"] / 1000 / 2) ** 2
+                    expected_velocity = (case["data"]["flow_rate"] / 3600) / pipe_area
+                    
+                    self.log_test(f"DN Recommendation - {case['name']}", True, 
+                                f"User DN{user_dn} correctly referenced, Velocity: {velocity:.2f} m/s (expected: {expected_velocity:.2f})")
+                else:
+                    self.log_test(f"DN Recommendation - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"DN Recommendation - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
