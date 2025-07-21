@@ -3063,8 +3063,21 @@ def calculate_solar_pumping_system(input_data: SolarPumpingInput) -> SolarPumpin
         pump_names = [pump["id"] for pump in suitable_pumps]
         warnings.append(f"Pompes compatibles trouvées: {', '.join(pump_names)}")
         
-        # Sélection de la pompe avec le meilleur compromis efficacité/coût
-        best_pump = min(suitable_pumps, key=lambda x: x["required_power"] * x["cost_score"])
+        # Sélection de la pompe optimale basée sur l'adéquation au débit requis
+        # Privilégier les pompes dont le débit max est proche du débit requis (éviter le surdimensionnement)
+        def pump_score(pump):
+            # Score basé sur l'efficacité, le coût et l'adéquation au débit
+            efficiency_score = pump["efficiency_score"]
+            cost_per_flow = pump["data"]["price_eur"] / max(pump["data"]["flow_range"])
+            
+            # Pénalité pour surdimensionnement (pompe trop grosse pour le besoin)
+            flow_adequacy = hourly_flow_peak / max(pump["data"]["flow_range"])
+            oversizing_penalty = 1.0 if flow_adequacy > 0.3 else (2.0 - flow_adequacy * 3.0)
+            
+            # Score combiné (plus bas = meilleur)
+            return (cost_per_flow * oversizing_penalty) / efficiency_score
+        
+        best_pump = min(suitable_pumps, key=pump_score)
         selected_pump_id = best_pump["id"]
         selected_pump = best_pump["data"]
         required_electrical_power = best_pump["required_power"]
