@@ -6649,11 +6649,13 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       ⭐ ⌀ Refoulement (DN)
                     </label>
                     <select
-                      value={inputData.discharge_pipe_diameter || 0}
+                      value={inputData.discharge_pipe_diameter}
                       onChange={(e) => {
                         const selectedMm = parseFloat(e.target.value) || 0;
+                        console.log('DEBUG: Selected discharge diameter:', selectedMm);
                         if (selectedMm > 0) {
                           const selectedDn = dnSizes.find(size => size.mm === selectedMm);
+                          console.log('DEBUG: Found DN:', selectedDn);
                           handleInputChange('discharge_pipe_diameter', selectedMm);
                           if (selectedDn) {
                             handleInputChange('discharge_dn', parseInt(selectedDn.dn.replace('DN', '')));
