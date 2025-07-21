@@ -6671,6 +6671,8 @@ class HydraulicPumpTester:
             # EXPERT SOLAIRE HIGH FLOW RATES TESTS (from current review request)
             self.test_expert_solaire_high_flow_rates,  # NEW: Test Expert Solaire with high flow rates (205, 210, 250 m³/j)
             self.test_expert_solaire_pump_selection_logic,  # NEW: Test pump selection logic and fallback mechanism
+            # CRITICAL MATERIAL ANALYSIS FEATURE TEST (from current review request)
+            self.test_critical_material_analysis_feature,  # NEW: Test critical material analysis with specific fluid-material combinations
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
