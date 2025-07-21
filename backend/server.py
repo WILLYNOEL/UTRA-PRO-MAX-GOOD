@@ -137,6 +137,54 @@ def get_closest_dn(diameter_mm):
     
     return closest_dn
 
+def calculate_graduated_diameter_recommendations(current_diameter_mm, flow_rate_m3h, current_velocity, pipe_length_m):
+    """
+    Calcule des recommandations graduées d'augmentation de diamètre avec analyse coût-bénéfice
+    """
+    recommendations = []
+    
+    # Obtenir le DN actuel
+    current_dn = get_dn_from_diameter(current_diameter_mm)
+    
+    # Liste des DN disponibles triés
+    available_dns = sorted(DN_TO_DIAMETER.keys())
+    current_index = available_dns.index(current_dn) if current_dn in available_dns else 0
+    
+    # Calculer les options pour les 3 prochains DN
+    for i in range(1, min(4, len(available_dns) - current_index)):
+        next_dn = available_dns[current_index + i]
+        next_diameter = DN_TO_DIAMETER[next_dn]
+        
+        # Calculer la nouvelle vitesse
+        new_area = math.pi * (next_diameter / 1000 / 2) ** 2
+        new_velocity = (flow_rate_m3h / 3600) / new_area
+        
+        # Calculer la réduction de pertes de charge (approximation)
+        velocity_reduction = ((current_velocity ** 2) - (new_velocity ** 2)) / (current_velocity ** 2) * 100
+        
+        # Estimation du coût relatif (basé sur le diamètre)
+        cost_increase = ((next_diameter / current_diameter_mm) ** 2 - 1) * 100
+        
+        # Efficacité (réduction pertes / augmentation coût)
+        efficiency_ratio = velocity_reduction / cost_increase if cost_increase > 0 else 0
+        
+        # Formatage de la recommandation
+        if efficiency_ratio > 0.5:  # Très efficace
+            priority = "🟢 OPTIMAL"
+        elif efficiency_ratio > 0.2:  # Efficace
+            priority = "🟡 RECOMMANDÉ"
+        else:  # Moins efficace
+            priority = "🔴 COÛTEUX"
+        
+        recommendation = f"{priority} DN{current_dn}→DN{next_dn}: Vitesse {new_velocity:.1f}m/s (-{velocity_reduction:.0f}%), Coût +{cost_increase:.0f}%"
+        recommendations.append(recommendation)
+        
+        # Arrêter si on atteint une vitesse acceptable
+        if new_velocity <= 1.5:
+            break
+    
+    return recommendations
+
 FLUID_PROPERTIES = {
     "water": {
         "name": "Eau",
