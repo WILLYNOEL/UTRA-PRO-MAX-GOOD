@@ -6550,23 +6550,22 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Type d'Aspiration
-                  </label>
-                  <select
-                    value={inputData.suction_type}
-                    onChange={(e) => handleInputChange('suction_type', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="flooded">Aspiration en charge</option>
-                    <option value="suction_lift">Aspiration en dépression</option>
-                  </select>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Type d'Aspiration
+                    </label>
+                    <select
+                      value={inputData.suction_type}
+                      onChange={(e) => handleInputChange('suction_type', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                      <option value="flooded">En charge</option>
+                      <option value="suction_lift">En dépression</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       ⭐ Hauteur Asp. (m)
                     </label>
                     <input
@@ -6574,25 +6573,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       step="0.1"
                       value={inputData.suction_height !== undefined && inputData.suction_height !== null ? inputData.suction_height : ''}
                       onChange={(e) => handleInputChange('suction_height', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
-                      placeholder="Hauteur d'aspiration"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {inputData.suction_type === 'flooded' ? 'En charge (positif)' : 'Dépression (hauteur)'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ⭐ Hauteur Ref. (m)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={inputData.discharge_height !== undefined && inputData.discharge_height !== null ? inputData.discharge_height : ''}
-                      onChange={(e) => handleInputChange('discharge_height', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
-                      placeholder="Hauteur de refoulement"
+                      className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50 text-sm"
+                      placeholder="0"
                     />
                   </div>
                 </div>
