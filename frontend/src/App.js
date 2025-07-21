@@ -6636,9 +6636,8 @@ const ExpertCalculator = ({ fluids, pipeMaterials, fittings }) => {
                       }}
                       className="w-full p-2 border-2 border-yellow-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-yellow-50"
                     >
-                      <option value="">Sélectionnez un diamètre</option>
                       {dnSizes.map(size => (
-                        <option key={size.mm} value={size.mm}>{size.label}</option>
+                        <option key={size.mm || 'empty'} value={size.mm}>{size.label}</option>
                       ))}
                     </select>
                   </div>
