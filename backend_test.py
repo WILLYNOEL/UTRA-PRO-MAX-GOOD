@@ -1545,6 +1545,220 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_npshd_chemical_compatibility_integration(self):
+        """Test NPSHd chemical compatibility analysis integration as requested in review"""
+        print("\n🧪 Testing NPSHd Chemical Compatibility Analysis Integration...")
+        
+        # Test cases from review request
+        test_cases = [
+            {
+                "name": "Compatible Combination - Water + PVC",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 50,
+                    "pipe_diameter": 114.3,
+                    "pipe_length": 50,
+                    "npsh_required": 3.5,
+                    "suction_fittings": [],
+                    "fluid_type": "water",
+                    "pipe_material": "pvc",
+                    "temperature": 20
+                },
+                "expected_compatibility": "compatible"
+            },
+            {
+                "name": "Incompatible Combination - Acid + Cast Iron",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 50,
+                    "pipe_diameter": 114.3,
+                    "pipe_length": 50,
+                    "npsh_required": 3.5,
+                    "suction_fittings": [],
+                    "fluid_type": "acid",
+                    "pipe_material": "cast_iron",
+                    "temperature": 20
+                },
+                "expected_compatibility": "incompatible"
+            },
+            {
+                "name": "Specialized Fluid - Seawater + Steel",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 50,
+                    "pipe_diameter": 114.3,
+                    "pipe_length": 50,
+                    "npsh_required": 3.5,
+                    "suction_fittings": [],
+                    "fluid_type": "seawater",
+                    "pipe_material": "steel",
+                    "temperature": 20
+                },
+                "expected_compatibility": "marine_specific"
+            },
+            {
+                "name": "Food Grade Fluid - Milk + PVC",
+                "data": {
+                    "suction_type": "flooded",
+                    "hasp": 3.0,
+                    "flow_rate": 50,
+                    "pipe_diameter": 114.3,
+                    "pipe_length": 50,
+                    "npsh_required": 3.5,
+                    "suction_fittings": [],
+                    "fluid_type": "milk",
+                    "pipe_material": "pvc",
+                    "temperature": 20
+                },
+                "expected_compatibility": "food_grade"
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/calculate-npshd", json=case["data"], timeout=10)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Check that recommendations section exists and contains chemical compatibility analysis
+                    recommendations = result.get("recommendations", [])
+                    if not recommendations:
+                        self.log_test(f"Chemical Compatibility - {case['name']}", False, "No recommendations found")
+                        all_passed = False
+                        continue
+                    
+                    # Convert recommendations to string for analysis
+                    recommendations_text = " ".join(recommendations).upper()
+                    
+                    # Check for chemical compatibility analysis content
+                    compatibility_indicators = [
+                        "COMPATIBILITÉ CHIMIQUE",
+                        "FLUIDE-MATÉRIAU", 
+                        "MATÉRIAU",
+                        "JOINTS",
+                        "RECOMMANDATIONS DE JOINTS",
+                        "HYDRAULIQUES SPÉCIFIQUES"
+                    ]
+                    
+                    compatibility_found = any(indicator in recommendations_text for indicator in compatibility_indicators)
+                    
+                    if not compatibility_found:
+                        self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                    "No chemical compatibility analysis found in recommendations")
+                        all_passed = False
+                        continue
+                    
+                    # Test specific expectations based on fluid-material combination
+                    if case["expected_compatibility"] == "compatible":
+                        # Water + PVC should show compatibility confirmation
+                        if "COMPATIBLE" not in recommendations_text and "EXCELLENT" not in recommendations_text:
+                            self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                        "Expected compatibility confirmation not found")
+                            all_passed = False
+                            continue
+                    
+                    elif case["expected_compatibility"] == "incompatible":
+                        # Acid + Cast Iron should show incompatibility warnings and alternatives
+                        incompatibility_indicators = [
+                            "INCOMPATIBILITÉ",
+                            "INTERDIT",
+                            "REMPLACEMENT",
+                            "URGENT",
+                            "ALTERNATIVES"
+                        ]
+                        incompatibility_found = any(indicator in recommendations_text for indicator in incompatibility_indicators)
+                        
+                        if not incompatibility_found:
+                            self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                        "Expected incompatibility warnings not found")
+                            all_passed = False
+                            continue
+                    
+                    elif case["expected_compatibility"] == "marine_specific":
+                        # Seawater + Steel should show marine-specific recommendations
+                        marine_indicators = [
+                            "MARIN",
+                            "SALINE",
+                            "CHLORURE",
+                            "INOX",
+                            "DUPLEX"
+                        ]
+                        marine_found = any(indicator in recommendations_text for indicator in marine_indicators)
+                        
+                        if not marine_found:
+                            self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                        "Expected marine-specific recommendations not found")
+                            all_passed = False
+                            continue
+                    
+                    elif case["expected_compatibility"] == "food_grade":
+                        # Milk + PVC should show food safety recommendations
+                        food_indicators = [
+                            "ALIMENTAIRE",
+                            "FDA",
+                            "SANITAIRE",
+                            "HYGIÈNE",
+                            "CIP"
+                        ]
+                        food_found = any(indicator in recommendations_text for indicator in food_indicators)
+                        
+                        if not food_found:
+                            self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                        "Expected food safety recommendations not found")
+                            all_passed = False
+                            continue
+                    
+                    # Check for joint/seal recommendations
+                    joint_indicators = [
+                        "JOINTS",
+                        "EPDM",
+                        "VITON",
+                        "PTFE",
+                        "SILICONE",
+                        "NBR"
+                    ]
+                    joint_found = any(indicator in recommendations_text for indicator in joint_indicators)
+                    
+                    if not joint_found:
+                        self.log_test(f"Joint Recommendations - {case['name']}", False, 
+                                    "No joint/seal recommendations found")
+                        all_passed = False
+                        continue
+                    
+                    # Check for hydraulic advice specific to fluid properties
+                    hydraulic_indicators = [
+                        "HYDRAULIQUE",
+                        "DIAMÈTRE",
+                        "VITESSE",
+                        "NPSH",
+                        "VISCOSITÉ"
+                    ]
+                    hydraulic_found = any(indicator in recommendations_text for indicator in hydraulic_indicators)
+                    
+                    if not hydraulic_found:
+                        self.log_test(f"Hydraulic Advice - {case['name']}", False, 
+                                    "No hydraulic advice specific to fluid found")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Chemical Compatibility - {case['name']}", True, 
+                                f"Compatibility analysis integrated successfully")
+                    
+                else:
+                    self.log_test(f"Chemical Compatibility - {case['name']}", False, 
+                                f"HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Chemical Compatibility - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def test_urgent_performance_endpoint_issue(self):
         """URGENT: Test the specific issue reported by user with /api/calculate-performance endpoint"""
         print("\n🚨 URGENT: Testing Performance Endpoint Issue...")
