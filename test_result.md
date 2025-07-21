@@ -533,7 +533,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Diameter Recommendation Fixes Testing - COMPLETED"
+    - "Add Pression Utile Field to HMT Tab"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
