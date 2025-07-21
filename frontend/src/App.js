@@ -4721,48 +4721,48 @@ const HMTCalculator = ({ fluids, pipeMaterials, fittings }) => {
         <div className="space-y-3">
           {inputData.installation_type === 'surface' && (
             <div className="bg-blue-50 p-3 rounded-lg">
-                  <h4 className="font-medium text-blue-800 mb-2">Aspiration</h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-xs text-blue-700 mb-1">Diamètre</label>
-                      <select
-                        value={inputData.suction_pipe_diameter}
-                        onChange={(e) => handleInputChange('suction_pipe_diameter', parseInt(e.target.value))}
-                        className="w-full p-1 border border-blue-300 rounded text-sm"
-                      >
-                        {dnOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-blue-700 mb-1">Longueur (m)</label>
-                      <input
-                        type="number"
-                        value={inputData.suction_pipe_length}
-                        onChange={(e) => handleInputChange('suction_pipe_length', parseFloat(e.target.value))}
-                        className="w-full p-1 border border-blue-300 rounded text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-blue-700 mb-1">Matériau</label>
-                      <select
-                        value={inputData.suction_pipe_material}
-                        onChange={(e) => handleInputChange('suction_pipe_material', e.target.value)}
-                        className="w-full p-1 border border-blue-300 rounded text-sm"
-                      >
-                        {pipeMaterials.map(material => (
-                          <option key={material.id} value={material.id}>{material.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+              <h4 className="font-medium text-blue-800 mb-2">Aspiration</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs text-blue-700 mb-1">Diamètre</label>
+                  <select
+                    value={inputData.suction_pipe_diameter}
+                    onChange={(e) => handleInputChange('suction_pipe_diameter', parseInt(e.target.value))}
+                    className="w-full p-1 border border-blue-300 rounded text-sm"
+                  >
+                    {dnOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              )}
+                <div>
+                  <label className="block text-xs text-blue-700 mb-1">Longueur (m)</label>
+                  <input
+                    type="number"
+                    value={inputData.suction_pipe_length}
+                    onChange={(e) => handleInputChange('suction_pipe_length', parseFloat(e.target.value))}
+                    className="w-full p-1 border border-blue-300 rounded text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-blue-700 mb-1">Matériau</label>
+                  <select
+                    value={inputData.suction_pipe_material}
+                    onChange={(e) => handleInputChange('suction_pipe_material', e.target.value)}
+                    className="w-full p-1 border border-blue-300 rounded text-sm"
+                  >
+                    {pipeMaterials.map(material => (
+                      <option key={material.id} value={material.id}>{material.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
               
-              <div className="bg-green-50 p-3 rounded-lg">
+          <div className="bg-green-50 p-3 rounded-lg">
                 <h4 className="font-medium text-green-800 mb-2">Refoulement</h4>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
