@@ -102,7 +102,26 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build a comprehensive hydraulic pump calculation application for engineering professionals with real-time calculations, fluid property database, interactive charts, and professional UI"
+user_problem_statement: "Fix Expert Solaire high flow rate issue where 'Résultats' and 'Économie' tabs display empty for daily flow rates exceeding 204 m³/j"
+
+backend:
+  - task: "Expert Solaire High Flow Rate Fix - KeyError Resolution"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Issue identified: Backend returned 500 errors for flow rates like 205-210 m³/j due to invalid pump selection key 'grundfos_sqflex_high' that doesn't exist in SOLAR_PUMP_DATABASE"
+        - working: true
+          agent: "main"
+          comment: "✅ FIXED: Corrected pump selection fallback from non-existent 'grundfos_sqflex_high' to valid 'sp_46a_40_rsi' (most powerful pump in database). Updated required_electrical_power calculation to use max pump power range instead of hardcoded value. Improved critical alert message to be more informative."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Expert Solaire High Flow Rates working perfectly! 100% success rate (5/5 tests passed). All previously failing scenarios (205 m³/j, 210 m³/j) now return HTTP 200 with complete responses. System selects appropriate commercial pumps (Grundfos SQF 0.6-2) instead of generic fallback. Complete response structure with dimensioning, economic analysis, solar irradiation, system efficiency, monthly performance, and critical alerts. Economic analysis shows complete cost calculations (4060-4895€ system costs). Solar panel configurations properly calculated (2-3 panels based on requirements). Backend ready for production."
 
 backend:
   - task: "Expert Solaire High Flow Rates (205, 210, 250 m³/j)"
