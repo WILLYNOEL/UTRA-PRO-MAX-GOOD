@@ -2556,25 +2556,18 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             "🌡️  ISOLATION: Réduire déperditions et protéger personnel"
         ])
         
-    # Ajouter l'analyse critique aux recommandations
+    # Ajouter l'analyse critique aux recommandations (OBLIGATOIRE POUR TOUS LES FLUIDES)
     if critical_analysis:
         material_recommendations.extend([""] + critical_analysis)  # Ligne vide pour séparer
+    else:
+        # Cas de sécurité - ne devrait jamais arriver avec le cas par défaut
+        material_recommendations.extend([
+            "⚠️  ANALYSE CRITIQUE: Évaluation de compatibilité requise",
+            "🧪 RECOMMANDATION: Consulter expert matériaux pour cette application"
+        ])
     
     if improvement_recommendations:
         material_recommendations.extend([""] + improvement_recommendations)
-    
-    # Recommandations générales pour certains fluides (complément)
-    if input_data.fluid_type == "acid":
-        material_recommendations.extend([
-            "📋 RÉGLEMENTATION: Directive ATEX pour milieux corrosifs",
-            "🧯 Sécurité: EPI résistant acides obligatoire"
-        ])
-    elif input_data.temperature > 60:
-        material_recommendations.extend([
-            f"🌡️ Température élevée: {input_data.temperature}°C",
-            "📏 Calcul dilatation: ΔL = α × L × ΔT",
-            "🔧 Supports: Coulissants tous les 20m maximum"
-        ])
     
     # Recommandations électriques d'installation
     electrical_recommendations = []
