@@ -2498,9 +2498,24 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         
         velocity_solutions = [f"Vitesse aspiration excessive: {npshd_result.velocity:.2f} m/s"]
         
-        # Recommander changement de diamètre seulement si nécessaire
+        # NOUVELLES RECOMMANDATIONS GRADUÉES POUR OPTIMISATION VITESSES
         if current_suction_dn_selected < recommended_suction_dn_velocity:
-            velocity_solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_velocity}")
+            # Utiliser les recommandations graduées pour l'optimisation des vitesses
+            velocity_diameter_options = calculate_graduated_diameter_recommendations(
+                input_data.suction_pipe_diameter,
+                input_data.flow_rate,
+                npshd_result.velocity,
+                input_data.suction_length,
+                is_suction_pipe=True
+            )
+            
+            if velocity_diameter_options and len(velocity_diameter_options) > 1:
+                velocity_solutions.append("OPTIMISATION DIAMÈTRE - Options graduées:")
+                # Prendre les 3 meilleures options pour optimisation vitesses
+                velocity_solutions.extend([f"  {option}" for option in velocity_diameter_options[1:4]])
+            else:
+                # Fallback vers ancienne méthode
+                velocity_solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_velocity}")
         else:
             velocity_solutions.append(f"Diamètre aspiration DN{current_suction_dn_selected} adapté - optimiser tracé")
             
