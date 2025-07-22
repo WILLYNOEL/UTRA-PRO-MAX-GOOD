@@ -12468,6 +12468,7 @@ function App() {
   const [drawingData, setDrawingData] = useState({
     installation_type: 'surface_aspiration',
     pump_count: 2,
+    pumps_in_service: 2,
     pump_configuration: 'parallel',
     pump_power: 7.5,
     flow_rate: 50,
@@ -12493,23 +12494,37 @@ function App() {
       control_panel_distance: 5.0
     },
     
-    // Accessoires intelligents (auto-calculés)
+    // Accessoires sélectionnables individuellement
     accessories: {
-      pressure_gauge: true,
+      // Obligatoires selon normes
+      pressure_gauge_suction: true,
+      pressure_gauge_discharge: true,
+      isolation_valve_suction: true,
+      isolation_valve_discharge: true,
       check_valve: true,
-      isolation_valve: true,
-      pressure_sensor: false,
-      control_panel: true,
-      manifold: false,
+      
+      // Optionnels mais recommandés
       flow_meter: false,
       strainer: true,
+      flexible_coupling: true,
       expansion_joint: false,
-      pressure_reducing_valve: false,
+      pressure_sensor: false,
+      level_sensor: false,
+      
+      // Equipements électriques
+      control_panel: true,
+      motor_protection: true,
+      frequency_converter: false,
+      
+      // Spécialisés
+      manifold: false,
       air_release_valve: false,
-      drain_valve: true
+      drain_valve: true,
+      pressure_reducing_valve: false,
+      safety_valve: false
     },
     
-    // Paramètres 3D
+    // Paramètres 3D et affichage
     view_mode: '2d',
     show_dimensions: true,
     show_labels: true,
