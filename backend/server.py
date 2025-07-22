@@ -5623,6 +5623,12 @@ async def perform_audit_analysis(input_data: AuditInput) -> AuditResult:
     
     action_plan = generate_action_plan(recommendations, economic_analysis)
     
+    # ========================================================================================================
+    # 8. RAPPORT D'EXPERTISE EXHAUSTIF
+    # ========================================================================================================
+    
+    expert_installation_report = generate_expert_installation_report(input_data, performance_comparisons)
+    
     return AuditResult(
         audit_id=audit_id,
         audit_date=audit_date,
@@ -5636,7 +5642,8 @@ async def perform_audit_analysis(input_data: AuditInput) -> AuditResult:
         recommendations=recommendations,
         executive_summary=executive_summary,
         economic_analysis=economic_analysis,
-        action_plan=action_plan
+        action_plan=action_plan,
+        expert_installation_report=expert_installation_report
     )
 
 # ========================================================================================================
