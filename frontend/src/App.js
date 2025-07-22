@@ -354,177 +354,492 @@ const AuditSystem = () => {
   };
 
   // ========================================================================================================
-  // ANALYSE EN TEMPS RÉEL DE LA COHÉRENCE DES DONNÉES
+  // ANALYSE EN TEMPS RÉEL COMPLÈTE ET INTELLIGENTE - 3 SECTIONS PROFESSIONNELLES
   // ========================================================================================================
   
   const analyzeDataConsistency = (data) => {
     const analysis = {
-      hydraulic_issues: [],
-      electrical_issues: [],
-      mechanical_issues: [],
-      operational_issues: [],
-      recommendations: [],
-      overall_status: "OK"
+      section1_technical_analysis: {
+        fluid_analysis: [],
+        diameter_analysis: [],
+        electrical_analysis: [],
+        power_calculations: {}
+      },
+      section2_mechanical_diagnosis: {
+        bearing_analysis: [],
+        seal_analysis: [],
+        dry_run_analysis: [],
+        noise_analysis: [],
+        operational_analysis: []
+      },
+      section3_corrective_actions: {
+        immediate_actions: [],
+        preventive_actions: [],
+        equipment_modifications: [],
+        maintenance_schedule: []
+      },
+      overall_status: "OK",
+      critical_count: 0,
+      important_count: 0
     };
 
-    // 1. ANALYSE HYDRAULIQUE EN TEMPS RÉEL
-    if (data.current_flow_rate && data.required_flow_rate) {
-      const flow_deviation = ((data.current_flow_rate - data.required_flow_rate) / data.required_flow_rate) * 100;
+    // ========================================================================================================
+    // SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE
+    // ========================================================================================================
+    
+    // 1.1 ANALYSE FLUIDE ET TEMPÉRATURE
+    if (data.fluid_type) {
+      const fluidProps = {
+        water: { optimal_temp: [5, 80], viscosity_factor: 1.0, corrosion_risk: "faible" },
+        oil: { optimal_temp: [20, 60], viscosity_factor: 4.5, corrosion_risk: "faible" },
+        acid: { optimal_temp: [15, 45], viscosity_factor: 1.2, corrosion_risk: "critique" },
+        glycol: { optimal_temp: [-10, 70], viscosity_factor: 2.8, corrosion_risk: "moyen" },
+        seawater: { optimal_temp: [5, 35], viscosity_factor: 1.1, corrosion_risk: "élevé" },
+        bleach: { optimal_temp: [10, 40], viscosity_factor: 1.0, corrosion_risk: "critique" }
+      };
+
+      const fluid = fluidProps[data.fluid_type] || fluidProps.water;
+      const temp = data.fluid_temperature || 20;
       
-      if (flow_deviation < -15) {
-        analysis.hydraulic_issues.push({
-          type: "DÉBIT INSUFFISANT",
-          severity: "CRITIQUE",
-          description: `Débit actuel ${data.current_flow_rate} m³/h inférieur de ${Math.abs(flow_deviation).toFixed(1)}% au besoin (${data.required_flow_rate} m³/h)`,
-          interpretation: "Process sous-alimenté, risque d'arrêt production",
-          immediate_action: "Vérifier pompe, conduites et vannes"
+      if (temp < fluid.optimal_temp[0] || temp > fluid.optimal_temp[1]) {
+        analysis.section1_technical_analysis.fluid_analysis.push({
+          type: `TEMPÉRATURE ${temp < fluid.optimal_temp[0] ? 'TROP BASSE' : 'EXCESSIVE'}`,
+          severity: temp < fluid.optimal_temp[0] - 10 || temp > fluid.optimal_temp[1] + 15 ? "CRITIQUE" : "IMPORTANT",
+          description: `Fluide ${data.fluid_type} à ${temp}°C - Plage optimale: ${fluid.optimal_temp[0]}°C à ${fluid.optimal_temp[1]}°C`,
+          technical_impact: temp < fluid.optimal_temp[0] ? 
+            `Viscosité élevée (x${(1 + (fluid.optimal_temp[0] - temp) * 0.05).toFixed(1)}), cavitation possible, démarrage difficile` :
+            `Viscosité réduite, vaporisation possible, joints dégradés, rendement diminué`,
+          equipment_affected: ["Pompe", "Joints", "Roulements", "Moteur"],
+          corrective_action: temp < fluid.optimal_temp[0] ? 
+            "Réchauffage fluide, isolation conduites, vérifier démarrage" :
+            "Refroidissement, ventilation forcée, vérifier dilatations"
         });
-        analysis.overall_status = "CRITIQUE";
-      } else if (flow_deviation > 25) {
-        analysis.hydraulic_issues.push({
-          type: "SURDIMENSIONNEMENT",
-          severity: "IMPORTANT",
-          description: `Débit excessif de ${flow_deviation.toFixed(1)}% - Gaspillage énergétique`,
-          interpretation: "Surconsommation électrique inutile",
-          immediate_action: "Installer régulation débit ou reduire vitesse pompe"
+        if (temp < fluid.optimal_temp[0] - 10 || temp > fluid.optimal_temp[1] + 15) {
+          analysis.critical_count++;
+          analysis.overall_status = "CRITIQUE";
+        }
+      }
+
+      // Analyse compatibilité matériau-fluide
+      if (data.suction_material || data.discharge_material) {
+        const materials = [data.suction_material, data.discharge_material].filter(Boolean);
+        materials.forEach((material, index) => {
+          const location = index === 0 ? "aspiration" : "refoulement";
+          
+          if ((data.fluid_type === 'acid' || data.fluid_type === 'bleach') && 
+              (material === 'cast_iron' || material === 'steel')) {
+            analysis.section1_technical_analysis.fluid_analysis.push({
+              type: "INCOMPATIBILITÉ MATÉRIAU-FLUIDE CRITIQUE",
+              severity: "CRITIQUE",
+              description: `${material} en contact avec ${data.fluid_type} sur conduite ${location}`,
+              technical_impact: "Corrosion accélérée, perforation conduites, contamination fluide, fuite majeure",
+              equipment_affected: ["Conduite " + location, "Raccords", "Vannes", "Pompe"],
+              corrective_action: `Remplacement immédiat par INOX 316L ou PVC, inspection complète réseau ${location}`
+            });
+            analysis.critical_count++;
+            analysis.overall_status = "CRITIQUE";
+          }
         });
       }
     }
 
-    if (data.current_hmt && data.required_hmt) {
-      const hmt_deviation = ((data.current_hmt - data.required_hmt) / data.required_hmt) * 100;
-      
-      if (Math.abs(hmt_deviation) > 20) {
-        analysis.hydraulic_issues.push({
-          type: hmt_deviation > 0 ? "HMT EXCESSIVE" : "HMT INSUFFISANTE",
-          severity: hmt_deviation < -20 ? "CRITIQUE" : "IMPORTANT",
-          description: `HMT actuelle ${data.current_hmt}m ${hmt_deviation > 0 ? 'supérieure' : 'inférieure'} de ${Math.abs(hmt_deviation).toFixed(1)}% à la cible (${data.required_hmt}m)`,
-          interpretation: hmt_deviation > 0 ? "Gaspillage énergétique" : "Performance insuffisante",
-          immediate_action: hmt_deviation > 0 ? "Réduire vitesse ou installer régulation" : "Vérifier dimensionnement pompe"
-        });
-      }
-    }
-
-    // Analyse vitesse conduite d'aspiration
+    // 1.2 ANALYSE DIAMÈTRES ET VITESSES (Logique Expert)
     if (data.current_flow_rate && data.suction_pipe_diameter) {
+      const flow_m3s = data.current_flow_rate / 3600;
       const diameter_m = data.suction_pipe_diameter / 1000;
-      const area = Math.PI * (diameter_m/2) ** 2;
-      const velocity = (data.current_flow_rate / 3600) / area;
+      const area = Math.PI * (diameter_m / 2) ** 2;
+      const velocity = flow_m3s / area;
+      
+      // Calcul diamètre optimal selon standards
+      const optimal_velocity_suction = 1.2; // m/s
+      const optimal_diameter = Math.sqrt((4 * flow_m3s) / (Math.PI * optimal_velocity_suction)) * 1000;
+      const closest_dn = [20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400].find(dn => dn >= optimal_diameter) || 400;
       
       if (velocity > 1.5) {
-        analysis.hydraulic_issues.push({
+        analysis.section1_technical_analysis.diameter_analysis.push({
           type: "VITESSE ASPIRATION EXCESSIVE",
-          severity: velocity > 2.0 ? "CRITIQUE" : "IMPORTANT",
-          description: `Vitesse aspiration ${velocity.toFixed(1)} m/s dépasse les normes (< 1.5 m/s)`,
-          interpretation: "Risque de cavitation et usure prématurée pompe",
-          immediate_action: `Augmenter diamètre aspiration à DN${Math.round(data.suction_pipe_diameter * 1.3)}`
+          severity: velocity > 2.5 ? "CRITIQUE" : "IMPORTANT",
+          description: `DN${Math.round(data.suction_pipe_diameter)} - Vitesse: ${velocity.toFixed(2)} m/s (limite: 1.5 m/s)`,
+          technical_impact: `NPSH disponible réduit de ${((velocity/1.5 - 1) * 0.5).toFixed(1)}m, cavitation, bruit, vibrations, usure roue`,
+          diameter_recommendation: {
+            current: `DN${Math.round(data.suction_pipe_diameter)}`,
+            recommended: `DN${closest_dn}`,
+            new_velocity: `${((flow_m3s / (Math.PI * (closest_dn/2000)**2))).toFixed(2)} m/s`,
+            pressure_gain: `+${((velocity**2 - (flow_m3s / (Math.PI * (closest_dn/2000)**2))**2) * 1000 / (2*9.81)).toFixed(1)} mCE`
+          },
+          equipment_affected: ["Conduite aspiration", "Roue pompe", "Roulements"],
+          corrective_action: `Remplacer conduite aspiration par DN${closest_dn}, réduire coudes, vérifier NPSH`
         });
-        if (velocity > 2.0) analysis.overall_status = "CRITIQUE";
+        if (velocity > 2.5) {
+          analysis.critical_count++;
+          analysis.overall_status = "CRITIQUE";
+        }
       }
     }
 
-    // 2. ANALYSE ÉLECTRIQUE EN TEMPS RÉEL
-    if (data.measured_current && data.rated_current) {
-      const current_ratio = data.measured_current / data.rated_current;
+    // Analyse conduite refoulement
+    if (data.current_flow_rate && data.discharge_pipe_diameter) {
+      const flow_m3s = data.current_flow_rate / 3600;
+      const diameter_m = data.discharge_pipe_diameter / 1000;
+      const area = Math.PI * (diameter_m / 2) ** 2;
+      const velocity = flow_m3s / area;
       
-      if (current_ratio > 1.10) {
-        analysis.electrical_issues.push({
-          type: "SURCHARGE ÉLECTRIQUE",
-          severity: current_ratio > 1.20 ? "CRITIQUE" : "IMPORTANT",
-          description: `Intensité mesurée ${data.measured_current}A dépasse de ${((current_ratio-1)*100).toFixed(1)}% la valeur nominale (${data.rated_current}A)`,
-          interpretation: current_ratio > 1.20 ? "RISQUE DESTRUCTION MOTEUR IMMINENT" : "Usure accélérée, surconsommation",
-          immediate_action: current_ratio > 1.20 ? "ARRÊT IMMÉDIAT - Vérifier moteur et charge" : "Contrôle température moteur"
-        });
-        if (current_ratio > 1.20) analysis.overall_status = "CRITIQUE";
-      } else if (current_ratio < 0.7) {
-        analysis.electrical_issues.push({
-          type: "SOUS-CHARGE MOTEUR",
-          severity: "MOYEN",
-          description: `Intensité faible ${data.measured_current}A (${(current_ratio*100).toFixed(0)}% du nominal)`,
-          interpretation: "Moteur surdimensionné, mauvais facteur de puissance",
-          immediate_action: "Vérifier point de fonctionnement pompe"
-        });
-      }
-    }
-
-    // Analyse cohérence puissance hydraulique vs électrique
-    if (data.measured_power && data.current_flow_rate && data.current_hmt) {
-      const hydraulic_power = (data.current_flow_rate * data.current_hmt * 1000 * 9.81) / (3600 * 1000); // kW
-      const efficiency = hydraulic_power > 0 ? (hydraulic_power / data.measured_power) * 100 : 0;
-      
-      if (efficiency < 45) {
-        analysis.electrical_issues.push({
-          type: "RENDEMENT CATASTROPHIQUE",
-          severity: "CRITIQUE",
-          description: `Rendement global ${efficiency.toFixed(1)}% très inférieur aux standards (65%)`,
-          interpretation: "Gaspillage énergétique majeur - Installation défaillante",
-          immediate_action: "Audit énergétique complet - Probable remplacement pompe"
-        });
-        analysis.overall_status = "CRITIQUE";
-      } else if (efficiency < 55) {
-        analysis.electrical_issues.push({
-          type: "RENDEMENT FAIBLE",
-          severity: "IMPORTANT", 
-          description: `Rendement ${efficiency.toFixed(1)}% en dessous des standards`,
-          interpretation: "Optimisation énergétique possible",
-          immediate_action: "Vérifier état pompe et point de fonctionnement"
-        });
-      }
-    }
-
-    // 3. ANALYSE MÉCANIQUE EN TEMPS RÉEL
-    if (data.vibration_level) {
-      if (data.vibration_level > 7.1) {
-        analysis.mechanical_issues.push({
-          type: "VIBRATIONS CRITIQUES",
-          severity: "CRITIQUE",
-          description: `Niveau vibratoire ${data.vibration_level} mm/s dépasse largement ISO 10816 (< 2.8 mm/s)`,
-          interpretation: "DESTRUCTION IMMINENTE roulements et conduites",
-          immediate_action: "ARRÊT IMMÉDIAT - Inspection alignement et roulements"
-        });
-        analysis.overall_status = "CRITIQUE";
-      } else if (data.vibration_level > 4.5) {
-        analysis.mechanical_issues.push({
-          type: "VIBRATIONS ÉLEVÉES",
+      if (velocity > 4.0) {
+        const optimal_velocity_discharge = 3.5; // m/s
+        const optimal_diameter = Math.sqrt((4 * flow_m3s) / (Math.PI * optimal_velocity_discharge)) * 1000;
+        const closest_dn = [20, 25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300].find(dn => dn >= optimal_diameter) || 300;
+        
+        analysis.section1_technical_analysis.diameter_analysis.push({
+          type: "VITESSE REFOULEMENT EXCESSIVE",
           severity: "IMPORTANT",
-          description: `Vibrations ${data.vibration_level} mm/s au-dessus de la normale`,
-          interpretation: "Usure accélérée, maintenance préventive requise",
-          immediate_action: "Contrôle alignement et équilibrage"
+          description: `DN${Math.round(data.discharge_pipe_diameter)} - Vitesse: ${velocity.toFixed(2)} m/s (limite: 4.0 m/s)`,
+          technical_impact: `Pertes charge élevées: +${((velocity/3.5)**2 * 0.5).toFixed(1)} mCE, bruit, érosion, surconsommation`,
+          diameter_recommendation: {
+            current: `DN${Math.round(data.discharge_pipe_diameter)}`,
+            recommended: `DN${closest_dn}`,
+            energy_saving: `${(((velocity/3.5)**2 - 1) * 15).toFixed(0)}% économie énergie`
+          },
+          corrective_action: `Augmenter diamètre refoulement à DN${closest_dn}, optimiser tracé`
         });
+        analysis.important_count++;
       }
     }
 
-    if (data.motor_temperature && data.motor_temperature > 75) {
-      analysis.mechanical_issues.push({
-        type: "SURCHAUFFE MOTEUR",
-        severity: data.motor_temperature > 85 ? "CRITIQUE" : "IMPORTANT",
-        description: `Température moteur ${data.motor_temperature}°C ${data.motor_temperature > 85 ? 'critique' : 'élevée'}`,
-        interpretation: data.motor_temperature > 85 ? "Risque destruction bobinage" : "Réduction durée de vie",
-        immediate_action: data.motor_temperature > 85 ? "ARRÊT - Refroidissement et contrôle" : "Vérifier ventilation et surcharge"
-      });
-      if (data.motor_temperature > 85) analysis.overall_status = "CRITIQUE";
+    // 1.3 ANALYSE ÉLECTRIQUE COMPLÈTE
+    if (data.measured_voltage && data.rated_voltage) {
+      const voltage_deviation = ((data.measured_voltage - data.rated_voltage) / data.rated_voltage) * 100;
+      
+      if (Math.abs(voltage_deviation) > 5) {
+        analysis.section1_technical_analysis.electrical_analysis.push({
+          type: `TENSION ${voltage_deviation > 0 ? 'EXCESSIVE' : 'INSUFFISANTE'}`,
+          severity: Math.abs(voltage_deviation) > 10 ? "CRITIQUE" : "IMPORTANT",
+          description: `Tension mesurée: ${data.measured_voltage}V (nominale: ${data.rated_voltage}V) - Écart: ${voltage_deviation.toFixed(1)}%`,
+          technical_impact: voltage_deviation > 0 ? 
+            `Surchauffe moteur, isolation dégradée, courant +${(voltage_deviation * 0.8).toFixed(1)}%` :
+            `Couple réduit -${(Math.abs(voltage_deviation) * 1.8).toFixed(1)}%, démarrage difficile, rendement diminué`,
+          equipment_affected: ["Moteur", "Bobinage", "Contacteur", "Protection thermique"],
+          corrective_action: voltage_deviation > 0 ? 
+            "Vérifier transformateur, régler prises, contrôler câblage" :
+            "Augmenter section câbles, vérifier connexions, mesurer chute tension"
+        });
+        if (Math.abs(voltage_deviation) > 10) {
+          analysis.critical_count++;
+          analysis.overall_status = "CRITIQUE";
+        }
+      }
     }
 
-    // 4. ANALYSE OPÉRATIONNELLE
-    if (data.operating_hours_daily && data.operating_hours_daily > 20) {
-      analysis.operational_issues.push({
-        type: "FONCTIONNEMENT EXCESSIF",
-        severity: "IMPORTANT",
-        description: `${data.operating_hours_daily}h/jour de fonctionnement`,
-        interpretation: "Usure accélérée, maintenance fréquente requise",
-        immediate_action: "Réviser besoins process et dimensionnement"
+    // Calcul puissance intelligent (mono/triphasé)
+    if (data.measured_current && data.measured_voltage && data.measured_power_factor) {
+      const is_three_phase = data.electrical_configuration === 'three_phase' || data.measured_voltage > 240;
+      const calculated_power = is_three_phase ? 
+        (Math.sqrt(3) * data.measured_voltage * data.measured_current * data.measured_power_factor) / 1000 :
+        (data.measured_voltage * data.measured_current * data.measured_power_factor) / 1000;
+      
+      analysis.section1_technical_analysis.power_calculations = {
+        configuration: is_three_phase ? "Triphasé" : "Monophasé",
+        calculated_power: calculated_power.toFixed(2),
+        measured_power: data.measured_power || "Non renseigné",
+        current_per_phase: data.measured_current,
+        power_factor: data.measured_power_factor,
+        reactive_power: (calculated_power * Math.tan(Math.acos(data.measured_power_factor))).toFixed(2),
+        apparent_power: (calculated_power / data.measured_power_factor).toFixed(2)
+      };
+
+      // Vérification cohérence puissance
+      if (data.measured_power && Math.abs(calculated_power - data.measured_power) > 0.5) {
+        analysis.section1_technical_analysis.electrical_analysis.push({
+          type: "INCOHÉRENCE PUISSANCE MESURÉE",
+          severity: "IMPORTANT",
+          description: `Puissance calculée: ${calculated_power.toFixed(2)}kW vs mesurée: ${data.measured_power}kW`,
+          technical_impact: "Erreur instrumentation ou déséquilibrage phases, mesures non fiables",
+          equipment_affected: ["Instrumentation", "Câblage", "Protection"],
+          corrective_action: "Vérifier pince ampèremétrique, équilibrage phases, calibrage instruments"
+        });
+      }
+
+      // Analyse facteur de puissance
+      if (data.measured_power_factor < 0.85) {
+        analysis.section1_technical_analysis.electrical_analysis.push({
+          type: "FACTEUR DE PUISSANCE FAIBLE",
+          severity: data.measured_power_factor < 0.75 ? "CRITIQUE" : "IMPORTANT",
+          description: `Cos φ = ${data.measured_power_factor} (minimum recommandé: 0.9)`,
+          technical_impact: `Surconsommation réactive: ${(calculated_power * Math.tan(Math.acos(data.measured_power_factor))).toFixed(1)}kVAR, pénalités EDF possibles`,
+          equipment_affected: ["Installation électrique", "Transformateur"],
+          corrective_action: `Installation condensateurs: ${(calculated_power * (Math.tan(Math.acos(data.measured_power_factor)) - Math.tan(Math.acos(0.9)))).toFixed(1)}kVAR`
+        });
+        if (data.measured_power_factor < 0.75) analysis.critical_count++;
+      }
+    }
+
+    // ========================================================================================================
+    // SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET
+    // ========================================================================================================
+    
+    // 2.1 ANALYSE ROULEMENTS
+    if (data.vibration_level) {
+      const iso_limits = { excellent: 0.7, good: 1.8, acceptable: 4.5, unacceptable: 7.1 };
+      let bearing_condition = "Excellent";
+      let bearing_action = "RAS - Surveillance normale";
+      
+      if (data.vibration_level > iso_limits.unacceptable) {
+        bearing_condition = "Destruction imminente";
+        bearing_action = "ARRÊT IMMÉDIAT - Remplacement roulements d'urgence";
+        analysis.critical_count++;
+        analysis.overall_status = "CRITIQUE";
+      } else if (data.vibration_level > iso_limits.acceptable) {
+        bearing_condition = "Très dégradé";
+        bearing_action = "Programmer remplacement dans 48h maximum";
+      } else if (data.vibration_level > iso_limits.good) {
+        bearing_condition = "Dégradé";
+        bearing_action = "Surveillance renforcée, lubrification à vérifier";
+      }
+
+      analysis.section2_mechanical_diagnosis.bearing_analysis.push({
+        type: "ÉTAT ROULEMENTS",
+        severity: data.vibration_level > iso_limits.unacceptable ? "CRITIQUE" : 
+                 data.vibration_level > iso_limits.acceptable ? "IMPORTANT" : "BON",
+        current_level: `${data.vibration_level} mm/s`,
+        condition: bearing_condition,
+        iso_classification: data.vibration_level <= iso_limits.excellent ? "Zone A - Excellent" :
+                           data.vibration_level <= iso_limits.good ? "Zone B - Bon" :
+                           data.vibration_level <= iso_limits.acceptable ? "Zone C - Acceptable" :
+                           data.vibration_level <= iso_limits.unacceptable ? "Zone D - Inacceptable" :
+                           "Hors Zone - Destruction",
+        remaining_life: data.vibration_level <= iso_limits.good ? "> 12 mois" :
+                       data.vibration_level <= iso_limits.acceptable ? "3-6 mois" :
+                       data.vibration_level <= iso_limits.unacceptable ? "< 1 mois" : "< 24h",
+        technical_details: {
+          frequency_analysis: "Surveiller harmoniques 1x, 2x, 3x vitesse rotation",
+          lubrication_check: "Vérifier graissage, température roulements au toucher",
+          alignment_check: "Contrôler alignement pompe-moteur (tolérance ± 0.1mm)"
+        },
+        corrective_action: bearing_action
       });
     }
 
-    // Absence d'équipements de régulation
-    if (!data.has_vfd && (analysis.hydraulic_issues.some(i => i.type.includes("EXCESSIVE") || i.type.includes("SURDIMENSIONNEMENT")))) {
-      analysis.recommendations.push({
-        type: "RÉGULATION MANQUANTE",
-        equipment: "Variateur de fréquence (VFD)",
-        justification: "Nécessaire pour optimiser débit et réduire consommation",
-        savings: "15-30% économies énergie",
-        cost: "800-2500€"
+    // 2.2 ANALYSE ÉTANCHÉITÉ
+    if (data.leakage_present !== undefined) {
+      if (data.leakage_present) {
+        analysis.section2_mechanical_diagnosis.seal_analysis.push({
+          type: "FUITE DÉTECTÉE",
+          severity: "IMPORTANTE",
+          description: "Présence de fuite signalée sur l'installation",
+          technical_impact: "Perte de performance, contamination, usure accélérée garniture",
+          seal_diagnosis: {
+            possible_causes: [
+              "Garniture mécanique usée (faces de frottement)",
+              "Mauvais alignement pompe-moteur",
+              "Vibrations excessives",
+              "Fonctionnement à sec antérieur",
+              "Surpression système"
+            ],
+            inspection_points: [
+              "État faces carbone/céramique garniture",
+              "Ressort garniture (cassure/corrosion)",
+              "Siège garniture sur arbre",
+              "O-ring statique garniture",
+              "Arbre pompe (rayures/usure)"
+            ]
+          },
+          corrective_action: "Démontage garniture, contrôle faces, remplacement si usure > 0.5mm"
+        });
+        analysis.important_count++;
+      }
+    }
+
+    // 2.3 ANALYSE MARCHE À SEC
+    if (data.current_flow_rate && data.current_flow_rate < (data.minimum_flow_rate || 5)) {
+      analysis.section2_mechanical_diagnosis.dry_run_analysis.push({
+        type: "RISQUE MARCHE À SEC",
+        severity: "CRITIQUE",
+        description: `Débit très faible: ${data.current_flow_rate} m³/h (minimum: ${data.minimum_flow_rate || 5} m³/h)`,
+        technical_impact: "Échauffement, cavitation, destruction garniture et roue, grippage",
+        protection_measures: {
+          current: data.has_dry_run_protection ? "Protection existante" : "AUCUNE PROTECTION",
+          recommended: [
+            "Pressostat minimum aspiration (réglage -0.3 bar)",
+            "Débitmètre avec seuil d'alarme",
+            "Protection thermique moteur (réglage 80°C)",
+            "Temporisation démarrage (éviter cycles courts)"
+          ]
+        },
+        immediate_verification: [
+          "Niveau réservoir/puits aspiration",
+          "Amorçage pompe complet",
+          "Vanne aspiration totalement ouverte",
+          "Filtre aspiration non colmaté"
+        ],
+        corrective_action: "Vérifier aspiration, installer protection marche à sec d'urgence"
       });
+      analysis.critical_count++;
+      analysis.overall_status = "CRITIQUE";
+    }
+
+    // 2.4 ANALYSE BRUIT MOTEUR
+    if (data.noise_level) {
+      const noise_limits = { acceptable: 70, concerning: 80, critical: 90 };
+      
+      if (data.noise_level > noise_limits.acceptable) {
+        analysis.section2_mechanical_diagnosis.noise_analysis.push({
+          type: `BRUIT ${data.noise_level > noise_limits.critical ? 'CRITIQUE' : 'EXCESSIF'}`,
+          severity: data.noise_level > noise_limits.critical ? "CRITIQUE" : "IMPORTANT",
+          measured_level: `${data.noise_level} dB(A)`,
+          limit: `${noise_limits.acceptable} dB(A) (limite industrielle)`,
+          noise_source_analysis: {
+            mechanical_sources: [
+              `Roulements dégradés (bruit roulement à billes/cylindres)`,
+              `Déséquilibrage rotor (fréquence = vitesse rotation)`,
+              `Défaut alignement (bruit variable charge)`
+            ],
+            hydraulic_sources: [
+              `Cavitation (bruit grésil/gravier)`,
+              `Débit excessif (sifflements)`,
+              `Turbulences conduites (bruits sourds)`
+            ],
+            electrical_sources: [
+              `Bobinage défaillant (ronflement 50/100Hz)`,
+              `Entrefer variable (magnétostrictive)`,
+              `Mauvaises connexions (grésillements)`
+            ]
+          },
+          diagnostic_method: {
+            frequency_analysis: "Mesure spectrale 10Hz-10kHz pour identifier source",
+            location_mapping: "Mesure directionnelle (moteur vs pompe)",
+            load_correlation: "Mesure à différentes charges"
+          },
+          corrective_action: data.noise_level > noise_limits.critical ? 
+            "ARRÊT - Diagnostic vibratoire complet, EPI obligatoires" :
+            "Isolation acoustique, diagnostic préventif planifié"
+        });
+        
+        if (data.noise_level > noise_limits.critical) {
+          analysis.critical_count++;
+          analysis.overall_status = "CRITIQUE";
+        }
+      }
+    }
+
+    // ========================================================================================================
+    // SECTION 3 : ACTIONS CORRECTIVES DÉTAILLÉES POUR TECHNICIENS
+    // ========================================================================================================
+
+    // 3.1 ACTIONS IMMÉDIATES (0-24h)
+    analysis.section3_corrective_actions.immediate_actions = [
+      {
+        priority: "URGENCE",
+        condition: analysis.critical_count > 0,
+        checklist: [
+          "🔴 SÉCURITÉ : Port EPI obligatoire (casque, gants isolants, chaussures sécurité)",
+          "🔴 ISOLEMENT : Consignation électrique selon NF C18-510 (LOTO)",
+          "🔴 MESURES : Température moteur au contact (< 80°C sinon ARRÊT)",
+          "🔴 VÉRIFICATIONS : Niveau huile, amorçage, vannes, filtres",
+          "🔴 TESTS : Rotation libre à la main (pompe découplée)",
+          "🔴 CONTRÔLES : Serrage connexions électriques, isolement phases",
+          "🔴 DOCUMENTATION : Photos état, relevé mesures, rapport incident"
+        ]
+      }
+    ];
+
+    // 3.2 ACTIONS PRÉVENTIVES (1-7 jours)  
+    analysis.section3_corrective_actions.preventive_actions = [
+      {
+        category: "MÉCANIQUE",
+        tasks: [
+          "Contrôle alignement pompe-moteur (jauge 0.1mm)",
+          "Vérification équilibrage rotor (si vibrations > 2.8 mm/s)",
+          "Graissage roulements selon planning (graisse lithium EP2)",
+          "Contrôle garniture mécanique (jeu axial < 3mm)",
+          "Inspection visuelle accouplements (usure, fissures)"
+        ]
+      },
+      {
+        category: "ÉLECTRIQUE", 
+        tasks: [
+          "Mesure isolement bobinage (> 1MΩ/phase)",
+          "Contrôle équilibrage phases (écart < 5%)",
+          "Vérification protection thermique (réglage/fonctionnement)",
+          "Nettoyage bornier, resserrage connexions (couple spec.)",
+          "Test disjoncteur/contacteur (usure contacts)"
+        ]
+      },
+      {
+        category: "HYDRAULIQUE",
+        tasks: [
+          "Contrôle NPSH disponible > NPSH requis + 1m",
+          "Vérification aspiration (étanchéité, amorçage)",
+          "Nettoyage filtres/crépines (perte charge < 0.5 bar)",
+          "Test vannes (ouverture complète, étanchéité)",
+          "Mesure pressions (aspiration/refoulement/différentielle)"
+        ]
+      }
+    ];
+
+    // 3.3 MODIFICATIONS ÉQUIPEMENTS
+    if (analysis.critical_count > 0 || analysis.important_count > 2) {
+      analysis.section3_corrective_actions.equipment_modifications = [
+        {
+          type: "SURVEILLANCE",
+          equipment: "Système monitoring vibratoire",
+          justification: "Détection précoce défaillances roulements",
+          specification: "Capteurs accéléromètres 3 axes, seuils programmables",
+          installation: "Paliers moteur + pompe, boîtier IP65",
+          cost_estimate: "800-1500€"
+        },
+        {
+          type: "PROTECTION",
+          equipment: "Pressostat aspiration + débitmètre",
+          justification: "Protection marche à sec automatique",
+          specification: "Pressostat -1/+1 bar, débitmètre vortex DN selon conduite",
+          installation: "Aspiration pompe + tableau électrique",
+          cost_estimate: "400-800€"
+        },
+        {
+          type: "AMÉLIORATION",
+          equipment: "Variateur de fréquence",
+          justification: "Régulation débit, protection moteur, économies",
+          specification: "VFD avec protection IP54, filtres CEM",
+          installation: "Armoire électrique ventilée",
+          cost_estimate: "1200-3000€"
+        }
+      ];
+    }
+
+    // 3.4 PLANNING MAINTENANCE  
+    analysis.section3_corrective_actions.maintenance_schedule = [
+      {
+        frequency: "QUOTIDIEN",
+        tasks: ["Relevé température moteur", "Contrôle visuel fuites", "Écoute bruits anormaux"]
+      },
+      {
+        frequency: "HEBDOMADAIRE", 
+        tasks: ["Mesure vibrations points fixes", "Contrôle niveau huile", "Test protections"]
+      },
+      {
+        frequency: "MENSUEL",
+        tasks: ["Nettoyage général", "Contrôle alignement", "Mesures électriques complètes"]
+      },
+      {
+        frequency: "TRIMESTRIEL",
+        tasks: ["Démontage inspection garniture", "Graissage roulements", "Étalonnage instruments"]
+      },
+      {
+        frequency: "ANNUEL",
+        tasks: ["Révision générale pompe", "Test isolement complet", "Remplacement préventif"]
+      }
+    ];
+
+    // Mise à jour statut global
+    if (analysis.critical_count === 0 && analysis.important_count === 0) {
+      analysis.overall_status = "EXCELLENT";
+    } else if (analysis.critical_count === 0 && analysis.important_count <= 2) {
+      analysis.overall_status = "BON";
+    } else if (analysis.critical_count === 0) {
+      analysis.overall_status = "ACCEPTABLE";
+    } else if (analysis.critical_count <= 2) {
+      analysis.overall_status = "DÉGRADÉ";
+    } else {
+      analysis.overall_status = "CRITIQUE";
     }
 
     return analysis;
