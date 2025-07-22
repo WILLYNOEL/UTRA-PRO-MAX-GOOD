@@ -6438,54 +6438,40 @@ const ReservoirCalculator = () => {
             </div>
           </div>
 
-          {/* Paramètres avancés */}
+          {/* Paramètres techniques (valeurs fixes selon type) */}
           <div className="border-t pt-4">
-            <h4 className="font-semibold text-gray-900 mb-3">⚙️ Paramètres Avancés</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ratio kQ
-                </label>
-                <input
-                  type="number"
-                  value={reservoirData.kQ_ratio}
-                  onChange={(e) => handleInputChange('kQ_ratio', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                  step="0.1"
-                  min="0.5"
-                  max="2"
-                />
-                <div className="text-xs text-gray-500 mt-1">Débit nominal/arrêt</div>
+            <h4 className="font-semibold text-gray-900 mb-3">⚙️ Paramètres Techniques (Valeurs Fixes)</h4>
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+              
+              {/* Affichage kQ seulement pour MPC-E/F */}
+              {reservoirData.reservoir_type === 'MPC-E' && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-700">Ratio kQ (Débit nominal/arrêt)</span>
+                  <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    {(reservoirData.kQ_ratio * 100).toFixed(0)}% (0.1)
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Ratio kH (P arrêt/P démarrage)</span>
+                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {(reservoirData.kH_ratio * 100).toFixed(0)}% ({reservoirData.kH_ratio})
+                </span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ratio kH
-                </label>
-                <input
-                  type="number"
-                  value={reservoirData.kH_ratio}
-                  onChange={(e) => handleInputChange('kH_ratio', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                  step="0.05"
-                  min="1.1"
-                  max="2"
-                />
-                <div className="text-xs text-gray-500 mt-1">P arrêt/P démarrage</div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-700">Ratio kr (P pré-charge/P consigne)</span>
+                <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {(reservoirData.kr_ratio * 100).toFixed(0)}% ({reservoirData.kr_ratio})
+                </span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ratio kr
-                </label>
-                <input
-                  type="number"
-                  value={reservoirData.kr_ratio}
-                  onChange={(e) => handleInputChange('kr_ratio', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
-                  step="0.05"
-                  min="0.6"
-                  max="0.95"
-                />
-                <div className="text-xs text-gray-500 mt-1">P pré-charge/P consigne</div>
+              
+              <div className="mt-3 text-xs text-gray-500">
+                {reservoirData.reservoir_type === 'MPC-E' 
+                  ? '⚙️ Valeurs optimisées pour pompes à vitesse variable (MPC-E/F)'
+                  : '⚙️ Valeurs optimisées pour pompes à vitesse fixe (MPC-S)'
+                }
               </div>
             </div>
           </div>
