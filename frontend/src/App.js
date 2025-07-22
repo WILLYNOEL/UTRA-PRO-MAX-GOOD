@@ -862,6 +862,358 @@ const AuditSystem = () => {
   }, [auditData]);
 
   // ========================================================================================================
+  // FONCTION D'EXPORT PDF POUR RAPPORT AUDIT
+  // ========================================================================================================
+  
+  const exportAuditReportToPDF = () => {
+    // Créer le contenu HTML formaté pour le PDF
+    const reportContent = generatePDFContent();
+    
+    // Configuration PDF
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `Rapport_Audit_Pompage_${new Date().toLocaleDateString('fr-FR').replace(/\//g, '-')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        letterRendering: true,
+        allowTaint: true
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        compress: true
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    // Créer un élément temporaire pour le PDF
+    const element = document.createElement('div');
+    element.innerHTML = reportContent;
+    element.style.width = '210mm';
+    element.style.minHeight = '297mm';
+    element.style.padding = '10mm';
+    element.style.fontFamily = 'Arial, sans-serif';
+    element.style.fontSize = '12px';
+    element.style.lineHeight = '1.4';
+    element.style.color = '#333';
+    
+    // Ajouter temporairement à la page
+    document.body.appendChild(element);
+    
+    // Générer le PDF
+    html2pdf().from(element).set(opt).save().then(() => {
+      // Nettoyer l'élément temporaire
+      document.body.removeChild(element);
+    });
+  };
+
+  const generatePDFContent = () => {
+    const currentDate = new Date().toLocaleDateString('fr-FR', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    let content = `
+      <div style="font-family: Arial, sans-serif; max-width: 190mm; margin: 0 auto;">
+        <!-- En-tête du rapport -->
+        <div style="text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: bold;">
+            📋 RAPPORT D'AUDIT TECHNIQUE
+          </h1>
+          <h2 style="color: #4b5563; margin: 10px 0; font-size: 18px;">
+            INSTALLATION DE POMPAGE - ANALYSE EXPERTE
+          </h2>
+          <p style="margin: 10px 0; color: #6b7280; font-size: 14px;">
+            Généré le ${currentDate}
+          </p>
+        </div>
+
+        <!-- Synthèse Exécutive -->
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+          <h3 style="color: #1f2937; margin-top: 0; font-size: 16px; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">
+            🎯 SYNTHÈSE EXÉCUTIVE
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div>
+              <strong>État Installation:</strong> ${realTimeAnalysis?.overall_status || 'Non évalué'}
+            </div>
+            <div>
+              <strong>Problèmes Critiques:</strong> ${realTimeAnalysis?.critical_count || 0}
+            </div>
+            <div>
+              <strong>Problèmes Importants:</strong> ${realTimeAnalysis?.important_count || 0}
+            </div>
+            <div>
+              <strong>Date Inspection:</strong> ${currentDate}
+            </div>
+          </div>
+        </div>`;
+
+    // Section 1 : Analyse Technique
+    if (realTimeAnalysis?.section1_technical_analysis) {
+      content += `
+        <div style="page-break-inside: avoid; margin-bottom: 25px;">
+          <h3 style="color: #2563eb; font-size: 16px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 15px;">
+            📊 SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE
+          </h3>`;
+      
+      // Analyse Fluides
+      if (realTimeAnalysis.section1_technical_analysis.fluid_analysis?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🌡️ ANALYSE FLUIDE & TEMPÉRATURE</h4>`;
+        
+        realTimeAnalysis.section1_technical_analysis.fluid_analysis.forEach(analysis => {
+          const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : 
+                         analysis.severity === 'IMPORTANT' ? '#fff7ed' : '#fefce8';
+          const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : 
+                             analysis.severity === 'IMPORTANT' ? '#f97316' : '#eab308';
+          
+          content += `
+            <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="font-size: 13px;">${analysis.type}</strong>
+                <span style="background-color: ${borderColor}20; color: ${borderColor}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                  ${analysis.severity}
+                </span>
+              </div>
+              <p style="font-size: 12px; margin: 5px 0; color: #4b5563;">${analysis.description}</p>
+              <p style="font-size: 12px; margin: 5px 0; color: #dc2626;"><strong>Impact:</strong> ${analysis.technical_impact}</p>
+              <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
+            </div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Analyse Diamètres
+      if (realTimeAnalysis.section1_technical_analysis.diameter_analysis?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">📏 ANALYSE DIAMÈTRES & VITESSES</h4>`;
+        
+        realTimeAnalysis.section1_technical_analysis.diameter_analysis.forEach(analysis => {
+          const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : '#fff7ed';
+          const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : '#f97316';
+          
+          content += `
+            <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="font-size: 13px;">${analysis.type}</strong>
+                <span style="background-color: ${borderColor}20; color: ${borderColor}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                  ${analysis.severity}
+                </span>
+              </div>
+              <p style="font-size: 12px; margin: 5px 0; color: #4b5563;">${analysis.description}</p>
+              <p style="font-size: 12px; margin: 5px 0; color: #dc2626;"><strong>Impact:</strong> ${analysis.technical_impact}</p>`;
+          
+          if (analysis.diameter_recommendation) {
+            content += `
+              <div style="background-color: #ecfdf5; border: 1px solid #10b981; padding: 8px; border-radius: 4px; margin: 8px 0;">
+                <p style="font-size: 12px; margin: 2px 0; color: #047857;"><strong>Recommandation:</strong> ${analysis.diameter_recommendation.current} → ${analysis.diameter_recommendation.recommended}</p>`;
+            if (analysis.diameter_recommendation.new_velocity) {
+              content += `<p style="font-size: 12px; margin: 2px 0; color: #047857;"><strong>Nouvelle vitesse:</strong> ${analysis.diameter_recommendation.new_velocity}</p>`;
+            }
+            if (analysis.diameter_recommendation.energy_saving) {
+              content += `<p style="font-size: 12px; margin: 2px 0; color: #047857;"><strong>Économie:</strong> ${analysis.diameter_recommendation.energy_saving}</p>`;
+            }
+            content += `</div>`;
+          }
+          
+          content += `
+              <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
+            </div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Calculs de Puissance
+      if (realTimeAnalysis.section1_technical_analysis.power_calculations && 
+          Object.keys(realTimeAnalysis.section1_technical_analysis.power_calculations).length > 0) {
+        const power = realTimeAnalysis.section1_technical_analysis.power_calculations;
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🔢 CALCULS PUISSANCE</h4>
+            <div style="background-color: #faf5ff; border: 1px solid #a855f7; padding: 12px; border-radius: 4px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+                <div><strong>Configuration:</strong> ${power.configuration || 'N/A'}</div>
+                <div><strong>P calculée:</strong> ${power.calculated_power || 'N/A'} kW</div>
+                <div><strong>Courant/phase:</strong> ${power.current_per_phase || 'N/A'} A</div>
+                <div><strong>Cos φ:</strong> ${power.power_factor || 'N/A'}</div>
+                <div><strong>P réactive:</strong> ${power.reactive_power || 'N/A'} kVAR</div>
+                <div><strong>P apparente:</strong> ${power.apparent_power || 'N/A'} kVA</div>
+              </div>
+            </div>
+          </div>`;
+      }
+      
+      content += `</div>`;
+    }
+
+    // Section 2 : Diagnostic Mécanique
+    if (realTimeAnalysis?.section2_mechanical_diagnosis) {
+      content += `
+        <div style="page-break-inside: avoid; margin-bottom: 25px;">
+          <h3 style="color: #ea580c; font-size: 16px; border-bottom: 2px solid #ea580c; padding-bottom: 8px; margin-bottom: 15px;">
+            🔧 SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET
+          </h3>`;
+
+      // Analyse Roulements
+      if (realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">⚙️ ANALYSE ROULEMENTS</h4>`;
+        
+        realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis.forEach(analysis => {
+          const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : 
+                         analysis.severity === 'IMPORTANT' ? '#fff7ed' : '#f0fdf4';
+          const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : 
+                             analysis.severity === 'IMPORTANT' ? '#f97316' : '#22c55e';
+          
+          content += `
+            <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="font-size: 13px;">${analysis.type}</strong>
+                <span style="background-color: ${borderColor}20; color: ${borderColor}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                  ${analysis.severity}
+                </span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 12px;">
+                <div><strong>Niveau:</strong> ${analysis.current_level || 'N/A'}</div>
+                <div><strong>État:</strong> ${analysis.condition || 'N/A'}</div>
+                <div><strong>ISO:</strong> ${analysis.iso_classification || 'N/A'}</div>
+                <div><strong>Vie restante:</strong> ${analysis.remaining_life || 'N/A'}</div>
+              </div>
+              <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
+            </div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Analyse Bruit
+      if (realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🔊 ANALYSE BRUIT MOTEUR</h4>`;
+        
+        realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis.forEach(analysis => {
+          const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : '#fff7ed';
+          const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : '#f97316';
+          
+          content += `
+            <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="font-size: 13px;">${analysis.type}</strong>
+                <span style="background-color: ${borderColor}20; color: ${borderColor}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                  ${analysis.severity}
+                </span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; font-size: 12px;">
+                <div><strong>Niveau mesuré:</strong> ${analysis.measured_level || 'N/A'}</div>
+                <div><strong>Limite:</strong> ${analysis.limit || 'N/A'}</div>
+              </div>
+              <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
+            </div>`;
+        });
+        content += `</div>`;
+      }
+      
+      content += `</div>`;
+    }
+
+    // Section 3 : Actions Correctives
+    if (realTimeAnalysis?.section3_corrective_actions) {
+      content += `
+        <div style="page-break-inside: avoid; margin-bottom: 25px;">
+          <h3 style="color: #16a34a; font-size: 16px; border-bottom: 2px solid #16a34a; padding-bottom: 8px; margin-bottom: 15px;">
+            👷 SECTION 3 : ACTIONS CORRECTIVES TECHNICIENS
+          </h3>`;
+
+      // Actions Immédiates
+      if (realTimeAnalysis.section3_corrective_actions.immediate_actions?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #dc2626; font-size: 14px; margin-bottom: 10px;">🚨 ACTIONS IMMÉDIATES (0-24h)</h4>`;
+        
+        realTimeAnalysis.section3_corrective_actions.immediate_actions.forEach(action => {
+          if (action.condition) {
+            content += `
+              <div style="background-color: #fef2f2; border: 1px solid #ef4444; padding: 12px; border-radius: 4px; margin-bottom: 10px;">
+                <h5 style="margin: 0 0 10px 0; font-size: 13px; color: #dc2626;">Priorité: ${action.priority}</h5>`;
+            
+            action.checklist?.forEach(item => {
+              content += `<div style="font-size: 12px; margin: 5px 0; color: #7f1d1d;">□ ${item}</div>`;
+            });
+            
+            content += `</div>`;
+          }
+        });
+        content += `</div>`;
+      }
+
+      // Actions Préventives
+      if (realTimeAnalysis.section3_corrective_actions.preventive_actions?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #ea580c; font-size: 14px; margin-bottom: 10px;">🔧 ACTIONS PRÉVENTIVES (1-7 jours)</h4>`;
+        
+        realTimeAnalysis.section3_corrective_actions.preventive_actions.forEach(category => {
+          content += `
+            <div style="background-color: #fff7ed; border: 1px solid #f97316; padding: 12px; border-radius: 4px; margin-bottom: 10px;">
+              <h5 style="margin: 0 0 10px 0; font-size: 13px; color: #ea580c;">${category.category}</h5>`;
+          
+          category.tasks?.forEach(task => {
+            content += `<div style="font-size: 12px; margin: 5px 0; color: #9a3412;">□ ${task}</div>`;
+          });
+          
+          content += `</div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Planning Maintenance
+      if (realTimeAnalysis.section3_corrective_actions.maintenance_schedule?.length > 0) {
+        content += `
+          <div style="margin-bottom: 20px;">
+            <h4 style="color: #16a34a; font-size: 14px; margin-bottom: 10px;">📅 PLANNING MAINTENANCE</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">`;
+        
+        realTimeAnalysis.section3_corrective_actions.maintenance_schedule.forEach(schedule => {
+          content += `
+            <div style="background-color: #f0fdf4; border: 1px solid #22c55e; padding: 10px; border-radius: 4px;">
+              <h6 style="margin: 0 0 8px 0; font-size: 12px; color: #15803d; font-weight: bold;">${schedule.frequency}</h6>`;
+          
+          schedule.tasks?.forEach(task => {
+            content += `<div style="font-size: 11px; margin: 3px 0; color: #166534;">• ${task}</div>`;
+          });
+          
+          content += `</div>`;
+        });
+        content += `</div></div>`;
+      }
+      
+      content += `</div>`;
+    }
+
+    // Pied de page
+    content += `
+        <div style="border-top: 2px solid #2563eb; padding-top: 20px; margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px;">
+          <p style="margin: 5px 0;">📋 Rapport généré par ECO PUMP EXPERT</p>
+          <p style="margin: 5px 0;">Date de génération : ${currentDate}</p>
+          <p style="margin: 5px 0;">🔧 Outil d'expertise technique pour installations de pompage</p>
+        </div>
+      </div>
+    `;
+
+    return content;
+  };
+
+  // ========================================================================================================
   // NOUVELLE FONCTION POUR AUDIT INTELLIGENT
   // ========================================================================================================
   const performIntelligentAudit = async () => {
