@@ -13500,6 +13500,442 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText(`Conformité: ISO 14692, NF EN 806, DTU 60.11 | Protection: ${drawingData.specifications.protection_class} | Date: ${new Date().toLocaleDateString('fr-FR')}`, cartX + 10, cartY + cartHeight - 8);
   };
+  // ========================================================================
+  // FONCTIONS DE DESSIN ISO PROFESSIONNELLES - CONFORMITÉ EN-ISO 14692
+  // ========================================================================
+  
+  // Niveau d'eau dans réservoir
+  const drawWaterLevel = (ctx, x, y, width, height) => {
+    // Niveau d'eau (60% du réservoir)
+    ctx.fillStyle = '#2196f3';
+    ctx.fillRect(x, y + height * 0.4, width, height * 0.6);
+    
+    // Ligne de niveau
+    ctx.strokeStyle = '#1976d2';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x, y + height * 0.4);
+    ctx.lineTo(x + width, y + height * 0.4);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Label niveau
+    ctx.fillStyle = '#1976d2';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Niveau', x + width + 5, y + height * 0.4);
+  };
+  
+  // Crépine avancée conforme ISO
+  const drawAdvancedStrainer = (ctx, x, y) => {
+    // Corps de crépine
+    ctx.strokeStyle = '#37474f';
+    ctx.lineWidth = 2;
+    
+    // Grille
+    ctx.beginPath();
+    ctx.rect(x - 15, y - 10, 30, 20);
+    ctx.stroke();
+    
+    // Barreaux de grille
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x - 10 + i * 5, y - 10);
+      ctx.lineTo(x - 10 + i * 5, y + 10);
+      ctx.stroke();
+    }
+    
+    // Flèche d'entrée
+    ctx.strokeStyle = '#1976d2';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 25, y);
+    ctx.lineTo(x - 15, y);
+    ctx.moveTo(x - 20, y - 5);
+    ctx.lineTo(x - 15, y);
+    ctx.lineTo(x - 20, y + 5);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#37474f';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CRÉPINE', x, y + 25);
+  };
+  
+  // Annotations de tuyauterie
+  const drawPipeAnnotation = (ctx, x, y, text, type = 'aspiration') => {
+    const color = type === 'aspiration' ? '#ff9800' : '#4caf50';
+    
+    // Fond annotation
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x - 20, y - 10, 40, 15);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 20, y - 10, 40, 15);
+    
+    // Texte
+    ctx.fillStyle = color;
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x, y - 2);
+  };
+  
+  // Flèche de débit ISO
+  const drawFlowArrow = (ctx, x, y, direction = 'right') => {
+    ctx.strokeStyle = '#1976d2';
+    ctx.fillStyle = '#1976d2';
+    ctx.lineWidth = 2;
+    
+    ctx.beginPath();
+    switch (direction) {
+      case 'right':
+        ctx.moveTo(x - 10, y);
+        ctx.lineTo(x + 10, y);
+        ctx.moveTo(x + 5, y - 5);
+        ctx.lineTo(x + 10, y);
+        ctx.lineTo(x + 5, y + 5);
+        break;
+      case 'up':
+        ctx.moveTo(x, y + 10);
+        ctx.lineTo(x, y - 10);
+        ctx.moveTo(x - 5, y - 5);
+        ctx.lineTo(x, y - 10);
+        ctx.lineTo(x + 5, y - 5);
+        break;
+      case 'down':
+        ctx.moveTo(x, y - 10);
+        ctx.lineTo(x, y + 10);
+        ctx.moveTo(x - 5, y + 5);
+        ctx.lineTo(x, y + 10);
+        ctx.lineTo(x + 5, y + 5);
+        break;
+    }
+    ctx.stroke();
+  };
+  
+  // Manomètre ISO
+  const drawISOPressureGauge = (ctx, x, y, type = 'asp') => {
+    // Cadran
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Aiguille
+    ctx.strokeStyle = '#f44336';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 8, y - 8);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(type.toUpperCase(), x, y + 25);
+    
+    // Raccordement
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 15);
+    ctx.lineTo(x, y + 20);
+    ctx.stroke();
+  };
+  
+  // Pompe ISO avec statut
+  const drawISOPump = (ctx, x, y, label, status = 'service') => {
+    // Corps de pompe - cercle principal
+    ctx.beginPath();
+    ctx.arc(x, y, 30, 0, 2 * Math.PI);
+    ctx.fillStyle = status === 'standby' ? '#fff3e0' : '#e3f2fd';
+    ctx.fill();
+    ctx.strokeStyle = status === 'standby' ? '#ff9800' : '#1976d2';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // Volute (spirale de pompe centrifuge)
+    ctx.beginPath();
+    ctx.strokeStyle = status === 'standby' ? '#ff9800' : '#1976d2';
+    ctx.lineWidth = 2;
+    ctx.arc(x, y, 20, 0, Math.PI * 1.5);
+    ctx.stroke();
+    
+    // Roue (impeller)
+    ctx.beginPath();
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI * 2) / 6;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(angle) * 15, y + Math.sin(angle) * 15);
+    }
+    ctx.stroke();
+    
+    // Flèche de rotation
+    ctx.strokeStyle = status === 'standby' ? '#ff9800' : '#1976d2';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 22, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.moveTo(x + 15, y - 15);
+    ctx.lineTo(x + 10, y - 20);
+    ctx.lineTo(x + 20, y - 10);
+    ctx.stroke();
+    
+    // Label avec statut
+    ctx.fillStyle = status === 'standby' ? '#f57f17' : '#1565c0';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y - 45);
+    ctx.font = '10px Arial';
+    ctx.fillText(status.toUpperCase(), x, y - 32);
+    
+    // Symbole électrique
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.fillText('M', x, y + 5);
+    
+    // Connexions hydrauliques
+    drawPumpConnection(ctx, x - 30, y, 'suction');
+    drawPumpConnection(ctx, x + 30, y, 'discharge');
+  };
+  
+  // Clapet anti-retour ISO
+  const drawISOCheckValve = (ctx, x, y) => {
+    // Corps du clapet
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 15, y - 10);
+    ctx.lineTo(x + 15, y - 10);
+    ctx.lineTo(x + 15, y + 10);
+    ctx.lineTo(x - 15, y + 10);
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Clapet (triangle)
+    ctx.fillStyle = '#4caf50';
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y - 8);
+    ctx.lineTo(x + 8, y);
+    ctx.lineTo(x - 8, y + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Flèche de sens
+    ctx.strokeStyle = '#4caf50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 5, y);
+    ctx.lineTo(x + 5, y);
+    ctx.moveTo(x + 2, y - 3);
+    ctx.lineTo(x + 5, y);
+    ctx.lineTo(x + 2, y + 3);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('NR', x, y + 25);
+  };
+  
+  // Vanne ISO
+  const drawISOValve = (ctx, x, y, type = 'isolement') => {
+    // Corps de vanne
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 12, y - 12);
+    ctx.lineTo(x + 12, y + 12);
+    ctx.moveTo(x + 12, y - 12);
+    ctx.lineTo(x - 12, y + 12);
+    ctx.stroke();
+    
+    // Cercle
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, 2 * Math.PI);
+    ctx.stroke();
+    
+    // Volant de manœuvre
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 15);
+    ctx.lineTo(x, y - 25);
+    ctx.moveTo(x - 5, y - 25);
+    ctx.lineTo(x + 5, y - 25);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(type.substring(0, 3).toUpperCase(), x, y + 30);
+  };
+  
+  // Débitmètre ISO
+  const drawISOFlowMeter = (ctx, x, y) => {
+    // Corps du débitmètre
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(x - 20, y - 10, 40, 20);
+    ctx.stroke();
+    
+    // Afficheur
+    ctx.fillStyle = '#2e7d32';
+    ctx.fillRect(x - 15, y - 5, 30, 10);
+    
+    // Roue à aubes (indicatif)
+    ctx.strokeStyle = '#1976d2';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) {
+      const angle = (i * Math.PI) / 2;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(angle) * 8, y + Math.sin(angle) * 8);
+    }
+    ctx.stroke();
+    
+    // Flèche de débit
+    ctx.strokeStyle = '#4caf50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 25, y);
+    ctx.lineTo(x + 35, y);
+    ctx.moveTo(x + 32, y - 3);
+    ctx.lineTo(x + 35, y);
+    ctx.lineTo(x + 32, y + 3);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('DÉBIT', x, y + 25);
+  };
+  
+  // Coffret électrique ISO
+  const drawISOControlPanel = (ctx, x, y, totalPumps, pumpsInService) => {
+    const width = 80;
+    const height = 100;
+    
+    // Boîtier principal
+    ctx.fillStyle = '#eceff1';
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = '#455a64';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+    
+    // Porte avec charnières
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 10);
+    ctx.lineTo(x + 5, y + 10);
+    ctx.moveTo(x, y + height - 10);
+    ctx.lineTo(x + 5, y + height - 10);
+    ctx.stroke();
+    
+    // Symbole électrique principal
+    ctx.fillStyle = '#1976d2';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡', x + width/2, y + 20);
+    
+    // Voyants LED pour chaque pompe
+    for (let i = 0; i < totalPumps; i++) {
+      const ledX = x + 15 + (i * 20);
+      const ledY = y + 30;
+      const isActive = i < pumpsInService;
+      
+      ctx.beginPath();
+      ctx.arc(ledX, ledY, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = isActive ? '#4caf50' : '#ffeb3b';
+      ctx.fill();
+      ctx.strokeStyle = '#424242';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Label pompe
+      ctx.fillStyle = '#424242';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P${i+1}`, ledX, ledY + 15);
+    }
+    
+    // Boutons de commande
+    ctx.fillStyle = '#f44336';
+    ctx.fillRect(x + 10, y + 50, 15, 10);
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(x + 30, y + 50, 15, 10);
+    ctx.fillStyle = '#2196f3';
+    ctx.fillRect(x + 50, y + 50, 15, 10);
+    
+    // Écran de contrôle
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(x + 10, y + 65, 60, 20);
+    ctx.fillStyle = '#4caf50';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('AUTOMATIQUE', x + 40, y + 72);
+    ctx.fillText(`${pumpsInService}/${totalPumps} ACT`, x + 40, y + 82);
+    
+    // Indice de protection
+    ctx.fillStyle = '#666';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('IP65', x + width/2, y + height - 5);
+    
+    // Label
+    ctx.fillStyle = '#455a64';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('COFFRET', x + width/2, y - 10);
+    ctx.fillText('COMMANDE', x + width/2, y + height + 15);
+  };
+  
+  // Dimensions et cotation
+  const drawDimensions = (ctx, x1, y1, x2, y2) => {
+    ctx.strokeStyle = '#9e9e9e';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    
+    // Ligne de cote horizontale
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 + 50);
+    ctx.lineTo(x2, y1 + 50);
+    ctx.stroke();
+    
+    // Flèches de cote
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1 + 50);
+    ctx.lineTo(x1 + 5, y1 + 45);
+    ctx.lineTo(x1 + 5, y1 + 55);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(x2, y1 + 50);
+    ctx.lineTo(x2 - 5, y1 + 45);
+    ctx.lineTo(x2 - 5, y1 + 55);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Cote
+    ctx.fillStyle = '#424242';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round((x2 - x1) / 10)} m`, (x1 + x2) / 2, y1 + 45);
+  };
 
   // Schéma Surface Aspiration
   const drawSurfaceAspirationScheme = (ctx, canvas) => {
