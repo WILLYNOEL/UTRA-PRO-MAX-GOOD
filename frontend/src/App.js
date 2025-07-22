@@ -6203,19 +6203,19 @@ const ReservoirCalculator = () => {
     let tank_volume = 0;
     let formula_used = '';
     
-    // Calculs selon les formules du document technique
+    // Calculs selon les formules du document technique avec valeurs fixes
     if (reservoir_type === 'MPC-E' || reservoir_type === 'MPC-F') {
-      // Formule Hydro MPC-E et -F
+      // Formule Hydro MPC-E et -F avec kQ = 10%, kH = 20%, kr = 0.7
       const numerator = kQ_ratio * flow_rate * Math.pow(set_pressure + 1, 2) * ((3600 / max_starts_per_hour) - 10);
       const denominator = 3.6 * (kr_ratio * set_pressure + 1) * kH_ratio * set_pressure;
       tank_volume = numerator / denominator;
-      formula_used = 'Hydro MPC-E/F: V₀ = (kQ × Q × (pset + 1)² × (3600/N - 10)) / (3.6 × (kr × pset + 1) × kH × pset)';
+      formula_used = `Hydro MPC-E/F: V₀ = (0.1 × ${flow_rate} × (${set_pressure} + 1)² × (${(3600 / max_starts_per_hour).toFixed(0)} - 10)) / (3.6 × (0.7 × ${set_pressure} + 1) × 0.2 × ${set_pressure})`;
     } else if (reservoir_type === 'MPC-S') {
-      // Formule Hydro MPC-S
+      // Formule Hydro MPC-S avec kH = 25%, kr = 0.9 (pas de kQ)
       const numerator = 1000 * flow_rate * (set_pressure + 1) * (kH_ratio * set_pressure + set_pressure + 1);
       const denominator = 4 * max_starts_per_hour * (kr_ratio * set_pressure + 1) * kH_ratio * set_pressure;
       tank_volume = numerator / denominator;
-      formula_used = 'Hydro MPC-S: V₀ = (1000 × Q × (pset + 1) × (kH × pset + pset + 1)) / (4 × N × (kr × pset + 1) × kH × pset)';
+      formula_used = `Hydro MPC-S: V₀ = (1000 × ${flow_rate} × (${set_pressure} + 1) × (0.25 × ${set_pressure} + ${set_pressure} + 1)) / (4 × ${max_starts_per_hour} × (0.9 × ${set_pressure} + 1) × 0.25 × ${set_pressure})`;
     }
 
     // Calcul pression maximum de service recommandée (selon standards)
