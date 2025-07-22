@@ -16468,11 +16468,8 @@ function App() {
                             <label className="block text-xs font-semibold text-slate-600 mb-1">NIVEAU DYNAMIQUE (m)</label>
                             <input
                               type="number"
-                              value={drawingData.forage_specific.dynamic_level}
-                              onChange={(e) => handleDrawingInputChange('forage_specific', {
-                                ...drawingData.forage_specific,
-                                dynamic_level: parseFloat(e.target.value) || 15
-                              })}
+                              value={drawingData.forage_specific.dynamic_level === '' ? '' : drawingData.forage_specific.dynamic_level}
+                              onChange={(e) => handleNestedNumericInputChange('forage_specific', 'dynamic_level', e.target.value, 15)}
                               className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
                               placeholder="15"
                             />
