@@ -3172,10 +3172,39 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         need_discharge_change = current_discharge_dn_selected < recommended_discharge_dn
         
         solutions = []
+        
+        # NOUVELLES RECOMMANDATIONS GRADUÉES POUR VITESSES ÉLEVÉES
         if need_suction_change:
-            solutions.append(f"Diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn}")
+            # Recommandations graduées pour l'aspiration
+            suction_velocity_options = calculate_graduated_diameter_recommendations(
+                input_data.suction_pipe_diameter,
+                input_data.flow_rate,
+                hmt_result.suction_velocity,
+                input_data.suction_length,
+                is_suction_pipe=True
+            )
+            
+            if suction_velocity_options and len(suction_velocity_options) > 1:
+                solutions.append("ASPIRATION - Options graduées vitesses élevées:")
+                solutions.extend([f"  {option}" for option in suction_velocity_options[1:3]])  # 2 meilleures options
+            else:
+                solutions.append(f"Diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn}")
+        
         if need_discharge_change:
-            solutions.append(f"Diamètre refoulement: DN{current_discharge_dn_selected} → DN{recommended_discharge_dn}")
+            # Recommandations graduées pour le refoulement
+            discharge_velocity_options = calculate_graduated_diameter_recommendations(
+                input_data.discharge_pipe_diameter,
+                input_data.flow_rate,
+                hmt_result.discharge_velocity,
+                input_data.discharge_length,
+                is_suction_pipe=False
+            )
+            
+            if discharge_velocity_options and len(discharge_velocity_options) > 1:
+                solutions.append("REFOULEMENT - Options graduées vitesses élevées:")
+                solutions.extend([f"  {option}" for option in discharge_velocity_options[1:3]])  # 2 meilleures options
+            else:
+                solutions.append(f"Diamètre refoulement: DN{current_discharge_dn_selected} → DN{recommended_discharge_dn}")
             
         # Ajouter recommandations générales seulement si changement nécessaire
         if need_suction_change or need_discharge_change:
