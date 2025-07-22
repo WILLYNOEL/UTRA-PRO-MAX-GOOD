@@ -11761,6 +11761,8 @@ function App() {
         return <AuditSystem />;
       case 'expert':
         return <ExpertCalculator fluids={fluids} pipeMaterials={pipeMaterials} fittings={fittings} />;
+      case 'reservoir':
+        return <ReservoirCalculator />;
       case 'solar':
         return <SolarExpertSystem />;
       case 'history':
