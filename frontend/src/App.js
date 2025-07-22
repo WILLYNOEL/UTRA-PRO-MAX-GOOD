@@ -13217,6 +13217,254 @@ function App() {
     ctx.stroke();
   };
 
+  // AUTRES TYPES D'INSTALLATIONS (versions simplifiées pour l'instant)
+  const drawProfessionalSurfaceCharge = (ctx, canvas) => {
+    // Version simplifiée - utilise la logique de surface aspiration
+    drawProfessionalSurfaceAspiration(ctx, canvas);
+    
+    // Ajouter indication "EN CHARGE"
+    ctx.fillStyle = '#2e7d32';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('INSTALLATION EN CHARGE', 50, 50);
+  };
+
+  const drawProfessionalSubmersible = (ctx, canvas) => {
+    drawProfessionalSurfaceAspiration(ctx, canvas);
+    
+    ctx.fillStyle = '#1565c0';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('POMPE SUBMERSIBLE', 50, 50);
+  };
+
+  const drawProfessionalForage = (ctx, canvas) => {
+    drawProfessionalSubmersible(ctx, canvas);
+    
+    ctx.fillStyle = '#f57f17';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('STATION DE FORAGE', 50, 70);
+  };
+
+  const drawProfessionalSurpresseur = (ctx, canvas) => {
+    drawProfessionalSurfaceAspiration(ctx, canvas);
+    
+    ctx.fillStyle = '#7b1fa2';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('SURPRESSEUR', 50, 50);
+  };
+
+  const drawProfessionalIncendie = (ctx, canvas) => {
+    drawProfessionalSurfaceAspiration(ctx, canvas);
+    
+    ctx.fillStyle = '#d32f2f';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('PROTECTION INCENDIE', 50, 50);
+  };
+
+  // ACCESSOIRES SPÉCIALISÉS
+  
+  // Crépine/Filtre
+  const drawStrainer = (ctx, x, y) => {
+    // Corps
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillRect(x - 15, y - 10, 30, 20);
+    ctx.strokeStyle = '#616161';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 15, y - 10, 30, 20);
+    
+    // Grille
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x - 10 + (i * 7), y - 8);
+      ctx.lineTo(x - 10 + (i * 7), y + 8);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    ctx.fillStyle = '#616161';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CRÉPINE', x, y + 25);
+  };
+
+  // Débitmètre
+  const drawFlowMeter = (ctx, x, y) => {
+    // Corps principal
+    ctx.fillStyle = '#fff9c4';
+    ctx.fillRect(x - 20, y - 15, 40, 30);
+    ctx.strokeStyle = '#f57f17';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 20, y - 15, 40, 30);
+    
+    // Afficheur
+    ctx.fillStyle = '#2e7d32';
+    ctx.fillRect(x - 15, y - 10, 30, 10);
+    
+    // Roue à aubes (indicatif)
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#f57f17';
+    ctx.stroke();
+    
+    ctx.fillStyle = '#f57f17';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('DÉBIT', x, y + 25);
+  };
+
+  // Clapet anti-retour
+  const drawCheckValve = (ctx, x, y) => {
+    // Triangle du clapet
+    ctx.fillStyle = '#424242';
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y - 8);
+    ctx.lineTo(x + 8, y);
+    ctx.lineTo(x - 8, y + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Siège
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 10);
+    ctx.lineTo(x + 8, y + 10);
+    ctx.stroke();
+    
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CAR', x, y + 25);
+  };
+
+  // Coffret de commande professionnel
+  const drawControlPanel = (ctx, x, y, totalPumps, pumpsInService) => {
+    // Corps du coffret
+    const width = 80;
+    const height = 100;
+    
+    ctx.fillStyle = '#eceff1';
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = '#455a64';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, width, height);
+    
+    // Voyants pour chaque pompe
+    for (let i = 0; i < totalPumps; i++) {
+      const ledX = x + 15 + (i * 15);
+      const ledY = y + 20;
+      const isActive = i < pumpsInService;
+      
+      ctx.beginPath();
+      ctx.arc(ledX, ledY, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = isActive ? '#4caf50' : '#ffeb3b';
+      ctx.fill();
+      ctx.strokeStyle = '#424242';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Label pompe
+      ctx.fillStyle = '#424242';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P${i+1}`, ledX, ledY + 15);
+    }
+    
+    // Boutons et commutateurs
+    ctx.fillStyle = '#f44336';
+    ctx.fillRect(x + 15, y + 45, 20, 12);
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(x + 45, y + 45, 20, 12);
+    
+    // Écran de contrôle
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(x + 10, y + 65, 60, 25);
+    ctx.fillStyle = '#4caf50';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('RUNNING', x + 40, y + 75);
+    ctx.fillText(`${pumpsInService}/${totalPumps}`, x + 40, y + 85);
+    
+    // Label
+    ctx.fillStyle = '#455a64';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('COFFRET', x + width/2, y - 10);
+    ctx.fillText('COMMANDE', x + width/2, y + height + 15);
+  };
+
+  // Cartouche technique professionnel
+  const drawTechnicalCartouche = (ctx, canvas) => {
+    const cartX = canvas.width - 350;
+    const cartY = canvas.height - 150;
+    const cartWidth = 330;
+    const cartHeight = 130;
+    
+    // Fond du cartouche
+    ctx.fillStyle = '#fafafa';
+    ctx.fillRect(cartX, cartY, cartWidth, cartHeight);
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cartX, cartY, cartWidth, cartHeight);
+    
+    // En-tête
+    ctx.fillStyle = '#1565c0';
+    ctx.fillRect(cartX, cartY, cartWidth, 25);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('SCHÉMA HYDRAULIQUE TECHNIQUE - ECO-PUMP AFRIK', cartX + cartWidth/2, cartY + 17);
+    
+    // Informations techniques en colonnes
+    const col1X = cartX + 10;
+    const col2X = cartX + 120;
+    const col3X = cartX + 230;
+    const startY = cartY + 40;
+    
+    ctx.fillStyle = '#424242';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    
+    // Colonne 1 - Installation
+    ctx.font = 'bold 10px Arial';
+    ctx.fillText('INSTALLATION:', col1X, startY);
+    ctx.font = '10px Arial';
+    ctx.fillText(drawingData.installation_type.replace('_', ' ').toUpperCase(), col1X, startY + 12);
+    ctx.fillText(`${drawingData.pump_count} pompe(s)`, col1X, startY + 24);
+    ctx.fillText(`${drawingData.pumps_in_service || drawingData.pump_count} en service`, col1X, startY + 36);
+    if ((drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)) > 0) {
+      ctx.fillText(`${drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)} secours`, col1X, startY + 48);
+    }
+    
+    // Colonne 2 - Hydraulique
+    ctx.font = 'bold 10px Arial';
+    ctx.fillText('HYDRAULIQUE:', col2X, startY);
+    ctx.font = '10px Arial';
+    ctx.fillText(`Débit: ${drawingData.flow_rate} m³/h`, col2X, startY + 12);
+    ctx.fillText(`HMT: ${drawingData.total_head} m`, col2X, startY + 24);
+    ctx.fillText(`Puissance: ${drawingData.pump_power.toFixed(1)} kW`, col2X, startY + 36);
+    ctx.fillText(`Pression: ${drawingData.operating_pressure} bar`, col2X, startY + 48);
+    
+    // Colonne 3 - Tuyauteries
+    ctx.font = 'bold 10px Arial';
+    ctx.fillText('TUYAUTERIES:', col3X, startY);
+    ctx.font = '10px Arial';
+    ctx.fillText(`DN Asp: ${drawingData.suction_diameter}mm`, col3X, startY + 12);
+    ctx.fillText(`DN Ref: ${drawingData.discharge_diameter}mm`, col3X, startY + 24);
+    ctx.fillText(`Matériau: ${drawingData.pipe_material.toUpperCase()}`, col3X, startY + 36);
+    ctx.fillText(`Temp: ${drawingData.temperature}°C`, col3X, startY + 48);
+    
+    // Ligne de conformité
+    ctx.fillStyle = '#757575';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Conformité: ISO 14692, NF EN 806, DTU 60.11 | Protection: ${drawingData.specifications.protection_class} | Date: ${new Date().toLocaleDateString('fr-FR')}`, cartX + 10, cartY + cartHeight - 8);
+  };
+
   // Schéma Surface Aspiration
   const drawSurfaceAspirationScheme = (ctx, canvas) => {
     const centerX = canvas.width / 2;
