@@ -14152,7 +14152,7 @@ function App() {
     ctx.lineTo(towerX + towerW + 25, towerBaseY + 5);
     ctx.stroke();
     
-    // Annotation hauteur château (DYNAMIQUE)
+    // Annotation hauteur château (DYNAMIQUE protégée)
     ctx.fillStyle = '#E91E63';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'left';
