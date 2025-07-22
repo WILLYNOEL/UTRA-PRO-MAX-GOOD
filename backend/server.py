@@ -3217,6 +3217,126 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         "annual_cost_savings": potential_savings if overall_efficiency < 65 else 0
     }
     
+    # ========================================================================================================
+    # NOUVELLES RECOMMANDATIONS INTELLIGENTES AVANCÉES POUR EXPERT
+    # ========================================================================================================
+    
+    # 1. ANALYSE DE COMPATIBILITÉ CHIMIQUE EXPERTE
+    compatibility_analysis = analyze_chemical_compatibility(
+        input_data.fluid_type,
+        input_data.suction_pipe_material,
+        input_data.discharge_pipe_material,
+        input_data.temperature
+    )
+    
+    # Intégrer l'analyse de compatibilité dans les recommandations expertes
+    if compatibility_analysis["suction_material_status"] == "incompatible" or compatibility_analysis["discharge_material_status"] == "incompatible":
+        expert_recommendations.append({
+            "type": "critical",
+            "priority": 1,
+            "title": "🧪 INCOMPATIBILITÉ CHIMIQUE CRITIQUE",
+            "description": f"Matériau incompatible avec {compatibility_analysis['fluid_name']} - Risque corrosion/contamination",
+            "impact": "DÉGRADATION MATÉRIAU, CONTAMINATION FLUIDE, PANNES PRÉMATURÉES",
+            "solutions": compatibility_analysis["recommendations"][:5] if compatibility_analysis["recommendations"] else [
+                "Changement matériau urgent requis",
+                "Vérification compatibilité chimique",
+                "Analyse des alternatives matériaux"
+            ],
+            "urgency": "IMMÉDIATE",
+            "cost_impact": "TRÈS ÉLEVÉ"
+        })
+    elif len(compatibility_analysis["recommendations"]) > 0:
+        expert_recommendations.append({
+            "type": "optimization",
+            "priority": 3,
+            "title": "🧪 OPTIMISATION COMPATIBILITÉ CHIMIQUE",
+            "description": f"Recommandations spécialisées pour {compatibility_analysis['fluid_name']}",
+            "impact": "Amélioration fiabilité, conformité réglementaire, durée de vie",
+            "solutions": compatibility_analysis["recommendations"][:5],
+            "urgency": "MODÉRÉE",
+            "cost_impact": "MOYEN"
+        })
+    
+    # Recommandations de joints et étanchéité
+    if compatibility_analysis["seal_recommendations"]:
+        expert_recommendations.append({
+            "type": "technical",
+            "priority": 2,
+            "title": "🔧 OPTIMISATION JOINTS ET ÉTANCHÉITÉ",
+            "description": f"Joints spécialisés pour {compatibility_analysis['fluid_name']}",
+            "impact": "Prévention fuites, conformité sanitaire, maintenance réduite",
+            "solutions": compatibility_analysis["seal_recommendations"][:4],
+            "urgency": "MODÉRÉE",
+            "cost_impact": "FAIBLE"
+        })
+    
+    # 2. RECOMMANDATIONS GRADUÉES DE DIAMÈTRES AVANCÉES
+    
+    # Analyse aspiration si vitesse excessive
+    if npshd_result.velocity > 1.5:
+        suction_diameter_options = calculate_graduated_diameter_recommendations(
+            input_data.suction_pipe_diameter,
+            input_data.flow_rate,
+            npshd_result.velocity,
+            input_data.suction_length,
+            is_suction_pipe=True
+        )
+        
+        if suction_diameter_options and len(suction_diameter_options) > 1:  # Au moins l'en-tête + 1 option
+            expert_recommendations.append({
+                "type": "hydraulic",
+                "priority": 2,
+                "title": "💧 OPTIMISATION DIAMÈTRE ASPIRATION",
+                "description": f"Vitesse aspiration excessive ({npshd_result.velocity:.1f} m/s) - Options graduées disponibles",
+                "impact": "Réduction pertes de charge, amélioration NPSH, prévention cavitation",
+                "solutions": suction_diameter_options[1:5],  # Exclure l'en-tête, max 4 options
+                "urgency": "ÉLEVÉE" if npshd_result.velocity > 2.5 else "MODÉRÉE",
+                "cost_impact": "MOYEN"
+            })
+    
+    # Analyse refoulement si vitesse excessive
+    if hmt_result.discharge_velocity > 2.5:
+        discharge_diameter_options = calculate_graduated_diameter_recommendations(
+            input_data.discharge_pipe_diameter,
+            input_data.flow_rate,
+            hmt_result.discharge_velocity,
+            input_data.discharge_length,
+            is_suction_pipe=False
+        )
+        
+        if discharge_diameter_options and len(discharge_diameter_options) > 1:
+            expert_recommendations.append({
+                "type": "hydraulic",
+                "priority": 3,
+                "title": "🚀 OPTIMISATION DIAMÈTRE REFOULEMENT",
+                "description": f"Vitesse refoulement élevée ({hmt_result.discharge_velocity:.1f} m/s) - Optimisation possible",
+                "impact": "Réduction consommation énergétique, usure moindre, bruit réduit",
+                "solutions": discharge_diameter_options[1:5],
+                "urgency": "MODÉRÉE",
+                "cost_impact": "MOYEN"
+            })
+    
+    # 3. RECOMMANDATIONS ÉNERGÉTIQUES AVANCÉES
+    if annual_energy_cost > 3000 and overall_efficiency < 70:  # Coût élevé + efficacité faible
+        energy_improvement_potential = (75 - overall_efficiency) / overall_efficiency * annual_energy_cost
+        
+        expert_recommendations.append({
+            "type": "energy",
+            "priority": 2,
+            "title": "⚡ OPTIMISATION ÉNERGÉTIQUE MAJEURE",
+            "description": f"Coût énergétique élevé ({annual_energy_cost:.0f}€/an) - Potentiel d'économies important",
+            "impact": f"Économies potentielles: {energy_improvement_potential:.0f}€/an",
+            "solutions": [
+                f"Amélioration rendement global: {overall_efficiency:.0f}% → 75% (+{75-overall_efficiency:.0f}%)",
+                f"Économies annuelles estimées: {energy_improvement_potential:.0f}€",
+                "Retour investissement < 3 ans avec équipements efficaces",
+                "Audit énergétique détaillé recommandé",
+                "Variateur de vitesse si débit variable"
+            ],
+            "urgency": "ÉLEVÉE",
+            "cost_impact": "INVESTISSEMENT RENTABLE"
+        })
+    
     # Courbes de performance étendues
     performance_curves = generate_performance_curves(perf_input)
     
