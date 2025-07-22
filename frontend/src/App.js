@@ -319,16 +319,16 @@ const AuditSystem = () => {
     let score = 100;
     
     // Pénalités basées sur les conditions
-    if (hydraulicAuditData.corrosion_level === 'moderate') score -= 15;
-    if (hydraulicAuditData.corrosion_level === 'severe') score -= 30;
-    if (hydraulicAuditData.alignment_status === 'poor') score -= 20;
-    if (hydraulicAuditData.coupling_condition === 'poor') score -= 15;
-    if (hydraulicAuditData.leakage_present) score -= 10;
-    if (hydraulicAuditData.performance_degradation) score -= 25;
+    if (auditData.corrosion_level === 'moderate') score -= 15;
+    if (auditData.corrosion_level === 'severe') score -= 30;
+    if (auditData.alignment_status === 'poor') score -= 20;
+    if (auditData.coupling_condition === 'poor') score -= 15;
+    if (auditData.leakage_present) score -= 10;
+    if (auditData.performance_degradation) score -= 25;
     
     // Bonus pour bonne maintenance
-    if (hydraulicAuditData.maintenance_frequency === 'monthly') score += 5;
-    if (hydraulicAuditData.maintenance_frequency === 'weekly') score += 10;
+    if (auditData.maintenance_frequency === 'monthly') score += 5;
+    if (auditData.maintenance_frequency === 'weekly') score += 10;
     
     return Math.max(20, Math.min(100, score));
   };
@@ -337,14 +337,14 @@ const AuditSystem = () => {
     let score = 100;
     
     // Pénalités énergétiques
-    if (!energyAuditData.variable_frequency_drive && activeAuditTab === 'energy') score -= 25;
-    if (parseFloat(energyAuditData.power_factor_measured) < 0.9) score -= 15;
-    if (energyAuditData.control_system === 'basic') score -= 20;
-    if (energyAuditData.energy_consumption_increase) score -= 20;
+    if (!auditData.has_vfd && activeAuditTab === 'energy') score -= 25;
+    if (parseFloat(auditData.measured_power_factor) < 0.9) score -= 15;
+    if (!auditData.has_automation) score -= 20;
+    if (auditData.energy_consumption_increase) score -= 20;
     
     // Bonus pour équipements efficaces
-    if (energyAuditData.variable_frequency_drive) score += 15;
-    if (energyAuditData.automation_level === 'advanced') score += 10;
+    if (auditData.has_vfd) score += 15;
+    if (auditData.has_automation) score += 10;
     
     return Math.max(30, Math.min(100, score));
   };
@@ -357,97 +357,181 @@ const AuditSystem = () => {
     return { level: 'Critique', color: 'text-red-600', bgColor: 'bg-red-100' };
   };
 
-  const generateHydraulicFindings = () => [
-    {
-      category: 'Performance Hydraulique',
-      finding: hydraulicAuditData.performance_degradation 
-        ? 'Dégradation des performances détectée par rapport aux spécifications nominales'
-        : 'Performances hydrauliques dans la plage acceptable',
-      severity: hydraulicAuditData.performance_degradation ? 'high' : 'low',
-      impact: hydraulicAuditData.performance_degradation 
-        ? 'Augmentation de la consommation énergétique et réduction de la durée de vie'
-        : 'Impact limité sur l\'efficacité globale'
-    },
-    {
-      category: 'État Mécanique',
-      finding: `Corrosion ${hydraulicAuditData.corrosion_level}, alignement ${hydraulicAuditData.alignment_status}`,
-      severity: hydraulicAuditData.corrosion_level === 'severe' ? 'high' : 'medium',
-      impact: 'Influence directe sur la fiabilité et la maintenance préventive'
-    },
-    {
-      category: 'Maintenance Préventive',
-      finding: `Fréquence actuelle: ${hydraulicAuditData.maintenance_frequency}`,
-      severity: hydraulicAuditData.maintenance_frequency === 'annual' ? 'medium' : 'low',
-      impact: 'Optimisation possible du programme de maintenance'
+  // ========================================================================================================
+  // NOUVELLE FONCTION POUR AUDIT INTELLIGENT
+  // ========================================================================================================
+  const performIntelligentAudit = async () => {
+    setLoadingAnalysis(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/audit-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(auditData)
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        setAuditResults(results);
+      } else {
+        console.error('Erreur lors de l\'audit:', response.statusText);
+        // Fallback vers l'ancienne méthode si le backend n'est pas disponible
+        const fallbackResults = generateFallbackAuditResults();
+        setAuditResults(fallbackResults);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'audit:', error);
+      // Fallback vers l'ancienne méthode
+      const fallbackResults = generateFallbackAuditResults();
+      setAuditResults(fallbackResults);
     }
-  ];
+    setLoadingAnalysis(false);
+  };
 
-  const generateHydraulicRecommendations = () => [
-    {
-      priority: 'Haute',
-      action: 'Remplacement des pièces d\'usure critiques',
-      description: 'Remplacer les joints, roulements et garnitures mécaniques',
-      cost_range: '2 000 - 5 000 FCFA',
-      timeline: '1-2 semaines',
-      benefits: 'Amélioration fiabilité +30%, réduction fuites'
-    },
-    {
-      priority: 'Moyenne',
-      action: 'Optimisation de l\'alignement pompe-moteur',
-      description: 'Contrôle et correction de l\'alignement avec instruments de précision',
-      cost_range: '500 - 1 500 FCFA',
-      timeline: '2-3 jours',
-      benefits: 'Réduction vibrations -40%, augmentation durée de vie +25%'
-    },
-    {
-      priority: 'Basse',
-      action: 'Amélioration du programme de maintenance préventive',
-      description: 'Mise en place d\'un planning de maintenance prédictive',
-      cost_range: '1 000 - 3 000 FCFA',
-      timeline: '1 mois',
-      benefits: 'Réduction pannes imprévues -50%, optimisation coûts'
-    }
-  ];
-
-  const generateEnergyAnalysis = () => ({
-    current_consumption: parseFloat(energyAuditData.energy_monthly_kwh) || 1200,
-    current_cost: parseFloat(energyAuditData.energy_cost_monthly) || 115200,
-    efficiency_current: 75,
-    efficiency_potential: 90,
-    load_profile: 'Variable avec pics en journée',
-    power_quality: parseFloat(energyAuditData.power_factor_measured) || 0.85
-  });
-
-  const generateSavingsPotential = () => ({
-    annual_savings_kwh: 2400,
-    annual_savings_fcfa: 230400,
-    co2_reduction_kg: 1680,
-    payback_months: 18,
-    roi_percentage: 35
-  });
-
-  const generateAuditResults = () => {
+  const generateFallbackAuditResults = () => {
     const hydraulicScore = calculateHydraulicScore();
     const energyScore = calculateEnergyScore();
     
     return {
-      hydraulic_audit: {
-        overall_score: hydraulicScore,
-        performance_rating: getPerformanceRating(hydraulicScore),
-        key_findings: generateHydraulicFindings(),
-        recommendations: generateHydraulicRecommendations(),
-        priority_actions: generatePriorityActions(),
-        cost_estimates: generateCostEstimates()
+      audit_id: 'LOCAL-' + Date.now().toString(36),
+      audit_date: new Date().toLocaleString('fr-FR'),
+      overall_score: Math.round((hydraulicScore + energyScore) / 2),
+      hydraulic_score: hydraulicScore,
+      electrical_score: energyScore,
+      mechanical_score: calculateMechanicalScore(),
+      operational_score: calculateOperationalScore(),
+      performance_comparisons: generateSimpleComparisons(),
+      diagnostics: generateSimpleDiagnostics(),
+      recommendations: generateSimpleRecommendations(),
+      executive_summary: generateSimpleExecutiveSummary(hydraulicScore, energyScore),
+      economic_analysis: generateSimpleEconomicAnalysis(),
+      action_plan: generateSimpleActionPlan()
+    };
+  };
+
+  const calculateMechanicalScore = () => {
+    let score = 100;
+    if (auditData.vibration_level > 4.5) score -= 30;
+    if (auditData.noise_level > 85) score -= 15;
+    if (auditData.corrosion_level === 'severe') score -= 25;
+    return Math.max(20, score);
+  };
+
+  const calculateOperationalScore = () => {
+    let score = 100;
+    if (auditData.performance_degradation) score -= 25;
+    if (auditData.energy_consumption_increase) score -= 20;
+    if (auditData.reported_issues.length > 2) score -= 15;
+    return Math.max(30, score);
+  };
+
+  const generateSimpleComparisons = () => {
+    const comparisons = [];
+    
+    if (auditData.current_flow_rate && auditData.required_flow_rate) {
+      const deviation = ((auditData.current_flow_rate - auditData.required_flow_rate) / auditData.required_flow_rate) * 100;
+      comparisons.push({
+        parameter_name: "Débit",
+        current_value: auditData.current_flow_rate,
+        required_value: auditData.required_flow_rate,
+        original_design_value: auditData.original_design_flow,
+        deviation_from_required: deviation,
+        status: Math.abs(deviation) <= 10 ? "optimal" : (Math.abs(deviation) <= 25 ? "acceptable" : "problematic"),
+        interpretation: `Débit ${deviation > 0 ? 'supérieur' : 'inférieur'} de ${Math.abs(deviation).toFixed(1)}% vs requis`,
+        impact: "Performance process, consommation énergétique"
+      });
+    }
+    
+    return comparisons;
+  };
+
+  const generateSimpleDiagnostics = () => {
+    const diagnostics = [];
+    
+    if (auditData.performance_degradation) {
+      diagnostics.push({
+        category: "hydraulic",
+        issue: "Dégradation des performances détectée",
+        severity: "high",
+        root_cause: "Usure ou encrassement des composants",
+        symptoms: ["Débit réduit", "Pression insuffisante"],
+        consequences: ["Productivité réduite", "Consommation excessive"],
+        urgency: "short_term"
+      });
+    }
+    
+    return diagnostics;
+  };
+
+  const generateSimpleRecommendations = () => {
+    const recommendations = [];
+    
+    if (auditData.performance_degradation) {
+      recommendations.push({
+        priority: "high",
+        category: "maintenance",
+        action: "Maintenance corrective immédiate",
+        description: "Nettoyage et remplacement des pièces d'usure",
+        technical_details: ["Inspection complète", "Nettoyage hydraulique", "Remplacement joints"],
+        cost_estimate_min: 5000,
+        cost_estimate_max: 15000,
+        timeline: "1-2 semaines",
+        expected_benefits: ["Restauration performances", "Réduction consommation"],
+        roi_months: 12,
+        risk_if_not_done: "Dégradation continue, pannes majeures"
+      });
+    }
+    
+    return recommendations;
+  };
+
+  const generateSimpleExecutiveSummary = (hydraulicScore, energyScore) => {
+    const overallScore = Math.round((hydraulicScore + energyScore) / 2);
+    return {
+      overall_status: overallScore >= 75 ? "Bon" : (overallScore >= 60 ? "Acceptable" : "Problématique"),
+      overall_score: overallScore,
+      critical_issues_count: auditData.performance_degradation ? 1 : 0,
+      high_issues_count: auditData.energy_consumption_increase ? 1 : 0,
+      total_recommendations: 3,
+      immediate_actions_required: auditData.performance_degradation || auditData.energy_consumption_increase,
+      key_findings: ["Performance system", "État équipement", "Efficacité énergétique"]
+    };
+  };
+
+  const generateSimpleEconomicAnalysis = () => {
+    const annualHours = (auditData.operating_hours_daily || 8) * (auditData.operating_days_yearly || 300);
+    const annualCost = (auditData.rated_power || 15) * annualHours * auditData.electricity_cost_per_kwh;
+    
+    return {
+      current_annual_energy_cost: annualCost,
+      total_investment_required: 25000,
+      estimated_annual_savings: annualCost * 0.2,
+      payback_period_years: 2.5,
+      roi_5_years: 150,
+      co2_reduction_tons_year: 5
+    };
+  };
+
+  const generateSimpleActionPlan = () => {
+    return {
+      phase_1_immediate: {
+        timeline: "0-3 mois",
+        actions: ["Maintenance corrective", "Inspection complète"],
+        investment: 10000
       },
-      energy_audit: {
-        overall_score: energyScore,
-        efficiency_rating: getPerformanceRating(energyScore),
-        energy_analysis: generateEnergyAnalysis(),
-        savings_potential: generateSavingsPotential(),
-        improvement_measures: generateImprovementMeasures(),
-        payback_analysis: generatePaybackAnalysis()
+      phase_2_short_term: {
+        timeline: "3-12 mois", 
+        actions: ["Optimisation énergétique", "Amélioration contrôle"],
+        investment: 15000
       },
-      combined_analysis: {
+      total_program: {
+        duration_months: 12,
+        total_investment: 25000,
+        expected_savings: 12000
+      }
+    };
+  };
         total_score: Math.round((hydraulicScore + energyScore) / 2),
         investment_priority: determineInvestmentPriority(),
         implementation_roadmap: generateImplementationRoadmap()
