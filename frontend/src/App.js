@@ -16339,8 +16339,8 @@ function App() {
                         <label className="block text-xs font-semibold text-slate-600 mb-1">DÉBIT (m³/h)</label>
                         <input
                           type="number"
-                          value={drawingData.flow_rate}
-                          onChange={(e) => handleDrawingInputChange('flow_rate', parseFloat(e.target.value) || 0)}
+                          value={drawingData.flow_rate === '' ? '' : drawingData.flow_rate}
+                          onChange={(e) => handleNumericInputChange('flow_rate', e.target.value, 0)}
                           className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
                         />
                       </div>
