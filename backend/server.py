@@ -1091,6 +1091,144 @@ class PumpHistoryCreate(BaseModel):
     project_name: str
     calculation_result: CalculationResult
 
+# ========================================================================================================
+# AUDIT SYSTEM - CLASSES ET MODÈLES POUR AUDIT TERRAIN EXPERT
+# ========================================================================================================
+
+class AuditInput(BaseModel):
+    """Input pour audit terrain professionnel - Données comparatives expert"""
+    
+    # Installation et contexte
+    installation_age: Optional[int] = None
+    installation_type: str = "surface"
+    fluid_type: str = "water"
+    fluid_temperature: float = 20.0
+    
+    # Matériaux et diamètres CRITIQUES
+    suction_material: str = "pvc"
+    discharge_material: str = "pvc"
+    suction_pipe_diameter: float = 114.3  # DN100
+    discharge_pipe_diameter: float = 88.9  # DN80
+    
+    # PERFORMANCES HYDRAULIQUES - Comparaison ACTUEL vs REQUIS vs ORIGINAL
+    current_flow_rate: Optional[float] = None      # Débit mesuré actuellement (m³/h)
+    required_flow_rate: Optional[float] = None     # Débit requis process (m³/h)
+    original_design_flow: Optional[float] = None   # Débit conception (m³/h)
+    
+    current_hmt: Optional[float] = None            # HMT mesurée actuellement (m)
+    required_hmt: Optional[float] = None           # HMT requise process (m)
+    original_design_hmt: Optional[float] = None    # HMT conception (m)
+    
+    # Pressions mesures TERRAIN
+    suction_pressure: Optional[float] = None       # Pression aspiration (bar)
+    discharge_pressure: Optional[float] = None     # Pression refoulement (bar)
+    
+    # PERFORMANCES ÉLECTRIQUES - Comparaison MESURES vs PLAQUE
+    measured_current: Optional[float] = None       # Intensité mesurée (A)
+    rated_current: Optional[float] = None          # Intensité plaque (A)
+    measured_power: Optional[float] = None         # Puissance mesurée (kW)
+    rated_power: Optional[float] = None            # Puissance plaque (kW)
+    measured_voltage: Optional[float] = None       # Tension mesurée (V)
+    rated_voltage: float = 400.0                   # Tension nominale (V)
+    measured_power_factor: Optional[float] = None  # Cos φ mesuré
+    
+    # ÉTAT MÉCANIQUE - Observations terrain
+    vibration_level: Optional[float] = None        # Vibrations (mm/s)
+    noise_level: Optional[float] = None            # Bruit (dB(A))
+    motor_temperature: Optional[float] = None      # Température moteur (°C)
+    bearing_temperature: Optional[float] = None    # Température paliers (°C)
+    
+    # États visuels
+    leakage_present: bool = False
+    corrosion_level: str = "none"  # none, light, moderate, severe
+    alignment_status: str = "good"  # excellent, good, fair, poor
+    coupling_condition: str = "good"  # excellent, good, fair, poor
+    foundation_status: str = "good"  # excellent, good, fair, poor
+    
+    # EXPLOITATION
+    operating_hours_daily: Optional[float] = None
+    operating_days_yearly: Optional[float] = None
+    last_maintenance: Optional[str] = None
+    maintenance_frequency: str = "monthly"
+    
+    # Problématiques
+    reported_issues: List[str] = []
+    performance_degradation: bool = False
+    energy_consumption_increase: bool = False
+    
+    # CONTEXTE ÉNERGÉTIQUE
+    electricity_cost_per_kwh: float = 0.12
+    load_factor: float = 0.75
+    has_vfd: bool = False
+    has_soft_starter: bool = False
+    has_automation: bool = False
+
+class AuditComparisonAnalysis(BaseModel):
+    """Analyse comparative des performances"""
+    parameter_name: str
+    current_value: Optional[float]
+    required_value: Optional[float] 
+    original_design_value: Optional[float]
+    deviation_from_required: Optional[float]  # % d'écart vs requis
+    deviation_from_design: Optional[float]    # % d'écart vs conception
+    status: str  # "optimal", "acceptable", "problematic", "critical"
+    interpretation: str
+    impact: str
+
+class AuditDiagnostic(BaseModel):
+    """Diagnostic détaillé d'un aspect"""
+    category: str  # "hydraulic", "electrical", "mechanical", "operational"
+    issue: str
+    severity: str  # "critical", "high", "medium", "low"
+    root_cause: str
+    symptoms: List[str]
+    consequences: List[str]
+    urgency: str  # "immediate", "short_term", "medium_term", "long_term"
+
+class AuditRecommendation(BaseModel):
+    """Recommandation d'amélioration détaillée"""
+    priority: str  # "critical", "high", "medium", "low"
+    category: str  # "safety", "efficiency", "reliability", "maintenance"
+    action: str
+    description: str
+    technical_details: List[str]
+    cost_estimate_min: float
+    cost_estimate_max: float
+    timeline: str
+    expected_benefits: List[str]
+    roi_months: Optional[int]
+    risk_if_not_done: str
+
+class AuditResult(BaseModel):
+    """Résultat complet d'audit expert"""
+    audit_id: str
+    audit_date: str
+    
+    # Scores globaux
+    overall_score: int  # /100
+    hydraulic_score: int  # /100
+    electrical_score: int  # /100
+    mechanical_score: int  # /100
+    operational_score: int  # /100
+    
+    # Analyses comparatives détaillées
+    performance_comparisons: List[AuditComparisonAnalysis]
+    
+    # Diagnostics par catégorie
+    diagnostics: List[AuditDiagnostic]
+    
+    # Recommandations priorisées
+    recommendations: List[AuditRecommendation]
+    
+    # Synthèse executive
+    executive_summary: Dict[str, Any]
+    
+    # Analyse économique
+    economic_analysis: Dict[str, Any]
+    
+    # Plan d'action prioritaire
+    action_plan: Dict[str, Any]
+
 # ============================================================================
 # ENHANCED HYDRAULIC CALCULATION FUNCTIONS
 # ============================================================================
