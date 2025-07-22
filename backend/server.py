@@ -3485,10 +3485,10 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     }
     
     # ========================================================================================================
-    # NOUVELLES RECOMMANDATIONS INTELLIGENTES AVANCÉES POUR EXPERT
+    # NOUVELLES RECOMMANDATIONS INTELLIGENTES ORGANISÉES POUR EXPERT
     # ========================================================================================================
     
-    # 1. ANALYSE DE COMPATIBILITÉ CHIMIQUE EXPERTE
+    # Analyse de compatibilité chimique pour l'organisation intelligente
     compatibility_analysis = analyze_chemical_compatibility(
         input_data.fluid_type,
         input_data.suction_material,
@@ -3496,10 +3496,16 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
         input_data.temperature
     )
     
-    # Organiser intelligemment les recommandations expertes
+    # Remplacer toutes les recommandations existantes par une organisation intelligente
     expert_recommendations = organize_expert_recommendations_intelligently(
-        expert_recommendations, npshd_result, hmt_result, perf_result, 
-        compatibility_analysis, overall_efficiency, annual_energy_cost, input_data
+        expert_recommendations,  # Recommandations existantes
+        npshd_result,
+        hmt_result, 
+        perf_result,
+        compatibility_analysis,
+        overall_efficiency,
+        annual_energy_cost,
+        input_data
     )
     
     # Courbes de performance étendues
