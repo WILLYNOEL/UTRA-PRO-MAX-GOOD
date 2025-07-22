@@ -1517,23 +1517,8 @@ const AuditSystem = () => {
               )}
             </div>
           )}
-                          'bg-green-200 text-green-800'
-                        }`}>
-                          {rec.priority}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700 mb-2">{rec.description}</p>
-                      <div className="grid grid-cols-3 gap-4 text-xs">
-                        <div><strong>Coût:</strong> {rec.cost_range}</div>
-                        <div><strong>Délai:</strong> {rec.timeline}</div>
-                        <div><strong>Bénéfices:</strong> {rec.benefits}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Analyse énergétique */}
+          {activeAuditTab === 'energy' && (
               <div className="bg-green-50 rounded-lg p-6">
                 <h4 className="font-bold text-green-900 mb-4">⚡ Potentiel d'Économies Énergétiques</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
