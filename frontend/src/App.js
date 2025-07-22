@@ -1099,8 +1099,8 @@ const AuditSystem = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Heures pleines (FCFA/kWh)</label>
                     <input
                       type="number"
-                      value={energyAuditData.peak_hours_tariff}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, peak_hours_tariff: e.target.value}))}
+                      value={auditData.peak_hours_tariff}
+                      onChange={(e) => handleAuditInputChange('peak_hours_tariff', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                       placeholder="150"
                     />
