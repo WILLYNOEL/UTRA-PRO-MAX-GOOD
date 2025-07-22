@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import html2pdf from 'html2pdf.js';
 import Chart from 'chart.js/auto';
 import './App.css';
 
