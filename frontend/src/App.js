@@ -16505,8 +16505,8 @@ function App() {
                             <label className="block text-xs font-semibold text-slate-600 mb-1">DN REFOULEMENT (mm)</label>
                             <input
                               type="number"
-                              value={drawingData.discharge_diameter}
-                              onChange={(e) => handleDrawingInputChange('discharge_diameter', parseInt(e.target.value) || 80)}
+                              value={drawingData.discharge_diameter === '' ? '' : drawingData.discharge_diameter}
+                              onChange={(e) => handleNumericInputChange('discharge_diameter', e.target.value, 80)}
                               className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
                               placeholder="80"
                             />
