@@ -16480,11 +16480,8 @@ function App() {
                             <label className="block text-xs font-semibold text-slate-600 mb-1">L. REFOULEMENT (m)</label>
                             <input
                               type="number"
-                              value={drawingData.forage_specific.discharge_length}
-                              onChange={(e) => handleDrawingInputChange('forage_specific', {
-                                ...drawingData.forage_specific,
-                                discharge_length: parseFloat(e.target.value) || 100
-                              })}
+                              value={drawingData.forage_specific.discharge_length === '' ? '' : drawingData.forage_specific.discharge_length}
+                              onChange={(e) => handleNestedNumericInputChange('forage_specific', 'discharge_length', e.target.value, 100)}
                               className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
                               placeholder="100"
                             />
