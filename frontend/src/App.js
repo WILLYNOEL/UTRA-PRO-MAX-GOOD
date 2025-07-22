@@ -354,6 +354,198 @@ const AuditSystem = () => {
   };
 
   // ========================================================================================================
+  // ANALYSE EN TEMPS RÉEL DE LA COHÉRENCE DES DONNÉES
+  // ========================================================================================================
+  
+  const analyzeDataConsistency = (data) => {
+    const analysis = {
+      hydraulic_issues: [],
+      electrical_issues: [],
+      mechanical_issues: [],
+      operational_issues: [],
+      recommendations: [],
+      overall_status: "OK"
+    };
+
+    // 1. ANALYSE HYDRAULIQUE EN TEMPS RÉEL
+    if (data.current_flow_rate && data.required_flow_rate) {
+      const flow_deviation = ((data.current_flow_rate - data.required_flow_rate) / data.required_flow_rate) * 100;
+      
+      if (flow_deviation < -15) {
+        analysis.hydraulic_issues.push({
+          type: "DÉBIT INSUFFISANT",
+          severity: "CRITIQUE",
+          description: `Débit actuel ${data.current_flow_rate} m³/h inférieur de ${Math.abs(flow_deviation).toFixed(1)}% au besoin (${data.required_flow_rate} m³/h)`,
+          interpretation: "Process sous-alimenté, risque d'arrêt production",
+          immediate_action: "Vérifier pompe, conduites et vannes"
+        });
+        analysis.overall_status = "CRITIQUE";
+      } else if (flow_deviation > 25) {
+        analysis.hydraulic_issues.push({
+          type: "SURDIMENSIONNEMENT",
+          severity: "IMPORTANT",
+          description: `Débit excessif de ${flow_deviation.toFixed(1)}% - Gaspillage énergétique`,
+          interpretation: "Surconsommation électrique inutile",
+          immediate_action: "Installer régulation débit ou reduire vitesse pompe"
+        });
+      }
+    }
+
+    if (data.current_hmt && data.required_hmt) {
+      const hmt_deviation = ((data.current_hmt - data.required_hmt) / data.required_hmt) * 100;
+      
+      if (Math.abs(hmt_deviation) > 20) {
+        analysis.hydraulic_issues.push({
+          type: hmt_deviation > 0 ? "HMT EXCESSIVE" : "HMT INSUFFISANTE",
+          severity: hmt_deviation < -20 ? "CRITIQUE" : "IMPORTANT",
+          description: `HMT actuelle ${data.current_hmt}m ${hmt_deviation > 0 ? 'supérieure' : 'inférieure'} de ${Math.abs(hmt_deviation).toFixed(1)}% à la cible (${data.required_hmt}m)`,
+          interpretation: hmt_deviation > 0 ? "Gaspillage énergétique" : "Performance insuffisante",
+          immediate_action: hmt_deviation > 0 ? "Réduire vitesse ou installer régulation" : "Vérifier dimensionnement pompe"
+        });
+      }
+    }
+
+    // Analyse vitesse conduite d'aspiration
+    if (data.current_flow_rate && data.suction_pipe_diameter) {
+      const diameter_m = data.suction_pipe_diameter / 1000;
+      const area = Math.PI * (diameter_m/2) ** 2;
+      const velocity = (data.current_flow_rate / 3600) / area;
+      
+      if (velocity > 1.5) {
+        analysis.hydraulic_issues.push({
+          type: "VITESSE ASPIRATION EXCESSIVE",
+          severity: velocity > 2.0 ? "CRITIQUE" : "IMPORTANT",
+          description: `Vitesse aspiration ${velocity.toFixed(1)} m/s dépasse les normes (< 1.5 m/s)`,
+          interpretation: "Risque de cavitation et usure prématurée pompe",
+          immediate_action: `Augmenter diamètre aspiration à DN${Math.round(data.suction_pipe_diameter * 1.3)}`
+        });
+        if (velocity > 2.0) analysis.overall_status = "CRITIQUE";
+      }
+    }
+
+    // 2. ANALYSE ÉLECTRIQUE EN TEMPS RÉEL
+    if (data.measured_current && data.rated_current) {
+      const current_ratio = data.measured_current / data.rated_current;
+      
+      if (current_ratio > 1.10) {
+        analysis.electrical_issues.push({
+          type: "SURCHARGE ÉLECTRIQUE",
+          severity: current_ratio > 1.20 ? "CRITIQUE" : "IMPORTANT",
+          description: `Intensité mesurée ${data.measured_current}A dépasse de ${((current_ratio-1)*100).toFixed(1)}% la valeur nominale (${data.rated_current}A)`,
+          interpretation: current_ratio > 1.20 ? "RISQUE DESTRUCTION MOTEUR IMMINENT" : "Usure accélérée, surconsommation",
+          immediate_action: current_ratio > 1.20 ? "ARRÊT IMMÉDIAT - Vérifier moteur et charge" : "Contrôle température moteur"
+        });
+        if (current_ratio > 1.20) analysis.overall_status = "CRITIQUE";
+      } else if (current_ratio < 0.7) {
+        analysis.electrical_issues.push({
+          type: "SOUS-CHARGE MOTEUR",
+          severity: "MOYEN",
+          description: `Intensité faible ${data.measured_current}A (${(current_ratio*100).toFixed(0)}% du nominal)`,
+          interpretation: "Moteur surdimensionné, mauvais facteur de puissance",
+          immediate_action: "Vérifier point de fonctionnement pompe"
+        });
+      }
+    }
+
+    // Analyse cohérence puissance hydraulique vs électrique
+    if (data.measured_power && data.current_flow_rate && data.current_hmt) {
+      const hydraulic_power = (data.current_flow_rate * data.current_hmt * 1000 * 9.81) / (3600 * 1000); // kW
+      const efficiency = hydraulic_power > 0 ? (hydraulic_power / data.measured_power) * 100 : 0;
+      
+      if (efficiency < 45) {
+        analysis.electrical_issues.push({
+          type: "RENDEMENT CATASTROPHIQUE",
+          severity: "CRITIQUE",
+          description: `Rendement global ${efficiency.toFixed(1)}% très inférieur aux standards (65%)`,
+          interpretation: "Gaspillage énergétique majeur - Installation défaillante",
+          immediate_action: "Audit énergétique complet - Probable remplacement pompe"
+        });
+        analysis.overall_status = "CRITIQUE";
+      } else if (efficiency < 55) {
+        analysis.electrical_issues.push({
+          type: "RENDEMENT FAIBLE",
+          severity: "IMPORTANT", 
+          description: `Rendement ${efficiency.toFixed(1)}% en dessous des standards`,
+          interpretation: "Optimisation énergétique possible",
+          immediate_action: "Vérifier état pompe et point de fonctionnement"
+        });
+      }
+    }
+
+    // 3. ANALYSE MÉCANIQUE EN TEMPS RÉEL
+    if (data.vibration_level) {
+      if (data.vibration_level > 7.1) {
+        analysis.mechanical_issues.push({
+          type: "VIBRATIONS CRITIQUES",
+          severity: "CRITIQUE",
+          description: `Niveau vibratoire ${data.vibration_level} mm/s dépasse largement ISO 10816 (< 2.8 mm/s)`,
+          interpretation: "DESTRUCTION IMMINENTE roulements et conduites",
+          immediate_action: "ARRÊT IMMÉDIAT - Inspection alignement et roulements"
+        });
+        analysis.overall_status = "CRITIQUE";
+      } else if (data.vibration_level > 4.5) {
+        analysis.mechanical_issues.push({
+          type: "VIBRATIONS ÉLEVÉES",
+          severity: "IMPORTANT",
+          description: `Vibrations ${data.vibration_level} mm/s au-dessus de la normale`,
+          interpretation: "Usure accélérée, maintenance préventive requise",
+          immediate_action: "Contrôle alignement et équilibrage"
+        });
+      }
+    }
+
+    if (data.motor_temperature && data.motor_temperature > 75) {
+      analysis.mechanical_issues.push({
+        type: "SURCHAUFFE MOTEUR",
+        severity: data.motor_temperature > 85 ? "CRITIQUE" : "IMPORTANT",
+        description: `Température moteur ${data.motor_temperature}°C ${data.motor_temperature > 85 ? 'critique' : 'élevée'}`,
+        interpretation: data.motor_temperature > 85 ? "Risque destruction bobinage" : "Réduction durée de vie",
+        immediate_action: data.motor_temperature > 85 ? "ARRÊT - Refroidissement et contrôle" : "Vérifier ventilation et surcharge"
+      });
+      if (data.motor_temperature > 85) analysis.overall_status = "CRITIQUE";
+    }
+
+    // 4. ANALYSE OPÉRATIONNELLE
+    if (data.operating_hours_daily && data.operating_hours_daily > 20) {
+      analysis.operational_issues.push({
+        type: "FONCTIONNEMENT EXCESSIF",
+        severity: "IMPORTANT",
+        description: `${data.operating_hours_daily}h/jour de fonctionnement`,
+        interpretation: "Usure accélérée, maintenance fréquente requise",
+        immediate_action: "Réviser besoins process et dimensionnement"
+      });
+    }
+
+    // Absence d'équipements de régulation
+    if (!data.has_vfd && (analysis.hydraulic_issues.some(i => i.type.includes("EXCESSIVE") || i.type.includes("SURDIMENSIONNEMENT")))) {
+      analysis.recommendations.push({
+        type: "RÉGULATION MANQUANTE",
+        equipment: "Variateur de fréquence (VFD)",
+        justification: "Nécessaire pour optimiser débit et réduire consommation",
+        savings: "15-30% économies énergie",
+        cost: "800-2500€"
+      });
+    }
+
+    return analysis;
+  };
+
+  // Fonction d'analyse en temps réel appelée à chaque modification
+  const [realTimeAnalysis, setRealTimeAnalysis] = useState(null);
+  
+  const updateRealTimeAnalysis = () => {
+    const analysis = analyzeDataConsistency(auditData);
+    setRealTimeAnalysis(analysis);
+  };
+
+  // Appeler l'analyse en temps réel à chaque modification des données
+  useEffect(() => {
+    if (Object.keys(auditData).length > 0) {
+      updateRealTimeAnalysis();
+    }
+  }, [auditData]);
+
+  // ========================================================================================================
   // NOUVELLE FONCTION POUR AUDIT INTELLIGENT
   // ========================================================================================================
   const performIntelligentAudit = async () => {
