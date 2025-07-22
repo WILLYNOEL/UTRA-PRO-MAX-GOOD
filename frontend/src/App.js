@@ -12722,201 +12722,319 @@ function App() {
         return <SolarExpertSystem />;
       case 'drawing':
         return (
-          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
+          <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             <div className="container mx-auto p-6">
-              {/* En-tête */}
-              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-6 mb-6 text-white">
+              {/* En-tête Expert */}
+              <div className="bg-gradient-to-r from-slate-800 to-blue-900 rounded-xl p-6 mb-6 text-white">
                 <h1 className="text-3xl font-bold mb-2">
-                  <span className="mr-3">🎨</span>
-                  Générateur de Schémas Hydrauliques
+                  <span className="mr-3">⚙️</span>
+                  GÉNÉRATEUR DE SCHÉMAS HYDRAULIQUES PROFESSIONNELS
                 </h1>
-                <p className="text-teal-100">
-                  Création automatique de dessins techniques 2D/3D pour vos installations hydrauliques
+                <p className="text-blue-100">
+                  Conception automatique de schémas techniques conformes aux normes ISO - Expert Hydraulicien IA
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Panel de Configuration */}
-                <div className="lg:col-span-1 space-y-4">
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">⚙️ Configuration</h3>
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Panel de Configuration Expert */}
+                <div className="xl:col-span-1 space-y-6">
+                  
+                  {/* Configuration Principale */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-600">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                      <span className="text-blue-600 mr-2">🏗️</span>
+                      CONFIGURATION INSTALLATION
+                    </h3>
                     
                     {/* Type d'installation */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Type d'Installation
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Type d'Installation *
                       </label>
                       <select
                         value={drawingData.installation_type}
                         onChange={(e) => handleDrawingInputChange('installation_type', e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-1 focus:ring-teal-200"
+                        className="w-full p-3 border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-slate-700"
                       >
-                        <option value="bache_enterree">Bâche Enterrée</option>
-                        <option value="forage">Forage</option>
-                        <option value="chateau_eau">Château d'Eau</option>
-                        <option value="surpresseur">Surpresseur</option>
+                        <option value="surface_aspiration">🏗️ Pompage Surface - Aspiration</option>
+                        <option value="surface_charge">🏗️ Pompage Surface - En Charge</option>
+                        <option value="submersible">🕳️ Pompage Submersible</option>
+                        <option value="forage">⚡ Station de Forage</option>
+                        <option value="surpresseur">🔧 Surpresseur</option>
+                        <option value="incendie">🚒 Protection Incendie</option>
                       </select>
                     </div>
 
-                    {/* Mode de dessin */}
+                    {/* Configuration Pompes */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mode de Rendu
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        Configuration Pompes *
                       </label>
                       <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => handleDrawingInputChange('drawing_mode', '2d')}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            drawingData.drawing_mode === '2d'
-                              ? 'bg-teal-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
+                        <input
+                          type="number"
+                          placeholder="Nb pompes"
+                          min="1"
+                          max="6"
+                          value={drawingData.pump_count}
+                          onChange={(e) => handleDrawingInputChange('pump_count', parseInt(e.target.value) || 1)}
+                          className="p-2 border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                        />
+                        <select
+                          value={drawingData.pump_configuration}
+                          onChange={(e) => handleDrawingInputChange('pump_configuration', e.target.value)}
+                          className="p-2 border border-slate-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
                         >
-                          2D
-                        </button>
-                        <button
-                          onClick={() => handleDrawingInputChange('drawing_mode', '3d')}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            drawingData.drawing_mode === '3d'
-                              ? 'bg-teal-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          3D
-                        </button>
+                          <option value="parallel">Parallèle</option>
+                          <option value="series">Série</option>
+                          <option value="standby">Standby</option>
+                        </select>
                       </div>
                     </div>
 
-                    {/* Options d'affichage */}
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Options d'Affichage
-                      </label>
-                      <div className="space-y-2">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={drawingData.show_labels}
-                            onChange={(e) => handleDrawingInputChange('show_labels', e.target.checked)}
-                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">Étiquettes</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={drawingData.show_dimensions}
-                            onChange={(e) => handleDrawingInputChange('show_dimensions', e.target.checked)}
-                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">Dimensions</span>
-                        </label>
+                    {/* Caractéristiques Hydrauliques */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Débit (m³/h)</label>
+                        <input
+                          type="number"
+                          placeholder="50"
+                          value={drawingData.flow_rate}
+                          onChange={(e) => handleDrawingInputChange('flow_rate', e.target.value)}
+                          className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">HMT (m)</label>
+                        <input
+                          type="number"
+                          placeholder="30"
+                          value={drawingData.total_head}
+                          onChange={(e) => handleDrawingInputChange('total_head', e.target.value)}
+                          className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
+                        />
                       </div>
                     </div>
-
-                    {/* Bouton de génération */}
-                    <button
-                      onClick={generateDrawing}
-                      className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-teal-700 hover:to-cyan-700 transition-colors shadow-lg"
-                    >
-                      <span className="mr-2">🚀</span>
-                      Générer le Schéma
-                    </button>
                   </div>
 
-                  {/* Équipements */}
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">🔧 Équipements</h3>
+                  {/* Accessoires et Équipements */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-600">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                      <span className="text-green-600 mr-2">🔧</span>
+                      ACCESSOIRES TECHNIQUES
+                    </h3>
                     
-                    {/* Pompes */}
+                    {/* Tuyauteries */}
                     <div className="mb-4">
-                      <h4 className="font-medium text-gray-700 mb-2">Pompes</h4>
-                      {drawingData.pumps.map((pump, index) => (
-                        <div key={pump.id} className="bg-blue-50 p-3 rounded-lg mb-2">
-                          <div className="text-sm">
-                            <div className="font-medium">Pompe {index + 1}</div>
-                            <div className="text-gray-600">
-                              {pump.power}kW - {pump.flow}m³/h - {pump.head}m
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Tuyauteries</label>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <input
+                          type="number"
+                          placeholder="DN Aspiration"
+                          value={drawingData.suction_diameter}
+                          onChange={(e) => handleDrawingInputChange('suction_diameter', e.target.value)}
+                          className="p-2 border border-slate-300 rounded"
+                        />
+                        <input
+                          type="number"
+                          placeholder="DN Refoulement"
+                          value={drawingData.discharge_diameter}
+                          onChange={(e) => handleDrawingInputChange('discharge_diameter', e.target.value)}
+                          className="p-2 border border-slate-300 rounded"
+                        />
+                      </div>
                     </div>
 
-                    {/* Réservoirs */}
+                    {/* Équipements Obligatoires */}
                     <div className="mb-4">
-                      <h4 className="font-medium text-gray-700 mb-2">Réservoirs</h4>
-                      {drawingData.tanks.map((tank, index) => (
-                        <div key={tank.id} className="bg-green-50 p-3 rounded-lg mb-2">
-                          <div className="text-sm">
-                            <div className="font-medium">Réservoir {index + 1}</div>
-                            <div className="text-gray-600">
-                              {tank.capacity}L - {tank.type}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Équipements (Auto-calculés)</label>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.pressure_gauge}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              pressure_gauge: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Manomètres
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.check_valve}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              check_valve: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Clapets AR
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.isolation_valve}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              isolation_valve: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Vannes Isolement
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.pressure_sensor}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              pressure_sensor: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Capteurs P
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.control_panel}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              control_panel: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Coffret Commande
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.manifold}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              manifold: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-1"
+                          />
+                          Manifold
+                        </label>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Distances et Cotes */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                      <span className="text-purple-600 mr-2">📐</span>
+                      DIMENSIONS
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <label className="block text-slate-600 mb-1">Long. Aspiration (m)</label>
+                        <input
+                          type="number"
+                          value={drawingData.dimensions.suction_length}
+                          onChange={(e) => handleDrawingInputChange('dimensions', {
+                            ...drawingData.dimensions,
+                            suction_length: e.target.value
+                          })}
+                          className="w-full p-2 border border-slate-300 rounded"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 mb-1">Long. Refoulement (m)</label>
+                        <input
+                          type="number"
+                          value={drawingData.dimensions.discharge_length}
+                          onChange={(e) => handleDrawingInputChange('dimensions', {
+                            ...drawingData.dimensions,
+                            discharge_length: e.target.value
+                          })}
+                          className="w-full p-2 border border-slate-300 rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bouton Génération Expert */}
+                  <button
+                    onClick={generateProfessionalDrawing}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-4 px-6 rounded-xl font-bold hover:from-blue-700 hover:to-indigo-800 transition-all shadow-lg transform hover:scale-105"
+                  >
+                    <span className="mr-2">⚡</span>
+                    GÉNÉRER SCHÉMA TECHNIQUE
+                  </button>
                 </div>
 
-                {/* Zone de Dessin */}
-                <div className="lg:col-span-3">
-                  <div className="bg-white rounded-lg shadow-lg p-6">
+                {/* Zone de Dessin Professionnel */}
+                <div className="xl:col-span-2">
+                  <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800">📐 Schéma Technique</h3>
+                      <h3 className="text-xl font-bold text-slate-800 flex items-center">
+                        <span className="text-blue-600 mr-2">📐</span>
+                        SCHÉMA HYDRAULIQUE TECHNIQUE
+                      </h3>
                       <div className="flex space-x-2">
-                        <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
-                          📥 Exporter PNG
+                        <button className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium">
+                          📁 Exporter DWG
                         </button>
-                        <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                        <button className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 font-medium">
                           📄 Exporter PDF
                         </button>
                       </div>
                     </div>
                     
-                    {/* Canvas de dessin */}
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Canvas Professionnel */}
+                    <div className="border-2 border-slate-300 rounded-lg bg-white relative">
                       <canvas
                         ref={canvasRef}
-                        width={800}
-                        height={600}
-                        className="w-full bg-white"
-                        style={{maxHeight: '600px'}}
+                        width={1000}
+                        height={700}
+                        className="w-full"
+                        style={{maxHeight: '700px', background: '#ffffff'}}
                       />
+                      
+                      {/* Grille d'ingénieur en overlay */}
+                      <div className="absolute inset-0 pointer-events-none opacity-10" 
+                           style={{
+                             backgroundImage: 'repeating-linear-gradient(0deg, #000, #000 1px, transparent 1px, transparent 20px), repeating-linear-gradient(90deg, #000, #000 1px, transparent 1px, transparent 20px)',
+                             backgroundSize: '20px 20px'
+                           }}>
+                      </div>
                     </div>
                     
-                    {/* Informations techniques */}
-                    <div className="mt-4 grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-700 mb-2">📊 Informations</h4>
-                        <div className="text-sm space-y-1">
-                          <div>Type: {drawingData.installation_type.replace('_', ' ')}</div>
-                          <div>Mode: {drawingData.drawing_mode.toUpperCase()}</div>
-                          <div>Pompes: {drawingData.pumps.length}</div>
-                          <div>Réservoirs: {drawingData.tanks.length}</div>
+                    {/* Cartouche Technique */}
+                    <div className="mt-4 bg-slate-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <div className="font-semibold text-slate-600">Installation</div>
+                          <div className="text-slate-800">{drawingData.installation_type.replace('_', ' ').toUpperCase()}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-600">Configuration</div>
+                          <div className="text-slate-800">{drawingData.pump_count} pompe(s) en {drawingData.pump_configuration}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-600">Débit</div>
+                          <div className="text-slate-800">{drawingData.flow_rate || 'N/A'} m³/h</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-600">HMT</div>
+                          <div className="text-slate-800">{drawingData.total_head || 'N/A'} m</div>
                         </div>
                       </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-700 mb-2">⚡ Spécifications</h4>
-                        <div className="text-sm space-y-1">
-                          <div>Puissance totale: {drawingData.pumps.reduce((sum, pump) => sum + pump.power, 0)}kW</div>
-                          <div>Débit total: {drawingData.pumps.reduce((sum, pump) => sum + pump.flow, 0)}m³/h</div>
-                          <div>Volume stockage: {drawingData.tanks.reduce((sum, tank) => sum + tank.capacity, 0)}L</div>
+                      
+                      {/* Normes et Références */}
+                      <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
+                        <div className="flex justify-between">
+                          <span>📋 Conforme : ISO 14692, NF EN 806, DTU 60.11</span>
+                          <span>🏛️ ECO-PUMP AFRIK - Générateur IA Expert v3.0</span>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Instructions */}
-                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-medium text-blue-800 mb-2">💡 Instructions</h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• Sélectionnez le type d'installation dans le panneau de configuration</li>
-                        <li>• Choisissez le mode 2D ou 3D selon vos besoins</li>
-                        <li>• Activez les étiquettes et dimensions pour plus de clarté</li>
-                        <li>• Cliquez sur "Générer le Schéma" pour créer votre dessin</li>
-                        <li>• Exportez en PNG ou PDF pour vos documents techniques</li>
-                      </ul>
                     </div>
                   </div>
                 </div>
