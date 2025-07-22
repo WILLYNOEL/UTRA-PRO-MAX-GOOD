@@ -16535,22 +16535,25 @@ function App() {
                         </div>
                       )}
                       
-                      <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">
-                          {drawingData.installation_type.includes('forage') || drawingData.installation_type.includes('submersible') 
-                            ? 'PROFONDEUR (m)' 
-                            : 'L.REFOULEMENT (m)'}
-                        </label>
-                        <input
-                          type="number"
-                          value={drawingData.dimensions.discharge_length}
-                          onChange={(e) => handleDrawingInputChange('dimensions', {
-                            ...drawingData.dimensions,
-                            discharge_length: parseFloat(e.target.value) || 50
-                          })}
-                          className="w-full p-2 border border-slate-300 rounded text-sm"
-                        />
-                      </div>
+                      {/* Longueur refoulement SEULEMENT si pas forage */}
+                      {drawingData.installation_type !== 'forage' && (
+                        <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">
+                            {drawingData.installation_type.includes('submersible') 
+                              ? 'PROFONDEUR BÂCHE (m)' 
+                              : 'L.REFOULEMENT (m)'}
+                          </label>
+                          <input
+                            type="number"
+                            value={drawingData.dimensions.discharge_length}
+                            onChange={(e) => handleDrawingInputChange('dimensions', {
+                              ...drawingData.dimensions,
+                              discharge_length: parseFloat(e.target.value) || 50
+                            })}
+                            className="w-full p-2 border border-slate-300 rounded text-sm"
+                          />
+                        </div>
+                      )}
                     </div>
                     {/* CHAMPS SPÉCIFIQUES FORAGE */}
                     {drawingData.installation_type === 'forage' && (
