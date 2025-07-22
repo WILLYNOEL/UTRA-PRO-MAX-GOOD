@@ -12484,6 +12484,10 @@ function App() {
     temperature: 20,
     operating_pressure: 6,
     
+    // Affichage conditionnel INTELLIGENT
+    show_suction_fields: true,
+    show_discharge_fields: true,
+    
     // Distances techniques
     dimensions: {
       suction_length: 20,
