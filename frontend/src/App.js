@@ -12561,31 +12561,28 @@ function App() {
 
   // LOGIQUE D'EXPERT : Type d'installation
   const applyInstallationTypeLogic = (data, installationType) => {
-    const newData = { ...data, installation_type: installationType };
+    let newData = { ...data, installation_type: installationType };
     
     switch(installationType) {
       case 'surface_aspiration':
         newData.suction_height = 3;
         newData.discharge_height = 25;
         newData.operating_pressure = 6;
-        newData.accessories.manifold = false;
-        newData.accessories.strainer = true;
+        newData.accessories = { ...newData.accessories, manifold: false, strainer: true };
         break;
         
       case 'surface_charge':
         newData.suction_height = -5; // En charge
         newData.discharge_height = 25;
         newData.operating_pressure = 8;
-        newData.accessories.manifold = false;
-        newData.accessories.strainer = false;
+        newData.accessories = { ...newData.accessories, manifold: false, strainer: false };
         break;
         
       case 'submersible':
         newData.suction_height = -15;
         newData.discharge_height = 50;
         newData.operating_pressure = 10;
-        newData.accessories.manifold = true;
-        newData.accessories.strainer = false;
+        newData.accessories = { ...newData.accessories, manifold: true, strainer: false };
         newData.pump_configuration = 'standby'; // Souvent en standby
         break;
         
@@ -12593,24 +12590,21 @@ function App() {
         newData.suction_height = -30;
         newData.discharge_height = 60;
         newData.operating_pressure = 12;
-        newData.accessories.manifold = true;
-        newData.accessories.flow_meter = true;
+        newData.accessories = { ...newData.accessories, manifold: true, flow_meter: true };
         break;
         
       case 'surpresseur':
         newData.suction_height = 2;
         newData.discharge_height = 15;
         newData.operating_pressure = 8;
-        newData.accessories.pressure_sensor = true;
-        newData.accessories.expansion_joint = true;
+        newData.accessories = { ...newData.accessories, pressure_sensor: true, expansion_joint: true };
         break;
         
       case 'incendie':
         newData.suction_height = 0;
         newData.discharge_height = 40;
         newData.operating_pressure = 16;
-        newData.accessories.pressure_sensor = true;
-        newData.accessories.flow_meter = true;
+        newData.accessories = { ...newData.accessories, pressure_sensor: true, flow_meter: true };
         newData.pump_configuration = 'parallel'; // Toujours en parallèle
         break;
     }
@@ -12620,11 +12614,14 @@ function App() {
 
   // LOGIQUE D'EXPERT : Nombre de pompes
   const applyPumpCountLogic = (data, pumpCount) => {
-    const newData = { ...data, pump_count: pumpCount };
+    let newData = { ...data, pump_count: pumpCount };
     
     // Ajuster les dimensions selon nombre de pompes
-    newData.dimensions.pump_spacing = pumpCount > 2 ? 2.0 : 1.5;
-    newData.dimensions.manifold_length = Math.max(3.0, pumpCount * 1.0);
+    newData.dimensions = {
+      ...newData.dimensions,
+      pump_spacing: pumpCount > 2 ? 2.0 : 1.5,
+      manifold_length: Math.max(3.0, pumpCount * 1.0)
+    };
     
     // Ajuster diamètres selon nombre de pompes
     if (pumpCount >= 4) {
@@ -12642,26 +12639,35 @@ function App() {
 
   // LOGIQUE D'EXPERT : Configuration des pompes
   const applyPumpConfigurationLogic = (data, configuration) => {
-    const newData = { ...data, pump_configuration: configuration };
+    let newData = { ...data, pump_configuration: configuration };
     
     switch(configuration) {
       case 'parallel':
         // Débit total réparti, HMT identique
-        newData.accessories.manifold = data.pump_count > 2;
-        newData.accessories.isolation_valve = true;
+        newData.accessories = {
+          ...newData.accessories,
+          manifold: data.pump_count > 2,
+          isolation_valve: true
+        };
         break;
         
       case 'series':
         // HMT additionné, débit identique
         newData.total_head = data.total_head * data.pump_count;
-        newData.accessories.check_valve = true;
-        newData.accessories.pressure_gauge = true;
+        newData.accessories = {
+          ...newData.accessories,
+          check_valve: true,
+          pressure_gauge: true
+        };
         break;
         
       case 'standby':
         // Une seule active, autres en secours
-        newData.accessories.pressure_sensor = true;
-        newData.accessories.control_panel = true;
+        newData.accessories = {
+          ...newData.accessories,
+          pressure_sensor: true,
+          control_panel: true
+        };
         break;
     }
     
@@ -12670,7 +12676,7 @@ function App() {
 
   // LOGIQUE D'EXPERT : Paramètres hydrauliques
   const applyHydraulicLogic = (data) => {
-    const newData = { ...data };
+    let newData = { ...data };
     
     // Calcul automatique puissance pompe
     const hydraulicPower = (data.flow_rate * data.total_head * 1000 * 9.81) / 3600 / 1000;
