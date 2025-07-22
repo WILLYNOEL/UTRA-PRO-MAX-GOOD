@@ -12998,7 +12998,7 @@ function App() {
     drawTechnicalCartouche(ctx, canvas);
   };
 
-  // SCHÉMA SURFACE ASPIRATION EN PARALLÈLE - PID TECHNIQUE
+  // SCHÉMA SURFACE ASPIRATION EN PARALLÈLE - COLLECTEUR 90° PID TECHNIQUE
   const drawProfessionalSurfaceAspiration = (ctx, canvas) => {
     // Nettoyage complet
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -13029,103 +13029,67 @@ function App() {
     ctx.fillText('BÂCHE', tankX + tankW/2, tankY - 10);
     ctx.fillText('ASPIRATION', tankX + tankW/2, tankY - 25);
     
-    // 2. TUYAUTERIE ASPIRATION PRINCIPALE
-    const mainPipeY = centerY;
+    // 2. COLLECTEUR D'ASPIRATION VERTICAL (À 90°)
+    const collecteurAspirationX = centerX - 150;
+    const collecteurStartY = centerY - 80;
+    const collecteurEndY = centerY + 80;
+    
+    ctx.strokeStyle = '#FF9800';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(collecteurAspirationX, collecteurStartY);
+    ctx.lineTo(collecteurAspirationX, collecteurEndY);
+    ctx.stroke();
+    
+    // Label collecteur aspiration
+    ctx.fillStyle = '#E65100';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.save();
+    ctx.translate(collecteurAspirationX - 20, centerY);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('COLLECTEUR ASPIRATION', 0, 0);
+    ctx.restore();
+    
+    // Tuyauterie de la bâche vers collecteur
     ctx.strokeStyle = '#FF9800';
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(tankX + tankW, mainPipeY);
-    ctx.lineTo(centerX - 100, mainPipeY);
+    ctx.moveTo(tankX + tankW, centerY);
+    ctx.lineTo(collecteurAspirationX, centerY);
     ctx.stroke();
     
-    // 3. POMPES EN PARALLÈLE (côte à côte comme sur votre schéma)
+    // 3. POMPES EN PARALLÈLE avec piquages individuels sur collecteur
     const pumpCount = drawingData.pump_count;
     const pumpSpacing = 80;
-    const startX = centerX - ((pumpCount - 1) * pumpSpacing) / 2;
+    const startY = collecteurStartY + 20;
     
     for (let i = 0; i < pumpCount; i++) {
-      const pumpX = startX + (i * pumpSpacing);
-      const pumpY = centerY;
+      const pumpX = centerX - 50;
+      const pumpY = startY + (i * pumpSpacing);
       const isStandby = i >= drawingData.pumps_in_service;
       
-      // TUYAU ASPIRATION INDIVIDUEL (T depuis tuyau principal)
+      // PIQUAGE INDIVIDUEL depuis collecteur vers pompe (90°)
+      const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
+      
       ctx.strokeStyle = '#FF9800';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(centerX - 100, mainPipeY);
-      ctx.lineTo(pumpX, mainPipeY);
-      ctx.lineTo(pumpX, pumpY - 25);
+      ctx.moveTo(collecteurAspirationX, piquageY);
+      ctx.lineTo(pumpX - 25, piquageY);
       ctx.stroke();
       
-      // POMPE (symbole PID)
-      ctx.fillStyle = isStandby ? '#FFE0B2' : '#E3F2FD';
-      ctx.strokeStyle = isStandby ? '#FF9800' : '#1976D2';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(pumpX, pumpY, 25, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      
-      // Roue pompe
-      ctx.strokeStyle = '#424242';
-      ctx.lineWidth = 2;
-      for (let j = 0; j < 6; j++) {
-        const angle = (j * Math.PI * 2) / 6;
-        ctx.beginPath();
-        ctx.moveTo(pumpX, pumpY);
-        ctx.lineTo(pumpX + Math.cos(angle) * 15, pumpY + Math.sin(angle) * 15);
-        ctx.stroke();
-      }
-      
-      // Label pompe
-      ctx.fillStyle = isStandby ? '#F57C00' : '#1565C0';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(`P${i+1}`, pumpX, pumpY - 40);
-      ctx.font = '8px Arial';
-      ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX, pumpY - 28);
-      
-      // CLAPET ANTI-RETOUR (symbole PID)
-      if (drawingData.accessories.check_valve) {
-        const valveY = pumpY + 35;
-        ctx.strokeStyle = '#4CAF50';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(pumpX - 8, valveY - 5);
-        ctx.lineTo(pumpX + 8, valveY);
-        ctx.lineTo(pumpX - 8, valveY + 5);
-        ctx.closePath();
-        ctx.fillStyle = '#C8E6C9';
-        ctx.fill();
-        ctx.stroke();
-        
-        // Tag
-        ctx.fillStyle = '#2E7D32';
-        ctx.font = '7px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('NR', pumpX, valveY + 15);
-      }
-      
-      // TUYAU REFOULEMENT INDIVIDUEL
-      const refoulementStartY = drawingData.accessories.check_valve ? pumpY + 50 : pumpY + 25;
-      ctx.strokeStyle = '#4CAF50';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(pumpX, refoulementStartY);
-      ctx.lineTo(pumpX, centerY + 80);
-      ctx.stroke();
-      
-      // VANNE ISOLEMENT sur chaque pompe
-      if (drawingData.accessories.isolation_valve_discharge) {
-        const valveY = centerY + 60;
+      // VANNE ISOLEMENT ASPIRATION sur chaque piquage
+      if (drawingData.accessories.isolation_valve_suction) {
+        const valveX = collecteurAspirationX + 30;
         // Losange PID
         ctx.strokeStyle = '#2C3E50';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(pumpX, valveY - 8);
-        ctx.lineTo(pumpX + 8, valveY);
-        ctx.lineTo(pumpX, valveY + 8);
-        ctx.lineTo(pumpX - 8, valveY);
+        ctx.moveTo(valveX, piquageY - 6);
+        ctx.lineTo(valveX + 6, piquageY);
+        ctx.lineTo(valveX, piquageY + 6);
+        ctx.lineTo(valveX - 6, piquageY);
         ctx.closePath();
         ctx.fillStyle = '#ECF0F1';
         ctx.fill();
@@ -13135,42 +13099,161 @@ function App() {
         ctx.fillStyle = '#2C3E50';
         ctx.font = '7px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`V${i+1}`, pumpX, valveY + 20);
+        ctx.fillText(`VA${i+1}`, valveX, piquageY + 18);
       }
+      
+      // CRÉPINE/FILTRE sur aspiration si sélectionné
+      if (drawingData.accessories.strainer) {
+        const strainerX = collecteurAspirationX + 60;
+        ctx.strokeStyle = '#37474F';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(strainerX - 8, piquageY - 6, 16, 12);
+        ctx.stroke();
+        
+        // Barreaux
+        for (let j = 0; j < 3; j++) {
+          ctx.beginPath();
+          ctx.moveTo(strainerX - 6 + j * 4, piquageY - 6);
+          ctx.lineTo(strainerX - 6 + j * 4, piquageY + 6);
+          ctx.stroke();
+        }
+        
+        ctx.fillStyle = '#37474F';
+        ctx.font = '6px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('FIL', strainerX, piquageY + 18);
+      }
+      
+      // POMPE (symbole PID)
+      ctx.fillStyle = isStandby ? '#FFE0B2' : '#E3F2FD';
+      ctx.strokeStyle = isStandby ? '#FF9800' : '#1976D2';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(pumpX, piquageY, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Roue pompe
+      ctx.strokeStyle = '#424242';
+      ctx.lineWidth = 2;
+      for (let j = 0; j < 6; j++) {
+        const angle = (j * Math.PI * 2) / 6;
+        ctx.beginPath();
+        ctx.moveTo(pumpX, piquageY);
+        ctx.lineTo(pumpX + Math.cos(angle) * 15, piquageY + Math.sin(angle) * 15);
+        ctx.stroke();
+      }
+      
+      // Label pompe
+      ctx.fillStyle = isStandby ? '#F57C00' : '#1565C0';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P${i+1}`, pumpX - 50, piquageY);
+      ctx.font = '8px Arial';
+      ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX - 50, piquageY + 12);
+      
+      // CLAPET ANTI-RETOUR REFOULEMENT (symbole PID)
+      if (drawingData.accessories.check_valve) {
+        const valveX = pumpX + 35;
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(valveX - 8, piquageY - 5);
+        ctx.lineTo(valveX + 8, piquageY);
+        ctx.lineTo(valveX - 8, piquageY + 5);
+        ctx.closePath();
+        ctx.fillStyle = '#C8E6C9';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Tag
+        ctx.fillStyle = '#2E7D32';
+        ctx.font = '7px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`NR${i+1}`, valveX, piquageY + 18);
+      }
+      
+      // VANNE ISOLEMENT REFOULEMENT
+      if (drawingData.accessories.isolation_valve_discharge) {
+        const valveX = pumpX + 60;
+        // Losange PID
+        ctx.strokeStyle = '#2C3E50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(valveX, piquageY - 8);
+        ctx.lineTo(valveX + 8, piquageY);
+        ctx.lineTo(valveX, piquageY + 8);
+        ctx.lineTo(valveX - 8, piquageY);
+        ctx.closePath();
+        ctx.fillStyle = '#ECF0F1';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Tag
+        ctx.fillStyle = '#2C3E50';
+        ctx.font = '7px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`VR${i+1}`, valveX, piquageY + 20);
+      }
+      
+      // TUYAU REFOULEMENT INDIVIDUEL vers collecteur
+      const refoulementX = pumpX + 80;
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(pumpX + 25, piquageY);
+      ctx.lineTo(refoulementX, piquageY);
+      ctx.stroke();
     }
     
-    // 4. COLLECTEUR DE REFOULEMENT (parallèle → collecteur commun)
-    const collecteurY = centerY + 80;
+    // 4. COLLECTEUR DE REFOULEMENT VERTICAL (parallèle)
+    const collecteurRefoulementX = centerX + 50;
     ctx.strokeStyle = '#4CAF50';
     ctx.lineWidth = 8;
     ctx.beginPath();
-    ctx.moveTo(startX - 30, collecteurY);
-    ctx.lineTo(startX + (pumpCount - 1) * pumpSpacing + 30, collecteurY);
+    ctx.moveTo(collecteurRefoulementX, collecteurStartY);
+    ctx.lineTo(collecteurRefoulementX, collecteurEndY);
     ctx.stroke();
     
-    // Label collecteur
+    // Connexions des pompes au collecteur refoulement
+    for (let i = 0; i < pumpCount; i++) {
+      const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 50 + 80, piquageY);
+      ctx.lineTo(collecteurRefoulementX, piquageY);
+      ctx.stroke();
+    }
+    
+    // Label collecteur refoulement
     ctx.fillStyle = '#2E7D32';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('COLLECTEUR PARALLÈLE', centerX, collecteurY + 20);
+    ctx.save();
+    ctx.translate(collecteurRefoulementX + 20, centerY);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('COLLECTEUR REFOULEMENT', 0, 0);
+    ctx.restore();
     ctx.font = '8px Arial';
-    ctx.fillText(`DN${drawingData.discharge_diameter}`, centerX, collecteurY + 32);
+    ctx.fillText(`DN${drawingData.discharge_diameter}`, collecteurRefoulementX + 30, centerY);
     
     // 5. TUYAUTERIE VERS STOCKAGE
     ctx.strokeStyle = '#4CAF50';
     ctx.lineWidth = 8;
     ctx.beginPath();
-    ctx.moveTo(startX + (pumpCount - 1) * pumpSpacing + 30, collecteurY);
-    ctx.lineTo(centerX + 200, collecteurY);
+    ctx.moveTo(collecteurRefoulementX, centerY);
+    ctx.lineTo(centerX + 200, centerY);
     ctx.stroke();
     
     // Flèche débit total
     ctx.strokeStyle = '#4CAF50';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(centerX + 150, collecteurY - 5);
-    ctx.lineTo(centerX + 165, collecteurY);
-    ctx.lineTo(centerX + 150, collecteurY + 5);
+    ctx.moveTo(centerX + 150, centerY - 5);
+    ctx.lineTo(centerX + 165, centerY);
+    ctx.lineTo(centerX + 150, centerY + 5);
     ctx.stroke();
     
     // Débit total affiché
@@ -13178,7 +13261,7 @@ function App() {
     ctx.font = 'bold 9px Arial';
     ctx.textAlign = 'center';
     const totalFlow = drawingData.flow_rate * drawingData.pumps_in_service;
-    ctx.fillText(`${totalFlow}m³/h`, centerX + 130, collecteurY - 10);
+    ctx.fillText(`${totalFlow}m³/h`, centerX + 130, centerY - 10);
     
     // 6. RÉSERVOIR DE STOCKAGE
     const storageX = centerX + 220;
@@ -13200,8 +13283,8 @@ function App() {
     ctx.strokeStyle = '#4CAF50';
     ctx.lineWidth = 8;
     ctx.beginPath();
-    ctx.moveTo(centerX + 200, collecteurY);
-    ctx.lineTo(storageX, collecteurY);
+    ctx.moveTo(centerX + 200, centerY);
+    ctx.lineTo(storageX, centerY);
     ctx.lineTo(storageX, storageY + storageH - 20);
     ctx.stroke();
     
@@ -13214,7 +13297,7 @@ function App() {
     // 7. INSTRUMENTATIONS
     if (drawingData.accessories.pressure_gauge_discharge) {
       const gaugeX = centerX + 100;
-      const gaugeY = collecteurY - 30;
+      const gaugeY = centerY - 30;
       
       // Manomètre PID
       ctx.beginPath();
@@ -13238,7 +13321,7 @@ function App() {
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(gaugeX, gaugeY + 12);
-      ctx.lineTo(gaugeX, collecteurY);
+      ctx.lineTo(gaugeX, centerY);
       ctx.stroke();
       
       // Tag avec pression
