@@ -12998,109 +12998,259 @@ function App() {
     drawTechnicalCartouche(ctx, canvas);
   };
 
-  // SCHÉMA SURFACE ASPIRATION PROFESSIONNEL - VERSION EXPERT ISO
+  // SCHÉMA SURFACE ASPIRATION EN PARALLÈLE - PID TECHNIQUE
   const drawProfessionalSurfaceAspiration = (ctx, canvas) => {
-    const baseY = canvas.height - 200;
-    const pumpY = baseY - 100;
-    const tankY = baseY;
+    // Nettoyage complet
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 1. BÂCHE D'ASPIRATION avec niveaux
-    drawProfessionalTank(ctx, 80, tankY - 120, 180, 120, 'BÂCHE ASPIRATION', '#e3f2fd');
-    drawWaterLevel(ctx, 80 + 20, tankY - 80, 140, 40); // Niveau d'eau
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
     
-    // 2. TUYAUTERIE D'ASPIRATION avec tous accessoires
-    let currentX = 260;
+    // 1. BÂCHE D'ASPIRATION (gauche)
+    const tankX = 100;
+    const tankY = centerY - 60;
+    const tankW = 120;
+    const tankH = 120;
     
-    // Crépine si sélectionnée (améliorée)
-    if (drawingData.accessories.strainer) {
-      drawAdvancedStrainer(ctx, currentX, tankY - 60);
-      currentX += 40;
-    }
+    ctx.strokeStyle = '#2196F3';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#E3F2FD';
+    ctx.fillRect(tankX, tankY, tankW, tankH);
+    ctx.strokeRect(tankX, tankY, tankW, tankH);
     
-    // Tuyauterie aspiration principale avec annotation DN
-    drawProfessionalPipe(ctx, currentX, tankY - 60, currentX + 150, tankY - 60, drawingData.suction_diameter, 'aspiration');
-    drawPipeAnnotation(ctx, currentX + 75, tankY - 40, `DN${drawingData.suction_diameter}`, 'aspiration');
+    // Niveau d'eau
+    ctx.fillStyle = '#1976D2';
+    ctx.fillRect(tankX + 5, tankY + tankH * 0.3, tankW - 10, tankH * 0.6);
     
-    // Vanne isolement aspiration (symbole ISO)
-    if (drawingData.accessories.isolation_valve_suction) {
-      drawISOValve(ctx, currentX + 75, tankY - 60, 'isolement');
-    }
+    // Label bâche
+    ctx.fillStyle = '#1976D2';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('BÂCHE', tankX + tankW/2, tankY - 10);
+    ctx.fillText('ASPIRATION', tankX + tankW/2, tankY - 25);
     
-    currentX += 150;
+    // 2. TUYAUTERIE ASPIRATION PRINCIPALE
+    const mainPipeY = centerY;
+    ctx.strokeStyle = '#FF9800';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(tankX + tankW, mainPipeY);
+    ctx.lineTo(centerX - 100, mainPipeY);
+    ctx.stroke();
     
-    // Montée verticale vers pompes avec flèches de débit
-    drawProfessionalPipe(ctx, currentX, tankY - 60, currentX, pumpY, drawingData.suction_diameter, 'aspiration');
-    drawFlowArrow(ctx, currentX + 10, tankY - 30, 'up');
+    // 3. POMPES EN PARALLÈLE (côte à côte comme sur votre schéma)
+    const pumpCount = drawingData.pump_count;
+    const pumpSpacing = 80;
+    const startX = centerX - ((pumpCount - 1) * pumpSpacing) / 2;
     
-    // Manomètre aspiration (symbole ISO)
-    if (drawingData.accessories.pressure_gauge_suction) {
-      drawISOPressureGauge(ctx, currentX + 20, tankY - 30, 'asp');
-    }
-    
-    // 3. POMPES AVEC CONFIGURATION INTELLIGENTE - SYMBOLES ISO
-    const pumpSpacing = drawingData.dimensions.pump_spacing * 50;
-    const pumpsInService = drawingData.pumps_in_service || 1;
-    const totalPumps = drawingData.pump_count;
-    
-    for (let i = 0; i < totalPumps; i++) {
-      const pumpX = currentX + (i * pumpSpacing);
-      const isStandby = i >= pumpsInService;
+    for (let i = 0; i < pumpCount; i++) {
+      const pumpX = startX + (i * pumpSpacing);
+      const pumpY = centerY;
+      const isStandby = i >= drawingData.pumps_in_service;
       
-      // Connexion aspiration pour chaque pompe
-      if (i > 0 || drawingData.pump_configuration === 'parallel') {
-        drawProfessionalPipe(ctx, currentX, pumpY, pumpX, pumpY, drawingData.suction_diameter, 'aspiration');
+      // TUYAU ASPIRATION INDIVIDUEL (T depuis tuyau principal)
+      ctx.strokeStyle = '#FF9800';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 100, mainPipeY);
+      ctx.lineTo(pumpX, mainPipeY);
+      ctx.lineTo(pumpX, pumpY - 25);
+      ctx.stroke();
+      
+      // POMPE (symbole PID)
+      ctx.fillStyle = isStandby ? '#FFE0B2' : '#E3F2FD';
+      ctx.strokeStyle = isStandby ? '#FF9800' : '#1976D2';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(pumpX, pumpY, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Roue pompe
+      ctx.strokeStyle = '#424242';
+      ctx.lineWidth = 2;
+      for (let j = 0; j < 6; j++) {
+        const angle = (j * Math.PI * 2) / 6;
+        ctx.beginPath();
+        ctx.moveTo(pumpX, pumpY);
+        ctx.lineTo(pumpX + Math.cos(angle) * 15, pumpY + Math.sin(angle) * 15);
+        ctx.stroke();
       }
       
-      // Pompe avec symbole ISO et indicateur service/standby
-      drawISOPump(ctx, pumpX, pumpY, `P${i+1}`, isStandby ? 'standby' : 'service');
+      // Label pompe
+      ctx.fillStyle = isStandby ? '#F57C00' : '#1565C0';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P${i+1}`, pumpX, pumpY - 40);
+      ctx.font = '8px Arial';
+      ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX, pumpY - 28);
       
-      // Clapet anti-retour ISO sur chaque pompe
+      // CLAPET ANTI-RETOUR (symbole PID)
       if (drawingData.accessories.check_valve) {
-        drawISOCheckValve(ctx, pumpX + 40, pumpY);
+        const valveY = pumpY + 35;
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pumpX - 8, valveY - 5);
+        ctx.lineTo(pumpX + 8, valveY);
+        ctx.lineTo(pumpX - 8, valveY + 5);
+        ctx.closePath();
+        ctx.fillStyle = '#C8E6C9';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Tag
+        ctx.fillStyle = '#2E7D32';
+        ctx.font = '7px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('NR', pumpX, valveY + 15);
       }
       
-      // Vanne isolement refoulement ISO
+      // TUYAU REFOULEMENT INDIVIDUEL
+      const refoulementStartY = drawingData.accessories.check_valve ? pumpY + 50 : pumpY + 25;
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(pumpX, refoulementStartY);
+      ctx.lineTo(pumpX, centerY + 80);
+      ctx.stroke();
+      
+      // VANNE ISOLEMENT sur chaque pompe
       if (drawingData.accessories.isolation_valve_discharge) {
-        drawISOValve(ctx, pumpX + 60, pumpY, 'isolement');
+        const valveY = centerY + 60;
+        // Losange PID
+        ctx.strokeStyle = '#2C3E50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pumpX, valveY - 8);
+        ctx.lineTo(pumpX + 8, valveY);
+        ctx.lineTo(pumpX, valveY + 8);
+        ctx.lineTo(pumpX - 8, valveY);
+        ctx.closePath();
+        ctx.fillStyle = '#ECF0F1';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Tag
+        ctx.fillStyle = '#2C3E50';
+        ctx.font = '7px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`V${i+1}`, pumpX, valveY + 20);
       }
     }
     
-    // 4. COLLECTEUR DE REFOULEMENT avec annotations
-    const refoulementY = pumpY;
-    const collecteurStartX = currentX + 80;
-    const collecteurEndX = collecteurStartX + (totalPumps * pumpSpacing) + 100;
+    // 4. COLLECTEUR DE REFOULEMENT (parallèle → collecteur commun)
+    const collecteurY = centerY + 80;
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(startX - 30, collecteurY);
+    ctx.lineTo(startX + (pumpCount - 1) * pumpSpacing + 30, collecteurY);
+    ctx.stroke();
     
-    if (totalPumps > 1 || drawingData.accessories.manifold) {
-      drawProfessionalPipe(ctx, collecteurStartX, refoulementY, collecteurEndX, refoulementY, drawingData.discharge_diameter, 'refoulement');
-      drawPipeAnnotation(ctx, collecteurStartX + 50, refoulementY - 20, `DN${drawingData.discharge_diameter}`, 'refoulement');
-    }
+    // Label collecteur
+    ctx.fillStyle = '#2E7D32';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('COLLECTEUR PARALLÈLE', centerX, collecteurY + 20);
+    ctx.font = '8px Arial';
+    ctx.fillText(`DN${drawingData.discharge_diameter}`, centerX, collecteurY + 32);
     
-    // Manomètre refoulement ISO
+    // 5. TUYAUTERIE VERS STOCKAGE
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(startX + (pumpCount - 1) * pumpSpacing + 30, collecteurY);
+    ctx.lineTo(centerX + 200, collecteurY);
+    ctx.stroke();
+    
+    // Flèche débit total
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 150, collecteurY - 5);
+    ctx.lineTo(centerX + 165, collecteurY);
+    ctx.lineTo(centerX + 150, collecteurY + 5);
+    ctx.stroke();
+    
+    // Débit total affiché
+    ctx.fillStyle = '#2E7D32';
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'center';
+    const totalFlow = drawingData.flow_rate * drawingData.pumps_in_service;
+    ctx.fillText(`${totalFlow}m³/h`, centerX + 130, collecteurY - 10);
+    
+    // 6. RÉSERVOIR DE STOCKAGE
+    const storageX = centerX + 220;
+    const storageY = centerY - 60;
+    const storageW = 100;
+    const storageH = 120;
+    
+    ctx.strokeStyle = '#9C27B0';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#F3E5F5';
+    ctx.fillRect(storageX, storageY, storageW, storageH);
+    ctx.strokeRect(storageX, storageY, storageW, storageH);
+    
+    // Niveau stockage
+    ctx.fillStyle = '#8E24AA';
+    ctx.fillRect(storageX + 5, storageY + storageH * 0.2, storageW - 10, storageH * 0.7);
+    
+    // Raccordement
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 200, collecteurY);
+    ctx.lineTo(storageX, collecteurY);
+    ctx.lineTo(storageX, storageY + storageH - 20);
+    ctx.stroke();
+    
+    // Label stockage
+    ctx.fillStyle = '#7B1FA2';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('STOCKAGE', storageX + storageW/2, storageY - 10);
+    
+    // 7. INSTRUMENTATIONS
     if (drawingData.accessories.pressure_gauge_discharge) {
-      drawISOPressureGauge(ctx, collecteurEndX - 50, refoulementY - 30, 'ref');
+      const gaugeX = centerX + 100;
+      const gaugeY = collecteurY - 30;
+      
+      // Manomètre PID
+      ctx.beginPath();
+      ctx.arc(gaugeX, gaugeY, 12, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Aiguille
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY);
+      ctx.lineTo(gaugeX + 6, gaugeY - 6);
+      ctx.stroke();
+      
+      // Raccordement
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY + 12);
+      ctx.lineTo(gaugeX, collecteurY);
+      ctx.stroke();
+      
+      // Tag avec pression
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PI-001', gaugeX, gaugeY + 25);
+      ctx.fillText(`${drawingData.operating_pressure}bar`, gaugeX, gaugeY + 35);
     }
     
-    // Débitmètre ISO
-    if (drawingData.accessories.flow_meter) {
-      drawISOFlowMeter(ctx, collecteurEndX - 80, refoulementY);
-    }
-    
-    // 5. TUYAUTERIE VERS STOCKAGE avec flèches
-    drawProfessionalPipe(ctx, collecteurEndX, refoulementY, collecteurEndX + 100, refoulementY, drawingData.discharge_diameter, 'refoulement');
-    drawFlowArrow(ctx, collecteurEndX + 50, refoulementY - 10, 'right');
-    
-    // 6. RÉSERVOIR DE STOCKAGE avec niveau
-    drawProfessionalTank(ctx, collecteurEndX + 150, refoulementY - 100, 150, 200, 'STOCKAGE', '#f3e5f5');
-    
-    // 7. COFFRET ÉLECTRIQUE ISO
-    if (drawingData.accessories.control_panel) {
-      drawISOControlPanel(ctx, collecteurEndX - 150, pumpY - 120, totalPumps, pumpsInService);
-    }
-    
-    // 8. DIMENSIONS ET COTES
-    if (drawingData.show_dimensions) {
-      drawDimensions(ctx, currentX, pumpY, collecteurEndX, refoulementY);
-    }
+    // 8. CARTOUCHE TECHNIQUE
+    drawDynamicTechnicalCartouche(ctx, canvas, 'SURFACE PARALLÈLE');
   };
 
   // FONCTIONS DE DESSIN D'ÉQUIPEMENTS PROFESSIONNELS
