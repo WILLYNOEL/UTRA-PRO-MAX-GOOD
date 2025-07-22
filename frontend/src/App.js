@@ -16491,11 +16491,8 @@ function App() {
                             <input
                               type="number"
                               step="0.1"
-                              value={drawingData.forage_specific.residual_pressure}
-                              onChange={(e) => handleDrawingInputChange('forage_specific', {
-                                ...drawingData.forage_specific,
-                                residual_pressure: parseFloat(e.target.value) || 2
-                              })}
+                              value={drawingData.forage_specific.residual_pressure === '' ? '' : drawingData.forage_specific.residual_pressure}
+                              onChange={(e) => handleNestedNumericInputChange('forage_specific', 'residual_pressure', e.target.value, 2)}
                               className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
                               placeholder="2"
                             />
