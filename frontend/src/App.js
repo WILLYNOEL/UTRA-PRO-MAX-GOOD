@@ -942,10 +942,10 @@ const AuditSystem = () => {
         <!-- En-tête du rapport -->
         <div style="text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
           <h1 style="color: #2563eb; margin: 0; font-size: 24px; font-weight: bold;">
-            📋 RAPPORT D'AUDIT TECHNIQUE
+            📋 RAPPORT D'AUDIT TECHNIQUE PROFESSIONNEL
           </h1>
           <h2 style="color: #4b5563; margin: 10px 0; font-size: 18px;">
-            INSTALLATION DE POMPAGE - ANALYSE EXPERTE
+            INSTALLATION DE POMPAGE - ANALYSE EXPERTE COMPLÈTE
           </h2>
           <p style="margin: 10px 0; color: #6b7280; font-size: 14px;">
             Généré le ${currentDate}
@@ -973,20 +973,21 @@ const AuditSystem = () => {
           </div>
         </div>`;
 
-    // Section 1 : Analyse Technique
-    if (realTimeAnalysis?.section1_technical_analysis) {
-      content += `
-        <div style="page-break-inside: avoid; margin-bottom: 25px;">
-          <h3 style="color: #2563eb; font-size: 16px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 15px;">
-            📊 SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE
+    // ========================================================================================================
+    // SECTION 1 OBLIGATOIRE : ANALYSE TECHNIQUE DÉTAILLÉE
+    // ========================================================================================================
+    content += `
+        <div style="page-break-inside: avoid; margin-bottom: 30px; border: 2px solid #2563eb; border-radius: 8px; padding: 20px;">
+          <h3 style="color: #2563eb; font-size: 18px; border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">
+            📊 SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE (OBLIGATOIRE)
           </h3>`;
       
-      // Analyse Fluides
-      if (realTimeAnalysis.section1_technical_analysis.fluid_analysis?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🌡️ ANALYSE FLUIDE & TEMPÉRATURE</h4>`;
-        
+    // Analyse Fluides - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">🌡️ ANALYSE FLUIDE & TEMPÉRATURE</h4>`;
+    
+    if (realTimeAnalysis?.section1_technical_analysis?.fluid_analysis?.length > 0) {
         realTimeAnalysis.section1_technical_analysis.fluid_analysis.forEach(analysis => {
           const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : 
                          analysis.severity === 'IMPORTANT' ? '#fff7ed' : '#fefce8';
@@ -1006,15 +1007,17 @@ const AuditSystem = () => {
               <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
             </div>`;
         });
-        content += `</div>`;
-      }
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Aucune analyse fluide/température critique détectée. Installation conforme.</p>`;
+    }
+    content += `</div>`;
 
-      // Analyse Diamètres
-      if (realTimeAnalysis.section1_technical_analysis.diameter_analysis?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">📏 ANALYSE DIAMÈTRES & VITESSES</h4>`;
-        
+    // Analyse Diamètres - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">📏 ANALYSE DIAMÈTRES & VITESSES</h4>`;
+    
+    if (realTimeAnalysis?.section1_technical_analysis?.diameter_analysis?.length > 0) {
         realTimeAnalysis.section1_technical_analysis.diameter_analysis.forEach(analysis => {
           const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : '#fff7ed';
           const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : '#f97316';
@@ -1047,16 +1050,20 @@ const AuditSystem = () => {
               <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
             </div>`;
         });
-        content += `</div>`;
-      }
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Diamètres et vitesses dans les normes. Aucune optimisation requise.</p>`;
+    }
+    content += `</div>`;
 
-      // Calculs de Puissance
-      if (realTimeAnalysis.section1_technical_analysis.power_calculations && 
+    // Calculs de Puissance - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">🔢 CALCULS PUISSANCE ÉLECTRIQUE</h4>`;
+    
+    if (realTimeAnalysis?.section1_technical_analysis?.power_calculations && 
           Object.keys(realTimeAnalysis.section1_technical_analysis.power_calculations).length > 0) {
         const power = realTimeAnalysis.section1_technical_analysis.power_calculations;
         content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🔢 CALCULS PUISSANCE</h4>
             <div style="background-color: #faf5ff; border: 1px solid #a855f7; padding: 12px; border-radius: 4px;">
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
                 <div><strong>Configuration:</strong> ${power.configuration || 'N/A'}</div>
@@ -1066,27 +1073,29 @@ const AuditSystem = () => {
                 <div><strong>P réactive:</strong> ${power.reactive_power || 'N/A'} kVAR</div>
                 <div><strong>P apparente:</strong> ${power.apparent_power || 'N/A'} kVA</div>
               </div>
-            </div>
-          </div>`;
-      }
-      
-      content += `</div>`;
+            </div>`;
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Données électriques insuffisantes pour calculs de puissance détaillés.</p>`;
     }
+    content += `</div>`;
+      
+    content += `</div>`; // Fin Section 1
 
-    // Section 2 : Diagnostic Mécanique
-    if (realTimeAnalysis?.section2_mechanical_diagnosis) {
-      content += `
-        <div style="page-break-inside: avoid; margin-bottom: 25px;">
-          <h3 style="color: #ea580c; font-size: 16px; border-bottom: 2px solid #ea580c; padding-bottom: 8px; margin-bottom: 15px;">
-            🔧 SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET
+    // ========================================================================================================
+    // SECTION 2 OBLIGATOIRE : DIAGNOSTIC MÉCANIQUE COMPLET
+    // ========================================================================================================
+    content += `
+        <div style="page-break-inside: avoid; margin-bottom: 30px; border: 2px solid #ea580c; border-radius: 8px; padding: 20px;">
+          <h3 style="color: #ea580c; font-size: 18px; border-bottom: 3px solid #ea580c; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">
+            🔧 SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET (OBLIGATOIRE)
           </h3>`;
 
-      // Analyse Roulements
-      if (realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">⚙️ ANALYSE ROULEMENTS</h4>`;
-        
+    // Analyse Roulements - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #fff7ed; border-left: 4px solid #ea580c; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">⚙️ ANALYSE ROULEMENTS</h4>`;
+    
+    if (realTimeAnalysis?.section2_mechanical_diagnosis?.bearing_analysis?.length > 0) {
         realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis.forEach(analysis => {
           const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : 
                          analysis.severity === 'IMPORTANT' ? '#fff7ed' : '#f0fdf4';
@@ -1110,15 +1119,39 @@ const AuditSystem = () => {
               <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
             </div>`;
         });
-        content += `</div>`;
-      }
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Roulements en bon état. Surveillance normale recommandée.</p>`;
+    }
+    content += `</div>`;
 
-      // Analyse Bruit
-      if (realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px;">🔊 ANALYSE BRUIT MOTEUR</h4>`;
-        
+    // Analyse Étanchéité - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #fff7ed; border-left: 4px solid #ea580c; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">💧 ANALYSE ÉTANCHÉITÉ</h4>`;
+    
+    if (realTimeAnalysis?.section2_mechanical_diagnosis?.seal_analysis?.length > 0) {
+        realTimeAnalysis.section2_mechanical_diagnosis.seal_analysis.forEach(analysis => {
+          content += `
+            <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 10px; border-radius: 4px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="font-size: 13px;">${analysis.type}</strong>
+                <span style="background-color: #3b82f620; color: #3b82f6; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">${analysis.severity}</span>
+              </div>
+              <p style="font-size: 12px; margin: 5px 0; color: #4b5563;">${analysis.description}</p>
+              <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
+            </div>`;
+        });
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Aucune fuite détectée. Étanchéité satisfaisante.</p>`;
+    }
+    content += `</div>`;
+
+    // Analyse Bruit - OBLIGATOIRE même si vide
+    content += `
+          <div style="margin-bottom: 20px; background-color: #fff7ed; border-left: 4px solid #ea580c; padding: 15px;">
+            <h4 style="color: #1f2937; font-size: 14px; margin-bottom: 10px; font-weight: bold;">🔊 ANALYSE BRUIT MOTEUR</h4>`;
+    
+    if (realTimeAnalysis?.section2_mechanical_diagnosis?.noise_analysis?.length > 0) {
         realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis.forEach(analysis => {
           const bgColor = analysis.severity === 'CRITIQUE' ? '#fef2f2' : '#fff7ed';
           const borderColor = analysis.severity === 'CRITIQUE' ? '#ef4444' : '#f97316';
@@ -1138,26 +1171,28 @@ const AuditSystem = () => {
               <p style="font-size: 12px; margin: 5px 0; color: #16a34a;"><strong>Action:</strong> ${analysis.corrective_action}</p>
             </div>`;
         });
-        content += `</div>`;
-      }
-      
-      content += `</div>`;
+    } else {
+        content += `<p style="font-style: italic; color: #6b7280;">Niveau sonore acceptable. Pas de nuisance détectée.</p>`;
     }
+    content += `</div>`;
+      
+    content += `</div>`; // Fin Section 2
 
-    // Section 3 : Actions Correctives
-    if (realTimeAnalysis?.section3_corrective_actions) {
-      content += `
-        <div style="page-break-inside: avoid; margin-bottom: 25px;">
-          <h3 style="color: #16a34a; font-size: 16px; border-bottom: 2px solid #16a34a; padding-bottom: 8px; margin-bottom: 15px;">
-            👷 SECTION 3 : ACTIONS CORRECTIVES TECHNICIENS
+    // ========================================================================================================
+    // SECTION 3 OBLIGATOIRE : ACTIONS IMMÉDIATES
+    // ========================================================================================================
+    content += `
+        <div style="page-break-inside: avoid; margin-bottom: 30px; border: 2px solid #dc2626; border-radius: 8px; padding: 20px;">
+          <h3 style="color: #dc2626; font-size: 18px; border-bottom: 3px solid #dc2626; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">
+            🚨 SECTION 3 : ACTIONS IMMÉDIATES (OBLIGATOIRE)
           </h3>`;
 
-      // Actions Immédiates
-      if (realTimeAnalysis.section3_corrective_actions.immediate_actions?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #dc2626; font-size: 14px; margin-bottom: 10px;">🚨 ACTIONS IMMÉDIATES (0-24h)</h4>`;
-        
+    // Actions Immédiates - OBLIGATOIRE même si vide
+    content += `
+          <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px;">
+            <h4 style="color: #dc2626; font-size: 14px; margin-bottom: 10px; font-weight: bold;">⚠️ ACTIONS PRIORITAIRES (0-24h)</h4>`;
+    
+    if (realTimeAnalysis?.section3_corrective_actions?.immediate_actions?.length > 0) {
         realTimeAnalysis.section3_corrective_actions.immediate_actions.forEach(action => {
           if (action.condition) {
             content += `
@@ -1171,59 +1206,24 @@ const AuditSystem = () => {
             content += `</div>`;
           }
         });
-        content += `</div>`;
-      }
-
-      // Actions Préventives
-      if (realTimeAnalysis.section3_corrective_actions.preventive_actions?.length > 0) {
+    } else {
         content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #ea580c; font-size: 14px; margin-bottom: 10px;">🔧 ACTIONS PRÉVENTIVES (1-7 jours)</h4>`;
-        
-        realTimeAnalysis.section3_corrective_actions.preventive_actions.forEach(category => {
-          content += `
-            <div style="background-color: #fff7ed; border: 1px solid #f97316; padding: 12px; border-radius: 4px; margin-bottom: 10px;">
-              <h5 style="margin: 0 0 10px 0; font-size: 13px; color: #ea580c;">${category.category}</h5>`;
-          
-          category.tasks?.forEach(task => {
-            content += `<div style="font-size: 12px; margin: 5px 0; color: #9a3412;">□ ${task}</div>`;
-          });
-          
-          content += `</div>`;
-        });
-        content += `</div>`;
-      }
-
-      // Planning Maintenance
-      if (realTimeAnalysis.section3_corrective_actions.maintenance_schedule?.length > 0) {
-        content += `
-          <div style="margin-bottom: 20px;">
-            <h4 style="color: #16a34a; font-size: 14px; margin-bottom: 10px;">📅 PLANNING MAINTENANCE</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">`;
-        
-        realTimeAnalysis.section3_corrective_actions.maintenance_schedule.forEach(schedule => {
-          content += `
-            <div style="background-color: #f0fdf4; border: 1px solid #22c55e; padding: 10px; border-radius: 4px;">
-              <h6 style="margin: 0 0 8px 0; font-size: 12px; color: #15803d; font-weight: bold;">${schedule.frequency}</h6>`;
-          
-          schedule.tasks?.forEach(task => {
-            content += `<div style="font-size: 11px; margin: 3px 0; color: #166534;">• ${task}</div>`;
-          });
-          
-          content += `</div>`;
-        });
-        content += `</div></div>`;
-      }
-      
-      content += `</div>`;
+          <div style="background-color: #f0fdf4; border: 1px solid #22c55e; padding: 12px; border-radius: 4px;">
+            <p style="color: #16a34a; font-weight: bold; margin: 0;">✅ AUCUNE ACTION IMMÉDIATE REQUISE</p>
+            <p style="color: #16a34a; font-size: 12px; margin: 5px 0 0 0;">Installation en bon état - Surveillance normale recommandée</p>
+          </div>`;
     }
+    content += `</div>`;
+      
+    content += `</div>`; // Fin Section 3
 
-    // Pied de page
+    // Pied de page obligatoire
     content += `
-        <div style="border-top: 2px solid #2563eb; padding-top: 20px; margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px;">
-          <p style="margin: 5px 0;">📋 Rapport généré par ECO PUMP EXPERT</p>
+        <div style="border-top: 3px solid #2563eb; padding-top: 20px; margin-top: 30px; text-align: center; color: #6b7280; font-size: 12px; background-color: #f8fafc; padding: 15px; border-radius: 8px;">
+          <p style="margin: 5px 0; font-weight: bold; color: #2563eb;">📋 RAPPORT TECHNIQUE GÉNÉRÉ PAR ECO PUMP EXPERT</p>
           <p style="margin: 5px 0;">Date de génération : ${currentDate}</p>
-          <p style="margin: 5px 0;">🔧 Outil d'expertise technique pour installations de pompage</p>
+          <p style="margin: 5px 0;">🔧 Sections obligatoires : Analyse Technique Détaillée + Diagnostic Mécanique + Actions Immédiates</p>
+          <p style="margin: 5px 0; font-style: italic;">Document professionnel pour expertise installations de pompage</p>
         </div>
       </div>
     `;
