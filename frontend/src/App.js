@@ -14135,49 +14135,146 @@ function App() {
       accessoryX += 30;
     }
     
-    // 10. RÉSERVOIR DE STOCKAGE (rectangle simple) - VOLUME PROPORTIONNEL
-    const tankX = centerX + 200;
-    const tankY = groundLevel - 80;
-    const tankW = Math.max(80, Math.min(120, drawingData.flow_rate * 2)); // Largeur proportionnelle au débit
-    const tankH = Math.max(100, Math.min(160, drawingData.total_head * 2)); // Hauteur proportionnelle à HMT
+    // 10. CHÂTEAU D'EAU SURÉLEVÉ - VALEURS DYNAMIQUES DU FORAGE
+    const towerX = centerX + 200;
+    const towerBaseY = groundLevel - drawingData.forage_specific.reservoir_height * 2; // Hauteur proportionnelle
+    const towerW = Math.max(80, Math.min(120, drawingData.flow_rate * 1.5)); // Largeur proportionnelle au débit
+    const towerH = drawingData.forage_specific.reservoir_height; // Hauteur du réservoir saisie
     
+    // Support du château d'eau
+    ctx.strokeStyle = '#7F8C8D';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(towerX + towerW/2 - 15, groundLevel);
+    ctx.lineTo(towerX + towerW/2 - 15, towerBaseY + towerH);
+    ctx.moveTo(towerX + towerW/2 + 15, groundLevel);
+    ctx.lineTo(towerX + towerW/2 + 15, towerBaseY + towerH);
+    ctx.stroke();
+    
+    // Entretoises
+    ctx.strokeStyle = '#95A5A6';
+    ctx.lineWidth = 2;
+    for (let i = 1; i < 4; i++) {
+      const supportY = groundLevel - (i * drawingData.forage_specific.reservoir_height * 2 / 4);
+      ctx.beginPath();
+      ctx.moveTo(towerX + towerW/2 - 15, supportY);
+      ctx.lineTo(towerX + towerW/2 + 15, supportY);
+      ctx.stroke();
+    }
+    
+    // Réservoir surélevé
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 3;
     ctx.fillStyle = '#F4ECF7';
-    ctx.fillRect(tankX, tankY, tankW, tankH);
-    ctx.strokeRect(tankX, tankY, tankW, tankH);
+    ctx.fillRect(towerX, towerBaseY, towerW, towerH);
+    ctx.strokeRect(towerX, towerBaseY, towerW, towerH);
     
-    // Niveau liquide proportionnel
-    const liquidLevel = 0.7; // 70% rempli
+    // Niveau liquide
+    const liquidLevel = 0.7;
     ctx.fillStyle = '#9B59B6';
-    ctx.fillRect(tankX + 5, tankY + tankH * (1 - liquidLevel), tankW - 10, tankH * liquidLevel);
+    ctx.fillRect(towerX + 5, towerBaseY + towerH * (1 - liquidLevel), towerW - 10, towerH * liquidLevel);
     
     // Ligne niveau
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(tankX, tankY + tankH * (1 - liquidLevel));
-    ctx.lineTo(tankX + tankW, tankY + tankH * (1 - liquidLevel));
+    ctx.moveTo(towerX, towerBaseY + towerH * (1 - liquidLevel));
+    ctx.lineTo(towerX + towerW, towerBaseY + towerH * (1 - liquidLevel));
     ctx.stroke();
     ctx.setLineDash([]);
     
-    // Raccordement réservoir
+    // VALEURS SAISIES AFFICHÉES VISUELLEMENT
+    // Hauteur du château d'eau
+    ctx.strokeStyle = '#E91E63';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(towerX + towerW + 10, towerBaseY);
+    ctx.lineTo(towerX + towerW + 30, towerBaseY);
+    ctx.lineTo(towerX + towerW + 30, towerBaseY + towerH);
+    ctx.lineTo(towerX + towerW + 10, towerBaseY + towerH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Flèches de cote
+    ctx.strokeStyle = '#E91E63';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(towerX + towerW + 25, towerBaseY);
+    ctx.lineTo(towerX + towerW + 25, towerBaseY + 5);
+    ctx.moveTo(towerX + towerW + 25, towerBaseY + towerH);
+    ctx.lineTo(towerX + towerW + 25, towerBaseY + towerH - 5);
+    ctx.stroke();
+    
+    // Annotation hauteur château d'eau (valeur saisie)
+    ctx.fillStyle = '#E91E63';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`H=${drawingData.forage_specific.reservoir_height}m`, towerX + towerW + 35, towerBaseY + towerH/2);
+    
+    // Raccordement tuyauterie avec cotes
+    const connectionY = towerBaseY + towerH - 10;
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = pipeWidth;
     ctx.beginPath();
     ctx.moveTo(accessoryX, pipeY);
-    ctx.lineTo(tankX, pipeY);
-    ctx.lineTo(tankX, tankY + tankH - 20);
+    ctx.lineTo(towerX - 20, pipeY);
+    ctx.lineTo(towerX - 20, connectionY);
+    ctx.lineTo(towerX, connectionY);
     ctx.stroke();
     
-    // Tag réservoir avec volume estimé
+    // LONGUEUR DE REFOULEMENT AFFICHÉE
+    ctx.strokeStyle = '#FF5722';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(wellX + 50, pipeY + 15);
+    ctx.lineTo(towerX - 20, pipeY + 15);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Annotation longueur refoulement (valeur saisie)
+    ctx.fillStyle = '#FF5722';
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`L=${drawingData.forage_specific.discharge_length}m`, (wellX + 50 + towerX - 20) / 2, pipeY + 30);
+    
+    // NIVEAU DYNAMIQUE AFFICHÉ VISUELLEMENT
+    ctx.strokeStyle = '#2196F3';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(wellX - 40, groundLevel);
+    ctx.lineTo(wellX - 60, groundLevel);
+    ctx.lineTo(wellX - 60, groundLevel + drawingData.forage_specific.dynamic_level * 3);
+    ctx.lineTo(wellX - 40, groundLevel + drawingData.forage_specific.dynamic_level * 3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Flèches de cote niveau dynamique
+    ctx.strokeStyle = '#2196F3';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(wellX - 55, groundLevel);
+    ctx.lineTo(wellX - 55, groundLevel + 5);
+    ctx.moveTo(wellX - 55, groundLevel + drawingData.forage_specific.dynamic_level * 3);
+    ctx.lineTo(wellX - 55, groundLevel + drawingData.forage_specific.dynamic_level * 3 - 5);
+    ctx.stroke();
+    
+    // Annotation niveau dynamique (valeur saisie)
+    ctx.fillStyle = '#2196F3';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level}m`, wellX - 65, groundLevel + (drawingData.forage_specific.dynamic_level * 3) / 2);
+    
+    // Tag château d'eau avec volume estimé
     ctx.fillStyle = '#8E44AD';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('T-001', tankX + tankW/2, tankY - 10);
+    ctx.fillText('CHÂTEAU D\'EAU', towerX + towerW/2, towerBaseY - 10);
     ctx.font = '8px Arial';
-    ctx.fillText(`${Math.round(drawingData.flow_rate * 2)}m³`, tankX + tankW/2, tankY - 25);
+    ctx.fillText(`V=${Math.round(towerW * towerH * 0.1)}m³`, towerX + towerW/2, towerBaseY - 25);
     
     // 11. COFFRET ÉLECTRIQUE DYNAMIQUE si sélectionné
     if (drawingData.accessories.control_panel) {
