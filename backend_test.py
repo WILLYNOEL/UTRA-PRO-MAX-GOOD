@@ -8431,6 +8431,181 @@ class HydraulicPumpTester:
         
         return all_tests_passed
 
+    def test_expert_tab_diameter_recommendations_consistency(self):
+        """Test Expert tab diameter recommendations consistency with graduated logic"""
+        print("\n🎯 Testing Expert Tab Diameter Recommendations Consistency...")
+        
+        # Test case from review request - high velocity triggering all recommendation types
+        test_data = {
+            "flow_rate": 150.0,  # Very high flow
+            "suction_pipe_diameter": 26.9,  # DN20 - very small
+            "discharge_pipe_diameter": 33.7,  # DN25 - small
+            "suction_dn": 20,  # DN20 selected by user
+            "discharge_dn": 25,  # DN25 selected by user
+            "suction_height": 5.0,
+            "discharge_height": 15.0,
+            "suction_length": 40.0,
+            "discharge_length": 60.0,
+            "total_length": 100.0,
+            "useful_pressure": 2.0,  # bar
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "npsh_required": 4.0,  # High NPSH requirement
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 85.0,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 8760.0,
+            "electricity_cost": 0.12,
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0,
+            "suction_type": "suction_lift"
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Get expert recommendations
+                expert_recommendations = result.get("expert_recommendations", [])
+                
+                if not expert_recommendations:
+                    self.log_test("Expert Tab Diameter Recommendations - Structure", False, 
+                                "No expert recommendations found")
+                    return False
+                
+                # Convert recommendations to text for analysis
+                recommendations_text = ""
+                for rec in expert_recommendations:
+                    if isinstance(rec, dict):
+                        recommendations_text += rec.get("description", "") + " "
+                        if "solutions" in rec:
+                            for solution in rec["solutions"]:
+                                recommendations_text += solution + " "
+                    else:
+                        recommendations_text += str(rec) + " "
+                
+                # Check for graduated diameter recommendations sections
+                graduated_sections_found = []
+                expected_sections = [
+                    "DIAMÈTRE ASPIRATION - Options graduées",
+                    "OPTIMISATION DIAMÈTRE - Options graduées", 
+                    "ASPIRATION - Options graduées vitesses élevées",
+                    "Options graduées anti-cavitation",
+                    "VITESSE EXCESSIVE"
+                ]
+                
+                for section in expected_sections:
+                    if section.lower() in recommendations_text.lower():
+                        graduated_sections_found.append(section)
+                
+                # Check for graduated format indicators
+                graduated_format_indicators = [
+                    "🟢 OPTIMAL",
+                    "🟡 RECOMMANDÉ", 
+                    "🔴 LIMITE",
+                    "✅ CONFORME",
+                    "⚠️ ACCEPTABLE",
+                    "DN20→DN",
+                    "DN25→DN",
+                    "réduction -",
+                    "coût +",
+                    "vitesse"
+                ]
+                
+                graduated_indicators_found = []
+                for indicator in graduated_format_indicators:
+                    if indicator in recommendations_text:
+                        graduated_indicators_found.append(indicator)
+                
+                # Check for simple "DN32 → DN65" format (should NOT be present)
+                simple_format_patterns = [
+                    "DN32 → DN65",
+                    "DN→DN" + " " + "simple",
+                    "recommandation simple"
+                ]
+                
+                simple_format_found = []
+                for pattern in simple_format_patterns:
+                    if pattern in recommendations_text:
+                        simple_format_found.append(pattern)
+                
+                # Check velocity limits compliance (all recommendations should respect <4 m/s)
+                velocity_compliance = True
+                velocity_values = []
+                
+                # Extract velocity values from recommendations
+                import re
+                velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', recommendations_text)
+                for match in velocity_matches:
+                    velocity = float(match)
+                    velocity_values.append(velocity)
+                    if velocity > 4.0:
+                        velocity_compliance = False
+                
+                # Validation results
+                validation_errors = []
+                
+                if len(graduated_sections_found) < 1:
+                    validation_errors.append(f"Expected graduated sections, found: {graduated_sections_found}")
+                
+                if len(graduated_indicators_found) < 3:
+                    validation_errors.append(f"Expected graduated format indicators, found: {graduated_indicators_found}")
+                
+                if simple_format_found:
+                    validation_errors.append(f"Found simple format (should not exist): {simple_format_found}")
+                
+                if not velocity_compliance:
+                    validation_errors.append(f"Velocity limit violations (>4 m/s): {velocity_values}")
+                
+                if validation_errors:
+                    self.log_test("Expert Tab Diameter Recommendations Consistency", False, 
+                                "; ".join(validation_errors))
+                    return False
+                
+                # Success - log details
+                success_details = []
+                success_details.append(f"Graduated sections: {len(graduated_sections_found)}")
+                success_details.append(f"Format indicators: {len(graduated_indicators_found)}")
+                success_details.append(f"Velocity compliance: {velocity_compliance}")
+                success_details.append(f"No simple format found: {len(simple_format_found) == 0}")
+                
+                self.log_test("Expert Tab Diameter Recommendations Consistency", True, 
+                            "; ".join(success_details))
+                
+                # Additional detailed validation
+                cavitation_recommendations = any("cavitation" in rec.get("description", "").lower() 
+                                               for rec in expert_recommendations if isinstance(rec, dict))
+                velocity_recommendations = any("vitesse" in rec.get("description", "").lower() 
+                                             for rec in expert_recommendations if isinstance(rec, dict))
+                diameter_recommendations = any("diamètre" in rec.get("description", "").lower() 
+                                             for rec in expert_recommendations if isinstance(rec, dict))
+                
+                self.log_test("Expert Tab - Cavitation Recommendations", cavitation_recommendations, 
+                            f"Cavitation recommendations present: {cavitation_recommendations}")
+                self.log_test("Expert Tab - Velocity Recommendations", velocity_recommendations, 
+                            f"Velocity recommendations present: {velocity_recommendations}")
+                self.log_test("Expert Tab - Diameter Recommendations", diameter_recommendations, 
+                            f"Diameter recommendations present: {diameter_recommendations}")
+                
+                return True
+            else:
+                self.log_test("Expert Tab Diameter Recommendations Consistency", False, 
+                            f"HTTP {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Expert Tab Diameter Recommendations Consistency", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
