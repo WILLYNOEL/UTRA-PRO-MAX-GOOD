@@ -16531,16 +16531,16 @@ function App() {
                         <div className="bg-green-100 border border-green-300 rounded p-2">
                           <h5 className="text-xs font-bold text-green-700 mb-1">📊 CALCUL AUTOMATIQUE HMT</h5>
                           <div className="text-xs text-green-600">
-                            <div>• Niveau dynamique: {drawingData.forage_specific.dynamic_level}m</div>
-                            <div>• Hauteur château d'eau: {drawingData.forage_specific.reservoir_height}m</div>
-                            <div>• Pertes charge (~10% long.): {Math.round(drawingData.forage_specific.discharge_length * 0.1)}m</div>
-                            <div>• Pression résiduelle: {Math.round(drawingData.forage_specific.residual_pressure * 10)}m</div>
+                            <div>• Niveau dynamique: {drawingData.forage_specific.dynamic_level || 0}m</div>
+                            <div>• Hauteur château d'eau: {drawingData.forage_specific.reservoir_height || 0}m</div>
+                            <div>• Pertes charge (~10% long.): {Math.round((drawingData.forage_specific.discharge_length || 0) * 0.1)}m</div>
+                            <div>• Pression résiduelle: {Math.round((drawingData.forage_specific.residual_pressure || 0) * 10)}m</div>
                             <div className="font-bold text-green-700 border-t pt-1 mt-1">
                               HMT CALCULÉE = {Math.round(
-                                drawingData.forage_specific.dynamic_level + 
-                                drawingData.forage_specific.reservoir_height + 
-                                (drawingData.forage_specific.discharge_length * 0.1) + 
-                                (drawingData.forage_specific.residual_pressure * 10)
+                                (drawingData.forage_specific.dynamic_level || 0) + 
+                                (drawingData.forage_specific.reservoir_height || 0) + 
+                                ((drawingData.forage_specific.discharge_length || 0) * 0.1) + 
+                                ((drawingData.forage_specific.residual_pressure || 0) * 10)
                               )}m
                             </div>
                           </div>
