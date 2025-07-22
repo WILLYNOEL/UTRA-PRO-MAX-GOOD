@@ -789,6 +789,142 @@ const AuditSystem = () => {
             <div className="space-y-8">
               <h3 className="text-xl font-bold text-gray-900">🏗️ Audit Terrain Professionnel</h3>
               
+              {/* Rapport Journal en Temps Réel */}
+              {realTimeAnalysis && (
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border-l-4 border-blue-500">
+                  <h4 className="font-bold text-blue-900 mb-4">📋 RAPPORT JOURNAL - ANALYSE TEMPS RÉEL</h4>
+                  
+                  {/* Statut global */}
+                  <div className={`mb-4 p-3 rounded-lg ${
+                    realTimeAnalysis.overall_status === 'CRITIQUE' ? 'bg-red-100 border border-red-300' :
+                    realTimeAnalysis.overall_status === 'IMPORTANT' ? 'bg-orange-100 border border-orange-300' :
+                    'bg-green-100 border border-green-300'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold">État Installation:</span>
+                      <span className={`font-bold ${
+                        realTimeAnalysis.overall_status === 'CRITIQUE' ? 'text-red-700' :
+                        realTimeAnalysis.overall_status === 'IMPORTANT' ? 'text-orange-700' :
+                        'text-green-700'
+                      }`}>
+                        {realTimeAnalysis.overall_status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Problèmes hydrauliques */}
+                  {realTimeAnalysis.hydraulic_issues.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-blue-800 mb-2">🌊 ANALYSE HYDRAULIQUE</h5>
+                      {realTimeAnalysis.hydraulic_issues.map((issue, idx) => (
+                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
+                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                          'bg-yellow-50 border-yellow-400'
+                        }`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="font-medium text-sm">{issue.type}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                              'bg-yellow-200 text-yellow-800'
+                            }`}>
+                              {issue.severity}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
+                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
+                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Problèmes électriques */}
+                  {realTimeAnalysis.electrical_issues.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-yellow-800 mb-2">⚡ ANALYSE ÉLECTRIQUE</h5>
+                      {realTimeAnalysis.electrical_issues.map((issue, idx) => (
+                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
+                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                          'bg-yellow-50 border-yellow-400'
+                        }`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="font-medium text-sm">{issue.type}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                              'bg-yellow-200 text-yellow-800'
+                            }`}>
+                              {issue.severity}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
+                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
+                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Problèmes mécaniques */}
+                  {realTimeAnalysis.mechanical_issues.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-orange-800 mb-2">🔧 ANALYSE MÉCANIQUE</h5>
+                      {realTimeAnalysis.mechanical_issues.map((issue, idx) => (
+                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
+                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                          'bg-yellow-50 border-yellow-400'
+                        }`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="font-medium text-sm">{issue.type}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                              'bg-yellow-200 text-yellow-800'
+                            }`}>
+                              {issue.severity}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
+                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
+                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Recommandations équipements */}
+                  {realTimeAnalysis.recommendations.length > 0 && (
+                    <div className="mb-4">
+                      <h5 className="font-semibold text-green-800 mb-2">💡 RECOMMANDATIONS ÉQUIPEMENTS</h5>
+                      {realTimeAnalysis.recommendations.map((rec, idx) => (
+                        <div key={idx} className="mb-2 p-3 rounded-lg bg-green-50 border border-green-200">
+                          <div className="flex justify-between items-start mb-1">
+                            <span className="font-medium text-sm text-green-900">{rec.equipment}</span>
+                            <span className="text-xs text-green-600">{rec.cost}</span>
+                          </div>
+                          <p className="text-xs text-green-700 mb-1">{rec.justification}</p>
+                          <p className="text-xs text-green-600"><strong>Économies:</strong> {rec.savings}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Message si tout va bien */}
+                  {realTimeAnalysis.overall_status === 'OK' && 
+                   realTimeAnalysis.hydraulic_issues.length === 0 && 
+                   realTimeAnalysis.electrical_issues.length === 0 && 
+                   realTimeAnalysis.mechanical_issues.length === 0 && (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
+                      <span className="text-green-700 font-medium">✅ Aucun problème détecté - Installation dans les normes</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {/* Section 1: Données Installation - Contexte */}
               <div className="bg-blue-50 rounded-lg p-6">
                 <h4 className="font-semibold text-gray-900 mb-4">🏭 Installation et Contexte</h4>
