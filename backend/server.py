@@ -5728,8 +5728,8 @@ def generate_action_plan(recommendations: List[AuditRecommendation], economic_an
         },
         "total_program": {
             "duration_months": 24,
-            "total_investment": economic_analysis["total_investment_required"],
-            "expected_savings": economic_analysis["estimated_annual_savings"],
+            "total_investment": economic_analysis["total_investment_cost"],
+            "expected_savings": economic_analysis["annual_savings"],
             "payback_years": economic_analysis["payback_period_years"]
         }
     }
