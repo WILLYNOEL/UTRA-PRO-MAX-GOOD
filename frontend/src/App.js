@@ -12946,6 +12946,153 @@ function App() {
     ctx.fillText('Version: 3.0 PRO', cartX + 180, cartY + 70);
   };
 
+  // Schémas supplémentaires pour autres installations
+  const drawForageScheme = (ctx, canvas) => {
+    drawSubmersibleScheme(ctx, canvas); // Utilise le schéma submersible comme base
+    
+    // Ajouter manifold spécifique au forage
+    if (drawingData.accessories.manifold) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      addManifold(ctx, centerX - 50, centerY - 150);
+    }
+  };
+
+  const drawSurpresseurScheme = (ctx, canvas) => {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Réservoir à membrane
+    drawPressureTank(ctx, centerX - 200, centerY - 100, 100, 200, 'RÉSERVOIR\nÀ MEMBRANE');
+    
+    // Groupe surpresseur
+    for (let i = 0; i < drawingData.pump_count; i++) {
+      const pumpY = centerY - 40 + (i * 60);
+      drawPump(ctx, centerX, pumpY, `SP${i+1}`);
+    }
+    
+    // Collecteur
+    drawPipe(ctx, centerX + 30, centerY - 40, centerX + 150, centerY - 40);
+    drawTank(ctx, centerX + 200, centerY - 120, 150, 240, 'RÉSEAU');
+  };
+
+  const drawIncendieScheme = (ctx, canvas) => {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Réserve d'eau
+    drawTank(ctx, 100, centerY - 100, 200, 200, 'RÉSERVE\nINCENDIE');
+    
+    // Pompes principales et de secours
+    drawPump(ctx, centerX - 100, centerY - 50, 'PRINC.');
+    drawPump(ctx, centerX - 100, centerY + 30, 'SECOURS');
+    drawPump(ctx, centerX - 100, centerY + 110, 'JOCKEY');
+    
+    // Collecteur incendie
+    drawPipe(ctx, centerX - 70, centerY, centerX + 100, centerY);
+    
+    // Réseau sprinklers
+    drawIncendieNetwork(ctx, centerX + 150, centerY - 100);
+  };
+
+  // Réservoir sous pression
+  const drawPressureTank = (ctx, x, y, width, height, label) => {
+    // Corps cylindrique
+    ctx.beginPath();
+    ctx.ellipse(x + width/2, y, width/2, 20, 0, 0, 2 * Math.PI);
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeRect(x, y, width, height);
+    
+    // Base
+    ctx.beginPath();
+    ctx.ellipse(x + width/2, y + height, width/2, 20, 0, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Membrane (ligne ondulée)
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + height/2);
+    for (let i = 0; i < width - 20; i += 20) {
+      ctx.quadraticCurveTo(x + 10 + i + 10, y + height/2 - 15, x + 10 + i + 20, y + height/2);
+    }
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    const lines = label.split('\n');
+    lines.forEach((line, index) => {
+      ctx.fillText(line, x + width/2, y - 20 + (index * 12));
+    });
+  };
+
+  // Manifold de forage
+  const addManifold = (ctx, x, y) => {
+    // Corps du manifold
+    ctx.fillStyle = '#9ca3af';
+    ctx.fillRect(x, y, 80, 40);
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, 80, 40);
+    
+    // Connexions multiples
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(x + 20 + (i * 20), y - 5, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = '#6b7280';
+      ctx.fill();
+      ctx.stroke();
+    }
+    
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('MANIFOLD', x + 40, y + 55);
+  };
+
+  // Réseau incendie
+  const drawIncendieNetwork = (ctx, x, y) => {
+    // Tuyauterie principale
+    drawPipe(ctx, x, y, x + 200, y);
+    drawPipe(ctx, x + 100, y, x + 100, y + 100);
+    drawPipe(ctx, x + 50, y + 100, x + 150, y + 100);
+    
+    // Sprinklers
+    for (let i = 0; i < 4; i++) {
+      const sprinklerX = x + 50 + (i * 33);
+      drawSprinkler(ctx, sprinklerX, y + 100);
+    }
+    
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('RÉSEAU SPRINKLERS', x + 100, y - 15);
+  };
+
+  // Sprinkler
+  const drawSprinkler = (ctx, x, y) => {
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ef4444';
+    ctx.fill();
+    ctx.strokeStyle = '#1f2937';
+    ctx.stroke();
+    
+    // Diffuseur
+    ctx.beginPath();
+    ctx.moveTo(x - 8, y + 10);
+    ctx.lineTo(x + 8, y + 10);
+    ctx.stroke();
+  };
+
   // Fonctions de dessin spécialisées
   const drawBacheEnterree = (ctx, canvas) => {
     const centerX = canvas.width / 2;
