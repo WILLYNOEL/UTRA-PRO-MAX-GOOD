@@ -2542,7 +2542,23 @@ const AuditSystem = () => {
 
           {activeAuditTab === 'results' && auditResults && (
             <div className="space-y-8">
-              <h3 className="text-xl font-bold text-gray-900">📊 Résultats d'Audit Expert et Recommandations</h3>
+              {/* Bouton Export PDF et En-tête */}
+              <div className="flex justify-between items-center bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">📊 Résultats d'Audit Expert et Recommandations</h3>
+                  <p className="text-sm text-gray-600 mt-1">Rapport d'audit complet et actions correctives</p>
+                </div>
+                <button
+                  onClick={exportAuditReportToPDF}
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 flex items-center space-x-2"
+                  title="Exporter le rapport d'audit en PDF"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Exporter PDF</span>
+                </button>
+              </div>
               
               {/* En-tête du rapport */}
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
