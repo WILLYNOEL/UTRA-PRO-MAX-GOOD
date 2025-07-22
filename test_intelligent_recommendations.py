@@ -197,7 +197,20 @@ def test_intelligent_recommendations_integration():
             
             if diameter_recs:
                 # Check for velocity limits compliance (no >4 m/s recommendations)
-                excessive_velocity = any("4." in rec or "5." in rec or "6." in rec for rec in diameter_recs)
+                # Look for actual velocity values in the recommendations
+                import re
+                excessive_velocity = False
+                for rec in diameter_recs:
+                    # Extract velocity values from recommendations like "3.2m/s" or "1.5m/s"
+                    velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', rec)
+                    for velocity_str in velocity_matches:
+                        velocity_val = float(velocity_str)
+                        if velocity_val > 4.0:
+                            excessive_velocity = True
+                            break
+                    if excessive_velocity:
+                        break
+                
                 if not excessive_velocity:
                     print("✅ HMT Graduated Diameter: PASSED")
                     print(f"   Found {len(diameter_recs)} graduated diameter recommendations with proper velocity limits")
