@@ -6226,6 +6226,10 @@ const ReservoirCalculator = () => {
     const pressure = parseFloat(working_pressure) || 0;
     const usage = parseFloat(daily_usage_hours) || 0;
     
+    // S'assurer que les variables utilisées plus tard sont aussi numériques
+    const existing_volume_num = volume;
+    const working_pressure_num = pressure;
+    
     // Calcul performances avec volume existant
     const kr = pump_type === 'MPC-E' ? 0.7 : 0.9;
     const kH = pump_type === 'MPC-E' ? 0.2 : 0.25;
