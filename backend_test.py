@@ -9183,7 +9183,7 @@ class HydraulicPumpTester:
                         
                         # Check energy waste analysis
                         energy_waste = expert_report.get("energy_waste_analysis", {})
-                        if not energy_waste or "efficiency_loss" not in energy_waste:
+                        if not energy_waste or "current_efficiency" not in energy_waste:
                             self.log_test(f"Expert Installation Report - {case['name']} - Energy Analysis", False, 
                                         "Missing or incomplete energy waste analysis")
                             all_passed = False
