@@ -13908,32 +13908,283 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Accessoires Auto-Sélectionnés */}
+                  {/* Accessoires Sélectionnables Individuellement */}
                   <div className="bg-white rounded-xl shadow-xl p-5 border-l-4 border-purple-600">
                     <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
                       <span className="text-purple-600 mr-2">🔩</span>
-                      ÉQUIPEMENTS NORMATIFS
-                      <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">ISO</span>
+                      ACCESSOIRES & ÉQUIPEMENTS
+                      <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">SÉLECTIONNABLES</span>
                     </h3>
                     
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {Object.entries(drawingData.accessories).map(([key, value]) => (
-                        <label key={key} className={`flex items-center p-2 rounded ${value ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
+                    {/* Instrumentation */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-slate-700 mb-2 flex items-center">
+                        <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                        INSTRUMENTATION
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.pressure_gauge_suction ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
                           <input
                             type="checkbox"
-                            checked={value}
+                            checked={drawingData.accessories.pressure_gauge_suction}
                             onChange={(e) => handleDrawingInputChange('accessories', {
                               ...drawingData.accessories,
-                              [key]: e.target.checked
+                              pressure_gauge_suction: e.target.checked
                             })}
                             className="rounded border-slate-300 text-blue-600 mr-2"
                           />
-                          <span className={value ? 'text-green-700 font-medium' : 'text-gray-600'}>
-                            {key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                          {value && <span className="ml-auto text-green-500">✓</span>}
+                          <span className="font-medium">Manomètre Aspiration</span>
+                          {drawingData.accessories.pressure_gauge_suction && <span className="ml-auto text-blue-500">✓</span>}
                         </label>
-                      ))}
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.pressure_gauge_discharge ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.pressure_gauge_discharge}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              pressure_gauge_discharge: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-2"
+                          />
+                          <span className="font-medium">Manomètre Refoulement</span>
+                          {drawingData.accessories.pressure_gauge_discharge && <span className="ml-auto text-blue-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.flow_meter ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.flow_meter}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              flow_meter: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-2"
+                          />
+                          <span className="font-medium">Débitmètre</span>
+                          {drawingData.accessories.flow_meter && <span className="ml-auto text-blue-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.pressure_sensor ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.pressure_sensor}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              pressure_sensor: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-blue-600 mr-2"
+                          />
+                          <span className="font-medium">Capteur Pression</span>
+                          {drawingData.accessories.pressure_sensor && <span className="ml-auto text-blue-500">✓</span>}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Vannes et Robinetterie */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-slate-700 mb-2 flex items-center">
+                        <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                        VANNES & ROBINETTERIE
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.isolation_valve_suction ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.isolation_valve_suction}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              isolation_valve_suction: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-green-600 mr-2"
+                          />
+                          <span className="font-medium">Vanne Isolement Asp.</span>
+                          {drawingData.accessories.isolation_valve_suction && <span className="ml-auto text-green-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.isolation_valve_discharge ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.isolation_valve_discharge}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              isolation_valve_discharge: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-green-600 mr-2"
+                          />
+                          <span className="font-medium">Vanne Isolement Ref.</span>
+                          {drawingData.accessories.isolation_valve_discharge && <span className="ml-auto text-green-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.check_valve ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.check_valve}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              check_valve: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-green-600 mr-2"
+                          />
+                          <span className="font-medium">Clapet Anti-Retour</span>
+                          {drawingData.accessories.check_valve && <span className="ml-auto text-green-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.safety_valve ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.safety_valve}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              safety_valve: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-green-600 mr-2"
+                          />
+                          <span className="font-medium">Soupape Sécurité</span>
+                          {drawingData.accessories.safety_valve && <span className="ml-auto text-green-500">✓</span>}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Équipements Mécaniques */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-slate-700 mb-2 flex items-center">
+                        <span className="w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
+                        ÉQUIPEMENTS MÉCANIQUES
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.strainer ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.strainer}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              strainer: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-orange-600 mr-2"
+                          />
+                          <span className="font-medium">Crépine/Filtre</span>
+                          {drawingData.accessories.strainer && <span className="ml-auto text-orange-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.flexible_coupling ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.flexible_coupling}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              flexible_coupling: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-orange-600 mr-2"
+                          />
+                          <span className="font-medium">Raccord Flexible</span>
+                          {drawingData.accessories.flexible_coupling && <span className="ml-auto text-orange-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.expansion_joint ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.expansion_joint}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              expansion_joint: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-orange-600 mr-2"
+                          />
+                          <span className="font-medium">Joint Dilatation</span>
+                          {drawingData.accessories.expansion_joint && <span className="ml-auto text-orange-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.manifold ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.manifold}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              manifold: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-orange-600 mr-2"
+                          />
+                          <span className="font-medium">Manifold/Collecteur</span>
+                          {drawingData.accessories.manifold && <span className="ml-auto text-orange-500">✓</span>}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Équipements Électriques */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-slate-700 mb-2 flex items-center">
+                        <span className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                        ÉQUIPEMENTS ÉLECTRIQUES
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.control_panel ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.control_panel}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              control_panel: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-yellow-600 mr-2"
+                          />
+                          <span className="font-medium">Coffret Commande</span>
+                          {drawingData.accessories.control_panel && <span className="ml-auto text-yellow-500">✓</span>}
+                        </label>
+                        
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.frequency_converter ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.frequency_converter}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              frequency_converter: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-yellow-600 mr-2"
+                          />
+                          <span className="font-medium">Variateur Fréquence</span>
+                          {drawingData.accessories.frequency_converter && <span className="ml-auto text-yellow-500">✓</span>}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Compteur d'accessoires sélectionnés */}
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="text-xs text-slate-600">
+                        <span className="font-semibold">Accessoires sélectionnés:</span> 
+                        <span className="ml-1 text-blue-600 font-bold">
+                          {Object.values(drawingData.accessories).filter(Boolean).length}
+                        </span>
+                        <span className="text-slate-500"> / {Object.keys(drawingData.accessories).length}</span>
+                      </div>
                     </div>
                   </div>
 
