@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://5615d989-fec4-4cb7-9787-0e64198971f7.preview.emergentagent.com/api"
+BACKEND_URL = "https://3cd9f542-b6a9-4745-bbaf-f64139ff26c2.preview.emergentagent.com/api"
 
 def debug_bleach_cast_iron():
     """Debug BLEACH + CAST_IRON case to see what recommendations are generated"""
