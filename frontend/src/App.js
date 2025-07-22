@@ -12891,8 +12891,6 @@ function App() {
   // Obtenir les étiquettes selon l'installation
   const getInstallationLabels = () => {
     const labels = [];
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
     
     labels.push({
       text: `Débit: ${drawingData.flow_rate} m³/h`,
