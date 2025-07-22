@@ -13363,7 +13363,7 @@ function App() {
     ctx.fillText('POMPE SUBMERSIBLE', 50, 50);
   };
 
-  // SCHÉMA FORAGE CORRECT - PID SIMPLE ET TECHNIQUE
+  // SCHÉMA FORAGE DYNAMIQUE - PID SIMPLE ET TECHNIQUE
   const drawProfessionalForage = (ctx, canvas) => {
     // Nettoyage complet
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -13386,10 +13386,10 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText('NIVEAU SOL', 60, groundLevel - 10);
     
-    // 2. FORAGE VERTICAL SIMPLE (rectangle technique)
+    // 2. FORAGE VERTICAL SIMPLE (rectangle technique) - PROFONDEUR DYNAMIQUE
     const wellX = centerX - 100;
     const wellWidth = 40;
-    const wellDepth = 200;
+    const wellDepth = Math.max(100, drawingData.total_head * 3); // Profondeur proportionnelle à HMT
     
     ctx.strokeStyle = '#2C3E50';
     ctx.lineWidth = 4;
@@ -13397,7 +13397,7 @@ function App() {
     ctx.fillRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     ctx.strokeRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     
-    // Annotation profondeur
+    // Annotation profondeur DYNAMIQUE
     ctx.fillStyle = '#2C3E50';
     ctx.font = '10px Arial';
     ctx.textAlign = 'center';
@@ -13409,8 +13409,8 @@ function App() {
     ctx.textAlign = 'center';
     ctx.fillText('FORAGE', wellX, groundLevel - 25);
     
-    // 3. NIVEAU D'EAU STATIQUE (ligne simple)
-    const waterLevel = groundLevel + 60;
+    // 3. NIVEAU D'EAU STATIQUE (ligne simple) - POSITION DYNAMIQUE
+    const waterLevel = groundLevel + (wellDepth * 0.3); // 30% de la profondeur
     ctx.strokeStyle = '#3498DB';
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 4]);
@@ -13423,10 +13423,10 @@ function App() {
     ctx.fillStyle = '#3498DB';
     ctx.font = '10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText('Niveau statique', wellX + wellWidth/2 + 10, waterLevel);
+    ctx.fillText(`Niveau ${Math.round((wellDepth * 0.3)/10)}m`, wellX + wellWidth/2 + 10, waterLevel);
     
-    // 4. POMPE SUBMERSIBLE DANS LE FORAGE (symbole PID simple)
-    const pumpY = groundLevel + 150;
+    // 4. POMPE SUBMERSIBLE DANS LE FORAGE (symbole PID simple) - POSITION DYNAMIQUE
+    const pumpY = groundLevel + wellDepth * 0.8; // 80% de la profondeur
     
     // Corps pompe (rectangle simple)
     ctx.fillStyle = '#1976D2';
@@ -13449,25 +13449,30 @@ function App() {
     ctx.lineTo(wellX + 2, pumpY + 5);
     ctx.stroke();
     
-    // Tag pompe
+    // Tag pompe avec débit DYNAMIQUE
     ctx.fillStyle = '#0D47A1';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('PS-001', wellX, pumpY + 35);
+    ctx.font = '8px Arial';
+    ctx.fillText(`${drawingData.flow_rate}m³/h`, wellX, pumpY + 47);
+    ctx.fillText(`${drawingData.total_head}m HMT`, wellX, pumpY + 57);
     
-    // 5. COLONNE MONTANTE (tuyau vertical simple)
+    // 5. COLONNE MONTANTE (tuyau vertical simple) - DIAMÈTRE DYNAMIQUE
     const riserX = wellX + wellWidth/4;
+    const pipeWidth = Math.max(4, drawingData.discharge_diameter / 20); // Épaisseur proportionnelle au DN
     
     ctx.strokeStyle = '#27AE60';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = pipeWidth;
     ctx.beginPath();
     ctx.moveTo(riserX, pumpY - 20);
     ctx.lineTo(riserX, groundLevel + 20);
     ctx.stroke();
     
-    // Flèches débit (simples)
-    for (let i = 1; i <= 3; i++) {
-      const arrowY = pumpY - 40 - (i * 30);
+    // Flèches débit (simples) avec débit affiché
+    const arrowCount = Math.min(4, Math.max(2, Math.round(wellDepth / 80)));
+    for (let i = 1; i <= arrowCount; i++) {
+      const arrowY = pumpY - 40 - (i * (wellDepth - 100) / arrowCount);
       ctx.strokeStyle = '#27AE60';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -13477,11 +13482,12 @@ function App() {
       ctx.stroke();
     }
     
-    // Annotation DN
+    // Annotation DN DYNAMIQUE
     ctx.fillStyle = '#27AE60';
     ctx.font = '10px Arial';
     ctx.textAlign = 'left';
     ctx.fillText(`DN${drawingData.discharge_diameter}`, riserX + 10, groundLevel - 20);
+    ctx.fillText(`${drawingData.flow_rate}m³/h`, riserX + 10, groundLevel - 8);
     
     // 6. TÊTE DE FORAGE (bride simple)
     ctx.fillStyle = '#95A5A6';
@@ -13498,16 +13504,16 @@ function App() {
       ctx.fill();
     }
     
-    // 7. TUYAUTERIE HORIZONTALE (ligne simple)
+    // 7. TUYAUTERIE HORIZONTALE (ligne simple) - DIAMÈTRE PROPORTIONNEL
     const pipeY = groundLevel + 20;
     ctx.strokeStyle = '#27AE60';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = pipeWidth;
     ctx.beginPath();
     ctx.moveTo(wellX + 25, pipeY);
     ctx.lineTo(centerX + 150, pipeY);
     ctx.stroke();
     
-    // Flèche débit horizontal
+    // Flèche débit horizontal avec débit
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -13516,9 +13522,18 @@ function App() {
     ctx.lineTo(centerX + 120, pipeY + 5);
     ctx.stroke();
     
-    // 8. MANOMÈTRE (symbole PID simple)
+    // Débit sur la tuyauterie
+    ctx.fillStyle = '#27AE60';
+    ctx.font = 'bold 8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${drawingData.flow_rate}m³/h`, centerX + 90, pipeY - 8);
+    
+    // 8. ACCESSOIRES DYNAMIQUES selon sélection
+    let accessoryX = centerX + 50;
+    
+    // MANOMÈTRE si sélectionné
     if (drawingData.accessories.pressure_gauge_discharge) {
-      const gaugeX = centerX + 50;
+      const gaugeX = accessoryX;
       const gaugeY = pipeY - 30;
       
       // Cercle simple
@@ -13546,46 +13561,87 @@ function App() {
       ctx.lineTo(gaugeX, pipeY);
       ctx.stroke();
       
-      // Tag
+      // Tag avec pression dynamique
       ctx.fillStyle = '#2C3E50';
       ctx.font = '8px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('PI-001', gaugeX, gaugeY + 25);
+      ctx.fillText(`${drawingData.operating_pressure}bar`, gaugeX, gaugeY + 35);
+      
+      accessoryX += 50;
     }
     
-    // 9. VANNE (symbole PID simple - losange)
-    const valveX = centerX + 100;
-    ctx.strokeStyle = '#2C3E50';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(valveX, pipeY - 10);
-    ctx.lineTo(valveX + 10, pipeY);
-    ctx.lineTo(valveX, pipeY + 10);
-    ctx.lineTo(valveX - 10, pipeY);
-    ctx.closePath();
-    ctx.fillStyle = '#ECF0F1';
-    ctx.fill();
-    ctx.stroke();
+    // DÉBITMÈTRE si sélectionné
+    if (drawingData.accessories.flow_meter) {
+      const flowX = accessoryX;
+      
+      // Corps débitmètre
+      ctx.fillStyle = '#F8F9FA';
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 2;
+      ctx.fillRect(flowX - 15, pipeY - 10, 30, 20);
+      ctx.strokeRect(flowX - 15, pipeY - 10, 30, 20);
+      
+      // Roue
+      ctx.strokeStyle = '#3498DB';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2;
+        ctx.beginPath();
+        ctx.moveTo(flowX, pipeY);
+        ctx.lineTo(flowX + Math.cos(angle) * 6, pipeY + Math.sin(angle) * 6);
+        ctx.stroke();
+      }
+      
+      // Tag avec débit
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('FI-001', flowX, pipeY + 25);
+      ctx.fillText(`${drawingData.flow_rate}m³/h`, flowX, pipeY + 35);
+      
+      accessoryX += 50;
+    }
     
-    // Obturateur
-    ctx.strokeStyle = '#34495E';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(valveX - 7, pipeY - 7);
-    ctx.lineTo(valveX + 7, pipeY + 7);
-    ctx.stroke();
+    // 9. VANNE si sélectionnée
+    if (drawingData.accessories.isolation_valve_discharge) {
+      const valveX = accessoryX;
+      
+      // Losange
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(valveX, pipeY - 10);
+      ctx.lineTo(valveX + 10, pipeY);
+      ctx.lineTo(valveX, pipeY + 10);
+      ctx.lineTo(valveX - 10, pipeY);
+      ctx.closePath();
+      ctx.fillStyle = '#ECF0F1';
+      ctx.fill();
+      ctx.stroke();
+      
+      // Obturateur
+      ctx.strokeStyle = '#34495E';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(valveX - 7, pipeY - 7);
+      ctx.lineTo(valveX + 7, pipeY + 7);
+      ctx.stroke();
+      
+      // Tag
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('XV-001', valveX, pipeY + 25);
+      
+      accessoryX += 30;
+    }
     
-    // Tag vanne
-    ctx.fillStyle = '#2C3E50';
-    ctx.font = '8px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('XV-001', valveX, pipeY + 25);
-    
-    // 10. RÉSERVOIR DE STOCKAGE (rectangle simple)
+    // 10. RÉSERVOIR DE STOCKAGE (rectangle simple) - VOLUME PROPORTIONNEL
     const tankX = centerX + 200;
     const tankY = groundLevel - 80;
-    const tankW = 100;
-    const tankH = 120;
+    const tankW = Math.max(80, Math.min(120, drawingData.flow_rate * 2)); // Largeur proportionnelle au débit
+    const tankH = Math.max(100, Math.min(160, drawingData.total_head * 2)); // Hauteur proportionnelle à HMT
     
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 3;
@@ -13593,36 +13649,39 @@ function App() {
     ctx.fillRect(tankX, tankY, tankW, tankH);
     ctx.strokeRect(tankX, tankY, tankW, tankH);
     
-    // Niveau liquide
+    // Niveau liquide proportionnel
+    const liquidLevel = 0.7; // 70% rempli
     ctx.fillStyle = '#9B59B6';
-    ctx.fillRect(tankX + 5, tankY + tankH * 0.3, tankW - 10, tankH * 0.6);
+    ctx.fillRect(tankX + 5, tankY + tankH * (1 - liquidLevel), tankW - 10, tankH * liquidLevel);
     
     // Ligne niveau
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(tankX, tankY + tankH * 0.3);
-    ctx.lineTo(tankX + tankW, tankY + tankH * 0.3);
+    ctx.moveTo(tankX, tankY + tankH * (1 - liquidLevel));
+    ctx.lineTo(tankX + tankW, tankY + tankH * (1 - liquidLevel));
     ctx.stroke();
     ctx.setLineDash([]);
     
     // Raccordement réservoir
     ctx.strokeStyle = '#27AE60';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = pipeWidth;
     ctx.beginPath();
-    ctx.moveTo(centerX + 150, pipeY);
+    ctx.moveTo(accessoryX, pipeY);
     ctx.lineTo(tankX, pipeY);
     ctx.lineTo(tankX, tankY + tankH - 20);
     ctx.stroke();
     
-    // Tag réservoir
+    // Tag réservoir avec volume estimé
     ctx.fillStyle = '#8E44AD';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('T-001', tankX + tankW/2, tankY - 10);
+    ctx.font = '8px Arial';
+    ctx.fillText(`${Math.round(drawingData.flow_rate * 2)}m³`, tankX + tankW/2, tankY - 25);
     
-    // 11. COFFRET ÉLECTRIQUE (rectangle simple)
+    // 11. COFFRET ÉLECTRIQUE DYNAMIQUE si sélectionné
     if (drawingData.accessories.control_panel) {
       const panelX = wellX - 80;
       const panelY = groundLevel - 80;
@@ -13637,19 +13696,20 @@ function App() {
       ctx.fillStyle = '#BDC3C7';
       ctx.fillRect(panelX + 5, panelY + 5, 50, 60);
       
-      // LED pompe
+      // LED pompe (verte si en service)
       ctx.beginPath();
       ctx.arc(panelX + 30, panelY + 20, 4, 0, Math.PI * 2);
       ctx.fillStyle = '#27AE60';
       ctx.fill();
       
-      // Écran
+      // Écran avec données dynamiques
       ctx.fillStyle = '#1A1A1A';
-      ctx.fillRect(panelX + 10, panelY + 35, 40, 15);
+      ctx.fillRect(panelX + 10, panelY + 35, 40, 20);
       ctx.fillStyle = '#27AE60';
-      ctx.font = '8px monospace';
+      ctx.font = '7px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('AUTO', panelX + 30, panelY + 45);
+      ctx.fillText('AUTO', panelX + 30, panelY + 42);
+      ctx.fillText(`${drawingData.flow_rate}m³/h`, panelX + 30, panelY + 50);
       
       // Câble vers pompe (ligne pointillée)
       ctx.strokeStyle = '#F39C12';
@@ -13666,30 +13726,86 @@ function App() {
       ctx.font = 'bold 10px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('E-001', panelX + 30, panelY - 10);
+      ctx.font = '8px Arial';
+      ctx.fillText(`${drawingData.operating_pressure}bar`, panelX + 30, panelY + 75);
     }
     
-    // 12. DONNÉES TECHNIQUES (tableau simple)
+    // 12. DONNÉES TECHNIQUES DYNAMIQUES (tableau simple)
     const dataX = 50;
-    const dataY = groundLevel + 100;
+    const dataY = groundLevel + wellDepth + 30;
     
     ctx.fillStyle = '#2C3E50';
     ctx.font = '11px Arial';
     ctx.textAlign = 'left';
     
     const techData = [
-      `Débit: ${drawingData.flow_rate} m³/h`,
+      `DÉBIT: ${drawingData.flow_rate} m³/h`,
       `HMT: ${drawingData.total_head} m`,
-      `Profondeur: ${Math.round(wellDepth/10)} m`,
-      `DN: ${drawingData.discharge_diameter} mm`,
-      `Pression: ${drawingData.operating_pressure} bar`
+      `PROFONDEUR: ${Math.round(wellDepth/10)} m`,
+      `DN REFOULEMENT: ${drawingData.discharge_diameter} mm`,
+      `PRESSION SERVICE: ${drawingData.operating_pressure} bar`,
+      `POMPE: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`
     ];
     
     techData.forEach((text, i) => {
       ctx.fillText(text, dataX, dataY + (i * 15));
     });
     
-    // Ajout cartouche technique simplifié
-    drawSimpleTechnicalCartouche(ctx, canvas, 'FORAGE');
+    // Ajout cartouche technique dynamique
+    drawDynamicTechnicalCartouche(ctx, canvas, 'FORAGE');
+  };
+  
+  // Cartouche technique dynamique
+  const drawDynamicTechnicalCartouche = (ctx, canvas, type) => {
+    const cartX = canvas.width - 300;
+    const cartY = 30;
+    const cartW = 270;
+    const cartH = 140;
+    
+    // Cadre simple
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cartX, cartY, cartW, cartH);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cartX, cartY, cartW, cartH);
+    
+    // Titre
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`STATION DE POMPAGE ${type}`, cartX + 10, cartY + 20);
+    
+    // Données techniques DYNAMIQUES
+    ctx.font = '10px Arial';
+    let y = cartY + 40;
+    
+    const specs = [
+      `Installation: ${drawingData.installation_type.toUpperCase()}`,
+      `Pompes: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`,
+      `Débit nominal: ${drawingData.flow_rate} m³/h`,
+      `HMT nominale: ${drawingData.total_head} m`,
+      `DN refoulement: ${drawingData.discharge_diameter} mm`,
+      `Pression service: ${drawingData.operating_pressure} bar`,
+      `Température: ${drawingData.temperature}°C`,
+      `Matériau: ${drawingData.material}`,
+      `Accessoires: ${Object.values(drawingData.accessories).filter(Boolean).length}/21`
+    ];
+    
+    specs.forEach(spec => {
+      ctx.fillText(spec, cartX + 10, y);
+      y += 12;
+    });
+    
+    // Logo technique
+    ctx.strokeStyle = '#3498DB';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(cartX + cartW - 40, cartY + 10, 30, 30);
+    ctx.stroke();
+    ctx.fillStyle = '#3498DB';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('PID', cartX + cartW - 25, cartY + 30);
   };
   
   // Cartouche technique simplifié PID
