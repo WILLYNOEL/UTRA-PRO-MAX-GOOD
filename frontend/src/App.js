@@ -12998,7 +12998,7 @@ function App() {
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🔷</span>
+                <span className="text-base">🔷</span>
                 <span>NPSHd</span>
               </button>
               <button
