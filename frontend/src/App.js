@@ -13981,14 +13981,14 @@ function App() {
     ctx.lineTo(wellX + 2, pumpY + 5);
     ctx.stroke();
     
-    // Tag pompe avec débit DYNAMIQUE
+    // Tag pompe avec débit DYNAMIQUE (protégé)
     ctx.fillStyle = '#0D47A1';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('PS-001', wellX, pumpY + 35);
     ctx.font = '8px Arial';
-    ctx.fillText(`${drawingData.flow_rate}m³/h`, wellX, pumpY + 47);
-    ctx.fillText(`${drawingData.total_head}m HMT`, wellX, pumpY + 57);
+    ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, wellX, pumpY + 47);
+    ctx.fillText(`${drawingData.total_head || 0}m HMT`, wellX, pumpY + 57);
     
     // 5. COLONNE MONTANTE FIXE
     const riserX = wellX + wellWidth/4;
