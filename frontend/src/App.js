@@ -12647,6 +12647,17 @@ function App() {
                 <span>Expert Solaire</span>
               </button>
               <button
+                onClick={() => setActiveTab('drawing')}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                  activeTab === 'drawing'
+                    ? 'bg-teal-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
+                }`}
+              >
+                <span className="text-lg">🎨</span>
+                <span>Dessin</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('history')}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
                   activeTab === 'history'
