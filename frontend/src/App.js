@@ -1219,8 +1219,8 @@ const AuditSystem = () => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={energyAuditData.pressure_tank}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, pressure_tank: e.target.checked}))}
+                      checked={auditData.pressure_tank}
+                      onChange={(e) => handleAuditInputChange('pressure_tank', e.target.checked)}
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">Ballon surpresseur</span>
