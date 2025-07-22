@@ -13336,57 +13336,372 @@ function App() {
     ctx.fillText('POMPE SUBMERSIBLE', 50, 50);
   };
 
-  // SCHÉMA FORAGE PROFESSIONNEL - CONFORME PID/ISO 1219-1
+  // SCHÉMA FORAGE CORRECT - PID SIMPLE ET TECHNIQUE
   const drawProfessionalForage = (ctx, canvas) => {
+    // Nettoyage complet
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Paramètres du schéma technique
     const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const groundLevel = canvas.height / 2;
     
-    // 1. FORAGE VERTICAL (symbole PID normalisé)
-    const wellX = centerX - 200;
-    const wellDepth = 300;
-    drawPIDWell(ctx, wellX, centerY - wellDepth/2, 40, wellDepth);
+    // 1. NIVEAU SOL (ligne technique)
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(50, groundLevel);
+    ctx.lineTo(canvas.width - 50, groundLevel);
+    ctx.stroke();
     
-    // 2. POMPE SUBMERSIBLE DE FORAGE (symbole ISO)
-    const pumpDepth = centerY + 80;
-    drawPIDSubmersiblePump(ctx, wellX, pumpDepth, 'PS-001');
+    // Label niveau sol
+    ctx.fillStyle = '#8B4513';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('NIVEAU SOL', 60, groundLevel - 10);
     
-    // 3. TUYAU DE REFOULEMENT (colonne montante)
-    drawPIDVerticalPipe(ctx, wellX + 50, pumpDepth, centerY - wellDepth/2 + 20, drawingData.discharge_diameter);
+    // 2. FORAGE VERTICAL SIMPLE (rectangle technique)
+    const wellX = centerX - 100;
+    const wellWidth = 40;
+    const wellDepth = 200;
     
-    // 4. RACCORDEMENT TÊTE DE FORAGE
-    drawPIDWellHead(ctx, wellX, centerY - wellDepth/2);
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 4;
+    ctx.fillStyle = '#E8F4FD';
+    ctx.fillRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
+    ctx.strokeRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     
-    // 5. TUYAUTERIE HORIZONTALE DE REFOULEMENT
-    const pipeY = centerY - wellDepth/2 + 20;
-    drawPIDHorizontalPipe(ctx, wellX + 80, pipeY, centerX + 200, drawingData.discharge_diameter);
+    // Annotation profondeur
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round(wellDepth/10)}m`, wellX + wellWidth/2 + 20, groundLevel + wellDepth/2);
     
-    // 6. INSTRUMENTATIONS (conformes PID)
-    // Manomètre de refoulement
+    // Label forage
+    ctx.fillStyle = '#E74C3C';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('FORAGE', wellX, groundLevel - 25);
+    
+    // 3. NIVEAU D'EAU STATIQUE (ligne simple)
+    const waterLevel = groundLevel + 60;
+    ctx.strokeStyle = '#3498DB';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(wellX - wellWidth/2, waterLevel);
+    ctx.lineTo(wellX + wellWidth/2, waterLevel);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#3498DB';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Niveau statique', wellX + wellWidth/2 + 10, waterLevel);
+    
+    // 4. POMPE SUBMERSIBLE DANS LE FORAGE (symbole PID simple)
+    const pumpY = groundLevel + 150;
+    
+    // Corps pompe (rectangle simple)
+    ctx.fillStyle = '#1976D2';
+    ctx.strokeStyle = '#0D47A1';
+    ctx.lineWidth = 2;
+    ctx.fillRect(wellX - 15, pumpY - 20, 30, 40);
+    ctx.strokeRect(wellX - 15, pumpY - 20, 30, 40);
+    
+    // Symbole rotation (cercle avec flèche)
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(wellX, pumpY, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Flèche rotation
+    ctx.beginPath();
+    ctx.moveTo(wellX - 3, pumpY - 5);
+    ctx.lineTo(wellX + 5, pumpY - 2);
+    ctx.lineTo(wellX + 2, pumpY + 5);
+    ctx.stroke();
+    
+    // Tag pompe
+    ctx.fillStyle = '#0D47A1';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('PS-001', wellX, pumpY + 35);
+    
+    // 5. COLONNE MONTANTE (tuyau vertical simple)
+    const riserX = wellX + wellWidth/4;
+    
+    ctx.strokeStyle = '#27AE60';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(riserX, pumpY - 20);
+    ctx.lineTo(riserX, groundLevel + 20);
+    ctx.stroke();
+    
+    // Flèches débit (simples)
+    for (let i = 1; i <= 3; i++) {
+      const arrowY = pumpY - 40 - (i * 30);
+      ctx.strokeStyle = '#27AE60';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(riserX - 5, arrowY + 8);
+      ctx.lineTo(riserX, arrowY);
+      ctx.lineTo(riserX + 5, arrowY + 8);
+      ctx.stroke();
+    }
+    
+    // Annotation DN
+    ctx.fillStyle = '#27AE60';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`DN${drawingData.discharge_diameter}`, riserX + 10, groundLevel - 20);
+    
+    // 6. TÊTE DE FORAGE (bride simple)
+    ctx.fillStyle = '#95A5A6';
+    ctx.strokeStyle = '#7F8C8D';
+    ctx.lineWidth = 2;
+    ctx.fillRect(wellX - 25, groundLevel + 10, 50, 20);
+    ctx.strokeRect(wellX - 25, groundLevel + 10, 50, 20);
+    
+    // Boulons (points simples)
+    ctx.fillStyle = '#34495E';
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.arc(wellX - 15 + i * 10, groundLevel + 20, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // 7. TUYAUTERIE HORIZONTALE (ligne simple)
+    const pipeY = groundLevel + 20;
+    ctx.strokeStyle = '#27AE60';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(wellX + 25, pipeY);
+    ctx.lineTo(centerX + 150, pipeY);
+    ctx.stroke();
+    
+    // Flèche débit horizontal
+    ctx.strokeStyle = '#27AE60';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 120, pipeY - 5);
+    ctx.lineTo(centerX + 135, pipeY);
+    ctx.lineTo(centerX + 120, pipeY + 5);
+    ctx.stroke();
+    
+    // 8. MANOMÈTRE (symbole PID simple)
     if (drawingData.accessories.pressure_gauge_discharge) {
-      drawPIDPressureIndicator(ctx, wellX + 120, pipeY - 40, 'PI-001');
+      const gaugeX = centerX + 50;
+      const gaugeY = pipeY - 30;
+      
+      // Cercle simple
+      ctx.beginPath();
+      ctx.arc(gaugeX, gaugeY, 12, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Aiguille simple
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY);
+      ctx.lineTo(gaugeX + 6, gaugeY - 6);
+      ctx.stroke();
+      
+      // Raccordement
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY + 12);
+      ctx.lineTo(gaugeX, pipeY);
+      ctx.stroke();
+      
+      // Tag
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PI-001', gaugeX, gaugeY + 25);
     }
     
-    // Débitmètre
-    if (drawingData.accessories.flow_meter) {
-      drawPIDFlowIndicator(ctx, wellX + 180, pipeY, 'FI-001');
-    }
+    // 9. VANNE (symbole PID simple - losange)
+    const valveX = centerX + 100;
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(valveX, pipeY - 10);
+    ctx.lineTo(valveX + 10, pipeY);
+    ctx.lineTo(valveX, pipeY + 10);
+    ctx.lineTo(valveX - 10, pipeY);
+    ctx.closePath();
+    ctx.fillStyle = '#ECF0F1';
+    ctx.fill();
+    ctx.stroke();
     
-    // 7. VANNES (symboles PID)
-    drawPIDGateValve(ctx, wellX + 240, pipeY, 'XV-001');
+    // Obturateur
+    ctx.strokeStyle = '#34495E';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(valveX - 7, pipeY - 7);
+    ctx.lineTo(valveX + 7, pipeY + 7);
+    ctx.stroke();
     
-    // 8. CHÂTEAU D'EAU / RÉSERVOIR
-    drawPIDStorageTank(ctx, centerX + 250, centerY - 120, 150, 200, 'T-001');
+    // Tag vanne
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('XV-001', valveX, pipeY + 25);
     
-    // 9. COFFRET ÉLECTRIQUE DE FORAGE
+    // 10. RÉSERVOIR DE STOCKAGE (rectangle simple)
+    const tankX = centerX + 200;
+    const tankY = groundLevel - 80;
+    const tankW = 100;
+    const tankH = 120;
+    
+    ctx.strokeStyle = '#8E44AD';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#F4ECF7';
+    ctx.fillRect(tankX, tankY, tankW, tankH);
+    ctx.strokeRect(tankX, tankY, tankW, tankH);
+    
+    // Niveau liquide
+    ctx.fillStyle = '#9B59B6';
+    ctx.fillRect(tankX + 5, tankY + tankH * 0.3, tankW - 10, tankH * 0.6);
+    
+    // Ligne niveau
+    ctx.strokeStyle = '#8E44AD';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(tankX, tankY + tankH * 0.3);
+    ctx.lineTo(tankX + tankW, tankY + tankH * 0.3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Raccordement réservoir
+    ctx.strokeStyle = '#27AE60';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 150, pipeY);
+    ctx.lineTo(tankX, pipeY);
+    ctx.lineTo(tankX, tankY + tankH - 20);
+    ctx.stroke();
+    
+    // Tag réservoir
+    ctx.fillStyle = '#8E44AD';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('T-001', tankX + tankW/2, tankY - 10);
+    
+    // 11. COFFRET ÉLECTRIQUE (rectangle simple)
     if (drawingData.accessories.control_panel) {
-      drawPIDControlPanel(ctx, wellX - 120, centerY - 150, 'E-001', 1);
+      const panelX = wellX - 80;
+      const panelY = groundLevel - 80;
+      
+      ctx.fillStyle = '#34495E';
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 2;
+      ctx.fillRect(panelX, panelY, 60, 70);
+      ctx.strokeRect(panelX, panelY, 60, 70);
+      
+      // Façade
+      ctx.fillStyle = '#BDC3C7';
+      ctx.fillRect(panelX + 5, panelY + 5, 50, 60);
+      
+      // LED pompe
+      ctx.beginPath();
+      ctx.arc(panelX + 30, panelY + 20, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#27AE60';
+      ctx.fill();
+      
+      // Écran
+      ctx.fillStyle = '#1A1A1A';
+      ctx.fillRect(panelX + 10, panelY + 35, 40, 15);
+      ctx.fillStyle = '#27AE60';
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('AUTO', panelX + 30, panelY + 45);
+      
+      // Câble vers pompe (ligne pointillée)
+      ctx.strokeStyle = '#F39C12';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(panelX + 60, panelY + 35);
+      ctx.lineTo(wellX - 15, pumpY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Tag coffret
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('E-001', panelX + 30, panelY - 10);
     }
     
-    // 10. ANNOTATIONS TECHNIQUES (conformes PID)
-    drawPIDAnnotations(ctx, canvas, 'forage');
+    // 12. DONNÉES TECHNIQUES (tableau simple)
+    const dataX = 50;
+    const dataY = groundLevel + 100;
     
-    // 11. LÉGENDE ET SPÉCIFICATIONS
-    drawPIDLegend(ctx, canvas, 'STATION DE POMPAGE FORAGE');
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'left';
+    
+    const techData = [
+      `Débit: ${drawingData.flow_rate} m³/h`,
+      `HMT: ${drawingData.total_head} m`,
+      `Profondeur: ${Math.round(wellDepth/10)} m`,
+      `DN: ${drawingData.discharge_diameter} mm`,
+      `Pression: ${drawingData.operating_pressure} bar`
+    ];
+    
+    techData.forEach((text, i) => {
+      ctx.fillText(text, dataX, dataY + (i * 15));
+    });
+    
+    // Ajout cartouche technique simplifié
+    drawSimpleTechnicalCartouche(ctx, canvas, 'FORAGE');
+  };
+  
+  // Cartouche technique simplifié PID
+  const drawSimpleTechnicalCartouche = (ctx, canvas, type) => {
+    const cartX = canvas.width - 280;
+    const cartY = 30;
+    const cartW = 250;
+    const cartH = 120;
+    
+    // Cadre simple
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cartX, cartY, cartW, cartH);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cartX, cartY, cartW, cartH);
+    
+    // Titre
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`STATION DE POMPAGE ${type}`, cartX + 10, cartY + 20);
+    
+    // Données techniques
+    ctx.font = '10px Arial';
+    let y = cartY + 40;
+    
+    const specs = [
+      `Installation: ${drawingData.installation_type.toUpperCase()}`,
+      `Pompes: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`,
+      `Débit: ${drawingData.flow_rate} m³/h`,
+      `HMT: ${drawingData.total_head} m`,
+      `DN Ref: ${drawingData.discharge_diameter} mm`,
+      `Pression: ${drawingData.operating_pressure} bar`
+    ];
+    
+    specs.forEach(spec => {
+      ctx.fillText(spec, cartX + 10, y);
+      y += 12;
+    });
   };
   
   // FONCTIONS PID/ISO PROFESSIONNELLES
