@@ -1201,8 +1201,8 @@ const AuditSystem = () => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={energyAuditData.variable_frequency_drive}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, variable_frequency_drive: e.target.checked}))}
+                      checked={auditData.variable_frequency_drive}
+                      onChange={(e) => handleAuditInputChange('variable_frequency_drive', e.target.checked)}
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">Variateur fréquence</span>
