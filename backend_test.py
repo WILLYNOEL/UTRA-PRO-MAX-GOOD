@@ -10378,6 +10378,251 @@ class HydraulicPumpTester:
             self.log_test("Specialized Equipment Recommendations", False, f"Error: {str(e)}")
             return False
 
+    def test_audit_analysis_endpoint(self):
+        """Test /api/audit-analysis endpoint for comprehensive audit functionality"""
+        print("\n🔍 Testing Audit Analysis Endpoint...")
+        
+        # Test data based on review request - realistic audit scenario
+        test_cases = [
+            {
+                "name": "Standard Installation Audit",
+                "data": {
+                    "installation_age": 5,
+                    "installation_type": "surface",
+                    "fluid_type": "water",
+                    "fluid_temperature": 25.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_pipe_diameter": 114.3,  # DN100
+                    "discharge_pipe_diameter": 88.9,  # DN80
+                    
+                    # Performance data from review request
+                    "current_flow_rate": 45.0,  # m³/h
+                    "required_flow_rate": 50.0,  # m³/h
+                    "original_design_flow": 50.0,  # m³/h
+                    
+                    "current_hmt": 28.0,  # m
+                    "required_hmt": 30.0,  # m
+                    "original_design_hmt": 30.0,  # m
+                    
+                    # Electrical measurements from review request
+                    "measured_current": 12.0,  # A
+                    "rated_current": 10.0,  # A
+                    "measured_power": 5.5,  # kW
+                    "rated_power": 5.0,  # kW
+                    "measured_voltage": 400.0,  # V
+                    "rated_voltage": 400.0,  # V
+                    
+                    # Mechanical state
+                    "vibration_level": 3.2,  # mm/s
+                    "noise_level": 75.0,  # dB(A)
+                    "motor_temperature": 65.0,  # °C
+                    "bearing_temperature": 55.0,  # °C
+                    
+                    # Operational data
+                    "operating_hours_daily": 8.0,
+                    "operating_days_yearly": 300.0,
+                    "electricity_cost_per_kwh": 0.12,
+                    "load_factor": 0.75,
+                    
+                    # Issues
+                    "reported_issues": ["Débit insuffisant", "Consommation élevée"],
+                    "performance_degradation": True,
+                    "energy_consumption_increase": True
+                }
+            },
+            {
+                "name": "Critical Issues Audit",
+                "data": {
+                    "installation_age": 10,
+                    "installation_type": "surface",
+                    "fluid_type": "water",
+                    "fluid_temperature": 25.0,
+                    "suction_material": "pvc",
+                    "discharge_material": "pvc",
+                    "suction_pipe_diameter": 114.3,
+                    "discharge_pipe_diameter": 88.9,
+                    
+                    # Critical performance issues
+                    "current_flow_rate": 30.0,  # Very low
+                    "required_flow_rate": 50.0,
+                    "current_hmt": 20.0,  # Very low
+                    "required_hmt": 30.0,
+                    
+                    # Critical electrical issues
+                    "measured_current": 15.0,  # High overload
+                    "rated_current": 10.0,
+                    "measured_power": 7.0,  # High
+                    "rated_power": 5.0,
+                    
+                    # Critical mechanical issues
+                    "vibration_level": 8.5,  # Very high
+                    "motor_temperature": 85.0,  # High
+                    "corrosion_level": "severe",
+                    "alignment_status": "poor",
+                    
+                    # Operational issues
+                    "operating_hours_daily": 12.0,
+                    "electricity_cost_per_kwh": 0.12,
+                    "performance_degradation": True,
+                    "energy_consumption_increase": True,
+                    "reported_issues": ["Vibrations excessives", "Échauffement moteur", "Débit très faible"]
+                }
+            }
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/audit-analysis", json=case["data"], timeout=15)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # 1. Test basic functionality - endpoint responds correctly
+                    self.log_test(f"Audit Analysis Basic Functionality - {case['name']}", True, 
+                                f"HTTP 200 response received")
+                    
+                    # 2. Test data structure - verify AuditResult structure with flat scores
+                    required_top_level_fields = [
+                        "audit_id", "audit_date", "overall_score", "hydraulic_score", 
+                        "electrical_score", "mechanical_score", "operational_score",
+                        "performance_comparisons", "diagnostics", "recommendations",
+                        "executive_summary", "economic_analysis", "action_plan"
+                    ]
+                    
+                    missing_fields = [field for field in required_top_level_fields if field not in result]
+                    if missing_fields:
+                        self.log_test(f"Audit Analysis Data Structure - {case['name']}", False, 
+                                    f"Missing required fields: {missing_fields}")
+                        all_passed = False
+                        continue
+                    
+                    # 3. Test that scores are directly accessible (not nested)
+                    scores_accessible = True
+                    score_fields = ["overall_score", "hydraulic_score", "electrical_score", "mechanical_score", "operational_score"]
+                    for score_field in score_fields:
+                        if not isinstance(result.get(score_field), int):
+                            scores_accessible = False
+                            break
+                    
+                    if not scores_accessible:
+                        self.log_test(f"Audit Analysis Flat Scores Structure - {case['name']}", False, 
+                                    "Scores are not directly accessible as integers")
+                        all_passed = False
+                        continue
+                    
+                    # 4. Test score values are reasonable (0-100)
+                    score_values_valid = True
+                    for score_field in score_fields:
+                        score_value = result.get(score_field, -1)
+                        if not (0 <= score_value <= 100):
+                            score_values_valid = False
+                            break
+                    
+                    if not score_values_valid:
+                        self.log_test(f"Audit Analysis Score Values - {case['name']}", False, 
+                                    "Score values are not in valid range 0-100")
+                        all_passed = False
+                        continue
+                    
+                    # 5. Test performance_comparisons structure
+                    performance_comparisons = result.get("performance_comparisons", [])
+                    if not isinstance(performance_comparisons, list):
+                        self.log_test(f"Audit Analysis Performance Comparisons - {case['name']}", False, 
+                                    "performance_comparisons is not a list")
+                        all_passed = False
+                        continue
+                    
+                    # 6. Test diagnostics structure
+                    diagnostics = result.get("diagnostics", [])
+                    if not isinstance(diagnostics, list):
+                        self.log_test(f"Audit Analysis Diagnostics - {case['name']}", False, 
+                                    "diagnostics is not a list")
+                        all_passed = False
+                        continue
+                    
+                    # Check diagnostics have required fields
+                    if diagnostics:
+                        diagnostic_required_fields = ["issue", "severity", "root_cause", "urgency"]
+                        first_diagnostic = diagnostics[0]
+                        missing_diagnostic_fields = [field for field in diagnostic_required_fields if field not in first_diagnostic]
+                        if missing_diagnostic_fields:
+                            self.log_test(f"Audit Analysis Diagnostics Fields - {case['name']}", False, 
+                                        f"Missing diagnostic fields: {missing_diagnostic_fields}")
+                            all_passed = False
+                            continue
+                    
+                    # 7. Test recommendations structure
+                    recommendations = result.get("recommendations", [])
+                    if not isinstance(recommendations, list):
+                        self.log_test(f"Audit Analysis Recommendations - {case['name']}", False, 
+                                    "recommendations is not a list")
+                        all_passed = False
+                        continue
+                    
+                    # Check recommendations have required fields
+                    if recommendations:
+                        recommendation_required_fields = ["priority", "action", "description"]
+                        first_recommendation = recommendations[0]
+                        missing_rec_fields = [field for field in recommendation_required_fields if field not in first_recommendation]
+                        if missing_rec_fields:
+                            self.log_test(f"Audit Analysis Recommendations Fields - {case['name']}", False, 
+                                        f"Missing recommendation fields: {missing_rec_fields}")
+                            all_passed = False
+                            continue
+                    
+                    # 8. Test executive_summary, economic_analysis, action_plan are present
+                    executive_summary = result.get("executive_summary", {})
+                    economic_analysis = result.get("economic_analysis", {})
+                    action_plan = result.get("action_plan", {})
+                    
+                    if not isinstance(executive_summary, dict) or not executive_summary:
+                        self.log_test(f"Audit Analysis Executive Summary - {case['name']}", False, 
+                                    "executive_summary is missing or empty")
+                        all_passed = False
+                        continue
+                    
+                    if not isinstance(economic_analysis, dict) or not economic_analysis:
+                        self.log_test(f"Audit Analysis Economic Analysis - {case['name']}", False, 
+                                    "economic_analysis is missing or empty")
+                        all_passed = False
+                        continue
+                    
+                    if not isinstance(action_plan, dict) or not action_plan:
+                        self.log_test(f"Audit Analysis Action Plan - {case['name']}", False, 
+                                    "action_plan is missing or empty")
+                        all_passed = False
+                        continue
+                    
+                    # 9. Test that audit generates meaningful content based on input data
+                    overall_score = result.get("overall_score", 100)
+                    if case["name"] == "Critical Issues Audit" and overall_score > 70:
+                        self.log_test(f"Audit Analysis Score Logic - {case['name']}", False, 
+                                    f"Critical issues should result in lower score, got {overall_score}")
+                        all_passed = False
+                        continue
+                    
+                    # Success - log detailed results
+                    self.log_test(f"Audit Analysis Complete - {case['name']}", True, 
+                                f"Overall Score: {result['overall_score']}, Hydraulic: {result['hydraulic_score']}, "
+                                f"Electrical: {result['electrical_score']}, Mechanical: {result['mechanical_score']}, "
+                                f"Operational: {result['operational_score']}, "
+                                f"Comparisons: {len(performance_comparisons)}, "
+                                f"Diagnostics: {len(diagnostics)}, "
+                                f"Recommendations: {len(recommendations)}")
+                    
+                else:
+                    self.log_test(f"Audit Analysis Endpoint - {case['name']}", False, 
+                                f"HTTP {response.status_code}: {response.text[:200]}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Audit Analysis Endpoint - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all tests including Phase 3 additions and Critical Material Analysis"""
         print("=" * 80)
