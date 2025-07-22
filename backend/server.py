@@ -5470,6 +5470,50 @@ def generate_expert_recommendations(input_data: AuditInput, diagnostics: List[Au
                     roi_months=18,
                     risk_if_not_done="Perte productivité continue, surcoûts énergétiques majeurs"
                 ))
+            elif diagnostic.category == "electrical":
+                recommendations.append(AuditRecommendation(
+                    priority="critical",
+                    category="safety",
+                    action="Correction surcharge moteur immédiate",
+                    description="Intervention urgente pour éviter grillage moteur",
+                    technical_details=[
+                        "Vérification point de fonctionnement pompe",
+                        "Contrôle protection thermique moteur",
+                        "Ajustement paramètres électriques"
+                    ],
+                    cost_estimate_min=2000,
+                    cost_estimate_max=8000,
+                    timeline="1-2 semaines",
+                    expected_benefits=[
+                        "Sécurité électrique restaurée",
+                        "Prévention panne moteur",
+                        "Durée de vie équipement préservée"
+                    ],
+                    roi_months=6,
+                    risk_if_not_done="Risque de grillage moteur et arrêt production"
+                ))
+            elif diagnostic.category == "mechanical":
+                recommendations.append(AuditRecommendation(
+                    priority="critical",
+                    category="reliability",
+                    action="Intervention mécanique d'urgence",
+                    description="Correction défauts mécaniques critiques",
+                    technical_details=[
+                        "Alignement pompe-moteur",
+                        "Équilibrage rotor",
+                        "Remplacement roulements si nécessaire"
+                    ],
+                    cost_estimate_min=3000,
+                    cost_estimate_max=12000,
+                    timeline="1-3 semaines",
+                    expected_benefits=[
+                        "Élimination vibrations excessives",
+                        "Réduction bruit",
+                        "Fiabilité mécanique restaurée"
+                    ],
+                    roi_months=8,
+                    risk_if_not_done="Défaillance catastrophique imminente"
+                ))
     
     # Recommandations maintenance préventive
     if input_data.vibration_level and input_data.vibration_level > 2.8:
@@ -5493,6 +5537,78 @@ def generate_expert_recommendations(input_data: AuditInput, diagnostics: List[Au
             ],
             roi_months=12,
             risk_if_not_done="Pannes imprévisibles, coûts maintenance correctifs élevés"
+        ))
+    
+    # Recommandations basées sur les écarts de performance
+    for comparison in performance_comparisons:
+        if comparison.status in ["problematic", "critical"]:
+            if comparison.parameter_name == "Débit" and comparison.deviation_from_required and comparison.deviation_from_required < -20:
+                recommendations.append(AuditRecommendation(
+                    priority="high",
+                    category="efficiency",
+                    action="Optimisation débit système",
+                    description="Amélioration performances hydrauliques pour atteindre débit requis",
+                    technical_details=[
+                        "Vérification état impulseur pompe",
+                        "Nettoyage circuit hydraulique",
+                        "Optimisation diamètres conduites"
+                    ],
+                    cost_estimate_min=8000,
+                    cost_estimate_max=25000,
+                    timeline="2-4 semaines",
+                    expected_benefits=[
+                        "Débit nominal restauré",
+                        "Performance process optimisée",
+                        "Efficacité énergétique améliorée"
+                    ],
+                    roi_months=15,
+                    risk_if_not_done="Sous-performance continue du process"
+                ))
+            elif comparison.parameter_name == "HMT" and comparison.deviation_from_required and comparison.deviation_from_required > 30:
+                recommendations.append(AuditRecommendation(
+                    priority="high",
+                    category="efficiency",
+                    action="Réduction HMT excessive",
+                    description="Optimisation système pour éliminer gaspillage énergétique",
+                    technical_details=[
+                        "Révision point de fonctionnement",
+                        "Installation variateur de vitesse",
+                        "Optimisation réseau hydraulique"
+                    ],
+                    cost_estimate_min=12000,
+                    cost_estimate_max=35000,
+                    timeline="3-6 semaines",
+                    expected_benefits=[
+                        "Réduction consommation 25-40%",
+                        "HMT adaptée aux besoins réels",
+                        "Durée de vie équipement prolongée"
+                    ],
+                    roi_months=20,
+                    risk_if_not_done="Gaspillage énergétique majeur continu"
+                ))
+    
+    # Recommandations énergétiques
+    if input_data.energy_consumption_increase:
+        recommendations.append(AuditRecommendation(
+            priority="medium",
+            category="efficiency",
+            action="Audit énergétique approfondi",
+            description="Analyse détaillée consommation et optimisation énergétique",
+            technical_details=[
+                "Mesures énergétiques détaillées",
+                "Analyse rendements globaux",
+                "Étude variateur de vitesse"
+            ],
+            cost_estimate_min=3000,
+            cost_estimate_max=8000,
+            timeline="2-3 semaines",
+            expected_benefits=[
+                "Identification gisements d'économie",
+                "Plan d'optimisation énergétique",
+                "ROI projets d'amélioration"
+            ],
+            roi_months=24,
+            risk_if_not_done="Surcoûts énergétiques non maîtrisés"
         ))
     
     return recommendations
