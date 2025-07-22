@@ -12989,12 +12989,12 @@ function App() {
 
           {/* Navigation principale */}
           <nav className="px-6 py-2">
-            <div className="flex items-center space-x-1 overflow-x-auto">
+            <div className="flex flex-wrap items-center gap-1 justify-center">
               <button
                 onClick={() => setActiveTab('npshd')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'npshd'
-                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
