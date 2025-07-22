@@ -14156,7 +14156,7 @@ function App() {
     ctx.fillStyle = '#E91E63';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`H=${drawingData.forage_specific.reservoir_height}m`, towerX + towerW + 35, groundLevel - towerHeight/2);
+    ctx.fillText(`H=${drawingData.forage_specific.reservoir_height || 0}m`, towerX + towerW + 35, groundLevel - towerHeight/2);
     
     // LONGUEUR REFOULEMENT (DYNAMIQUE)
     ctx.strokeStyle = '#FF5722';
