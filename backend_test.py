@@ -8023,6 +8023,414 @@ class HydraulicPumpTester:
         
         return all_passed
     
+    def test_intelligent_recommendations_integration(self):
+        """Test intelligent recommendations integration across all tabs (HMT, Performance, Expert)"""
+        print("\n🧠 Testing Intelligent Recommendations Integration...")
+        
+        # Test Case 1: Chemical Compatibility Issue (acid + cast_iron)
+        print("\n🧪 Test Case 1: Chemical Compatibility Issue (acid + cast_iron)")
+        
+        # HMT Tab Test - Chemical Compatibility
+        hmt_chemical_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 2.0,
+            "discharge_height": 15.0,
+            "useful_pressure": 0.0,
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "suction_pipe_length": 30.0,
+            "discharge_pipe_length": 50.0,
+            "suction_pipe_material": "cast_iron",  # Incompatible with acid
+            "discharge_pipe_material": "cast_iron",  # Incompatible with acid
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "acid",  # Incompatible with cast_iron
+            "temperature": 20.0,
+            "flow_rate": 50.0
+        }
+        
+        hmt_chemical_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_chemical_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                recommendations = result.get("recommendations", [])
+                
+                # Check for chemical compatibility warnings
+                compatibility_found = any("INCOMPATIBILITÉ" in rec.upper() or "CORROSIF" in rec.upper() or "MATÉRIAU" in rec.upper() for rec in recommendations)
+                if not compatibility_found:
+                    self.log_test("HMT Chemical Compatibility", False, "Missing chemical compatibility warnings for acid + cast_iron")
+                    hmt_chemical_passed = False
+                else:
+                    self.log_test("HMT Chemical Compatibility", True, f"Found {len([r for r in recommendations if 'INCOMPATIBILITÉ' in r.upper() or 'CORROSIF' in r.upper()])} compatibility warnings")
+            else:
+                self.log_test("HMT Chemical Compatibility", False, f"Status: {response.status_code}")
+                hmt_chemical_passed = False
+        except Exception as e:
+            self.log_test("HMT Chemical Compatibility", False, f"Error: {str(e)}")
+            hmt_chemical_passed = False
+        
+        # Performance Tab Test - Chemical Compatibility
+        perf_chemical_data = {
+            "flow_rate": 50.0,
+            "hmt": 25.0,
+            "pipe_diameter": 100.0,
+            "fluid_type": "acid",
+            "pipe_material": "cast_iron",  # Incompatible
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        perf_chemical_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=perf_chemical_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                recommendations = result.get("recommendations", [])
+                
+                # Check for chemical compatibility in performance recommendations
+                compatibility_found = any("MATÉRIAU" in rec.upper() or "CORROSIF" in rec.upper() or "INCOMPATIBLE" in rec.upper() for rec in recommendations)
+                if not compatibility_found:
+                    self.log_test("Performance Chemical Compatibility", False, "Missing chemical compatibility in performance recommendations")
+                    perf_chemical_passed = False
+                else:
+                    self.log_test("Performance Chemical Compatibility", True, "Found chemical compatibility recommendations")
+            else:
+                self.log_test("Performance Chemical Compatibility", False, f"Status: {response.status_code}")
+                perf_chemical_passed = False
+        except Exception as e:
+            self.log_test("Performance Chemical Compatibility", False, f"Error: {str(e)}")
+            perf_chemical_passed = False
+        
+        # Expert Tab Test - Advanced Chemical Compatibility
+        expert_chemical_data = {
+            "flow_rate": 50.0,
+            "fluid_type": "acid",
+            "temperature": 20.0,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "suction_height": 2.0,
+            "discharge_height": 15.0,
+            "suction_length": 30.0,
+            "discharge_length": 50.0,
+            "total_length": 80.0,
+            "useful_pressure": 0.0,
+            "suction_material": "cast_iron",  # Incompatible
+            "discharge_material": "cast_iron",  # Incompatible
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "npsh_required": 3.0,
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 2000.0,
+            "electricity_cost": 0.12,
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0
+        }
+        
+        expert_chemical_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_chemical_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                expert_recommendations = result.get("expert_recommendations", [])
+                
+                # Check for advanced chemical compatibility in expert recommendations
+                chemical_recs = [rec for rec in expert_recommendations if 
+                               any(keyword in str(rec).upper() for keyword in ["CHEMICAL", "COMPATIBILITY", "MATÉRIAU", "CORROSIF", "INCOMPATIBLE"])]
+                
+                if not chemical_recs:
+                    self.log_test("Expert Chemical Compatibility", False, "Missing advanced chemical compatibility in expert recommendations")
+                    expert_chemical_passed = False
+                else:
+                    self.log_test("Expert Chemical Compatibility", True, f"Found {len(chemical_recs)} advanced chemical compatibility recommendations")
+            else:
+                self.log_test("Expert Chemical Compatibility", False, f"Status: {response.status_code}")
+                expert_chemical_passed = False
+        except Exception as e:
+            self.log_test("Expert Chemical Compatibility", False, f"Error: {str(e)}")
+            expert_chemical_passed = False
+        
+        # Test Case 2: High Velocity Scenario (graduated diameter recommendations)
+        print("\n⚡ Test Case 2: High Velocity Scenario (graduated diameter recommendations)")
+        
+        # HMT Tab Test - Graduated Diameter
+        hmt_velocity_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 2.0,
+            "discharge_height": 15.0,
+            "useful_pressure": 0.0,
+            "suction_pipe_diameter": 42.4,  # DN32 - small diameter
+            "discharge_pipe_diameter": 42.4,  # DN32 - small diameter
+            "suction_pipe_length": 30.0,
+            "discharge_pipe_length": 50.0,
+            "suction_pipe_material": "pvc",
+            "discharge_pipe_material": "pvc",
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "flow_rate": 120.0  # High flow rate to trigger high velocity
+        }
+        
+        hmt_velocity_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_velocity_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                recommendations = result.get("recommendations", [])
+                
+                # Check for graduated diameter recommendations
+                diameter_recs = [rec for rec in recommendations if 
+                               any(keyword in rec.upper() for keyword in ["DN32", "DN40", "DN50", "DIAMÈTRE", "VITESSE"])]
+                
+                if not diameter_recs:
+                    self.log_test("HMT Graduated Diameter", False, "Missing graduated diameter recommendations for high velocity")
+                    hmt_velocity_passed = False
+                else:
+                    # Check for velocity limits compliance (no >4 m/s recommendations)
+                    excessive_velocity = any("4." in rec or "5." in rec or "6." in rec for rec in diameter_recs)
+                    if excessive_velocity:
+                        self.log_test("HMT Velocity Limits", False, "Found recommendations with excessive velocity >4 m/s")
+                        hmt_velocity_passed = False
+                    else:
+                        self.log_test("HMT Graduated Diameter", True, f"Found {len(diameter_recs)} graduated diameter recommendations with proper velocity limits")
+            else:
+                self.log_test("HMT Graduated Diameter", False, f"Status: {response.status_code}")
+                hmt_velocity_passed = False
+        except Exception as e:
+            self.log_test("HMT Graduated Diameter", False, f"Error: {str(e)}")
+            hmt_velocity_passed = False
+        
+        # Performance Tab Test - Graduated Diameter
+        perf_velocity_data = {
+            "flow_rate": 120.0,  # High flow rate
+            "hmt": 25.0,
+            "pipe_diameter": 42.4,  # DN32 - small diameter
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        perf_velocity_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=perf_velocity_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                recommendations = result.get("recommendations", [])
+                
+                # Check for graduated diameter recommendations in performance
+                diameter_recs = [rec for rec in recommendations if 
+                               any(keyword in rec.upper() for keyword in ["DN32", "DN40", "DN50", "DIAMÈTRE", "VITESSE", "OPTIMISATION"])]
+                
+                if not diameter_recs:
+                    self.log_test("Performance Graduated Diameter", False, "Missing graduated diameter recommendations for performance optimization")
+                    perf_velocity_passed = False
+                else:
+                    self.log_test("Performance Graduated Diameter", True, f"Found {len(diameter_recs)} performance-specific diameter recommendations")
+            else:
+                self.log_test("Performance Graduated Diameter", False, f"Status: {response.status_code}")
+                perf_velocity_passed = False
+        except Exception as e:
+            self.log_test("Performance Graduated Diameter", False, f"Error: {str(e)}")
+            perf_velocity_passed = False
+        
+        # Expert Tab Test - Advanced Graduated Diameter
+        expert_velocity_data = {
+            "flow_rate": 120.0,  # High flow rate
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 42.4,  # DN32 - small diameter
+            "discharge_pipe_diameter": 42.4,  # DN32 - small diameter
+            "suction_height": 2.0,
+            "discharge_height": 15.0,
+            "suction_length": 30.0,
+            "discharge_length": 50.0,
+            "total_length": 80.0,
+            "useful_pressure": 0.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "pump_efficiency": 75.0,
+            "motor_efficiency": 90.0,
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "npsh_required": 3.0,
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 2000.0,
+            "electricity_cost": 0.12,
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0
+        }
+        
+        expert_velocity_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_velocity_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                expert_recommendations = result.get("expert_recommendations", [])
+                
+                # Check for advanced graduated diameter recommendations in expert format
+                diameter_recs = [rec for rec in expert_recommendations if 
+                               any(keyword in str(rec).upper() for keyword in ["DN32", "DN40", "DN50", "DIAMETER", "VELOCITY", "HYDRAULIC"])]
+                
+                if not diameter_recs:
+                    self.log_test("Expert Graduated Diameter", False, "Missing advanced graduated diameter recommendations in expert format")
+                    expert_velocity_passed = False
+                else:
+                    self.log_test("Expert Graduated Diameter", True, f"Found {len(diameter_recs)} expert-level graduated diameter recommendations")
+            else:
+                self.log_test("Expert Graduated Diameter", False, f"Status: {response.status_code}")
+                expert_velocity_passed = False
+        except Exception as e:
+            self.log_test("Expert Graduated Diameter", False, f"Error: {str(e)}")
+            expert_velocity_passed = False
+        
+        # Test Case 3: Energy Optimization (low efficiencies)
+        print("\n⚡ Test Case 3: Energy Optimization (low efficiencies)")
+        
+        # Performance Tab Test - Energy Optimization
+        perf_energy_data = {
+            "flow_rate": 50.0,
+            "hmt": 25.0,
+            "pipe_diameter": 100.0,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 65.0,  # Low efficiency
+            "motor_efficiency": 85.0,  # Low efficiency
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        perf_energy_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=perf_energy_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                recommendations = result.get("recommendations", [])
+                
+                # Check for energy optimization recommendations
+                energy_recs = [rec for rec in recommendations if 
+                              any(keyword in rec.upper() for keyword in ["EFFICACITÉ", "RENDEMENT", "ÉNERGIE", "OPTIMIZATION", "EFFICIENCY"])]
+                
+                if not energy_recs:
+                    self.log_test("Performance Energy Optimization", False, "Missing energy optimization recommendations for low efficiencies")
+                    perf_energy_passed = False
+                else:
+                    self.log_test("Performance Energy Optimization", True, f"Found {len(energy_recs)} energy optimization recommendations")
+            else:
+                self.log_test("Performance Energy Optimization", False, f"Status: {response.status_code}")
+                perf_energy_passed = False
+        except Exception as e:
+            self.log_test("Performance Energy Optimization", False, f"Error: {str(e)}")
+            perf_energy_passed = False
+        
+        # Expert Tab Test - Advanced Energy Optimization with ROI
+        expert_energy_data = {
+            "flow_rate": 50.0,
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "suction_type": "flooded",
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 80.0,
+            "suction_height": 2.0,
+            "discharge_height": 15.0,
+            "suction_length": 30.0,
+            "discharge_length": 50.0,
+            "total_length": 80.0,
+            "useful_pressure": 0.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "pump_efficiency": 65.0,  # Low efficiency
+            "motor_efficiency": 85.0,  # Low efficiency
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "npsh_required": 3.0,
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 2000.0,  # For ROI calculations
+            "electricity_cost": 0.12,  # For cost analysis
+            "altitude": 0.0,
+            "ambient_temperature": 25.0,
+            "humidity": 60.0
+        }
+        
+        expert_energy_passed = True
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=expert_energy_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                expert_recommendations = result.get("expert_recommendations", [])
+                optimization_potential = result.get("optimization_potential", {})
+                
+                # Check for advanced energy optimization with ROI analysis
+                energy_recs = [rec for rec in expert_recommendations if 
+                              any(keyword in str(rec).upper() for keyword in ["ENERGY", "EFFICIENCY", "ROI", "COST", "SAVINGS", "OPTIMIZATION"])]
+                
+                roi_analysis = any(keyword in str(optimization_potential).upper() for keyword in ["ENERGY_SAVINGS", "ROI", "COST"])
+                
+                if not energy_recs and not roi_analysis:
+                    self.log_test("Expert Energy Optimization", False, "Missing advanced energy optimization with ROI analysis")
+                    expert_energy_passed = False
+                else:
+                    self.log_test("Expert Energy Optimization", True, f"Found {len(energy_recs)} energy recommendations with ROI analysis")
+            else:
+                self.log_test("Expert Energy Optimization", False, f"Status: {response.status_code}")
+                expert_energy_passed = False
+        except Exception as e:
+            self.log_test("Expert Energy Optimization", False, f"Error: {str(e)}")
+            expert_energy_passed = False
+        
+        # Overall assessment
+        all_tests_passed = (hmt_chemical_passed and perf_chemical_passed and expert_chemical_passed and
+                           hmt_velocity_passed and perf_velocity_passed and expert_velocity_passed and
+                           perf_energy_passed and expert_energy_passed)
+        
+        if all_tests_passed:
+            self.log_test("Intelligent Recommendations Integration", True, 
+                         "All tabs (HMT, Performance, Expert) successfully integrate chemical compatibility, graduated diameter, and energy optimization recommendations")
+        else:
+            failed_areas = []
+            if not (hmt_chemical_passed and perf_chemical_passed and expert_chemical_passed):
+                failed_areas.append("Chemical Compatibility")
+            if not (hmt_velocity_passed and perf_velocity_passed and expert_velocity_passed):
+                failed_areas.append("Graduated Diameter")
+            if not (perf_energy_passed and expert_energy_passed):
+                failed_areas.append("Energy Optimization")
+            
+            self.log_test("Intelligent Recommendations Integration", False, 
+                         f"Failed areas: {', '.join(failed_areas)}")
+        
+        return all_tests_passed
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
