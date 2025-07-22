@@ -16482,8 +16482,17 @@ function App() {
                           type="number"
                           value={drawingData.total_head}
                           onChange={(e) => handleDrawingInputChange('total_head', parseFloat(e.target.value) || 0)}
-                          className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
+                          className={`w-full p-2 border rounded text-sm focus:border-blue-500 ${
+                            drawingData.installation_type === 'forage' 
+                              ? 'border-green-300 bg-green-50 text-green-700 cursor-not-allowed' 
+                              : 'border-slate-300'
+                          }`}
+                          readOnly={drawingData.installation_type === 'forage'}
+                          placeholder={drawingData.installation_type === 'forage' ? 'Auto-calculé' : ''}
                         />
+                        {drawingData.installation_type === 'forage' && (
+                          <div className="text-xs text-green-600 mt-1">🔒 Auto-calculé via PARAMÈTRES FORAGE</div>
+                        )}
                       </div>
                     </div>
 
