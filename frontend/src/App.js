@@ -1104,137 +1104,451 @@ const AuditSystem = () => {
             <div className="space-y-8">
               <h3 className="text-xl font-bold text-gray-900">🏗️ Audit Terrain Professionnel</h3>
               
-              {/* Rapport Journal en Temps Réel */}
+              {/* Rapport Journal Professionnel en Temps Réel - 3 SECTIONS */}
               {realTimeAnalysis && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border-l-4 border-blue-500">
-                  <h4 className="font-bold text-blue-900 mb-4">📋 RAPPORT JOURNAL - ANALYSE TEMPS RÉEL</h4>
+                  <h4 className="font-bold text-blue-900 mb-4">📋 RAPPORT JOURNAL TECHNIQUE PROFESSIONNEL - ANALYSE TEMPS RÉEL</h4>
                   
                   {/* Statut global */}
-                  <div className={`mb-4 p-3 rounded-lg ${
+                  <div className={`mb-6 p-4 rounded-lg ${
                     realTimeAnalysis.overall_status === 'CRITIQUE' ? 'bg-red-100 border border-red-300' :
-                    realTimeAnalysis.overall_status === 'IMPORTANT' ? 'bg-orange-100 border border-orange-300' :
+                    realTimeAnalysis.overall_status === 'DÉGRADÉ' ? 'bg-orange-100 border border-orange-300' :
+                    realTimeAnalysis.overall_status === 'ACCEPTABLE' ? 'bg-yellow-100 border border-yellow-300' :
+                    realTimeAnalysis.overall_status === 'BON' ? 'bg-blue-100 border border-blue-300' :
                     'bg-green-100 border border-green-300'
                   }`}>
                     <div className="flex justify-between items-center">
-                      <span className="font-bold">État Installation:</span>
-                      <span className={`font-bold ${
-                        realTimeAnalysis.overall_status === 'CRITIQUE' ? 'text-red-700' :
-                        realTimeAnalysis.overall_status === 'IMPORTANT' ? 'text-orange-700' :
-                        'text-green-700'
-                      }`}>
-                        {realTimeAnalysis.overall_status}
-                      </span>
+                      <span className="font-bold text-lg">État Installation: {realTimeAnalysis.overall_status}</span>
+                      <div className="text-right text-sm">
+                        {realTimeAnalysis.critical_count > 0 && <span className="bg-red-200 text-red-800 px-2 py-1 rounded mr-2">🚨 {realTimeAnalysis.critical_count} Critique(s)</span>}
+                        {realTimeAnalysis.important_count > 0 && <span className="bg-orange-200 text-orange-800 px-2 py-1 rounded">⚠️ {realTimeAnalysis.important_count} Important(s)</span>}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Problèmes hydrauliques */}
-                  {realTimeAnalysis.hydraulic_issues.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="font-semibold text-blue-800 mb-2">🌊 ANALYSE HYDRAULIQUE</h5>
-                      {realTimeAnalysis.hydraulic_issues.map((issue, idx) => (
-                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
-                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
-                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
-                          'bg-yellow-50 border-yellow-400'
-                        }`}>
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-medium text-sm">{issue.type}</span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
-                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
-                              'bg-yellow-200 text-yellow-800'
-                            }`}>
-                              {issue.severity}
-                            </span>
+                  {/* ========================================================================================================
+                      SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE
+                      ======================================================================================================== */}
+                  <div className="mb-8 bg-white rounded-lg p-5 border border-blue-200">
+                    <h5 className="font-bold text-blue-900 mb-4 text-lg">🔬 SECTION 1 : ANALYSE TECHNIQUE DÉTAILLÉE</h5>
+                    
+                    {/* Analyse Fluides et Température */}
+                    {realTimeAnalysis.section1_technical_analysis.fluid_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-blue-800 mb-3">🌡️ ANALYSE FLUIDE & TEMPÉRATURE</h6>
+                        {realTimeAnalysis.section1_technical_analysis.fluid_analysis.map((analysis, idx) => (
+                          <div key={idx} className={`mb-3 p-4 rounded-lg border-l-4 ${
+                            analysis.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                            analysis.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                            'bg-yellow-50 border-yellow-400'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                analysis.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                                analysis.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                                'bg-yellow-200 text-yellow-800'
+                              }`}>
+                                {analysis.severity}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 mb-2">{analysis.description}</p>
+                            <p className="text-xs text-red-600 mb-2"><strong>Impact technique:</strong> {analysis.technical_impact}</p>
+                            <p className="text-xs text-blue-600 mb-2"><strong>Équipements affectés:</strong> {analysis.equipment_affected?.join(', ')}</p>
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
                           </div>
-                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
-                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
-                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
 
-                  {/* Problèmes électriques */}
-                  {realTimeAnalysis.electrical_issues.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="font-semibold text-yellow-800 mb-2">⚡ ANALYSE ÉLECTRIQUE</h5>
-                      {realTimeAnalysis.electrical_issues.map((issue, idx) => (
-                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
-                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
-                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
-                          'bg-yellow-50 border-yellow-400'
-                        }`}>
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-medium text-sm">{issue.type}</span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
-                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
-                              'bg-yellow-200 text-yellow-800'
-                            }`}>
-                              {issue.severity}
-                            </span>
+                    {/* Analyse Diamètres avec Logique Expert */}
+                    {realTimeAnalysis.section1_technical_analysis.diameter_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-blue-800 mb-3">📏 ANALYSE DIAMÈTRES & VITESSES (Logique Expert)</h6>
+                        {realTimeAnalysis.section1_technical_analysis.diameter_analysis.map((analysis, idx) => (
+                          <div key={idx} className={`mb-3 p-4 rounded-lg border-l-4 ${
+                            analysis.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                            analysis.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                            'bg-yellow-50 border-yellow-400'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                analysis.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                                analysis.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                                'bg-yellow-200 text-yellow-800'
+                              }`}>
+                                {analysis.severity}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 mb-2">{analysis.description}</p>
+                            <p className="text-xs text-red-600 mb-2"><strong>Impact technique:</strong> {analysis.technical_impact}</p>
+                            
+                            {/* Recommandations diamètre */}
+                            {analysis.diameter_recommendation && (
+                              <div className="bg-cyan-50 p-3 rounded border border-cyan-200 mb-2">
+                                <p className="text-xs font-semibold text-cyan-800 mb-1">Recommandation Diamètre:</p>
+                                <p className="text-xs text-cyan-700">
+                                  <strong>Actuel:</strong> {analysis.diameter_recommendation.current} → 
+                                  <strong> Recommandé:</strong> {analysis.diameter_recommendation.recommended}
+                                </p>
+                                {analysis.diameter_recommendation.new_velocity && (
+                                  <p className="text-xs text-cyan-700">
+                                    <strong>Nouvelle vitesse:</strong> {analysis.diameter_recommendation.new_velocity}
+                                  </p>
+                                )}
+                                {analysis.diameter_recommendation.pressure_gain && (
+                                  <p className="text-xs text-green-600">
+                                    <strong>Gain pression:</strong> {analysis.diameter_recommendation.pressure_gain}
+                                  </p>
+                                )}
+                                {analysis.diameter_recommendation.energy_saving && (
+                                  <p className="text-xs text-green-600">
+                                    <strong>Économie:</strong> {analysis.diameter_recommendation.energy_saving}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
                           </div>
-                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
-                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
-                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
 
-                  {/* Problèmes mécaniques */}
-                  {realTimeAnalysis.mechanical_issues.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="font-semibold text-orange-800 mb-2">🔧 ANALYSE MÉCANIQUE</h5>
-                      {realTimeAnalysis.mechanical_issues.map((issue, idx) => (
-                        <div key={idx} className={`mb-3 p-3 rounded-lg border-l-4 ${
-                          issue.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
-                          issue.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
-                          'bg-yellow-50 border-yellow-400'
-                        }`}>
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-medium text-sm">{issue.type}</span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              issue.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
-                              issue.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
-                              'bg-yellow-200 text-yellow-800'
-                            }`}>
-                              {issue.severity}
-                            </span>
+                    {/* Analyse Électrique Complète */}
+                    {realTimeAnalysis.section1_technical_analysis.electrical_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-blue-800 mb-3">⚡ ANALYSE ÉLECTRIQUE COMPLÈTE</h6>
+                        {realTimeAnalysis.section1_technical_analysis.electrical_analysis.map((analysis, idx) => (
+                          <div key={idx} className={`mb-3 p-4 rounded-lg border-l-4 ${
+                            analysis.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                            analysis.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                            'bg-yellow-50 border-yellow-400'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                analysis.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                                analysis.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                                'bg-yellow-200 text-yellow-800'
+                              }`}>
+                                {analysis.severity}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-700 mb-2">{analysis.description}</p>
+                            <p className="text-xs text-red-600 mb-2"><strong>Impact technique:</strong> {analysis.technical_impact}</p>
+                            <p className="text-xs text-blue-600 mb-2"><strong>Équipements affectés:</strong> {analysis.equipment_affected?.join(', ')}</p>
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
                           </div>
-                          <p className="text-xs text-gray-700 mb-1">{issue.description}</p>
-                          <p className="text-xs text-blue-600 mb-1"><strong>Interprétation:</strong> {issue.interpretation}</p>
-                          <p className="text-xs text-green-600"><strong>Action:</strong> {issue.immediate_action}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
 
-                  {/* Recommandations équipements */}
-                  {realTimeAnalysis.recommendations.length > 0 && (
-                    <div className="mb-4">
-                      <h5 className="font-semibold text-green-800 mb-2">💡 RECOMMANDATIONS ÉQUIPEMENTS</h5>
-                      {realTimeAnalysis.recommendations.map((rec, idx) => (
-                        <div key={idx} className="mb-2 p-3 rounded-lg bg-green-50 border border-green-200">
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="font-medium text-sm text-green-900">{rec.equipment}</span>
-                            <span className="text-xs text-green-600">{rec.cost}</span>
+                    {/* Calculs de Puissance Intelligents */}
+                    {realTimeAnalysis.section1_technical_analysis.power_calculations && Object.keys(realTimeAnalysis.section1_technical_analysis.power_calculations).length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-blue-800 mb-3">🔢 CALCULS PUISSANCE (Mono/Triphasé)</h6>
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                            <div><strong>Configuration:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.configuration}</div>
+                            <div><strong>P calculée:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.calculated_power} kW</div>
+                            <div><strong>Courant/phase:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.current_per_phase} A</div>
+                            <div><strong>Cos φ:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.power_factor}</div>
+                            <div><strong>P réactive:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.reactive_power} kVAR</div>
+                            <div><strong>P apparente:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.apparent_power} kVA</div>
+                            <div className="col-span-2"><strong>P mesurée:</strong> {realTimeAnalysis.section1_technical_analysis.power_calculations.measured_power} kW</div>
                           </div>
-                          <p className="text-xs text-green-700 mb-1">{rec.justification}</p>
-                          <p className="text-xs text-green-600"><strong>Économies:</strong> {rec.savings}</p>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Message si tout va bien */}
-                  {realTimeAnalysis.overall_status === 'OK' && 
-                   realTimeAnalysis.hydraulic_issues.length === 0 && 
-                   realTimeAnalysis.electrical_issues.length === 0 && 
-                   realTimeAnalysis.mechanical_issues.length === 0 && (
-                    <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
-                      <span className="text-green-700 font-medium">✅ Aucun problème détecté - Installation dans les normes</span>
+                  {/* ========================================================================================================
+                      SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET
+                      ======================================================================================================== */}
+                  <div className="mb-8 bg-white rounded-lg p-5 border border-orange-200">
+                    <h5 className="font-bold text-orange-900 mb-4 text-lg">🔧 SECTION 2 : DIAGNOSTIC MÉCANIQUE COMPLET</h5>
+                    
+                    {/* Analyse Roulements */}
+                    {realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-orange-800 mb-3">⚙️ ANALYSE ROULEMENTS</h6>
+                        {realTimeAnalysis.section2_mechanical_diagnosis.bearing_analysis.map((analysis, idx) => (
+                          <div key={idx} className={`mb-3 p-4 rounded-lg border-l-4 ${
+                            analysis.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                            analysis.severity === 'IMPORTANT' ? 'bg-orange-50 border-orange-400' :
+                            'bg-green-50 border-green-400'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                analysis.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                                analysis.severity === 'IMPORTANT' ? 'bg-orange-200 text-orange-800' :
+                                'bg-green-200 text-green-800'
+                              }`}>
+                                {analysis.severity}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                              <div><strong>Niveau actuel:</strong> {analysis.current_level}</div>
+                              <div><strong>État:</strong> {analysis.condition}</div>
+                              <div><strong>Classification ISO:</strong> {analysis.iso_classification}</div>
+                              <div><strong>Vie restante:</strong> {analysis.remaining_life}</div>
+                            </div>
+                            
+                            {/* Détails techniques roulements */}
+                            {analysis.technical_details && (
+                              <div className="bg-gray-50 p-3 rounded border border-gray-200 mb-2">
+                                <p className="text-xs font-semibold text-gray-800 mb-1">Contrôles techniques:</p>
+                                <p className="text-xs text-gray-700 mb-1">• {analysis.technical_details.frequency_analysis}</p>
+                                <p className="text-xs text-gray-700 mb-1">• {analysis.technical_details.lubrication_check}</p>
+                                <p className="text-xs text-gray-700">• {analysis.technical_details.alignment_check}</p>
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Analyse Étanchéité */}
+                    {realTimeAnalysis.section2_mechanical_diagnosis.seal_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-orange-800 mb-3">💧 ANALYSE ÉTANCHÉITÉ & GARNITURES</h6>
+                        {realTimeAnalysis.section2_mechanical_diagnosis.seal_analysis.map((analysis, idx) => (
+                          <div key={idx} className="mb-3 p-4 rounded-lg border-l-4 bg-blue-50 border-blue-400">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className="px-2 py-1 rounded text-xs bg-blue-200 text-blue-800">{analysis.severity}</span>
+                            </div>
+                            <p className="text-xs text-gray-700 mb-2">{analysis.description}</p>
+                            <p className="text-xs text-red-600 mb-2"><strong>Impact technique:</strong> {analysis.technical_impact}</p>
+                            
+                            {/* Diagnostic garniture détaillé */}
+                            {analysis.seal_diagnosis && (
+                              <div className="bg-white p-3 rounded border border-blue-200 mb-2">
+                                <p className="text-xs font-semibold text-blue-800 mb-1">Causes possibles:</p>
+                                <ul className="text-xs text-blue-700 mb-2">
+                                  {analysis.seal_diagnosis.possible_causes?.map((cause, idx) => (
+                                    <li key={idx}>• {cause}</li>
+                                  ))}
+                                </ul>
+                                <p className="text-xs font-semibold text-blue-800 mb-1">Points d'inspection:</p>
+                                <ul className="text-xs text-blue-700">
+                                  {analysis.seal_diagnosis.inspection_points?.map((point, idx) => (
+                                    <li key={idx}>• {point}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Analyse Marche à Sec */}
+                    {realTimeAnalysis.section2_mechanical_diagnosis.dry_run_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-orange-800 mb-3">🔥 ANALYSE MARCHE À SEC</h6>
+                        {realTimeAnalysis.section2_mechanical_diagnosis.dry_run_analysis.map((analysis, idx) => (
+                          <div key={idx} className="mb-3 p-4 rounded-lg border-l-4 bg-red-50 border-red-400">
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className="px-2 py-1 rounded text-xs bg-red-200 text-red-800">{analysis.severity}</span>
+                            </div>
+                            <p className="text-xs text-gray-700 mb-2">{analysis.description}</p>
+                            <p className="text-xs text-red-600 mb-2"><strong>Impact technique:</strong> {analysis.technical_impact}</p>
+                            
+                            {/* Mesures de protection */}
+                            {analysis.protection_measures && (
+                              <div className="bg-white p-3 rounded border border-red-200 mb-2">
+                                <p className="text-xs font-semibold text-red-800 mb-1">Protection actuelle: {analysis.protection_measures.current}</p>
+                                <p className="text-xs font-semibold text-red-800 mb-1">Protections recommandées:</p>
+                                <ul className="text-xs text-red-700">
+                                  {analysis.protection_measures.recommended?.map((protection, idx) => (
+                                    <li key={idx}>• {protection}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Vérifications immédiates */}
+                            {analysis.immediate_verification && (
+                              <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mb-2">
+                                <p className="text-xs font-semibold text-yellow-800 mb-1">Vérifications immédiates:</p>
+                                <ul className="text-xs text-yellow-700">
+                                  {analysis.immediate_verification.map((check, idx) => (
+                                    <li key={idx}>• {check}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Analyse Bruit Moteur */}
+                    {realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis.length > 0 && (
+                      <div className="mb-4">
+                        <h6 className="font-semibold text-orange-800 mb-3">🔊 ANALYSE BRUIT MOTEUR</h6>
+                        {realTimeAnalysis.section2_mechanical_diagnosis.noise_analysis.map((analysis, idx) => (
+                          <div key={idx} className={`mb-3 p-4 rounded-lg border-l-4 ${
+                            analysis.severity === 'CRITIQUE' ? 'bg-red-50 border-red-400' :
+                            'bg-orange-50 border-orange-400'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="font-medium text-sm">{analysis.type}</span>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                analysis.severity === 'CRITIQUE' ? 'bg-red-200 text-red-800' :
+                                'bg-orange-200 text-orange-800'
+                              }`}>
+                                {analysis.severity}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                              <div><strong>Niveau mesuré:</strong> {analysis.measured_level}</div>
+                              <div><strong>Limite:</strong> {analysis.limit}</div>
+                            </div>
+                            
+                            {/* Sources de bruit */}
+                            {analysis.noise_source_analysis && (
+                              <div className="bg-white p-3 rounded border border-orange-200 mb-2">
+                                <p className="text-xs font-semibold text-orange-800 mb-1">Sources mécaniques:</p>
+                                <ul className="text-xs text-orange-700 mb-2">
+                                  {analysis.noise_source_analysis.mechanical_sources?.map((source, idx) => (
+                                    <li key={idx}>• {source}</li>
+                                  ))}
+                                </ul>
+                                <p className="text-xs font-semibold text-orange-800 mb-1">Sources hydrauliques:</p>
+                                <ul className="text-xs text-orange-700 mb-2">
+                                  {analysis.noise_source_analysis.hydraulic_sources?.map((source, idx) => (
+                                    <li key={idx}>• {source}</li>
+                                  ))}
+                                </ul>
+                                <p className="text-xs font-semibold text-orange-800 mb-1">Sources électriques:</p>
+                                <ul className="text-xs text-orange-700">
+                                  {analysis.noise_source_analysis.electrical_sources?.map((source, idx) => (
+                                    <li key={idx}>• {source}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Méthodes de diagnostic */}
+                            {analysis.diagnostic_method && (
+                              <div className="bg-gray-50 p-3 rounded border border-gray-200 mb-2">
+                                <p className="text-xs font-semibold text-gray-800 mb-1">Méthodes diagnostic:</p>
+                                <p className="text-xs text-gray-700 mb-1">• {analysis.diagnostic_method.frequency_analysis}</p>
+                                <p className="text-xs text-gray-700 mb-1">• {analysis.diagnostic_method.location_mapping}</p>
+                                <p className="text-xs text-gray-700">• {analysis.diagnostic_method.load_correlation}</p>
+                              </div>
+                            )}
+                            
+                            <p className="text-xs text-green-600"><strong>Action corrective:</strong> {analysis.corrective_action}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ========================================================================================================
+                      SECTION 3 : ACTIONS CORRECTIVES DÉTAILLÉES POUR TECHNICIENS
+                      ======================================================================================================== */}
+                  <div className="mb-8 bg-white rounded-lg p-5 border border-green-200">
+                    <h5 className="font-bold text-green-900 mb-4 text-lg">👷 SECTION 3 : ACTIONS CORRECTIVES DÉTAILLÉES TECHNICIENS</h5>
+                    
+                    {/* Actions Immédiates */}
+                    {realTimeAnalysis.section3_corrective_actions.immediate_actions.length > 0 && (
+                      <div className="mb-6">
+                        <h6 className="font-semibold text-red-800 mb-3">🚨 ACTIONS IMMÉDIATES (0-24h)</h6>
+                        {realTimeAnalysis.section3_corrective_actions.immediate_actions.map((action, idx) => (
+                          action.condition && (
+                            <div key={idx} className="bg-red-50 p-4 rounded-lg border border-red-200 mb-3">
+                              <h7 className="font-semibold text-red-800 mb-2 block">Priorité: {action.priority}</h7>
+                              <div className="space-y-1">
+                                {action.checklist?.map((item, checkIdx) => (
+                                  <div key={checkIdx} className="flex items-start">
+                                    <span className="text-xs text-red-700 mr-2">□</span>
+                                    <span className="text-xs text-red-700">{item}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Actions Préventives */}
+                    {realTimeAnalysis.section3_corrective_actions.preventive_actions.length > 0 && (
+                      <div className="mb-6">
+                        <h6 className="font-semibold text-orange-800 mb-3">🔧 ACTIONS PRÉVENTIVES (1-7 jours)</h6>
+                        {realTimeAnalysis.section3_corrective_actions.preventive_actions.map((category, idx) => (
+                          <div key={idx} className="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-3">
+                            <h7 className="font-semibold text-orange-800 mb-2 block">{category.category}</h7>
+                            <div className="space-y-1">
+                              {category.tasks?.map((task, taskIdx) => (
+                                <div key={taskIdx} className="flex items-start">
+                                  <span className="text-xs text-orange-700 mr-2">□</span>
+                                  <span className="text-xs text-orange-700">{task}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Modifications Équipements */}
+                    {realTimeAnalysis.section3_corrective_actions.equipment_modifications.length > 0 && (
+                      <div className="mb-6">
+                        <h6 className="font-semibold text-blue-800 mb-3">🔄 MODIFICATIONS ÉQUIPEMENTS</h6>
+                        {realTimeAnalysis.section3_corrective_actions.equipment_modifications.map((mod, idx) => (
+                          <div key={idx} className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-3">
+                            <div className="flex justify-between items-start mb-2">
+                              <h7 className="font-semibold text-blue-800">{mod.equipment}</h7>
+                              <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded">{mod.type}</span>
+                            </div>
+                            <p className="text-xs text-blue-700 mb-2"><strong>Justification:</strong> {mod.justification}</p>
+                            <p className="text-xs text-blue-700 mb-2"><strong>Spécification:</strong> {mod.specification}</p>
+                            <p className="text-xs text-blue-700 mb-2"><strong>Installation:</strong> {mod.installation}</p>
+                            <p className="text-xs text-green-600"><strong>Coût estimé:</strong> {mod.cost_estimate}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Planning Maintenance */}
+                    {realTimeAnalysis.section3_corrective_actions.maintenance_schedule.length > 0 && (
+                      <div className="mb-6">
+                        <h6 className="font-semibold text-green-800 mb-3">📅 PLANNING MAINTENANCE</h6>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {realTimeAnalysis.section3_corrective_actions.maintenance_schedule.map((schedule, idx) => (
+                            <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-200">
+                              <h8 className="font-semibold text-green-800 text-sm mb-2 block">{schedule.frequency}</h8>
+                              <div className="space-y-1">
+                                {schedule.tasks?.map((task, taskIdx) => (
+                                  <div key={taskIdx} className="text-xs text-green-700">• {task}</div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Message si installation excellente */}
+                  {realTimeAnalysis.overall_status === 'EXCELLENT' && (
+                    <div className="bg-green-50 p-6 rounded-lg border border-green-200 text-center">
+                      <span className="text-green-700 font-medium text-lg">✅ Installation en excellent état - Surveillance normale recommandée</span>
                     </div>
                   )}
                 </div>
