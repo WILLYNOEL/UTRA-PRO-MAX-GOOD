@@ -9467,6 +9467,8 @@ class HydraulicPumpTester:
             self.test_comprehensive_audit_system,  # NEW: Test comprehensive audit system with intelligent field analysis
             # EXPERT INSTALLATION REPORT TEST (from current review request)
             self.test_expert_installation_report,  # NEW: Test expert installation report with detailed analysis sections
+            # AUDIT ANALYSIS CRITICAL DATA TEST (from current review request)
+            self.test_audit_analysis_critical_data,  # NEW: Test audit analysis endpoint with critical data
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
