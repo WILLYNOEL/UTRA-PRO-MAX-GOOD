@@ -14124,7 +14124,7 @@ function App() {
     ctx.lineTo(wellX - 55, waterLevelY - 5);
     ctx.stroke();
     
-    // Annotation niveau dynamique (DYNAMIQUE)
+    // Annotation niveau dynamique (DYNAMIQUE protégée)
     ctx.fillStyle = '#2196F3';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'right';
