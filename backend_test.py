@@ -9317,6 +9317,8 @@ class HydraulicPumpTester:
             self.test_intelligent_expert_recommendations_organization,  # NEW: Test intelligent organization of Expert tab recommendations to eliminate duplicates and improve structure
             # COMPREHENSIVE AUDIT SYSTEM TEST (from current review request)
             self.test_comprehensive_audit_system,  # NEW: Test comprehensive audit system with intelligent field analysis
+            # EXPERT INSTALLATION REPORT TEST (from current review request)
+            self.test_expert_installation_report,  # NEW: Test expert installation report with detailed analysis sections
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
