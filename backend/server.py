@@ -1719,6 +1719,7 @@ def calculate_npshd_enhanced(input_data: NPSHdCalculationInput) -> NPSHdResult:
 def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     """Enhanced HMT calculation for Tab 2"""
     warnings = []
+    recommendations = []  # Nouvelle liste de recommandations
     
     # Get fluid properties
     fluid_props = get_fluid_properties(input_data.fluid_type, input_data.temperature)
@@ -1775,6 +1776,78 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
     # Total HMT
     hmt = static_head + total_head_loss + useful_pressure_head
     
+    # ========================================================================================================
+    # NOUVELLES RECOMMANDATIONS INTELLIGENTES POUR HMT
+    # ========================================================================================================
+    
+    # 1. ANALYSE DE COMPATIBILITÉ CHIMIQUE
+    compatibility_analysis = analyze_chemical_compatibility(
+        input_data.fluid_type,
+        input_data.suction_pipe_material,
+        input_data.discharge_pipe_material,
+        input_data.temperature
+    )
+    
+    if compatibility_analysis["recommendations"]:
+        recommendations.append("\n🧪 COMPATIBILITÉ CHIMIQUE:")
+        recommendations.extend([f"  {rec}" for rec in compatibility_analysis["recommendations"]])
+    
+    if compatibility_analysis["seal_recommendations"]:
+        recommendations.append("\n🔧 RECOMMANDATIONS JOINTS:")
+        recommendations.extend([f"  {rec}" for rec in compatibility_analysis["seal_recommendations"]])
+    
+    # Alertes de compatibilité critique
+    if compatibility_analysis["suction_material_status"] == "incompatible":
+        warnings.append("🚨 INCOMPATIBILITÉ ASPIRATION DÉTECTÉE!")
+        recommendations.append(f"\n⚠️ CHANGEMENT MATÉRIAU ASPIRATION REQUIS - {PIPE_MATERIALS[input_data.suction_pipe_material]['name']} incompatible avec {compatibility_analysis['fluid_name']}")
+    
+    if compatibility_analysis["discharge_material_status"] == "incompatible":
+        warnings.append("🚨 INCOMPATIBILITÉ REFOULEMENT DÉTECTÉE!")
+        recommendations.append(f"\n⚠️ CHANGEMENT MATÉRIAU REFOULEMENT REQUIS - {PIPE_MATERIALS[input_data.discharge_pipe_material]['name']} incompatible avec {compatibility_analysis['fluid_name']}")
+    
+    # 2. RECOMMANDATIONS GRADUÉES POUR OPTIMISATION HYDRAULIQUE
+    
+    # Analyser l'aspiration si applicable (surface pump)
+    if input_data.installation_type == "surface" and suction_velocity is not None:
+        if suction_velocity > 1.5:  # Vitesse d'aspiration excessive
+            suction_diameter_options = calculate_graduated_diameter_recommendations(
+                input_data.suction_pipe_diameter,
+                input_data.flow_rate,
+                suction_velocity,
+                input_data.suction_pipe_length,
+                is_suction_pipe=True
+            )
+            
+            if suction_diameter_options:
+                recommendations.append("\n💧 OPTIMISATION ASPIRATION:")
+                recommendations.extend([f"  {option}" for option in suction_diameter_options])
+    
+    # Analyser le refoulement
+    if discharge_velocity > 2.5:  # Vitesse de refoulement excessive
+        discharge_diameter_options = calculate_graduated_diameter_recommendations(
+            input_data.discharge_pipe_diameter,
+            input_data.flow_rate,
+            discharge_velocity,
+            input_data.discharge_pipe_length,
+            is_suction_pipe=False
+        )
+        
+        if discharge_diameter_options:
+            recommendations.append("\n🚀 OPTIMISATION REFOULEMENT:")
+            recommendations.extend([f"  {option}" for option in discharge_diameter_options])
+    
+    # 3. RECOMMANDATIONS GÉNÉRALES HMT
+    if total_head_loss > hmt * 0.3:  # Pertes de charge > 30% du HMT
+        recommendations.append(f"\n⚠️ PERTES DE CHARGE ÉLEVÉES ({total_head_loss:.2f}m = {(total_head_loss/hmt)*100:.0f}% du HMT)")
+        recommendations.append("  • Considérer augmentation diamètres (voir recommandations ci-dessus)")
+        recommendations.append("  • Réduire longueurs de tuyauteries si possible")
+        recommendations.append("  • Vérifier nombre de singularités (coudes, vannes, etc.)")
+    
+    if useful_pressure_head > hmt * 0.4:  # Pression utile > 40% du HMT
+        recommendations.append(f"\n📊 PRESSION UTILE DOMINANTE ({useful_pressure_head:.2f}m = {(useful_pressure_head/hmt)*100:.0f}% du HMT)")
+        recommendations.append("  • Considérer système avec surpresseur dédié")
+        recommendations.append("  • Vérifier si pression utile réellement nécessaire")
+    
     # Warnings - Only check suction velocity if it exists
     if suction_velocity is not None and suction_velocity > 3.0:
         warnings.append(f"Vitesse d'aspiration élevée ({suction_velocity:.2f} m/s)")
@@ -1796,7 +1869,8 @@ def calculate_hmt_enhanced(input_data: HMTCalculationInput) -> HMTResult:
         static_head=static_head,
         useful_pressure_head=useful_pressure_head,
         hmt=hmt,
-        warnings=warnings
+        warnings=warnings,
+        recommendations=recommendations  # Ajout des recommandations
     )
 
 def calculate_darcy_head_loss(flow_rate: float, pipe_diameter: float, pipe_length: float, 
