@@ -15765,8 +15765,8 @@ function App() {
                                     <option key={n} value={n}>{n} pompe{n>1?'s':''} surpresseur</option>
                                   ));
                                 case 'submersible':
-                                  return [1,2].map(n => (
-                                    <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
+                                  return [1,2,3].map(n => (
+                                    <option key={n} value={n}>{n} pompe{n>1?'s':''} de relevage</option>
                                   ));
                                 default:
                                   // Surface aspiration - choix libre jusqu'à 4
