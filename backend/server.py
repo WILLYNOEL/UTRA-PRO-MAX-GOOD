@@ -5216,10 +5216,11 @@ def generate_economic_analysis(input_data: AuditInput, recommendations: List[Aud
     annual_savings = sum(r.cost_estimate_min * 12 / (r.roi_months or 12) for r in recommendations if r.roi_months)
     
     return {
-        "total_investment_required": total_investment,
+        "total_investment_cost": total_investment,  # Changed from total_investment_required
+        "annual_savings": annual_savings,  # Changed from annual_energy_savings
         "annual_energy_savings": annual_savings * 0.7,  # 70% des économies sont énergétiques
         "annual_maintenance_savings": annual_savings * 0.3,  # 30% maintenance
-        "payback_period_months": int(total_investment / annual_savings) if annual_savings > 0 else 999,
+        "payback_months": int(total_investment / annual_savings) if annual_savings > 0 else 999,  # Changed from payback_period_months
         "net_present_value_5_years": annual_savings * 5 - total_investment,
         "energy_cost_current": input_data.electricity_cost_per_kwh * 8760 * (input_data.measured_power or 10),
         "energy_cost_optimized": input_data.electricity_cost_per_kwh * 8760 * (input_data.measured_power or 10) * 0.75
