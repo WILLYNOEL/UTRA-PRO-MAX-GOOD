@@ -12550,14 +12550,38 @@ function App() {
 
   const canvasRef = useRef(null);
 
-  // Fonctions de gestion des événements INTELLIGENTES
+  // Fonctions de gestion des événements ULTRA-INTELLIGENTES
   const handleDrawingInputChange = (name, value) => {
     setDrawingData(prev => {
       let newData = { ...prev, [name]: value };
       
-      // LOGIQUE INTELLIGENTE : Communication automatique entre champs
+      // LOGIQUE ULTRA-INTELLIGENTE : Communication automatique entre champs
       if (name === 'installation_type') {
         newData = applyInstallationTypeLogic(newData, value);
+        
+        // FORCE AUTOMATIQUEMENT le bon nombre de pompes selon contraintes
+        switch(value) {
+          case 'forage':
+            newData.pump_count = 1;
+            newData.pumps_in_service = 1;
+            break;
+          case 'incendie':
+            newData.pump_count = 3;
+            newData.pumps_in_service = 2; // 2 service + 1 secours
+            break;
+          case 'surpresseur':
+            newData.pump_count = 4;
+            newData.pumps_in_service = 3; // 3 service + 1 secours
+            break;
+          case 'submersible':
+            newData.pump_count = Math.min(prev.pump_count, 2);
+            newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
+            break;
+          default:
+            // Surface aspiration - garder le choix existant mais max 4
+            newData.pump_count = Math.min(prev.pump_count, 4);
+            newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
+        }
       }
       
       if (name === 'pump_count') {
