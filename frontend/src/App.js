@@ -13336,13 +13336,506 @@ function App() {
     ctx.fillText('POMPE SUBMERSIBLE', 50, 50);
   };
 
+  // SCHÉMA FORAGE PROFESSIONNEL - CONFORME PID/ISO 1219-1
   const drawProfessionalForage = (ctx, canvas) => {
-    drawProfessionalSubmersible(ctx, canvas);
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
     
-    ctx.fillStyle = '#f57f17';
-    ctx.font = 'bold 16px Arial';
+    // 1. FORAGE VERTICAL (symbole PID normalisé)
+    const wellX = centerX - 200;
+    const wellDepth = 300;
+    drawPIDWell(ctx, wellX, centerY - wellDepth/2, 40, wellDepth);
+    
+    // 2. POMPE SUBMERSIBLE DE FORAGE (symbole ISO)
+    const pumpDepth = centerY + 80;
+    drawPIDSubmersiblePump(ctx, wellX, pumpDepth, 'PS-001');
+    
+    // 3. TUYAU DE REFOULEMENT (colonne montante)
+    drawPIDVerticalPipe(ctx, wellX + 50, pumpDepth, centerY - wellDepth/2 + 20, drawingData.discharge_diameter);
+    
+    // 4. RACCORDEMENT TÊTE DE FORAGE
+    drawPIDWellHead(ctx, wellX, centerY - wellDepth/2);
+    
+    // 5. TUYAUTERIE HORIZONTALE DE REFOULEMENT
+    const pipeY = centerY - wellDepth/2 + 20;
+    drawPIDHorizontalPipe(ctx, wellX + 80, pipeY, centerX + 200, drawingData.discharge_diameter);
+    
+    // 6. INSTRUMENTATIONS (conformes PID)
+    // Manomètre de refoulement
+    if (drawingData.accessories.pressure_gauge_discharge) {
+      drawPIDPressureIndicator(ctx, wellX + 120, pipeY - 40, 'PI-001');
+    }
+    
+    // Débitmètre
+    if (drawingData.accessories.flow_meter) {
+      drawPIDFlowIndicator(ctx, wellX + 180, pipeY, 'FI-001');
+    }
+    
+    // 7. VANNES (symboles PID)
+    drawPIDGateValve(ctx, wellX + 240, pipeY, 'XV-001');
+    
+    // 8. CHÂTEAU D'EAU / RÉSERVOIR
+    drawPIDStorageTank(ctx, centerX + 250, centerY - 120, 150, 200, 'T-001');
+    
+    // 9. COFFRET ÉLECTRIQUE DE FORAGE
+    if (drawingData.accessories.control_panel) {
+      drawPIDControlPanel(ctx, wellX - 120, centerY - 150, 'E-001', 1);
+    }
+    
+    // 10. ANNOTATIONS TECHNIQUES (conformes PID)
+    drawPIDAnnotations(ctx, canvas, 'forage');
+    
+    // 11. LÉGENDE ET SPÉCIFICATIONS
+    drawPIDLegend(ctx, canvas, 'STATION DE POMPAGE FORAGE');
+  };
+  
+  // FONCTIONS PID/ISO PROFESSIONNELLES
+  
+  // Forage vertical (symbole PID)
+  const drawPIDWell = (ctx, x, y, width, height) => {
+    // Forage principal
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.rect(x - width/2, y, width, height);
+    ctx.stroke();
+    
+    // Tubage
+    ctx.strokeStyle = '#7f8c8d';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(x - width/2 + 5, y + 10, width - 10, height - 20);
+    ctx.stroke();
+    
+    // Niveau statique
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x - width/2, y + height/3);
+    ctx.lineTo(x + width/2, y + height/3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Annotation profondeur
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round(height/10)}m`, x + width/2 + 20, y + height/2);
+    
+    // Label technique
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('FORAGE', x, y - 10);
+  };
+  
+  // Pompe submersible PID
+  const drawPIDSubmersiblePump = (ctx, x, y, tag) => {
+    // Corps de pompe (symbole PID)
+    ctx.strokeStyle = '#2980b9';
+    ctx.fillStyle = '#3498db';
+    ctx.lineWidth = 3;
+    
+    ctx.beginPath();
+    ctx.rect(x - 15, y - 25, 30, 50);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Symbole de rotation (PID)
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Flèche de rotation
+    ctx.beginPath();
+    ctx.moveTo(x - 5, y - 5);
+    ctx.lineTo(x + 5, y - 5);
+    ctx.lineTo(x, y - 10);
+    ctx.closePath();
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    
+    // Tag technique
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x, y + 40);
+    
+    // Câble électrique
+    ctx.strokeStyle = '#f39c12';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(x + 15, y);
+    ctx.lineTo(x + 40, y - 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  
+  // Tuyau vertical PID
+  const drawPIDVerticalPipe = (ctx, x, startY, endY, diameter) => {
+    const lineWidth = Math.max(2, diameter / 50);
+    
+    // Tuyau principal
+    ctx.strokeStyle = '#27ae60';
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(x, startY);
+    ctx.lineTo(x, endY);
+    ctx.stroke();
+    
+    // Flèches de débit (PID)
+    const arrowCount = 3;
+    for (let i = 1; i <= arrowCount; i++) {
+      const arrowY = startY + (endY - startY) * i / (arrowCount + 1);
+      ctx.strokeStyle = '#27ae60';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - 5, arrowY + 10);
+      ctx.lineTo(x, arrowY);
+      ctx.lineTo(x + 5, arrowY + 10);
+      ctx.stroke();
+    }
+    
+    // Annotation DN
+    ctx.fillStyle = '#27ae60';
+    ctx.font = '10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText('STATION DE FORAGE', 50, 70);
+    ctx.fillText(`DN${diameter}`, x + 10, startY + (endY - startY) / 2);
+  };
+  
+  // Tête de forage PID
+  const drawPIDWellHead = (ctx, x, y) => {
+    // Bride de tête
+    ctx.fillStyle = '#95a5a6';
+    ctx.strokeStyle = '#7f8c8d';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.rect(x - 30, y - 10, 60, 20);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Boulonnage
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.arc(x - 20 + i * 13, y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#34495e';
+      ctx.fill();
+    }
+    
+    // Label
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('TÊTE FORAGE', x, y - 20);
+  };
+  
+  // Tuyau horizontal PID
+  const drawPIDHorizontalPipe = (ctx, startX, y, endX, diameter) => {
+    const lineWidth = Math.max(2, diameter / 50);
+    
+    // Tuyau principal
+    ctx.strokeStyle = '#27ae60';
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(startX, y);
+    ctx.lineTo(endX, y);
+    ctx.stroke();
+    
+    // Flèches de débit
+    const arrowCount = 2;
+    for (let i = 1; i <= arrowCount; i++) {
+      const arrowX = startX + (endX - startX) * i / (arrowCount + 1);
+      ctx.strokeStyle = '#27ae60';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(arrowX - 10, y - 5);
+      ctx.lineTo(arrowX, y);
+      ctx.lineTo(arrowX - 10, y + 5);
+      ctx.stroke();
+    }
+  };
+  
+  // Indicateur de pression PID
+  const drawPIDPressureIndicator = (ctx, x, y, tag) => {
+    // Cadran (cercle PID)
+    ctx.beginPath();
+    ctx.arc(x, y, 15, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Aiguille
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 8, y - 8);
+    ctx.stroke();
+    
+    // Graduation
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI * 2) / 8;
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(angle) * 12, y + Math.sin(angle) * 12);
+      ctx.lineTo(x + Math.cos(angle) * 15, y + Math.sin(angle) * 15);
+      ctx.stroke();
+    }
+    
+    // Tag
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x, y + 30);
+    
+    // Raccordement
+    ctx.strokeStyle = '#7f8c8d';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 15);
+    ctx.lineTo(x, y + 25);
+    ctx.stroke();
+  };
+  
+  // Indicateur de débit PID
+  const drawPIDFlowIndicator = (ctx, x, y, tag) => {
+    // Corps du débitmètre (rectangulaire PID)
+    ctx.fillStyle = '#f8f9fa';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(x - 20, y - 15, 40, 30);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Symbole de débit (roue à aubes)
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI * 2) / 6;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(angle) * 8, y + Math.sin(angle) * 8);
+      ctx.stroke();
+    }
+    
+    // Tag
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x, y + 25);
+  };
+  
+  // Vanne PID
+  const drawPIDGateValve = (ctx, x, y, tag) => {
+    // Corps de vanne (losange PID)
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 15);
+    ctx.lineTo(x + 15, y);
+    ctx.lineTo(x, y + 15);
+    ctx.lineTo(x - 15, y);
+    ctx.closePath();
+    ctx.fillStyle = '#ecf0f1';
+    ctx.fill();
+    ctx.stroke();
+    
+    // Obturateur
+    ctx.strokeStyle = '#34495e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y - 10);
+    ctx.lineTo(x + 10, y + 10);
+    ctx.stroke();
+    
+    // Volant de manœuvre
+    ctx.strokeStyle = '#7f8c8d';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 15);
+    ctx.lineTo(x, y - 25);
+    ctx.moveTo(x - 8, y - 25);
+    ctx.lineTo(x + 8, y - 25);
+    ctx.stroke();
+    
+    // Tag
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x, y + 30);
+  };
+  
+  // Réservoir de stockage PID
+  const drawPIDStorageTank = (ctx, x, y, width, height, tag) => {
+    // Corps du réservoir
+    ctx.strokeStyle = '#8e44ad';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.rect(x - width/2, y, width, height);
+    ctx.fillStyle = '#e8d5f0';
+    ctx.fill();
+    ctx.stroke();
+    
+    // Niveau liquide
+    ctx.fillStyle = '#9b59b6';
+    ctx.fillRect(x - width/2 + 5, y + height * 0.3, width - 10, height * 0.6);
+    
+    // Ligne de niveau
+    ctx.strokeStyle = '#8e44ad';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x - width/2, y + height * 0.3);
+    ctx.lineTo(x + width/2, y + height * 0.3);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Instruments de niveau
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(x + width/2 - 30, y + height * 0.4, 25, 15);
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('LI', x + width/2 - 17, y + height * 0.4 + 10);
+    
+    // Tag principal
+    ctx.fillStyle = '#8e44ad';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x, y - 10);
+  };
+  
+  // Coffret électrique PID
+  const drawPIDControlPanel = (ctx, x, y, tag, pumpCount) => {
+    // Boîtier principal
+    ctx.fillStyle = '#34495e';
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(x, y, 80, 100);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Façade
+    ctx.fillStyle = '#bdc3c7';
+    ctx.fillRect(x + 5, y + 5, 70, 90);
+    
+    // Voyants et contrôles
+    for (let i = 0; i < pumpCount; i++) {
+      // LED de statut
+      ctx.beginPath();
+      ctx.arc(x + 20 + i * 15, y + 20, 3, 0, Math.PI * 2);
+      ctx.fillStyle = i < drawingData.pumps_in_service ? '#27ae60' : '#e74c3c';
+      ctx.fill();
+      
+      // Label pompe
+      ctx.fillStyle = '#2c3e50';
+      ctx.font = '8px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`P${i+1}`, x + 20 + i * 15, y + 35);
+    }
+    
+    // Écran de contrôle
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(x + 10, y + 45, 60, 25);
+    ctx.fillStyle = '#27ae60';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('AUTO', x + 40, y + 55);
+    ctx.fillText(`${drawingData.flow_rate}m³/h`, x + 40, y + 65);
+    
+    // Boutons de commande
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(x + 15, y + 75, 15, 10);
+    ctx.fillStyle = '#27ae60';
+    ctx.fillRect(x + 35, y + 75, 15, 10);
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(x + 55, y + 75, 15, 10);
+    
+    // Tag
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, x + 40, y - 10);
+  };
+  
+  // Annotations techniques PID
+  const drawPIDAnnotations = (ctx, canvas, type) => {
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    
+    // Données techniques selon le type
+    const annotations = [];
+    if (type === 'forage') {
+      annotations.push(`Débit nominal: ${drawingData.flow_rate} m³/h`);
+      annotations.push(`HMT: ${drawingData.total_head} m`);
+      annotations.push(`DN refoulement: ${drawingData.discharge_diameter} mm`);
+      annotations.push(`Profondeur: ${Math.round(drawingData.dimensions.suction_length)} m`);
+      annotations.push(`Pression service: ${drawingData.operating_pressure} bar`);
+    }
+    
+    let y = 50;
+    annotations.forEach(text => {
+      ctx.fillText(text, 50, y);
+      y += 15;
+    });
+  };
+  
+  // Légende PID
+  const drawPIDLegend = (ctx, canvas, title) => {
+    const legendX = canvas.width - 300;
+    const legendY = 50;
+    
+    // Cadre de légende
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(legendX, legendY, 280, 120);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.stroke();
+    
+    // Titre
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(title, legendX + 10, legendY + 20);
+    
+    // Symboles et explications
+    const symbols = [
+      { color: '#3498db', text: 'Pompe submersible' },
+      { color: '#27ae60', text: 'Tuyauterie refoulement' },
+      { color: '#8e44ad', text: 'Réservoir stockage' },
+      { color: '#34495e', text: 'Coffret électrique' }
+    ];
+    
+    let symbolY = legendY + 40;
+    symbols.forEach(symbol => {
+      // Carré de couleur
+      ctx.fillStyle = symbol.color;
+      ctx.fillRect(legendX + 15, symbolY - 8, 12, 12);
+      
+      // Texte
+      ctx.fillStyle = '#2c3e50';
+      ctx.font = '11px Arial';
+      ctx.fillText(symbol.text, legendX + 35, symbolY);
+      symbolY += 20;
+    });
   };
 
   const drawProfessionalSurpresseur = (ctx, canvas) => {
