@@ -628,7 +628,7 @@ backend:
 
 test_plan:
   current_focus:
-    - "Expert Installation Report - Comprehensive Analysis"
+    - "Real-time Analysis System - Audit Analysis Critical Data Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
