@@ -885,7 +885,7 @@ frontend:
           agent: "main"
           comment: "✅ TERMINÉ: Fonctions handleNumericInputChange et handleNestedNumericInputChange créées pour gérer effacement des '0' avec backspace. Tous les champs numériques importants mis à jour (flow_rate, total_head, discharge_diameter, reservoir_height, dynamic_level, discharge_length, residual_pressure). Gestion des champs vides avec affichage conditionnel (value === '' ? '' : value)."
 
-  - task: "Onglet Dessin - Calculs HMT Protégés"
+  - task: "Onglet Dessin - Corrections Finales Schéma Forage selon Retour Utilisateur"
     implemented: true
     working: true
     file: "App.js"
@@ -895,7 +895,7 @@ frontend:
     status_history:
         - working: true
           agent: "main"
-          comment: "✅ TERMINÉ: Protection complète des calculs HMT automatiques avec fallbacks (|| 0) pour éviter NaN/undefined. Section CALCUL AUTOMATIQUE HMT sécurisée pour gérer champs vides. Bouton APPLIQUER HMT CALCULÉE fonctionnel avec calculs protégés. Affichage dynamique des valeurs sécurisé dans schéma et interface."
+          comment: "✅ CORRECTIONS FINALES APPLIQUÉES: (1) NIVEAU D'EAU ÉLEVÉ: Eau positionnée plus proche surface (waterLevelFromSurface = niveau * 0.3, max 50m). (2) CARTOUCHE DÉPLACÉ: Position bas-gauche (cartX=50, cartY=height-150) pour ne pas cacher hauteur château. (3) TUYAU PROLONGÉ: Refoulement continue jusqu'à l'INTÉRIEUR château d'eau avec tuyauterie verticale + horizontale dans réservoir. (4) ASPIRATION SUPPRIMÉE: Aucune référence DN Asp, cartouche forage spécialisé sans aspiration. (5) ANNOTATION CORRIGÉE: 'Niv.Eau' au lieu de 'Niv.Dyn'. Schéma 100% conforme demandes utilisateur."
 
   - task: "Onglet Dessin - HMT Non-Éditable pour Forage"
     implemented: true
