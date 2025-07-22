@@ -12497,6 +12497,178 @@ function App() {
 
   const canvasRef = useRef(null);
 
+  // Fonctions de gestion des événements
+  const handleDrawingInputChange = (name, value) => {
+    setDrawingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Fonction pour générer le dessin
+  const generateDrawing = () => {
+    if (!canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Effacer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Configuration de base
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#f3f4f6';
+    
+    // Dessiner selon le type d'installation
+    if (drawingData.installation_type === 'bache_enterree') {
+      drawBacheEnterree(ctx, canvas);
+    } else if (drawingData.installation_type === 'forage') {
+      drawForage(ctx, canvas);
+    } else if (drawingData.installation_type === 'chateau_eau') {
+      drawChateauEau(ctx, canvas);
+    }
+    
+    // Ajouter les équipements
+    drawEquipments(ctx, canvas);
+    
+    // Ajouter les étiquettes si nécessaire
+    if (drawingData.show_labels) {
+      addLabels(ctx, canvas);
+    }
+    
+    // Ajouter les dimensions si nécessaire  
+    if (drawingData.show_dimensions) {
+      addDimensions(ctx, canvas);
+    }
+  };
+
+  // Fonctions de dessin spécialisées
+  const drawBacheEnterree = (ctx, canvas) => {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Dessiner la bâche enterrée
+    ctx.fillStyle = '#bfdbfe';
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = 3;
+    
+    const bacheWidth = 200;
+    const bacheHeight = 150;
+    const bacheX = centerX - bacheWidth / 2;
+    const bacheY = centerY - bacheHeight / 2;
+    
+    ctx.fillRect(bacheX, bacheY, bacheWidth, bacheHeight);
+    ctx.strokeRect(bacheX, bacheY, bacheWidth, bacheHeight);
+    
+    // Ajouter le niveau d'eau
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(bacheX + 5, bacheY + 30, bacheWidth - 10, bacheHeight - 35);
+    
+    // Dessiner la pompe
+    ctx.fillStyle = '#ef4444';
+    ctx.strokeStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(centerX, bacheY + 100, 20, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+  };
+
+  const drawForage = (ctx, canvas) => {
+    const centerX = canvas.width / 2;
+    
+    // Dessiner le forage (tuyau vertical)
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(centerX, 50);
+    ctx.lineTo(centerX, canvas.height - 50);
+    ctx.stroke();
+    
+    // Pompe immergée
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillRect(centerX - 15, canvas.height - 200, 30, 80);
+    ctx.strokeRect(centerX - 15, canvas.height - 200, 30, 80);
+  };
+
+  const drawChateauEau = (ctx, canvas) => {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Dessiner le château d'eau
+    ctx.fillStyle = '#d1d5db';
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 3;
+    
+    // Support
+    ctx.beginPath();
+    ctx.moveTo(centerX - 50, centerY + 100);
+    ctx.lineTo(centerX, centerY - 50);
+    ctx.lineTo(centerX + 50, centerY + 100);
+    ctx.stroke();
+    
+    // Réservoir
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - 50, 80, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+  };
+
+  const drawEquipments = (ctx) => {
+    // Dessiner les pompes
+    drawingData.pumps.forEach(pump => {
+      ctx.fillStyle = '#ef4444';
+      ctx.strokeStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(pump.position.x || 100, pump.position.y || 100, 15, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    });
+    
+    // Dessiner les suppresseurs
+    drawingData.suppressors.forEach(suppressor => {
+      ctx.fillStyle = '#8b5cf6';
+      ctx.fillRect(suppressor.position.x - 20, suppressor.position.y - 15, 40, 30);
+    });
+  };
+
+  const addLabels = (ctx, canvas) => {
+    ctx.fillStyle = '#1f2937';
+    ctx.font = '12px Arial';
+    
+    // Étiquette pour la bâche
+    if (drawingData.installation_type === 'bache_enterree') {
+      ctx.fillText('Bâche enterrée', canvas.width / 2 - 40, canvas.height / 2 + 100);
+    }
+    
+    // Étiquettes pour les équipements
+    drawingData.pumps.forEach((pump, index) => {
+      ctx.fillText(`Pompe ${index + 1}`, pump.position.x || 70, pump.position.y || 90);
+    });
+  };
+
+  const addDimensions = (ctx, canvas) => {
+    ctx.strokeStyle = '#6b7280';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    
+    // Lignes de cote pour la bâche
+    if (drawingData.installation_type === 'bache_enterree') {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      // Ligne horizontale
+      ctx.beginPath();
+      ctx.moveTo(centerX - 120, centerY + 120);
+      ctx.lineTo(centerX + 120, centerY + 120);
+      ctx.stroke();
+      
+      // Cotes
+      ctx.font = '10px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.fillText('10m', centerX - 10, centerY + 135);
+    }
+    
+    ctx.setLineDash([]);
+  };
+
   useEffect(() => {
     loadData();
   }, []);
