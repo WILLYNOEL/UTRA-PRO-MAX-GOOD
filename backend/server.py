@@ -5702,8 +5702,9 @@ def generate_economic_analysis(input_data: AuditInput, recommendations: List[Aud
     
     return {
         "current_annual_energy_cost": annual_energy_cost,
-        "total_investment_required": total_investment,
-        "estimated_annual_savings": potential_savings,
+        "total_investment_cost": total_investment,  # Changed field name
+        "annual_savings": potential_savings,  # Changed field name
+        "payback_months": int(min(payback_years, 10) * 12),  # Changed field name and converted to months
         "payback_period_years": min(payback_years, 10),
         "roi_5_years": (potential_savings * 5 - total_investment) / total_investment * 100 if total_investment > 0 else 0,
         "co2_reduction_tons_year": potential_savings * 0.5 / 1000,  # Estimation
