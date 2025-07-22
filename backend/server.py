@@ -2232,6 +2232,214 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
         alerts=alerts
     )
 
+def organize_expert_recommendations_intelligently(expert_recommendations, npshd_result, hmt_result, perf_result, compatibility_analysis, overall_efficiency, annual_energy_cost, input_data):
+    """
+    Organise intelligemment les recommandations expertes en éliminant les doublons,
+    en priorisant par criticité et en regroupant par thématiques
+    """
+    
+    # Structure organisée finale
+    organized_recommendations = {
+        "critical_safety": [],      # Priorité 1: Sécurité/Cavitation/Incompatibilité
+        "hydraulic_optimization": [],  # Priorité 2: Optimisation hydraulique
+        "energy_efficiency": [],    # Priorité 3: Efficacité énergétique  
+        "installation_guidance": [], # Priorité 4: Guidance installation
+        "maintenance_prevention": [] # Priorité 5: Maintenance préventive
+    }
+    
+    # Suivre les sujets déjà traités pour éviter doublons
+    treated_topics = {
+        "cavitation": False,
+        "diameter_optimization": False,
+        "chemical_compatibility": False,
+        "energy_optimization": False,
+        "installation_complexity": False
+    }
+    
+    # 1. RECOMMANDATIONS CRITIQUES DE SÉCURITÉ (Priorité absolue)
+    
+    # Cavitation critique (une seule recommandation consolidée)
+    if npshd_result.cavitation_risk and not treated_topics["cavitation"]:
+        # Consolider toutes les recommandations de cavitation
+        cavitation_solutions = []
+        
+        # Recommandations graduées de diamètre pour cavitation
+        if npshd_result.velocity > 1.5:
+            diameter_options = calculate_graduated_diameter_recommendations(
+                float(getattr(npshd_result.input_data, 'pipe_diameter', 100.0)),
+                npshd_result.input_data.flow_rate,
+                npshd_result.velocity,
+                float(getattr(npshd_result.input_data, 'pipe_length', 50.0)),
+                is_suction_pipe=True
+            )
+            if diameter_options and len(diameter_options) > 1:
+                cavitation_solutions.extend([
+                    "🔧 OPTIMISATION DIAMÈTRE ASPIRATION - Options anti-cavitation:"
+                ])
+                cavitation_solutions.extend([f"  {opt}" for opt in diameter_options[1:3]])  # 2 meilleures options
+        
+        # Autres solutions de cavitation
+        hasp = abs(getattr(npshd_result.input_data, 'hasp', 3.0))
+        cavitation_solutions.extend([
+            f"📏 Réduire hauteur aspiration: {hasp:.1f}m → {max(0.5, hasp - 2):.1f}m",
+            "⚡ Installer pompe en charge (sous niveau fluide)",
+            "🌡️ Augmenter température fluide (si possible)", 
+            "🔧 Supprimer singularités aspiration non essentielles"
+        ])
+        
+        organized_recommendations["critical_safety"].append({
+            "type": "critical",
+            "priority": 1,
+            "title": "🚨 CAVITATION CRITIQUE - ARRÊT IMMÉDIAT REQUIS",
+            "description": f"NPSHd ({npshd_result.npshd:.2f}m) ≤ NPSHr ({npshd_result.npsh_required:.2f}m) - Destruction pompe imminente",
+            "impact": "DESTRUCTION POMPE, ARRÊT PRODUCTION, RÉPARATIONS COÛTEUSES",
+            "solutions": cavitation_solutions,
+            "urgency": "IMMÉDIATE - 24H MAX",
+            "cost_impact": "TRÈS ÉLEVÉ (>50k€ potentiel)"
+        })
+        treated_topics["cavitation"] = True
+    
+    # Incompatibilité chimique critique  
+    if (compatibility_analysis["suction_material_status"] == "incompatible" or 
+        compatibility_analysis["discharge_material_status"] == "incompatible") and not treated_topics["chemical_compatibility"]:
+        
+        organized_recommendations["critical_safety"].append({
+            "type": "critical", 
+            "priority": 1,
+            "title": "🧪 INCOMPATIBILITÉ CHIMIQUE CRITIQUE",
+            "description": f"Matériaux incompatibles avec {compatibility_analysis['fluid_name']} - Corrosion/contamination active",
+            "impact": "CONTAMINATION FLUIDE, DÉGRADATION ACCÉLÉRÉE, NON-CONFORMITÉ",
+            "solutions": compatibility_analysis["recommendations"][:4] + [
+                "🔬 Analyse matériaux urgente recommandée",
+                "⚖️ Vérification conformité réglementaire"
+            ],
+            "urgency": "IMMÉDIATE - 48H MAX", 
+            "cost_impact": "ÉLEVÉ (changement matériaux)"
+        })
+        treated_topics["chemical_compatibility"] = True
+    
+    # 2. OPTIMISATION HYDRAULIQUE (Regroupement intelligent)
+    
+    hydraulic_solutions = []
+    hydraulic_impact_desc = []
+    
+    # Optimisation diamètres (consolidée aspiration + refoulement)
+    if ((npshd_result.velocity > 1.5) or 
+        (hmt_result.suction_velocity and hmt_result.suction_velocity > 1.5) or 
+        (hmt_result.discharge_velocity > 2.5)) and not treated_topics["diameter_optimization"]:
+        
+        # Aspiration si nécessaire
+        if npshd_result.velocity > 1.5 or (hmt_result.suction_velocity and hmt_result.suction_velocity > 1.5):
+            suction_options = calculate_graduated_diameter_recommendations(
+                float(getattr(npshd_result.input_data, 'pipe_diameter', 100.0)),
+                npshd_result.input_data.flow_rate,
+                npshd_result.velocity,
+                float(getattr(npshd_result.input_data, 'pipe_length', 50.0)),
+                is_suction_pipe=True
+            )
+            if suction_options and len(suction_options) > 1:
+                hydraulic_solutions.append("💧 ASPIRATION - Options graduées:")
+                hydraulic_solutions.extend([f"  {opt}" for opt in suction_options[1:3]])
+        
+        # Refoulement si nécessaire  
+        if hmt_result.discharge_velocity > 2.5:
+            discharge_options = calculate_graduated_diameter_recommendations(
+                getattr(hmt_result.input_data, 'discharge_pipe_diameter', 80.0),
+                hmt_result.input_data.flow_rate,
+                hmt_result.discharge_velocity, 
+                getattr(hmt_result.input_data, 'discharge_pipe_length', 50.0),
+                is_suction_pipe=False
+            )
+            if discharge_options and len(discharge_options) > 1:
+                hydraulic_solutions.append("🚀 REFOULEMENT - Options graduées:")
+                hydraulic_solutions.extend([f"  {opt}" for opt in discharge_options[1:3]])
+        
+        hydraulic_impact_desc.append("Réduction pertes de charge, amélioration NPSHd")
+        treated_topics["diameter_optimization"] = True
+    
+    # Pertes de charge excessives
+    if hmt_result.total_head_loss > hmt_result.hmt * 0.25:  # >25% du HMT
+        hydraulic_solutions.extend([
+            f"⚠️ Pertes élevées: {hmt_result.total_head_loss:.1f}m ({(hmt_result.total_head_loss/hmt_result.hmt)*100:.0f}% HMT)",
+            "🔧 Simplifier tracé hydraulique (moins coudes)",
+            "📏 Réduire longueurs si possible"
+        ])
+        hydraulic_impact_desc.append("Réduction consommation énergétique")
+    
+    if hydraulic_solutions:
+        organized_recommendations["hydraulic_optimization"].append({
+            "type": "hydraulic",
+            "priority": 2,
+            "title": "💧 OPTIMISATION HYDRAULIQUE SYSTÈME",
+            "description": "Amélioration performances hydrauliques et réduction pertes",
+            "impact": ", ".join(hydraulic_impact_desc),
+            "solutions": hydraulic_solutions[:8],  # Max 8 solutions
+            "urgency": "ÉLEVÉE",
+            "cost_impact": "MOYEN (ROI < 2 ans)"
+        })
+    
+    # 3. EFFICACITÉ ÉNERGÉTIQUE (Consolidée)
+    
+    if ((overall_efficiency < 70 or annual_energy_cost > 3000) and not treated_topics["energy_optimization"]):
+        energy_solutions = []
+        
+        # Amélioration rendements
+        if overall_efficiency < 70:
+            energy_improvement = 75 - overall_efficiency  
+            annual_savings = (energy_improvement / overall_efficiency) * annual_energy_cost if overall_efficiency > 0 else 0
+            energy_solutions.extend([
+                f"📈 Rendement actuel: {overall_efficiency:.0f}% → Cible: 75% (+{energy_improvement:.0f}%)",
+                f"💰 Économies potentielles: {annual_savings:.0f}€/an"
+            ])
+        
+        # Recommandations équipements
+        if perf_result.pump_efficiency < 75:
+            energy_solutions.append(f"🔧 Pompe: Remplacer par rendement >75% (actuel: {perf_result.pump_efficiency:.0f}%)")
+        if perf_result.motor_efficiency < 90:
+            energy_solutions.append(f"⚡ Moteur: IE3/IE4 >90% (actuel: {perf_result.motor_efficiency:.0f}%)")
+        
+        # ROI si coût élevé
+        if annual_energy_cost > 5000:
+            payback = 15000 / (annual_energy_cost * 0.15) if annual_energy_cost > 0 else 10  # Estimation investissement
+            energy_solutions.append(f"📊 ROI estimé: {payback:.1f} ans")
+        
+        organized_recommendations["energy_efficiency"].append({
+            "type": "energy",
+            "priority": 2,
+            "title": "⚡ OPTIMISATION ÉNERGÉTIQUE MAJEURE",
+            "description": f"Coût énergétique: {annual_energy_cost:.0f}€/an - Potentiel d'économies important",
+            "impact": "Réduction facture électrique, conformité environnementale",
+            "solutions": energy_solutions,
+            "urgency": "MODÉRÉE",
+            "cost_impact": "INVESTISSEMENT RENTABLE"
+        })
+        treated_topics["energy_optimization"] = True
+    
+    # 4. COMPATIBILITÉ CHIMIQUE (si non critique)
+    if not treated_topics["chemical_compatibility"] and len(compatibility_analysis["recommendations"]) > 0:
+        organized_recommendations["installation_guidance"].append({
+            "type": "compatibility",
+            "priority": 3, 
+            "title": f"🧪 OPTIMISATION CHIMIQUE - {compatibility_analysis['fluid_name']}",
+            "description": "Recommandations spécialisées fluide-matériau",
+            "impact": "Amélioration durée de vie, conformité réglementaire",
+            "solutions": compatibility_analysis["recommendations"][:4] + (
+                compatibility_analysis["seal_recommendations"][:2] if compatibility_analysis["seal_recommendations"] else []
+            ),
+            "urgency": "FAIBLE",
+            "cost_impact": "FAIBLE"
+        })
+    
+    # Convertir en format liste finale priorisée
+    final_recommendations = []
+    
+    # Ordre de priorité
+    for category in ["critical_safety", "hydraulic_optimization", "energy_efficiency", "installation_guidance", "maintenance_prevention"]:
+        final_recommendations.extend(organized_recommendations[category])
+    
+    # Limiter à 8 recommandations max pour éviter surcharge
+    return final_recommendations[:8]
+
 def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysisResult:
     """
     Analyse complète d'expert avec tous les calculs hydrauliques et électriques
