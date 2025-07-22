@@ -13102,13 +13102,13 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'history'
-                    ? 'bg-slate-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-slate-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">📋</span>
+                <span className="text-base">📋</span>
                 <span>Historique</span>
               </button>
             </div>
