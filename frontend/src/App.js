@@ -14158,7 +14158,7 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText(`H=${drawingData.forage_specific.reservoir_height || 0}m`, towerX + towerW + 35, groundLevel - towerHeight/2);
     
-    // LONGUEUR REFOULEMENT (DYNAMIQUE)
+    // LONGUEUR REFOULEMENT (DYNAMIQUE protégée)
     ctx.strokeStyle = '#FF5722';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
