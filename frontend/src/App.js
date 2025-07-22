@@ -1157,8 +1157,8 @@ const AuditSystem = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Consommation mensuelle (kWh)</label>
                     <input
                       type="number"
-                      value={energyAuditData.energy_monthly_kwh}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, energy_monthly_kwh: e.target.value}))}
+                      value={auditData.energy_monthly_kwh}
+                      onChange={(e) => handleAuditInputChange('energy_monthly_kwh', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                       placeholder="Ex: 1200"
                     />
