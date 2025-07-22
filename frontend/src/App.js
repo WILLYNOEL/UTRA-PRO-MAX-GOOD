@@ -12467,8 +12467,8 @@ function App() {
   // États pour l'onglet Dessin ULTRA-INTELLIGENT
   const [drawingData, setDrawingData] = useState({
     installation_type: 'surface_aspiration',
-    pump_count: 2,
-    pumps_in_service: 2,
+    pump_count: 1,
+    pumps_in_service: 1,
     pump_configuration: 'parallel',
     pump_power: 7.5,
     flow_rate: 50,
