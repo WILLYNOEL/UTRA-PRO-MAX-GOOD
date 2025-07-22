@@ -12875,7 +12875,7 @@ function App() {
     `;
   };
 
-  // Fonction pour générer un schéma hydraulique professionnel
+  // NOUVELLE FONCTION DE GÉNÉRATION DE SCHÉMAS PROFESSIONNELS
   const generateProfessionalDrawing = () => {
     if (!canvasRef.current) return;
     
@@ -12885,45 +12885,336 @@ function App() {
     // Effacer le canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Configuration professionnelle
-    ctx.strokeStyle = '#1f2937';
-    ctx.lineWidth = 2;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
+    // Configuration ultra-professionnelle
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.textBaseline = 'middle';
     
-    // Générer selon le type d'installation
+    // Générer le schéma selon le type
     switch(drawingData.installation_type) {
       case 'surface_aspiration':
-        drawSurfaceAspirationScheme(ctx, canvas);
+        drawProfessionalSurfaceAspiration(ctx, canvas);
         break;
       case 'surface_charge':
-        drawSurfaceChargeScheme(ctx, canvas);
+        drawProfessionalSurfaceCharge(ctx, canvas);
         break;
       case 'submersible':
-        drawSubmersibleScheme(ctx, canvas);
+        drawProfessionalSubmersible(ctx, canvas);
         break;
       case 'forage':
-        drawForageScheme(ctx, canvas);
+        drawProfessionalForage(ctx, canvas);
         break;
       case 'surpresseur':
-        drawSurpresseurScheme(ctx, canvas);
+        drawProfessionalSurpresseur(ctx, canvas);
         break;
       case 'incendie':
-        drawIncendieScheme(ctx, canvas);
+        drawProfessionalIncendie(ctx, canvas);
         break;
-      default:
-        drawSurfaceAspirationScheme(ctx, canvas);
     }
     
-    // Ajouter les accessoires selon configuration
-    addAccessories(ctx, canvas);
+    // Ajouter cartouche technique
+    drawTechnicalCartouche(ctx, canvas);
+  };
+
+  // SCHÉMA SURFACE ASPIRATION PROFESSIONNEL
+  const drawProfessionalSurfaceAspiration = (ctx, canvas) => {
+    const baseY = canvas.height - 200;
+    const pumpY = baseY - 100;
+    const tankY = baseY;
     
-    // Ajouter dimensions et étiquettes si demandées
-    if (drawingData.show_dimensions) addDimensionsProfessional(ctx, canvas);
-    if (drawingData.show_labels) addLabelsProfessional(ctx, canvas);
+    // 1. BÂCHE D'ASPIRATION
+    drawProfessionalTank(ctx, 80, tankY - 120, 180, 120, 'BÂCHE ASPIRATION', '#e3f2fd');
     
-    // Ajouter cartouche et légende
-    addTechnicalCartouche(ctx, canvas);
+    // 2. TUYAUTERIE D'ASPIRATION avec tous accessoires
+    let currentX = 260;
+    
+    // Crépine si sélectionnée
+    if (drawingData.accessories.strainer) {
+      drawStrainer(ctx, currentX, tankY - 60);
+      currentX += 40;
+    }
+    
+    // Tuyauterie aspiration principale
+    drawProfessionalPipe(ctx, currentX, tankY - 60, currentX + 150, tankY - 60, drawingData.suction_diameter, 'aspiration');
+    
+    // Vanne isolement aspiration
+    if (drawingData.accessories.isolation_valve_suction) {
+      drawProfessionalValve(ctx, currentX + 75, tankY - 60, 'isolement');
+    }
+    
+    currentX += 150;
+    
+    // Montée verticale vers pompes
+    drawProfessionalPipe(ctx, currentX, tankY - 60, currentX, pumpY, drawingData.suction_diameter, 'aspiration');
+    
+    // Manomètre aspiration
+    if (drawingData.accessories.pressure_gauge_suction) {
+      drawProfessionalPressureGauge(ctx, currentX + 20, tankY - 30, 'asp');
+    }
+    
+    // 3. POMPES AVEC CONFIGURATION INTELLIGENTE
+    const pumpSpacing = drawingData.dimensions.pump_spacing * 50;
+    const pumpsInService = drawingData.pumps_in_service || 1;
+    const totalPumps = drawingData.pump_count;
+    
+    for (let i = 0; i < totalPumps; i++) {
+      const pumpX = currentX + (i * pumpSpacing);
+      const isStandby = i >= pumpsInService;
+      
+      // Connexion aspiration pour chaque pompe
+      if (i > 0 || drawingData.pump_configuration === 'parallel') {
+        drawProfessionalPipe(ctx, currentX, pumpY, pumpX, pumpY, drawingData.suction_diameter, 'aspiration');
+      }
+      
+      // Pompe avec indicateur service/standby
+      drawProfessionalPump(ctx, pumpX, pumpY, `P${i+1}`, isStandby ? 'standby' : 'service');
+      
+      // Clapet anti-retour sur chaque pompe
+      if (drawingData.accessories.check_valve) {
+        drawCheckValve(ctx, pumpX + 40, pumpY);
+      }
+      
+      // Vanne isolement refoulement
+      if (drawingData.accessories.isolation_valve_discharge) {
+        drawProfessionalValve(ctx, pumpX + 60, pumpY, 'isolement');
+      }
+    }
+    
+    // 4. COLLECTEUR DE REFOULEMENT
+    const refoulementY = pumpY;
+    const collecteurStartX = currentX + 80;
+    const collecteurEndX = collecteurStartX + (totalPumps * pumpSpacing) + 100;
+    
+    if (totalPumps > 1 || drawingData.accessories.manifold) {
+      drawProfessionalPipe(ctx, collecteurStartX, refoulementY, collecteurEndX, refoulementY, drawingData.discharge_diameter, 'refoulement');
+    }
+    
+    // Manomètre refoulement
+    if (drawingData.accessories.pressure_gauge_discharge) {
+      drawProfessionalPressureGauge(ctx, collecteurEndX - 50, refoulementY - 30, 'ref');
+    }
+    
+    // Débitmètre
+    if (drawingData.accessories.flow_meter) {
+      drawFlowMeter(ctx, collecteurEndX - 80, refoulementY);
+    }
+    
+    // 5. TUYAUTERIE VERS STOCKAGE
+    drawProfessionalPipe(ctx, collecteurEndX, refoulementY, collecteurEndX + 100, refoulementY, drawingData.discharge_diameter, 'refoulement');
+    
+    // 6. RÉSERVOIR DE STOCKAGE
+    drawProfessionalTank(ctx, collecteurEndX + 150, refoulementY - 100, 150, 200, 'STOCKAGE', '#f3e5f5');
+    
+    // 7. COFFRET ÉLECTRIQUE
+    if (drawingData.accessories.control_panel) {
+      drawControlPanel(ctx, collecteurEndX - 150, pumpY - 120, totalPumps, pumpsInService);
+    }
+  };
+
+  // FONCTIONS DE DESSIN D'ÉQUIPEMENTS PROFESSIONNELS
+  
+  // Pompe professionnelle avec statut
+  const drawProfessionalPump = (ctx, x, y, label, status = 'service') => {
+    // Corps de pompe
+    ctx.beginPath();
+    ctx.arc(x, y, 30, 0, 2 * Math.PI);
+    ctx.fillStyle = status === 'standby' ? '#fff3e0' : '#e3f2fd';
+    ctx.fill();
+    ctx.strokeStyle = status === 'standby' ? '#ff9800' : '#1976d2';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // Volute
+    ctx.beginPath();
+    ctx.arc(x + 15, y, 15, Math.PI, 0);
+    ctx.stroke();
+    
+    // Flèche de rotation
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y - 10);
+    ctx.arc(x, y, 15, Math.PI * 1.25, Math.PI * 1.75);
+    ctx.moveTo(x - 15, y - 5);
+    ctx.lineTo(x - 20, y - 10);
+    ctx.lineTo(x - 15, y - 15);
+    ctx.stroke();
+    
+    // Label avec statut
+    ctx.fillStyle = status === 'standby' ? '#f57f17' : '#1565c0';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y - 45);
+    ctx.font = '10px Arial';
+    ctx.fillText(status.toUpperCase(), x, y - 32);
+    
+    // Connexions
+    drawPumpConnection(ctx, x - 30, y, 'suction');
+    drawPumpConnection(ctx, x + 30, y, 'discharge');
+  };
+
+  // Réservoir professionnel
+  const drawProfessionalTank = (ctx, x, y, width, height, label, fillColor = '#e3f2fd') => {
+    // Corps du réservoir
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, width, height);
+    
+    // Niveau de liquide
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(x + 5, y + height * 0.25, width - 10, height * 0.65);
+    
+    // Jauges de niveau
+    for (let i = 1; i <= 4; i++) {
+      const gaugeY = y + (height * i / 5);
+      ctx.strokeStyle = '#757575';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x - 10, gaugeY);
+      ctx.lineTo(x + 10, gaugeY);
+      ctx.stroke();
+    }
+    
+    // Label professionnel
+    ctx.fillStyle = '#1565c0';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + width/2, y - 20);
+    
+    // Capacité (exemple)
+    ctx.font = '10px Arial';
+    ctx.fillStyle = '#757575';
+    ctx.fillText(`${Math.round(width * height / 100)}L`, x + width/2, y - 5);
+  };
+
+  // Tuyauterie professionnelle avec indication de fluide
+  const drawProfessionalPipe = (ctx, x1, y1, x2, y2, diameter, type = 'general') => {
+    const colors = {
+      aspiration: '#4caf50',
+      refoulement: '#2196f3',
+      general: '#424242'
+    };
+    
+    ctx.strokeStyle = colors[type] || colors.general;
+    ctx.lineWidth = Math.max(3, diameter / 25);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    
+    // Flèche de direction pour le refoulement
+    if (type === 'refoulement' && drawingData.show_flow_arrows) {
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      
+      ctx.save();
+      ctx.translate(midX, midY);
+      ctx.rotate(angle);
+      
+      ctx.fillStyle = colors[type];
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-10, -5);
+      ctx.lineTo(-10, 5);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.restore();
+    }
+    
+    // Indication diamètre
+    if (drawingData.show_dimensions && diameter) {
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      
+      ctx.fillStyle = colors[type];
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`DN${diameter}`, midX, midY - 15);
+    }
+  };
+
+  // Vanne professionnelle
+  const drawProfessionalValve = (ctx, x, y, type = 'isolement') => {
+    // Corps de vanne
+    ctx.fillStyle = '#ffc107';
+    ctx.fillRect(x - 12, y - 12, 24, 24);
+    ctx.strokeStyle = '#f57f17';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - 12, y - 12, 24, 24);
+    
+    // Volant ou actionneur
+    ctx.beginPath();
+    ctx.arc(x, y - 20, 8, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ff9800';
+    ctx.fill();
+    ctx.stroke();
+    
+    // Tige de manoeuvre
+    ctx.beginPath();
+    ctx.moveTo(x, y - 12);
+    ctx.lineTo(x, y - 20);
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#f57f17';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(type === 'isolement' ? 'V.I.' : 'V', x, y + 25);
+  };
+
+  // Manomètre professionnel
+  const drawProfessionalPressureGauge = (ctx, x, y, location) => {
+    // Cadran
+    ctx.beginPath();
+    ctx.arc(x, y, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#424242';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Graduation
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI / 4) - Math.PI/2;
+      const x1 = x + Math.cos(angle) * 14;
+      const y1 = y + Math.sin(angle) * 14;
+      const x2 = x + Math.cos(angle) * 16;
+      const y2 = y + Math.sin(angle) * 16;
+      
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    
+    // Aiguille
+    const needleAngle = Math.PI / 3; // Position exemple
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.cos(needleAngle - Math.PI/2) * 12, y + Math.sin(needleAngle - Math.PI/2) * 12);
+    ctx.strokeStyle = '#d32f2f';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Label
+    ctx.fillStyle = '#424242';
+    ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(location.toUpperCase(), x, y + 30);
+  };
+
+  // Connexion de pompe
+  const drawPumpConnection = (ctx, x, y, type) => {
+    ctx.fillStyle = type === 'suction' ? '#4caf50' : '#2196f3';
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   };
 
   // Schéma Surface Aspiration
