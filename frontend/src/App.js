@@ -12579,65 +12579,85 @@ function App() {
     });
   };
 
-  // LOGIQUE D'EXPERT : Type d'installation CORRIGÉE
+  // LOGIQUE D'EXPERT : Type d'installation CORRIGÉE AVEC CONTRAINTES
   const applyInstallationTypeLogic = (data, installationType) => {
     let newData = { ...data, installation_type: installationType };
     
     switch(installationType) {
       case 'surface_aspiration':
+        // Installation standard avec aspiration 
         newData.suction_height = 3;
         newData.discharge_height = 25;
         newData.operating_pressure = 6;
-        newData.show_suction_fields = true; // Montrer champs aspiration
+        newData.show_suction_fields = true;
         newData.show_discharge_fields = true;
+        newData.pump_count = Math.min(data.pump_count, 4); // Max 4 pompes
+        newData.pumps_in_service = Math.min(data.pumps_in_service, newData.pump_count);
         newData.accessories = { ...newData.accessories, manifold: false, strainer: true };
         break;
         
       case 'surface_charge':
+        // Installation en charge (réservoir surélevé)
         newData.suction_height = -5; // En charge
         newData.discharge_height = 25;
         newData.operating_pressure = 8;
-        newData.show_suction_fields = true; // Montrer champs aspiration
+        newData.show_suction_fields = true;
         newData.show_discharge_fields = true;
+        newData.pump_count = Math.min(data.pump_count, 3); // Max 3 pompes
+        newData.pumps_in_service = Math.min(data.pumps_in_service, newData.pump_count);
         newData.accessories = { ...newData.accessories, manifold: false, strainer: false };
         break;
         
       case 'submersible':
+        // Pompe immergée dans réservoir
         newData.suction_height = -15;
         newData.discharge_height = 50;
         newData.operating_pressure = 10;
-        newData.show_suction_fields = false; // CACHER champs aspiration (pompe dans l'eau)
+        newData.show_suction_fields = false; // MASQUER aspiration (pompe dans réservoir)
         newData.show_discharge_fields = true;
+        newData.pump_count = Math.min(data.pump_count, 2); // Max 2 pompes submersibles
+        newData.pumps_in_service = Math.min(data.pumps_in_service, newData.pump_count);
+        newData.pump_configuration = 'standby'; // Configuration standby
         newData.accessories = { ...newData.accessories, manifold: true, strainer: false };
-        newData.pump_configuration = 'standby'; // Souvent en standby
         break;
         
       case 'forage':
+        // Pompe de forage - UNE SEULE POMPE (contrainte technique)
         newData.suction_height = -30;
         newData.discharge_height = 60;
         newData.operating_pressure = 12;
-        newData.show_suction_fields = false; // CACHER champs aspiration (pompe dans l'eau)
+        newData.show_suction_fields = false; // MASQUER aspiration (pompe dans forage)
         newData.show_discharge_fields = true;
-        newData.accessories = { ...newData.accessories, manifold: true, flow_meter: true };
+        newData.pump_count = 1; // CONTRAINTE: Une seule pompe de forage
+        newData.pumps_in_service = 1;
+        newData.pump_configuration = 'single'; // Configuration unique
+        newData.accessories = { ...newData.accessories, manifold: false, flow_meter: true };
         break;
         
       case 'surpresseur':
+        // Groupe surpresseur - 4 POMPES (standard professionnel)
         newData.suction_height = 2;
         newData.discharge_height = 15;
         newData.operating_pressure = 8;
         newData.show_suction_fields = true;
         newData.show_discharge_fields = true;
+        newData.pump_count = 4; // CONTRAINTE: 4 pompes standard
+        newData.pumps_in_service = 3; // 3 en service, 1 en secours
+        newData.pump_configuration = 'parallel';
         newData.accessories = { ...newData.accessories, pressure_sensor: true, expansion_joint: true };
         break;
         
       case 'incendie':
+        // Pompage incendie - 3 POMPES minimum (réglementation)
         newData.suction_height = 0;
         newData.discharge_height = 40;
         newData.operating_pressure = 16;
         newData.show_suction_fields = true;
         newData.show_discharge_fields = true;
-        newData.accessories = { ...newData.accessories, pressure_sensor: true, flow_meter: true };
+        newData.pump_count = 3; // CONTRAINTE: 3 pompes réglementaires
+        newData.pumps_in_service = 2; // 2 en service, 1 en secours
         newData.pump_configuration = 'parallel'; // Toujours en parallèle
+        newData.accessories = { ...newData.accessories, pressure_sensor: true, flow_meter: true };
         break;
     }
     
