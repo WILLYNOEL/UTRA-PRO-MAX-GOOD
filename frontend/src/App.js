@@ -1460,6 +1460,235 @@ const AuditSystem = () => {
                 </div>
               )}
 
+              {/* Rapport d'Expertise Exhaustif */}
+              {auditResults.expert_installation_report && (
+                <div className="bg-red-50 rounded-lg p-6 border border-red-200">
+                  <h4 className="font-bold text-red-800 mb-4">🔧 RAPPORT D'EXPERTISE TECHNIQUE COMPLET</h4>
+                  
+                  {/* État global de l'installation */}
+                  <div className={`mb-6 p-4 rounded-lg border-2 ${
+                    auditResults.expert_installation_report.installation_analysis?.overall_condition === 'CRITIQUE' 
+                      ? 'bg-red-100 border-red-400' 
+                      : auditResults.expert_installation_report.installation_analysis?.overall_condition === 'DÉGRADÉE'
+                      ? 'bg-orange-100 border-orange-400'
+                      : 'bg-green-100 border-green-400'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h5 className="font-bold text-lg">État de l'Installation: {auditResults.expert_installation_report.installation_analysis?.overall_condition}</h5>
+                        <p className="text-sm mt-1">
+                          {auditResults.expert_installation_report.installation_analysis?.critical_problems_count > 0 && 
+                            `⚠️ ${auditResults.expert_installation_report.installation_analysis.critical_problems_count} problème(s) critique(s) détecté(s)`
+                          }
+                          {auditResults.expert_installation_report.installation_analysis?.issues_count > 0 && 
+                            ` • ${auditResults.expert_installation_report.installation_analysis.issues_count} problème(s) important(s)`
+                          }
+                        </p>
+                      </div>
+                      {auditResults.expert_installation_report.installation_analysis?.power_analysis && (
+                        <div className="text-right">
+                          <div className="text-lg font-bold">
+                            Rendement: {auditResults.expert_installation_report.installation_analysis.power_analysis.actual_global_efficiency?.toFixed(1)}%
+                          </div>
+                          <div className="text-sm">
+                            (Standard: {auditResults.expert_installation_report.installation_analysis.power_analysis.expected_efficiency}%)
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Problèmes détectés */}
+                  {auditResults.expert_installation_report.detailed_problems && auditResults.expert_installation_report.detailed_problems.length > 0 && (
+                    <div className="mb-6">
+                      <h5 className="font-bold text-gray-900 mb-3">🚨 Problèmes Détectés</h5>
+                      <div className="space-y-3">
+                        {auditResults.expert_installation_report.detailed_problems.map((problem, index) => (
+                          <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                            problem.severity === 'URGENT' ? 'border-red-500 bg-red-50' : 'border-orange-500 bg-orange-50'
+                          }`}>
+                            <div className="flex justify-between items-start mb-2">
+                              <h6 className="font-semibold text-gray-900">{problem.type}</h6>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                problem.severity === 'URGENT' ? 'bg-red-200 text-red-800' : 'bg-orange-200 text-orange-800'
+                              }`}>
+                                {problem.severity}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-700 mb-3">{problem.description}</p>
+                            
+                            {problem.causes_probables && (
+                              <div className="mb-2">
+                                <strong className="text-sm">Causes probables:</strong>
+                                <ul className="text-sm text-gray-600 mt-1 ml-4">
+                                  {problem.causes_probables.map((cause, idx) => (
+                                    <li key={idx} className="list-disc">{cause}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {problem.consequences && (
+                              <div>
+                                <strong className="text-sm">Conséquences:</strong>
+                                <ul className="text-sm text-red-600 mt-1 ml-4">
+                                  {problem.consequences.map((consequence, idx) => (
+                                    <li key={idx} className="list-disc">{consequence}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions immédiates */}
+                  {auditResults.expert_installation_report.immediate_actions && auditResults.expert_installation_report.immediate_actions.length > 0 && (
+                    <div className="mb-6 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <h5 className="font-bold text-yellow-800 mb-3">⚡ Actions Immédiates Requises</h5>
+                      <ul className="space-y-1">
+                        {auditResults.expert_installation_report.immediate_actions.map((action, index) => (
+                          <li key={index} className="text-sm text-yellow-700">
+                            • {action}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Équipements à remplacer */}
+                  {auditResults.expert_installation_report.equipment_replacement_list && auditResults.expert_installation_report.equipment_replacement_list.length > 0 && (
+                    <div className="mb-6">
+                      <h5 className="font-bold text-gray-900 mb-3">🔧 Équipements à Remplacer</h5>
+                      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                        <ul className="space-y-1">
+                          {auditResults.expert_installation_report.equipment_replacement_list.map((equipment, index) => (
+                            <li key={index} className="text-sm text-red-700">
+                              • {equipment}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Équipements à ajouter */}
+                  {auditResults.expert_installation_report.equipment_addition_list && auditResults.expert_installation_report.equipment_addition_list.length > 0 && (
+                    <div className="mb-6">
+                      <h5 className="font-bold text-gray-900 mb-3">➕ Équipements à Ajouter</h5>
+                      <div className="space-y-3">
+                        {auditResults.expert_installation_report.equipment_addition_list.map((item, index) => (
+                          <div key={index} className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div className="flex justify-between items-start mb-2">
+                              <h6 className="font-semibold text-blue-900">{item.equipment}</h6>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                item.priority === 'HIGH' ? 'bg-red-200 text-red-800' : 
+                                item.priority === 'MEDIUM' ? 'bg-orange-200 text-orange-800' : 
+                                'bg-green-200 text-green-800'
+                              }`}>
+                                {item.priority}
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-700 mb-2">{item.justification}</p>
+                            <div className="flex justify-between text-xs text-blue-600">
+                              <span><strong>Économies:</strong> {item.expected_savings}</span>
+                              <span><strong>Coût:</strong> {item.cost_estimate}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Améliorations hydrauliques */}
+                  {auditResults.expert_installation_report.hydraulic_improvements && auditResults.expert_installation_report.hydraulic_improvements.length > 0 && (
+                    <div className="mb-6">
+                      <h5 className="font-bold text-gray-900 mb-3">🌊 Améliorations Hydrauliques</h5>
+                      <div className="space-y-3">
+                        {auditResults.expert_installation_report.hydraulic_improvements.map((improvement, index) => (
+                          <div key={index} className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                            <h6 className="font-semibold text-cyan-900">{improvement.type}</h6>
+                            <div className="text-sm text-cyan-700 mt-2">
+                              <p><strong>Actuel:</strong> {improvement.current_diameter} (vitesse: {improvement.current_velocity})</p>
+                              <p><strong>Recommandé:</strong> {improvement.recommended_diameter}</p>
+                              <p><strong>Justification:</strong> {improvement.justification}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Plan d'action phasé */}
+                  {auditResults.expert_installation_report.action_plan && (
+                    <div className="mb-6">
+                      <h5 className="font-bold text-gray-900 mb-3">📋 Plan d'Action Phasé</h5>
+                      <div className="space-y-4">
+                        
+                        {auditResults.expert_installation_report.action_plan.phase_immediate && (
+                          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <h6 className="font-semibold text-red-800 mb-2">
+                              Phase Immédiate ({auditResults.expert_installation_report.action_plan.phase_immediate.timeline})
+                            </h6>
+                            <ul className="text-sm text-red-700 space-y-1">
+                              {auditResults.expert_installation_report.action_plan.phase_immediate.actions?.map((action, idx) => (
+                                <li key={idx}>• {action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {auditResults.expert_installation_report.action_plan.phase_urgente && (
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <h6 className="font-semibold text-orange-800 mb-2">
+                              Phase Urgente ({auditResults.expert_installation_report.action_plan.phase_urgente.timeline})
+                            </h6>
+                            <ul className="text-sm text-orange-700 space-y-1">
+                              {auditResults.expert_installation_report.action_plan.phase_urgente.actions?.map((action, idx) => (
+                                <li key={idx}>• {action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {auditResults.expert_installation_report.action_plan.phase_amelioration && (
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h6 className="font-semibold text-green-800 mb-2">
+                              Phase Amélioration ({auditResults.expert_installation_report.action_plan.phase_amelioration.timeline})
+                            </h6>
+                            <ul className="text-sm text-green-700 space-y-1">
+                              {auditResults.expert_installation_report.action_plan.phase_amelioration.actions?.map((action, idx) => (
+                                <li key={idx}>• {action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Analyse énergétique */}
+                  {auditResults.expert_installation_report.energy_waste_analysis && (
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <h5 className="font-bold text-yellow-800 mb-3">💡 Analyse Gaspillage Énergétique</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <strong>Rendement actuel:</strong> {auditResults.expert_installation_report.energy_waste_analysis.current_efficiency?.toFixed(1)}%
+                        </div>
+                        <div>
+                          <strong>Potentiel d'économie:</strong> {auditResults.expert_installation_report.energy_waste_analysis.potential_savings_percent?.toFixed(1)}%
+                        </div>
+                        <div className="md:col-span-2">
+                          <strong>Impact financier:</strong> {auditResults.expert_installation_report.energy_waste_analysis.financial_impact}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Plan d'Action */}
               {auditResults.action_plan && (
                 <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
