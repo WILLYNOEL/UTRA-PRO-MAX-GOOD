@@ -1857,23 +1857,44 @@ const AuditSystem = () => {
                       </div>
                     )}
 
-                    {/* Actions Préventives */}
+                    {/* Actions Préventives avec section déroulante */}
                     {realTimeAnalysis.section3_corrective_actions.preventive_actions.length > 0 && (
                       <div className="mb-6">
-                        <h6 className="font-semibold text-orange-800 mb-3">🔧 ACTIONS PRÉVENTIVES (1-7 jours)</h6>
-                        {realTimeAnalysis.section3_corrective_actions.preventive_actions.map((category, idx) => (
-                          <div key={idx} className="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-3">
-                            <h7 className="font-semibold text-orange-800 mb-2 block">{category.category}</h7>
-                            <div className="space-y-1">
-                              {category.tasks?.map((task, taskIdx) => (
-                                <div key={taskIdx} className="flex items-start">
-                                  <span className="text-xs text-orange-700 mr-2">□</span>
-                                  <span className="text-xs text-orange-700">{task}</span>
+                        <div 
+                          className="flex items-center justify-between cursor-pointer bg-orange-100 hover:bg-orange-200 p-3 rounded-lg border border-orange-300 transition-colors"
+                          onClick={() => toggleSection('actions_preventives')}
+                        >
+                          <h6 className="font-semibold text-orange-800 flex items-center">
+                            <span className="mr-2">🔧</span>
+                            ACTIONS PRÉVENTIVES (1-7 jours)
+                          </h6>
+                          <svg 
+                            className={`w-5 h-5 text-orange-800 transform transition-transform ${expandedSections.actions_preventives ? 'rotate-180' : ''}`}
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                        
+                        {expandedSections.actions_preventives && (
+                          <div className="mt-3 space-y-3">
+                            {realTimeAnalysis.section3_corrective_actions.preventive_actions.map((category, idx) => (
+                              <div key={idx} className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                                <h7 className="font-semibold text-orange-800 mb-2 block">{category.category}</h7>
+                                <div className="space-y-1">
+                                  {category.tasks?.map((task, taskIdx) => (
+                                    <div key={taskIdx} className="flex items-start">
+                                      <span className="text-xs text-orange-700 mr-2">□</span>
+                                      <span className="text-xs text-orange-700">{task}</span>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
 
