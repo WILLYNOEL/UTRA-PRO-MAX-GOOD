@@ -16547,10 +16547,10 @@ function App() {
                           <button
                             onClick={() => {
                               const calculatedHMT = Math.round(
-                                drawingData.forage_specific.dynamic_level + 
-                                drawingData.forage_specific.reservoir_height + 
-                                (drawingData.forage_specific.discharge_length * 0.1) + 
-                                (drawingData.forage_specific.residual_pressure * 10)
+                                (drawingData.forage_specific.dynamic_level || 0) + 
+                                (drawingData.forage_specific.reservoir_height || 0) + 
+                                ((drawingData.forage_specific.discharge_length || 0) * 0.1) + 
+                                ((drawingData.forage_specific.residual_pressure || 0) * 10)
                               );
                               handleDrawingInputChange('total_head', calculatedHMT);
                             }}
