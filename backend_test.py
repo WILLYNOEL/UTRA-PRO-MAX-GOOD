@@ -8497,6 +8497,8 @@ class HydraulicPumpTester:
             self.test_graduated_diameter_recommendations_velocity_limits,  # NEW: Test velocity limits compliance system
             self.test_velocity_limits_compliance_detailed,  # NEW: Test detailed velocity limits compliance with pipe types
             self.test_compliance_status_formatting,  # NEW: Test compliance status formatting (✅ CONFORME or ⚠️ ACCEPTABLE)
+            # INTELLIGENT RECOMMENDATIONS INTEGRATION TEST (from current review request)
+            self.test_intelligent_recommendations_integration,  # NEW: Test intelligent recommendations across all tabs (HMT, Performance, Expert)
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
