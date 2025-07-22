@@ -1089,8 +1089,8 @@ const AuditSystem = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Tarif moyen (FCFA/kWh)</label>
                     <input
                       type="number"
-                      value={energyAuditData.electricity_tariff}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, electricity_tariff: e.target.value}))}
+                      value={auditData.electricity_tariff}
+                      onChange={(e) => handleAuditInputChange('electricity_tariff', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                       placeholder="96"
                     />
