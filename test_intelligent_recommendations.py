@@ -117,8 +117,8 @@ def test_intelligent_recommendations_integration():
         "discharge_length": 50.0,
         "total_length": 80.0,
         "useful_pressure": 0.0,
-        "suction_material": "cast_iron",  # Incompatible
-        "discharge_material": "cast_iron",  # Incompatible
+        "suction_material": "cast_iron",  # Incompatible - correct field name
+        "discharge_material": "cast_iron",  # Incompatible - correct field name
         "pump_efficiency": 75.0,
         "motor_efficiency": 90.0,
         "voltage": 400,
