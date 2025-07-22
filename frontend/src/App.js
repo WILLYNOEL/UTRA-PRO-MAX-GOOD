@@ -14351,7 +14351,7 @@ function App() {
     const techData = [
       `DÉBIT: ${drawingData.flow_rate} m³/h`,
       `HMT: ${drawingData.total_head} m`,
-      `PROFONDEUR: ${Math.round(wellDepth/10)} m`,
+      `PROFONDEUR: ${drawingData.forage_specific.dynamic_level} m`,
       `DN REFOULEMENT: ${drawingData.discharge_diameter} mm`,
       `PRESSION SERVICE: ${drawingData.operating_pressure} bar`,
       `POMPE: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`
