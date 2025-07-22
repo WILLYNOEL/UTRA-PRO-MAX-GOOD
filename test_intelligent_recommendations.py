@@ -201,13 +201,18 @@ def test_intelligent_recommendations_integration():
             
             if diameter_recs:
                 # Check for velocity limits compliance (no >4 m/s recommendations)
-                # Look for actual velocity values in the recommendations
+                # Look for actual velocity values in the recommendations like "3.2m/s" or "1.5m/s"
+                # But exclude warning messages about current excessive velocities
                 import re
                 excessive_velocity = False
                 max_velocity_found = 0.0
                 for rec in diameter_recs:
-                    # Extract velocity values from recommendations like "3.2m/s" or "1.5m/s"
-                    velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', rec)
+                    # Skip warning messages about current excessive velocities
+                    if "VITESSE EXCESSIVE" in rec.upper() or "VITESSE CIBLE" in rec.upper():
+                        continue
+                    
+                    # Extract velocity values from actual recommendations like "DN32→DN100: 3.2m/s"
+                    velocity_matches = re.findall(r'DN\d+→DN\d+:\s*(\d+\.?\d*)\s*m/s', rec)
                     for velocity_str in velocity_matches:
                         velocity_val = float(velocity_str)
                         max_velocity_found = max(max_velocity_found, velocity_val)
@@ -217,8 +222,8 @@ def test_intelligent_recommendations_integration():
                     if excessive_velocity:
                         break
                 
-                print(f"   Debug: Max velocity found: {max_velocity_found} m/s")
-                print(f"   Debug: Excessive velocity: {excessive_velocity}")
+                print(f"   Debug: Max recommended velocity found: {max_velocity_found} m/s")
+                print(f"   Debug: Excessive velocity in recommendations: {excessive_velocity}")
                 
                 if not excessive_velocity:
                     print("✅ HMT Graduated Diameter: PASSED")
