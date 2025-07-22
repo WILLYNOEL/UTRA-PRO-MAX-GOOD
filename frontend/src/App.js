@@ -12515,6 +12515,210 @@ function App() {
         return <ReservoirCalculator />;
       case 'solar':
         return <SolarExpertSystem />;
+      case 'drawing':
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-50">
+            <div className="container mx-auto p-6">
+              {/* En-tête */}
+              <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-6 mb-6 text-white">
+                <h1 className="text-3xl font-bold mb-2">
+                  <span className="mr-3">🎨</span>
+                  Générateur de Schémas Hydrauliques
+                </h1>
+                <p className="text-teal-100">
+                  Création automatique de dessins techniques 2D/3D pour vos installations hydrauliques
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Panel de Configuration */}
+                <div className="lg:col-span-1 space-y-4">
+                  <div className="bg-white rounded-lg shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">⚙️ Configuration</h3>
+                    
+                    {/* Type d'installation */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Type d'Installation
+                      </label>
+                      <select
+                        value={drawingData.installation_type}
+                        onChange={(e) => handleDrawingInputChange('installation_type', e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-1 focus:ring-teal-200"
+                      >
+                        <option value="bache_enterree">Bâche Enterrée</option>
+                        <option value="forage">Forage</option>
+                        <option value="chateau_eau">Château d'Eau</option>
+                        <option value="surpresseur">Surpresseur</option>
+                      </select>
+                    </div>
+
+                    {/* Mode de dessin */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mode de Rendu
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleDrawingInputChange('drawing_mode', '2d')}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            drawingData.drawing_mode === '2d'
+                              ? 'bg-teal-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          2D
+                        </button>
+                        <button
+                          onClick={() => handleDrawingInputChange('drawing_mode', '3d')}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            drawingData.drawing_mode === '3d'
+                              ? 'bg-teal-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          3D
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Options d'affichage */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Options d'Affichage
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.show_labels}
+                            onChange={(e) => handleDrawingInputChange('show_labels', e.target.checked)}
+                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">Étiquettes</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={drawingData.show_dimensions}
+                            onChange={(e) => handleDrawingInputChange('show_dimensions', e.target.checked)}
+                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">Dimensions</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Bouton de génération */}
+                    <button
+                      onClick={generateDrawing}
+                      className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-teal-700 hover:to-cyan-700 transition-colors shadow-lg"
+                    >
+                      <span className="mr-2">🚀</span>
+                      Générer le Schéma
+                    </button>
+                  </div>
+
+                  {/* Équipements */}
+                  <div className="bg-white rounded-lg shadow-lg p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">🔧 Équipements</h3>
+                    
+                    {/* Pompes */}
+                    <div className="mb-4">
+                      <h4 className="font-medium text-gray-700 mb-2">Pompes</h4>
+                      {drawingData.pumps.map((pump, index) => (
+                        <div key={pump.id} className="bg-blue-50 p-3 rounded-lg mb-2">
+                          <div className="text-sm">
+                            <div className="font-medium">Pompe {index + 1}</div>
+                            <div className="text-gray-600">
+                              {pump.power}kW - {pump.flow}m³/h - {pump.head}m
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Réservoirs */}
+                    <div className="mb-4">
+                      <h4 className="font-medium text-gray-700 mb-2">Réservoirs</h4>
+                      {drawingData.tanks.map((tank, index) => (
+                        <div key={tank.id} className="bg-green-50 p-3 rounded-lg mb-2">
+                          <div className="text-sm">
+                            <div className="font-medium">Réservoir {index + 1}</div>
+                            <div className="text-gray-600">
+                              {tank.capacity}L - {tank.type}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Zone de Dessin */}
+                <div className="lg:col-span-3">
+                  <div className="bg-white rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800">📐 Schéma Technique</h3>
+                      <div className="flex space-x-2">
+                        <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                          📥 Exporter PNG
+                        </button>
+                        <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                          📄 Exporter PDF
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Canvas de dessin */}
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <canvas
+                        ref={canvasRef}
+                        width={800}
+                        height={600}
+                        className="w-full bg-white"
+                        style={{maxHeight: '600px'}}
+                      />
+                    </div>
+                    
+                    {/* Informations techniques */}
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-700 mb-2">📊 Informations</h4>
+                        <div className="text-sm space-y-1">
+                          <div>Type: {drawingData.installation_type.replace('_', ' ')}</div>
+                          <div>Mode: {drawingData.drawing_mode.toUpperCase()}</div>
+                          <div>Pompes: {drawingData.pumps.length}</div>
+                          <div>Réservoirs: {drawingData.tanks.length}</div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-700 mb-2">⚡ Spécifications</h4>
+                        <div className="text-sm space-y-1">
+                          <div>Puissance totale: {drawingData.pumps.reduce((sum, pump) => sum + pump.power, 0)}kW</div>
+                          <div>Débit total: {drawingData.pumps.reduce((sum, pump) => sum + pump.flow, 0)}m³/h</div>
+                          <div>Volume stockage: {drawingData.tanks.reduce((sum, tank) => sum + tank.capacity, 0)}L</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Instructions */}
+                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-800 mb-2">💡 Instructions</h4>
+                      <ul className="text-sm text-blue-700 space-y-1">
+                        <li>• Sélectionnez le type d'installation dans le panneau de configuration</li>
+                        <li>• Choisissez le mode 2D ou 3D selon vos besoins</li>
+                        <li>• Activez les étiquettes et dimensions pour plus de clarté</li>
+                        <li>• Cliquez sur "Générer le Schéma" pour créer votre dessin</li>
+                        <li>• Exportez en PNG ou PDF pour vos documents techniques</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'history':
         return (
           <div className="bg-white rounded-lg shadow-lg p-6">
