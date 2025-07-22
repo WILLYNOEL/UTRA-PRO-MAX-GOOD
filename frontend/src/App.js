@@ -13512,13 +13512,269 @@ function App() {
     ctx.fillText('INSTALLATION EN CHARGE', 50, 50);
   };
 
+  // SCHÉMA POMPE DE RELEVAGE - POMPES DANS BÂCHE/FOSSE
   const drawProfessionalSubmersible = (ctx, canvas) => {
-    drawProfessionalSurfaceAspiration(ctx, canvas);
+    // Nettoyage complet
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    ctx.fillStyle = '#1565c0';
-    ctx.font = 'bold 16px Arial';
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // 1. BÂCHE/FOSSE DE RELEVAGE
+    const pitX = centerX - 150;
+    const pitY = centerY - 100;
+    const pitW = 200;
+    const pitH = 200;
+    
+    // Parois bâche
+    ctx.strokeStyle = '#37474F';
+    ctx.lineWidth = 4;
+    ctx.fillStyle = '#ECEFF1';
+    ctx.fillRect(pitX, pitY, pitW, pitH);
+    ctx.strokeRect(pitX, pitY, pitW, pitH);
+    
+    // Niveau liquide dans la bâche
+    const liquidLevel = 0.6; // 60% rempli
+    ctx.fillStyle = '#2196F3';
+    ctx.fillRect(pitX + 5, pitY + pitH * (1 - liquidLevel), pitW - 10, pitH * liquidLevel);
+    
+    // Ligne de niveau
+    ctx.strokeStyle = '#1976D2';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(pitX, pitY + pitH * (1 - liquidLevel));
+    ctx.lineTo(pitX + pitW, pitY + pitH * (1 - liquidLevel));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Label bâche
+    ctx.fillStyle = '#37474F';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('BÂCHE DE RELEVAGE', pitX + pitW/2, pitY - 10);
+    
+    // 2. POMPES SUBMERSIBLES DANS LA BÂCHE (en parallèle)
+    const pumpCount = drawingData.pump_count;
+    const pumpSpacing = pitW / (pumpCount + 1);
+    
+    for (let i = 0; i < pumpCount; i++) {
+      const pumpX = pitX + pumpSpacing * (i + 1);
+      const pumpY = pitY + pitH - 40; // Au fond de la bâche
+      const isStandby = i >= drawingData.pumps_in_service;
+      
+      // POMPE SUBMERSIBLE (dans l'eau)
+      ctx.fillStyle = isStandby ? '#FFE0B2' : '#1976D2';
+      ctx.strokeStyle = isStandby ? '#FF9800' : '#0D47A1';
+      ctx.lineWidth = 3;
+      ctx.fillRect(pumpX - 12, pumpY - 15, 24, 30);
+      ctx.strokeRect(pumpX - 12, pumpY - 15, 24, 30);
+      
+      // Roue pompe
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(pumpX, pumpY, 6, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Flèche rotation
+      ctx.beginPath();
+      ctx.moveTo(pumpX - 2, pumpY - 3);
+      ctx.lineTo(pumpX + 3, pumpY - 1);
+      ctx.lineTo(pumpX + 1, pumpY + 3);
+      ctx.stroke();
+      
+      // Label pompe
+      ctx.fillStyle = isStandby ? '#F57C00' : '#0D47A1';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`PS${i+1}`, pumpX, pumpY - 25);
+      ctx.font = '7px Arial';
+      ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX, pumpY - 35);
+      
+      // TUYAU REFOULEMENT vertical sortant de la bâche
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(pumpX, pumpY - 15);
+      ctx.lineTo(pumpX, pitY - 20);
+      ctx.stroke();
+      
+      // CLAPET ANTI-RETOUR sur chaque refoulement
+      if (drawingData.accessories.check_valve) {
+        const valveY = pitY - 10;
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pumpX - 6, valveY - 4);
+        ctx.lineTo(pumpX + 6, valveY);
+        ctx.lineTo(pumpX - 6, valveY + 4);
+        ctx.closePath();
+        ctx.fillStyle = '#C8E6C9';
+        ctx.fill();
+        ctx.stroke();
+        
+        // Tag
+        ctx.fillStyle = '#2E7D32';
+        ctx.font = '6px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('NR', pumpX, valveY + 12);
+      }
+      
+      // Câble électrique flottant
+      ctx.strokeStyle = '#FF9800';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(pumpX + 12, pumpY);
+      ctx.quadraticCurveTo(pumpX + 30, pumpY - 30, pumpX + 40, pitY - 40);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    // 3. COLLECTEUR DE REFOULEMENT AU-DESSUS DE LA BÂCHE
+    const collecteurY = pitY - 20;
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(pitX + pumpSpacing - 20, collecteurY);
+    ctx.lineTo(pitX + pumpSpacing * pumpCount + 20, collecteurY);
+    ctx.stroke();
+    
+    // Label collecteur
+    ctx.fillStyle = '#2E7D32';
+    ctx.font = 'bold 9px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('COLLECTEUR PARALLÈLE', pitX + pitW/2, collecteurY - 8);
+    ctx.font = '7px Arial';
+    ctx.fillText(`DN${drawingData.discharge_diameter}`, pitX + pitW/2, collecteurY + 15);
+    
+    // 4. TUYAUTERIE VERS STOCKAGE
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(pitX + pumpSpacing * pumpCount + 20, collecteurY);
+    ctx.lineTo(centerX + 200, collecteurY);
+    ctx.stroke();
+    
+    // Flèche débit total
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 150, collecteurY - 4);
+    ctx.lineTo(centerX + 165, collecteurY);
+    ctx.lineTo(centerX + 150, collecteurY + 4);
+    ctx.stroke();
+    
+    // Débit total
+    ctx.fillStyle = '#2E7D32';
+    ctx.font = 'bold 8px Arial';
+    ctx.textAlign = 'center';
+    const totalFlow = drawingData.flow_rate * drawingData.pumps_in_service;
+    ctx.fillText(`${totalFlow}m³/h`, centerX + 120, collecteurY - 8);
+    
+    // 5. RÉSERVOIR DE STOCKAGE
+    const storageX = centerX + 220;
+    const storageY = centerY - 60;
+    const storageW = 100;
+    const storageH = 120;
+    
+    ctx.strokeStyle = '#9C27B0';
+    ctx.lineWidth = 3;
+    ctx.fillStyle = '#F3E5F5';
+    ctx.fillRect(storageX, storageY, storageW, storageH);
+    ctx.strokeRect(storageX, storageY, storageW, storageH);
+    
+    // Niveau stockage
+    ctx.fillStyle = '#8E24AA';
+    ctx.fillRect(storageX + 5, storageY + storageH * 0.2, storageW - 10, storageH * 0.7);
+    
+    // Raccordement
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(centerX + 200, collecteurY);
+    ctx.lineTo(storageX, collecteurY);
+    ctx.lineTo(storageX, storageY + storageH - 20);
+    ctx.stroke();
+    
+    // Label stockage
+    ctx.fillStyle = '#7B1FA2';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('STOCKAGE', storageX + storageW/2, storageY - 10);
+    
+    // 6. COFFRET ÉLECTRIQUE
+    if (drawingData.accessories.control_panel) {
+      const panelX = pitX - 80;
+      const panelY = centerY - 80;
+      
+      ctx.fillStyle = '#37474F';
+      ctx.strokeStyle = '#263238';
+      ctx.lineWidth = 2;
+      ctx.fillRect(panelX, panelY, 60, 80);
+      ctx.strokeRect(panelX, panelY, 60, 80);
+      
+      // Façade
+      ctx.fillStyle = '#B0BEC5';
+      ctx.fillRect(panelX + 5, panelY + 5, 50, 70);
+      
+      // LEDs pour chaque pompe
+      for (let i = 0; i < pumpCount; i++) {
+        const ledX = panelX + 15 + (i * 12);
+        const ledY = panelY + 20;
+        const isActive = i < drawingData.pumps_in_service;
+        
+        ctx.beginPath();
+        ctx.arc(ledX, ledY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = isActive ? '#4CAF50' : '#FF9800';
+        ctx.fill();
+        
+        // Label pompe
+        ctx.fillStyle = '#263238';
+        ctx.font = '7px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`P${i+1}`, ledX, ledY + 12);
+      }
+      
+      // Écran
+      ctx.fillStyle = '#1A1A1A';
+      ctx.fillRect(panelX + 10, panelY + 40, 40, 20);
+      ctx.fillStyle = '#4CAF50';
+      ctx.font = '7px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('AUTO', panelX + 30, panelY + 47);
+      ctx.fillText(`${totalFlow}m³/h`, panelX + 30, panelY + 55);
+      
+      // Tag coffret
+      ctx.fillStyle = '#263238';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('E-001', panelX + 30, panelY - 10);
+    }
+    
+    // 7. DONNÉES TECHNIQUES
+    const dataX = 50;
+    const dataY = centerY + 120;
+    
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = '10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText('POMPE SUBMERSIBLE', 50, 50);
+    
+    const techData = [
+      `DÉBIT TOTAL: ${totalFlow} m³/h`,
+      `HMT: ${drawingData.total_head} m`,
+      `POMPES: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`,
+      `DN REFOULEMENT: ${drawingData.discharge_diameter} mm`,
+      `CONFIGURATION: PARALLÈLE`
+    ];
+    
+    techData.forEach((text, i) => {
+      ctx.fillText(text, dataX, dataY + (i * 12));
+    });
+    
+    // Cartouche technique
+    drawDynamicTechnicalCartouche(ctx, canvas, 'RELEVAGE PARALLÈLE');
   };
 
   // SCHÉMA FORAGE DYNAMIQUE - PID SIMPLE ET TECHNIQUE
