@@ -12558,6 +12558,47 @@ function App() {
 
   const canvasRef = useRef(null);
 
+  // Fonction pour gérer les inputs numériques avec backspace sur "0"
+  const handleNumericInputChange = (fieldName, value, defaultValue = 0) => {
+    // Si la valeur est vide (après backspace), utiliser une chaîne vide temporairement
+    if (value === '' || value === null || value === undefined) {
+      handleDrawingInputChange(fieldName, '');
+      return;
+    }
+    
+    // Si c'est un nombre valide, l'utiliser, sinon utiliser la valeur par défaut
+    const numericValue = parseFloat(value);
+    if (!isNaN(numericValue)) {
+      handleDrawingInputChange(fieldName, numericValue);
+    } else {
+      handleDrawingInputChange(fieldName, defaultValue);
+    }
+  };
+
+  // Fonction spéciale pour les objets imbriqués (comme forage_specific)
+  const handleNestedNumericInputChange = (parentField, childField, value, defaultValue = 0) => {
+    if (value === '' || value === null || value === undefined) {
+      handleDrawingInputChange(parentField, {
+        ...drawingData[parentField],
+        [childField]: ''
+      });
+      return;
+    }
+    
+    const numericValue = parseFloat(value);
+    if (!isNaN(numericValue)) {
+      handleDrawingInputChange(parentField, {
+        ...drawingData[parentField],
+        [childField]: numericValue
+      });
+    } else {
+      handleDrawingInputChange(parentField, {
+        ...drawingData[parentField],
+        [childField]: defaultValue
+      });
+    }
+  };
+
   // Fonctions de gestion des événements ULTRA-INTELLIGENTES
   const handleDrawingInputChange = (name, value) => {
     setDrawingData(prev => {
