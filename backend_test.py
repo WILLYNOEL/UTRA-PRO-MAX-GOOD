@@ -10639,6 +10639,9 @@ class HydraulicPumpTester:
         
         # Run all tests - prioritizing Critical Material Analysis tests from review request
         tests = [
+            # AUDIT ANALYSIS ENDPOINT TEST - NEW FROM REVIEW REQUEST
+            self.test_audit_analysis_endpoint,  # NEW: Test audit analysis endpoint functionality
+            
             # DETAILED CHEMICAL COMPATIBILITY PRESERVATION TESTS - NEW FROM REVIEW REQUEST
             self.test_detailed_chemical_compatibility_preservation,  # NEW: Test preservation of detailed chemical compatibility analysis
             self.test_specialized_equipment_recommendations_preservation,  # NEW: Test preservation of specialized equipment recommendations
