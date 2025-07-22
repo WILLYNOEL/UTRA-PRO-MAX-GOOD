@@ -9722,6 +9722,374 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_detailed_chemical_compatibility_preservation(self):
+        """Test preservation of detailed chemical compatibility analysis in intelligent Expert organization"""
+        print("\n🧪 Testing Detailed Chemical Compatibility Preservation...")
+        
+        # Test Case 1: Food grade fluid (milk) - should trigger detailed food safety recommendations
+        test_case_1 = {
+            "name": "Food Grade Fluid - Milk with PVC/Stainless Steel",
+            "data": {
+                "flow_rate": 80.0,
+                "fluid_type": "milk",
+                "temperature": 35.0,
+                "suction_type": "flooded",
+                "suction_pipe_diameter": 88.9,  # DN80
+                "discharge_pipe_diameter": 114.3,  # DN100
+                "suction_dn": 80,
+                "discharge_dn": 100,
+                "suction_height": 2.0,
+                "discharge_height": 15.0,
+                "suction_length": 20.0,
+                "discharge_length": 50.0,
+                "total_length": 70.0,
+                "useful_pressure": 2.0,
+                "suction_material": "pvc",
+                "discharge_material": "stainless_steel_316",
+                "suction_elbow_90": 2,
+                "discharge_elbow_90": 3,
+                "discharge_check_valve": 1,
+                "pump_efficiency": 70.0,
+                "motor_efficiency": 85.0,
+                "voltage": 400,
+                "power_factor": 0.8,
+                "starting_method": "star_delta",
+                "cable_length": 30.0,
+                "cable_material": "copper",
+                "npsh_required": 3.5,
+                "installation_type": "surface",
+                "pump_type": "centrifugal",
+                "operating_hours": 6000.0,
+                "electricity_cost": 0.12,
+                "altitude": 0.0,
+                "ambient_temperature": 25.0,
+                "humidity": 60.0
+            }
+        }
+        
+        # Test Case 2: Hazardous fluid (acid) - should trigger detailed safety equipment recommendations
+        test_case_2 = {
+            "name": "Hazardous Fluid - Acid with Stainless Steel",
+            "data": {
+                "flow_rate": 80.0,
+                "fluid_type": "acid",
+                "temperature": 25.0,
+                "suction_type": "flooded",
+                "suction_pipe_diameter": 88.9,  # DN80
+                "discharge_pipe_diameter": 114.3,  # DN100
+                "suction_dn": 80,
+                "discharge_dn": 100,
+                "suction_height": 1.5,
+                "discharge_height": 12.0,
+                "suction_length": 15.0,
+                "discharge_length": 40.0,
+                "total_length": 55.0,
+                "useful_pressure": 1.5,
+                "suction_material": "stainless_steel_316",
+                "discharge_material": "stainless_steel_316",
+                "suction_elbow_90": 1,
+                "discharge_elbow_90": 2,
+                "discharge_check_valve": 1,
+                "pump_efficiency": 70.0,
+                "motor_efficiency": 85.0,
+                "voltage": 400,
+                "power_factor": 0.8,
+                "starting_method": "star_delta",
+                "cable_length": 25.0,
+                "cable_material": "copper",
+                "npsh_required": 3.5,
+                "installation_type": "surface",
+                "pump_type": "centrifugal",
+                "operating_hours": 6000.0,
+                "electricity_cost": 0.12,
+                "altitude": 0.0,
+                "ambient_temperature": 25.0,
+                "humidity": 60.0
+            }
+        }
+        
+        all_passed = True
+        test_cases = [test_case_1, test_case_2]
+        
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/expert-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    expert_recommendations = result.get("expert_recommendations", [])
+                    if not expert_recommendations:
+                        self.log_test(f"Chemical Compatibility - {case['name']}", False, "No expert recommendations found")
+                        all_passed = False
+                        continue
+                    
+                    # Check for detailed chemical compatibility analysis
+                    chemical_recommendations = []
+                    food_safety_recommendations = []
+                    safety_equipment_recommendations = []
+                    installation_recommendations = []
+                    
+                    for rec in expert_recommendations:
+                        rec_type = rec.get("type", "")
+                        title = rec.get("title", "")
+                        description = rec.get("description", "")
+                        solutions = rec.get("solutions", [])
+                        
+                        # Look for chemical compatibility details
+                        if "chemical" in rec_type.lower() or "compatibility" in title.lower() or "material" in title.lower():
+                            chemical_recommendations.append(rec)
+                        
+                        # Look for food safety details (for milk test case)
+                        if case["data"]["fluid_type"] == "milk":
+                            if any(keyword in description.lower() for keyword in ["food", "sanitaire", "haccp", "fda", "ce", "cip"]):
+                                food_safety_recommendations.append(rec)
+                        
+                        # Look for safety equipment details (for acid test case)
+                        if case["data"]["fluid_type"] == "acid":
+                            if any(keyword in description.lower() for keyword in ["safety", "emergency", "shower", "eye wash", "ventilation", "ph monitoring", "atex"]):
+                                safety_equipment_recommendations.append(rec)
+                        
+                        # Look for installation equipment recommendations
+                        if any(keyword in description.lower() for keyword in ["installation", "equipment", "instrumentation", "monitoring", "valve", "sensor"]):
+                            installation_recommendations.append(rec)
+                    
+                    # Validate detailed content preservation for milk (food grade)
+                    if case["data"]["fluid_type"] == "milk":
+                        # Check for detailed chemical analysis
+                        if not chemical_recommendations:
+                            self.log_test(f"Chemical Analysis Detail - {case['name']}", False, "Missing detailed chemical compatibility analysis")
+                            all_passed = False
+                        else:
+                            # Check for rich technical content
+                            detailed_content_found = False
+                            for rec in chemical_recommendations:
+                                solutions = rec.get("solutions", [])
+                                if len(solutions) >= 2:  # Should have multiple specific solutions
+                                    detailed_content_found = True
+                                    break
+                            
+                            if not detailed_content_found:
+                                self.log_test(f"Chemical Analysis Detail - {case['name']}", False, "Chemical recommendations lack detailed solutions")
+                                all_passed = False
+                        
+                        # Check for food safety equipment recommendations
+                        if not food_safety_recommendations:
+                            self.log_test(f"Food Safety Equipment - {case['name']}", False, "Missing detailed food safety equipment recommendations")
+                            all_passed = False
+                        else:
+                            # Look for specific food safety equipment mentions
+                            cip_found = any("cip" in str(rec).lower() for rec in food_safety_recommendations)
+                            regulatory_found = any(keyword in str(food_safety_recommendations).lower() for keyword in ["fda", "ce", "haccp"])
+                            
+                            if not (cip_found or regulatory_found):
+                                self.log_test(f"Food Safety Detail - {case['name']}", False, "Missing specific food safety equipment (CIP, regulatory compliance)")
+                                all_passed = False
+                    
+                    # Validate detailed content preservation for acid (hazardous)
+                    if case["data"]["fluid_type"] == "acid":
+                        # Check for safety equipment recommendations
+                        if not safety_equipment_recommendations:
+                            self.log_test(f"Safety Equipment Detail - {case['name']}", False, "Missing detailed safety equipment recommendations")
+                            all_passed = False
+                        else:
+                            # Look for specific safety equipment mentions
+                            emergency_equipment_found = any(keyword in str(safety_equipment_recommendations).lower() 
+                                                           for keyword in ["emergency", "shower", "eye wash", "rinçage"])
+                            monitoring_found = any(keyword in str(safety_equipment_recommendations).lower() 
+                                                 for keyword in ["monitoring", "ph", "surveillance", "inspection"])
+                            
+                            if not (emergency_equipment_found or monitoring_found):
+                                self.log_test(f"Safety Equipment Detail - {case['name']}", False, "Missing specific safety equipment details")
+                                all_passed = False
+                    
+                    # Check for installation modification recommendations
+                    if not installation_recommendations:
+                        self.log_test(f"Installation Equipment - {case['name']}", False, "Missing installation modification recommendations")
+                        all_passed = False
+                    
+                    # Check for rich technical content (not just summaries)
+                    total_solutions = sum(len(rec.get("solutions", [])) for rec in expert_recommendations)
+                    if total_solutions < 10:  # Should have many detailed solutions
+                        self.log_test(f"Technical Content Richness - {case['name']}", False, f"Insufficient detailed solutions: {total_solutions}")
+                        all_passed = False
+                    
+                    # Check for regulatory compliance details
+                    regulatory_content = str(expert_recommendations).lower()
+                    regulatory_keywords = ["fda", "ce", "haccp", "iso", "atex", "norme", "regulation", "compliance"]
+                    regulatory_mentions = sum(1 for keyword in regulatory_keywords if keyword in regulatory_content)
+                    
+                    if case["data"]["fluid_type"] == "milk" and regulatory_mentions < 2:
+                        self.log_test(f"Regulatory Compliance - {case['name']}", False, f"Insufficient regulatory compliance details: {regulatory_mentions}")
+                        all_passed = False
+                    
+                    if all_passed:
+                        self.log_test(f"Detailed Chemical Compatibility - {case['name']}", True, 
+                                    f"Chemical recs: {len(chemical_recommendations)}, Food safety: {len(food_safety_recommendations)}, "
+                                    f"Safety equipment: {len(safety_equipment_recommendations)}, Installation: {len(installation_recommendations)}, "
+                                    f"Total solutions: {total_solutions}")
+                else:
+                    self.log_test(f"Detailed Chemical Compatibility - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Detailed Chemical Compatibility - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_specialized_equipment_recommendations_preservation(self):
+        """Test preservation of specialized equipment recommendations (safety, hydraulic optimization, instrumentation)"""
+        print("\n🔧 Testing Specialized Equipment Recommendations Preservation...")
+        
+        # Test case designed to trigger multiple types of specialized equipment recommendations
+        test_data = {
+            "flow_rate": 150.0,  # High flow to trigger hydraulic optimization
+            "fluid_type": "gasoline",  # Hazardous fluid to trigger safety equipment
+            "temperature": 40.0,  # Elevated temperature
+            "suction_type": "suction_lift",
+            "suction_pipe_diameter": 42.4,  # DN32 - small for high flow (velocity issues)
+            "discharge_pipe_diameter": 60.3,  # DN50
+            "suction_dn": 32,
+            "discharge_dn": 50,
+            "suction_height": 4.0,  # High suction lift
+            "discharge_height": 25.0,
+            "suction_length": 80.0,  # Long suction line
+            "discharge_length": 150.0,
+            "total_length": 230.0,
+            "useful_pressure": 3.0,  # High pressure requirement
+            "suction_material": "steel",
+            "discharge_material": "stainless_steel_316",
+            "suction_elbow_90": 4,  # Many fittings
+            "suction_check_valve": 1,
+            "discharge_elbow_90": 6,
+            "discharge_gate_valve": 2,
+            "discharge_check_valve": 1,
+            "pump_efficiency": 65.0,  # Low efficiency to trigger optimization
+            "motor_efficiency": 82.0,  # Low efficiency
+            "voltage": 400,
+            "power_factor": 0.75,  # Low power factor
+            "starting_method": "direct_on_line",  # High starting current
+            "cable_length": 100.0,
+            "cable_material": "copper",
+            "npsh_required": 5.0,  # High NPSH requirement
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 8760.0,  # Continuous operation
+            "electricity_cost": 0.15,  # High electricity cost
+            "altitude": 500.0,  # Elevated altitude
+            "ambient_temperature": 35.0,  # High ambient temperature
+            "humidity": 80.0  # High humidity
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                expert_recommendations = result.get("expert_recommendations", [])
+                if not expert_recommendations:
+                    self.log_test("Specialized Equipment Recommendations", False, "No expert recommendations found")
+                    return False
+                
+                # Categorize recommendations by type
+                safety_equipment = []
+                hydraulic_optimization = []
+                instrumentation = []
+                installation_modifications = []
+                
+                for rec in expert_recommendations:
+                    rec_type = rec.get("type", "").lower()
+                    title = rec.get("title", "").lower()
+                    description = rec.get("description", "").lower()
+                    solutions = rec.get("solutions", [])
+                    
+                    # Safety equipment recommendations
+                    if any(keyword in f"{rec_type} {title} {description}" for keyword in 
+                           ["safety", "emergency", "atex", "explosion", "fire", "ventilation", "shower", "eye wash"]):
+                        safety_equipment.append(rec)
+                    
+                    # Hydraulic optimization recommendations
+                    if any(keyword in f"{rec_type} {title} {description}" for keyword in 
+                           ["hydraulic", "diameter", "velocity", "pressure", "flow", "optimization", "efficiency"]):
+                        hydraulic_optimization.append(rec)
+                    
+                    # Instrumentation recommendations
+                    if any(keyword in f"{rec_type} {title} {description}" for keyword in 
+                           ["instrumentation", "monitoring", "sensor", "gauge", "measurement", "control", "automation"]):
+                        instrumentation.append(rec)
+                    
+                    # Installation modification recommendations
+                    if any(keyword in f"{rec_type} {title} {description}" for keyword in 
+                           ["installation", "modification", "equipment", "add", "remove", "replace", "upgrade"]):
+                        installation_modifications.append(rec)
+                
+                # Validate specialized equipment categories
+                errors = []
+                
+                # Check safety equipment for hazardous fluid (gasoline)
+                if not safety_equipment:
+                    errors.append("Missing safety equipment recommendations for hazardous fluid")
+                else:
+                    # Check for specific safety equipment details
+                    safety_content = str(safety_equipment).lower()
+                    required_safety = ["atex", "explosion", "fire", "ventilation", "emergency"]
+                    found_safety = [item for item in required_safety if item in safety_content]
+                    if len(found_safety) < 2:
+                        errors.append(f"Insufficient safety equipment details. Found: {found_safety}")
+                
+                # Check hydraulic optimization for high flow/small diameter scenario
+                if not hydraulic_optimization:
+                    errors.append("Missing hydraulic optimization recommendations")
+                else:
+                    # Check for specific hydraulic recommendations
+                    hydraulic_content = str(hydraulic_optimization).lower()
+                    required_hydraulic = ["diameter", "velocity", "pressure", "optimization"]
+                    found_hydraulic = [item for item in required_hydraulic if item in hydraulic_content]
+                    if len(found_hydraulic) < 2:
+                        errors.append(f"Insufficient hydraulic optimization details. Found: {found_hydraulic}")
+                
+                # Check instrumentation recommendations
+                if not instrumentation:
+                    errors.append("Missing instrumentation recommendations")
+                else:
+                    # Check for specific instrumentation details
+                    instrumentation_content = str(instrumentation).lower()
+                    required_instrumentation = ["monitoring", "sensor", "gauge", "measurement"]
+                    found_instrumentation = [item for item in required_instrumentation if item in instrumentation_content]
+                    if len(found_instrumentation) < 1:
+                        errors.append(f"Insufficient instrumentation details. Found: {found_instrumentation}")
+                
+                # Check installation modifications
+                if not installation_modifications:
+                    errors.append("Missing installation modification recommendations")
+                
+                # Check for rich technical content in solutions
+                total_solutions = sum(len(rec.get("solutions", [])) for rec in expert_recommendations)
+                if total_solutions < 15:  # Should have many detailed solutions for complex scenario
+                    errors.append(f"Insufficient detailed solutions: {total_solutions}")
+                
+                # Check for specific equipment models/specifications
+                all_content = str(expert_recommendations).lower()
+                technical_terms = ["dn", "bar", "m/s", "kw", "atex", "ip", "iso", "ce"]
+                technical_mentions = sum(1 for term in technical_terms if term in all_content)
+                if technical_mentions < 5:
+                    errors.append(f"Insufficient technical specifications: {technical_mentions}")
+                
+                if errors:
+                    self.log_test("Specialized Equipment Recommendations", False, "; ".join(errors))
+                    return False
+                else:
+                    self.log_test("Specialized Equipment Recommendations", True, 
+                                f"Safety: {len(safety_equipment)}, Hydraulic: {len(hydraulic_optimization)}, "
+                                f"Instrumentation: {len(instrumentation)}, Installation: {len(installation_modifications)}, "
+                                f"Total solutions: {total_solutions}, Technical terms: {technical_mentions}")
+                    return True
+            else:
+                self.log_test("Specialized Equipment Recommendations", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Specialized Equipment Recommendations", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all tests including Phase 3 additions and Critical Material Analysis"""
         print("=" * 80)
