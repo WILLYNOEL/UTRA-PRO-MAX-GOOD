@@ -9243,6 +9243,154 @@ class HydraulicPumpTester:
         
         return all_passed
 
+    def test_audit_analysis_critical_data(self):
+        """Test audit analysis endpoint with critical data as requested in review"""
+        print("\n🔍 Testing Audit Analysis with Critical Data...")
+        
+        # Test data from review request with critical values
+        critical_audit_data = {
+            "installation_type": "surface",
+            "fluid_type": "water",
+            "fluid_temperature": 20.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "suction_pipe_diameter": 114.3,  # DN100
+            "discharge_pipe_diameter": 88.9,  # DN80
+            
+            # Critical performance data from review request
+            "current_flow_rate": 30.0,      # Insufficient (vs required 50)
+            "required_flow_rate": 50.0,     # Required flow rate
+            "measured_current": 15.0,        # Overload (vs rated 10A)
+            "rated_current": 10.0,           # Rated current
+            "vibration_level": 8.5,          # Critical vibrations
+            "motor_temperature": 85.0,       # Overheating
+            
+            # Additional data for complete analysis
+            "current_hmt": 25.0,
+            "required_hmt": 30.0,
+            "measured_power": 5.5,
+            "rated_power": 4.0,
+            "measured_voltage": 400.0,
+            "rated_voltage": 400.0,
+            "measured_power_factor": 0.75,
+            
+            # Operational context
+            "operating_hours_daily": 8.0,
+            "operating_days_yearly": 250.0,
+            "electricity_cost_per_kwh": 0.12,
+            "load_factor": 0.8,
+            
+            # Installation condition
+            "installation_age": 5,
+            "leakage_present": False,
+            "corrosion_level": "light",
+            "alignment_status": "fair",
+            "coupling_condition": "good",
+            "foundation_status": "good",
+            "reported_issues": ["Vibrations excessives", "Température élevée", "Débit insuffisant"]
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/audit-analysis", json=critical_audit_data, timeout=15)
+            
+            # Check HTTP 200 response
+            if response.status_code != 200:
+                self.log_test("Audit Analysis - HTTP Response", False, f"Expected 200, got {response.status_code}")
+                return False
+            
+            result = response.json()
+            
+            # Check expert_installation_report field is present
+            if "expert_installation_report" not in result:
+                self.log_test("Audit Analysis - Expert Installation Report Field", False, "Missing expert_installation_report field")
+                return False
+            
+            expert_report = result["expert_installation_report"]
+            
+            # Verify critical problems are identified
+            problems_identified = []
+            critical_issues_found = 0
+            
+            # Check for flow rate insufficiency detection
+            if "installation_analysis" in expert_report:
+                installation_analysis = expert_report["installation_analysis"]
+                if any("débit" in str(analysis).lower() and "insuffisant" in str(analysis).lower() 
+                       for analysis in [installation_analysis] if isinstance(analysis, (str, dict))):
+                    problems_identified.append("Débit insuffisant détecté")
+                    critical_issues_found += 1
+            
+            # Check for electrical overload detection
+            if "detailed_problems" in expert_report:
+                detailed_problems = expert_report["detailed_problems"]
+                if isinstance(detailed_problems, list):
+                    for problem in detailed_problems:
+                        if isinstance(problem, dict):
+                            problem_text = str(problem).lower()
+                            if "surcharge" in problem_text or "courant" in problem_text:
+                                problems_identified.append("Surcharge électrique détectée")
+                                critical_issues_found += 1
+                            if "vibration" in problem_text:
+                                problems_identified.append("Vibrations excessives détectées")
+                                critical_issues_found += 1
+                            if "température" in problem_text or "surchauffe" in problem_text:
+                                problems_identified.append("Surchauffe moteur détectée")
+                                critical_issues_found += 1
+            
+            # Check for immediate actions
+            immediate_actions_present = False
+            if "immediate_actions" in expert_report:
+                immediate_actions = expert_report["immediate_actions"]
+                if isinstance(immediate_actions, list) and len(immediate_actions) > 0:
+                    immediate_actions_present = True
+                    problems_identified.append(f"{len(immediate_actions)} actions immédiates générées")
+            
+            # Verify analysis identifies critical problems
+            if critical_issues_found < 2:  # Should detect at least flow and electrical issues
+                self.log_test("Audit Analysis - Critical Problems Detection", False, 
+                            f"Expected multiple critical issues, found {critical_issues_found}")
+                return False
+            
+            # Verify immediate action recommendations are generated
+            if not immediate_actions_present:
+                self.log_test("Audit Analysis - Immediate Actions", False, "No immediate actions generated")
+                return False
+            
+            # Check overall score reflects critical condition
+            overall_score = result.get("overall_score", 100)
+            if overall_score > 70:  # Should be low due to critical issues
+                self.log_test("Audit Analysis - Overall Score", False, 
+                            f"Score too high ({overall_score}) for critical installation")
+                return False
+            
+            # Verify comprehensive analysis structure
+            required_sections = [
+                "installation_analysis", "detailed_problems", "equipment_replacement_list",
+                "equipment_addition_list", "immediate_actions", "action_plan", "energy_waste_analysis"
+            ]
+            
+            missing_sections = []
+            for section in required_sections:
+                if section not in expert_report:
+                    missing_sections.append(section)
+            
+            if missing_sections:
+                self.log_test("Audit Analysis - Report Structure", False, 
+                            f"Missing sections: {missing_sections}")
+                return False
+            
+            self.log_test("Audit Analysis - Critical Data Processing", True, 
+                        f"✅ HTTP 200 ✅ Expert report present ✅ {critical_issues_found} critical issues detected ✅ Immediate actions generated ✅ Score: {overall_score}/100")
+            
+            # Log detected problems for verification
+            if problems_identified:
+                print(f"   🔍 Problems detected: {'; '.join(problems_identified)}")
+            
+            return True
+            
+        except Exception as e:
+            self.log_test("Audit Analysis - Critical Data Processing", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
