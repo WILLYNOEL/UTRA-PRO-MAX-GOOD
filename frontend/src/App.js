@@ -6216,7 +6216,202 @@ const ReservoirCalculator = () => {
     return type === 'MPC-E' ? 15 : 10; // MPC-E: 15 démarrages, MPC-S: 10 démarrages
   };
 
-  // Fonction de calcul des réservoirs selon document technique
+  // Fonction d'analyse d'installation existante avec recommandations intelligentes
+  const analyzeExistingInstallation = (data) => {
+    const { existing_volume, desired_flow, installation_type, working_pressure, pump_type, daily_usage_hours, priority } = data;
+    
+    // Calcul performances avec volume existant
+    const kr = pump_type === 'MPC-E' ? 0.7 : 0.9;
+    const kH = pump_type === 'MPC-E' ? 0.2 : 0.25;
+    const kQ = pump_type === 'MPC-E' ? 0.1 : 0;
+    
+    // Calcul nombre de démarrages possibles avec volume existant
+    let max_possible_starts = 0;
+    if (pump_type === 'MPC-E') {
+      // Inversion formule MPC-E pour trouver N
+      const numerator = kQ * desired_flow * Math.pow(working_pressure + 1, 2);
+      const denominator = existing_volume * 3.6 * (kr * working_pressure + 1) * kH * working_pressure;
+      const cycle_time = numerator / denominator + 10/3600;
+      max_possible_starts = cycle_time > 0 ? Math.floor(3600 / (cycle_time * 3600)) : 0;
+    } else {
+      // Inversion formule MPC-S pour trouver N  
+      const numerator = 1000 * desired_flow * (working_pressure + 1) * (kH * working_pressure + working_pressure + 1);
+      const denominator = existing_volume * 4 * (kr * working_pressure + 1) * kH * working_pressure;
+      max_possible_starts = denominator > 0 ? Math.floor(numerator / denominator) : 0;
+    }
+
+    // Analyse de dimensionnement
+    const optimal_volume = calculateReservoir({
+      flow_rate: desired_flow,
+      set_pressure: working_pressure,
+      max_starts_per_hour: getRecommendedStarts(pump_type),
+      reservoir_type: pump_type,
+      kQ_ratio: kQ,
+      kH_ratio: kH,
+      kr_ratio: kr
+    }).calculated_volume;
+
+    const sizing_ratio = existing_volume / optimal_volume;
+    let sizing_status = '';
+    let sizing_color = '';
+    
+    if (sizing_ratio < 0.7) {
+      sizing_status = 'SOUS-DIMENSIONNÉ';
+      sizing_color = 'red';
+    } else if (sizing_ratio > 1.5) {
+      sizing_status = 'SURDIMENSIONNÉ';  
+      sizing_color = 'orange';
+    } else {
+      sizing_status = 'CORRECT';
+      sizing_color = 'green';
+    }
+
+    // Analyse du type d'installation
+    const installation_specs = {
+      residential: {
+        name: 'Résidentiel',
+        typical_flow: [1, 5],
+        typical_pressure: [2, 6],
+        usage_pattern: 'Intermittent',
+        priority: 'Économie'
+      },
+      small_commercial: {
+        name: 'Petit Commerce',
+        typical_flow: [3, 10],
+        typical_pressure: [3, 8],
+        usage_pattern: 'Régulier',
+        priority: 'Fiabilité'
+      },
+      industrial: {
+        name: 'Industriel',
+        typical_flow: [8, 50],
+        typical_pressure: [5, 12],
+        usage_pattern: 'Continu',
+        priority: 'Performance'
+      },
+      agricultural: {
+        name: 'Agricole',
+        typical_flow: [5, 30],
+        typical_pressure: [2, 8],
+        usage_pattern: 'Saisonnier',
+        priority: 'Durabilité'
+      }
+    };
+
+    const current_spec = installation_specs[installation_type] || installation_specs.residential;
+
+    // Recommandations intelligentes selon priorité
+    const recommendations = [];
+
+    // Recommandations de dimensionnement
+    if (sizing_status === 'SOUS-DIMENSIONNÉ') {
+      recommendations.push({
+        type: 'CRITICAL',
+        category: 'Dimensionnement',
+        title: 'Réservoir sous-dimensionné',
+        description: `Volume actuel ${existing_volume}L insuffisant (optimal: ${optimal_volume.toFixed(0)}L)`,
+        actions: [
+          `Installer réservoir additionnel de ${Math.ceil(optimal_volume - existing_volume)}L`,
+          'Ou remplacer par réservoir plus grand',
+          'Réduire nombre de démarrages à moins de 8/h en attendant'
+        ],
+        impact: 'Usure prématurée pompe, surconsommation électrique',
+        priority: 'HAUTE'
+      });
+    } else if (sizing_status === 'SURDIMENSIONNÉ') {
+      recommendations.push({
+        type: 'INFO',
+        category: 'Optimisation',
+        title: 'Réservoir surdimensionné',
+        description: `Volume ${existing_volume}L supérieur à l'optimal (${optimal_volume.toFixed(0)}L)`,
+        actions: [
+          'Augmenter pression de pré-charge pour optimiser',
+          'Possibilité de réduire taille lors du remplacement',
+          'Avantage: cycles plus longs, moins de démarrages'
+        ],
+        impact: 'Coût initial majoré, mais durée de vie prolongée',
+        priority: 'BASSE'
+      });
+    }
+
+    // Recommandations selon type d'installation
+    if (installation_type === 'industrial' && max_possible_starts < 15) {
+      recommendations.push({
+        type: 'WARNING',
+        category: 'Performance',
+        title: 'Performance insuffisante pour usage industriel',
+        description: `Maximum ${max_possible_starts} démarrages/h (recommandé: >15)`,
+        actions: [
+          'Augmenter volume réservoir',
+          'Ajouter réservoir en parallèle',
+          'Installer système de régulation avancée'
+        ],
+        impact: 'Risque arrêt production, maintenance fréquente',
+        priority: 'HAUTE'
+      });
+    }
+
+    // Recommandations selon priorité utilisateur
+    if (priority === 'efficiency' && pump_type === 'MPC-S') {
+      recommendations.push({
+        type: 'INFO',
+        category: 'Efficacité Énergétique',
+        title: 'Optimisation énergétique possible',
+        description: 'Pompe vitesse fixe avec priorité efficacité',
+        actions: [
+          'Considérer upgrade vers pompe vitesse variable (MPC-E)',
+          'Installer régulateur de pression',
+          'Optimiser pression de pré-charge'
+        ],
+        impact: '15-30% économies énergie possibles',
+        priority: 'MOYENNE'
+      });
+    }
+
+    // Calcul coût d'exploitation annuel
+    const daily_starts = Math.min(max_possible_starts, daily_usage_hours * 2); // 2 cycles/heure en moyenne
+    const annual_starts = daily_starts * 365;
+    const motor_life_reduction = annual_starts > 5000 ? (annual_starts - 5000) / 1000 : 0;
+
+    return {
+      sizing_analysis: {
+        status: sizing_status,
+        status_color: sizing_color,
+        current_volume: existing_volume,
+        optimal_volume: optimal_volume.toFixed(0),
+        sizing_ratio: sizing_ratio.toFixed(2),
+        max_possible_starts: max_possible_starts
+      },
+      installation_analysis: {
+        type: current_spec.name,
+        flow_adequacy: desired_flow >= current_spec.typical_flow[0] && desired_flow <= current_spec.typical_flow[1] ? 'ADÉQUAT' : 'HORS NORME',
+        pressure_adequacy: working_pressure >= current_spec.typical_pressure[0] && working_pressure <= current_spec.typical_pressure[1] ? 'ADÉQUAT' : 'HORS NORME',
+        usage_pattern: current_spec.usage_pattern,
+        recommended_priority: current_spec.priority
+      },
+      performance_metrics: {
+        daily_cycles: daily_starts,
+        annual_cycles: annual_starts,
+        motor_life_impact: motor_life_reduction.toFixed(1) + ' années de réduction si >5000 cycles/an',
+        efficiency_rating: max_possible_starts > 15 ? 'EXCELLENT' : max_possible_starts > 10 ? 'BON' : 'LIMITE'
+      },
+      recommendations: recommendations,
+      optimization_opportunities: [
+        {
+          title: 'Pression de pré-charge',
+          current: `${(kr * working_pressure).toFixed(1)} bar`,
+          optimal: `${(kr * working_pressure * 1.05).toFixed(1)} bar`,
+          benefit: '5-10% cycles supplémentaires'
+        },
+        {
+          title: 'Type de pompe',
+          current: pump_type,
+          optimal: installation_type === 'industrial' ? 'MPC-E avec VFD' : pump_type,
+          benefit: pump_type !== 'MPC-E' && installation_type === 'industrial' ? '20-25% économies énergie' : 'Déjà optimal'
+        }
+      ]
+    };
+  };
   const calculateReservoir = (data) => {
     const { flow_rate, set_pressure, max_starts_per_hour, kQ_ratio, kH_ratio, kr_ratio, reservoir_type } = data;
     
