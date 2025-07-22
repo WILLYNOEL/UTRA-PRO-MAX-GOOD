@@ -532,11 +532,13 @@ const AuditSystem = () => {
       }
     };
   };
-        total_score: Math.round((hydraulicScore + energyScore) / 2),
-        investment_priority: determineInvestmentPriority(),
-        implementation_roadmap: generateImplementationRoadmap()
-      }
-    };
+
+  // Handler pour mettre à jour les données d'audit
+  const handleAuditInputChange = (field, value) => {
+    setAuditData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
