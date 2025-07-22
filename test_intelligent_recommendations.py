@@ -330,8 +330,8 @@ def test_intelligent_recommendations_integration():
         "discharge_length": 50.0,
         "total_length": 80.0,
         "useful_pressure": 0.0,
-        "suction_material": "pvc",
-        "discharge_material": "pvc",
+        "suction_material": "pvc",  # Correct field name
+        "discharge_material": "pvc",  # Correct field name
         "pump_efficiency": 65.0,  # Low efficiency
         "motor_efficiency": 85.0,  # Low efficiency
         "voltage": 400,
