@@ -2130,6 +2130,80 @@ def calculate_performance_analysis(input_data: PerformanceAnalysisInput) -> Perf
     if hydraulic_power > absorbed_power:
         warnings.append("ERREUR: Puissance hydraulique > puissance absorbée - vérifier les valeurs")
     
+    # ========================================================================================================
+    # NOUVELLES RECOMMANDATIONS INTELLIGENTES POUR PERFORMANCE
+    # ========================================================================================================
+    
+    # 1. ANALYSE DE COMPATIBILITÉ CHIMIQUE POUR PERFORMANCE
+    fluid_props = get_fluid_properties(input_data.fluid_type, 20)  # Température par défaut
+    compatibility_analysis = analyze_chemical_compatibility(
+        input_data.fluid_type,
+        input_data.pipe_material,
+        input_data.pipe_material,  # Même matériau
+        20  # Température par défaut pour Performance
+    )
+    
+    if compatibility_analysis["recommendations"]:
+        recommendations.append("\n🧪 COMPATIBILITÉ CHIMIQUE PERFORMANCE:")
+        recommendations.extend([f"  {rec}" for rec in compatibility_analysis["recommendations"]])
+    
+    # Alertes de compatibilité critique pour Performance
+    if compatibility_analysis["suction_material_status"] == "incompatible":
+        warnings.append("🚨 INCOMPATIBILITÉ MATÉRIAU-FLUIDE DÉTECTÉE!")
+        recommendations.append(f"\n⚠️ MATÉRIAU INCOMPATIBLE - {PIPE_MATERIALS[input_data.pipe_material]['name']} avec {compatibility_analysis['fluid_name']}")
+    
+    # 2. RECOMMANDATIONS GRADUÉES DIAMÈTRE POUR PERFORMANCE
+    if velocity > 2.5:  # Vitesse excessive pour performance
+        # Calcul de la longueur approximative pour système Performance
+        estimated_pipe_length = input_data.cable_length  # Approximation longueur tuyauterie = longueur câble
+        
+        diameter_options = calculate_graduated_diameter_recommendations(
+            input_data.pipe_diameter,
+            input_data.flow_rate,
+            velocity,
+            estimated_pipe_length,
+            is_suction_pipe=False
+        )
+        
+        if diameter_options:
+            recommendations.append("\n🚀 OPTIMISATION DIAMÈTRE PERFORMANCE:")
+            recommendations.extend([f"  {option}" for option in diameter_options])
+    
+    # 3. RECOMMANDATIONS SPÉCIFIQUES PERFORMANCE ÉNERGÉTIQUE
+    if overall_efficiency < 70:
+        recommendations.append("\n⚡ OPTIMISATION ÉNERGÉTIQUE:")
+        efficiency_improvement = 80 - overall_efficiency
+        energy_savings = (efficiency_improvement / overall_efficiency) * 100 if overall_efficiency > 0 else 0
+        recommendations.append(f"  • Amélioration rendement possible: +{efficiency_improvement:.1f}%")
+        recommendations.append(f"  • Économies énergétiques potentielles: -{energy_savings:.0f}% consommation")
+        
+        if input_data.pump_efficiency < 75:
+            recommendations.append(f"  🔧 Pompe: Remplacer par pompe rendement >{input_data.pump_efficiency + 10:.0f}%")
+        if input_data.motor_efficiency < 90:
+            recommendations.append(f"  🔌 Moteur: Remplacer par moteur IE3/IE4 (>{input_data.motor_efficiency + 10:.0f}%)")
+    
+    # 4. RECOMMANDATIONS COÛT D'EXPLOITATION
+    if absorbed_power > 0:
+        # Estimation coûts annuels (basé sur 8h/jour, 250 jours/an, 0.15€/kWh)
+        annual_hours = 8 * 250  # 2000h/an
+        energy_cost_per_kwh = 0.15  # €/kWh
+        annual_cost = absorbed_power * annual_hours * energy_cost_per_kwh
+        
+        if annual_cost > 5000:  # Plus de 5000€/an
+            recommendations.append(f"\n💰 IMPACT ÉCONOMIQUE:")
+            recommendations.append(f"  • Coût énergétique annuel estimé: {annual_cost:.0f}€")
+            
+            # Calculer économies potentielles avec amélioration rendement
+            if overall_efficiency < 75:
+                improved_efficiency = 80  # Cible rendement
+                improved_power = absorbed_power * (overall_efficiency / improved_efficiency)
+                annual_savings = (absorbed_power - improved_power) * annual_hours * energy_cost_per_kwh
+                payback_period = 15000 / annual_savings if annual_savings > 0 else float('inf')  # Investissement approximatif
+                
+                recommendations.append(f"  • Économies potentielles avec optimisation: {annual_savings:.0f}€/an")
+                if payback_period < 5:
+                    recommendations.append(f"  • Retour sur investissement estimé: {payback_period:.1f} ans")
+    
     return PerformanceAnalysisResult(
         input_data=input_data,
         pump_efficiency=input_data.pump_efficiency,
