@@ -6324,9 +6324,9 @@ const ReservoirCalculator = () => {
         type: 'CRITICAL',
         category: 'Dimensionnement',
         title: 'Réservoir sous-dimensionné',
-        description: `Volume actuel ${existing_volume}L insuffisant (optimal: ${optimal_volume.toFixed(0)}L)`,
+        description: `Volume actuel ${existing_volume_num}L insuffisant (optimal: ${parseFloat(optimal_volume || 0).toFixed(0)}L)`,
         actions: [
-          `Installer réservoir additionnel de ${Math.ceil(optimal_volume - existing_volume)}L`,
+          `Installer réservoir additionnel de ${Math.ceil(parseFloat(optimal_volume || 0) - existing_volume_num)}L`,
           'Ou remplacer par réservoir plus grand',
           'Réduire nombre de démarrages à moins de 8/h en attendant'
         ],
