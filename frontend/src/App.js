@@ -12530,9 +12530,200 @@ function App() {
 
   const canvasRef = useRef(null);
 
-  // Fonctions de gestion des événements
+  // Fonctions de gestion des événements INTELLIGENTES
   const handleDrawingInputChange = (name, value) => {
-    setDrawingData(prev => ({ ...prev, [name]: value }));
+    setDrawingData(prev => {
+      const newData = { ...prev, [name]: value };
+      
+      // LOGIQUE INTELLIGENTE : Communication automatique entre champs
+      if (name === 'installation_type') {
+        newData = applyInstallationTypeLogic(newData, value);
+      }
+      
+      if (name === 'pump_count') {
+        newData = applyPumpCountLogic(newData, value);
+      }
+      
+      if (name === 'pump_configuration') {
+        newData = applyPumpConfigurationLogic(newData, value);
+      }
+      
+      if (name === 'flow_rate' || name === 'total_head') {
+        newData = applyHydraulicLogic(newData);
+      }
+      
+      // Auto-calcul des accessoires selon configuration
+      newData.accessories = calculateRequiredAccessories(newData);
+      
+      return newData;
+    });
+  };
+
+  // LOGIQUE D'EXPERT : Type d'installation
+  const applyInstallationTypeLogic = (data, installationType) => {
+    const newData = { ...data, installation_type: installationType };
+    
+    switch(installationType) {
+      case 'surface_aspiration':
+        newData.suction_height = 3;
+        newData.discharge_height = 25;
+        newData.operating_pressure = 6;
+        newData.accessories.manifold = false;
+        newData.accessories.strainer = true;
+        break;
+        
+      case 'surface_charge':
+        newData.suction_height = -5; // En charge
+        newData.discharge_height = 25;
+        newData.operating_pressure = 8;
+        newData.accessories.manifold = false;
+        newData.accessories.strainer = false;
+        break;
+        
+      case 'submersible':
+        newData.suction_height = -15;
+        newData.discharge_height = 50;
+        newData.operating_pressure = 10;
+        newData.accessories.manifold = true;
+        newData.accessories.strainer = false;
+        newData.pump_configuration = 'standby'; // Souvent en standby
+        break;
+        
+      case 'forage':
+        newData.suction_height = -30;
+        newData.discharge_height = 60;
+        newData.operating_pressure = 12;
+        newData.accessories.manifold = true;
+        newData.accessories.flow_meter = true;
+        break;
+        
+      case 'surpresseur':
+        newData.suction_height = 2;
+        newData.discharge_height = 15;
+        newData.operating_pressure = 8;
+        newData.accessories.pressure_sensor = true;
+        newData.accessories.expansion_joint = true;
+        break;
+        
+      case 'incendie':
+        newData.suction_height = 0;
+        newData.discharge_height = 40;
+        newData.operating_pressure = 16;
+        newData.accessories.pressure_sensor = true;
+        newData.accessories.flow_meter = true;
+        newData.pump_configuration = 'parallel'; // Toujours en parallèle
+        break;
+    }
+    
+    return newData;
+  };
+
+  // LOGIQUE D'EXPERT : Nombre de pompes
+  const applyPumpCountLogic = (data, pumpCount) => {
+    const newData = { ...data, pump_count: pumpCount };
+    
+    // Ajuster les dimensions selon nombre de pompes
+    newData.dimensions.pump_spacing = pumpCount > 2 ? 2.0 : 1.5;
+    newData.dimensions.manifold_length = Math.max(3.0, pumpCount * 1.0);
+    
+    // Ajuster diamètres selon nombre de pompes
+    if (pumpCount >= 4) {
+      newData.suction_diameter = Math.max(newData.suction_diameter, 150);
+      newData.discharge_diameter = Math.max(newData.discharge_diameter, 100);
+    }
+    
+    // Force configuration intelligente
+    if (pumpCount > 4) {
+      newData.pump_configuration = 'parallel'; // Obligatoire au-dessus de 4 pompes
+    }
+    
+    return newData;
+  };
+
+  // LOGIQUE D'EXPERT : Configuration des pompes
+  const applyPumpConfigurationLogic = (data, configuration) => {
+    const newData = { ...data, pump_configuration: configuration };
+    
+    switch(configuration) {
+      case 'parallel':
+        // Débit total réparti, HMT identique
+        newData.accessories.manifold = data.pump_count > 2;
+        newData.accessories.isolation_valve = true;
+        break;
+        
+      case 'series':
+        // HMT additionné, débit identique
+        newData.total_head = data.total_head * data.pump_count;
+        newData.accessories.check_valve = true;
+        newData.accessories.pressure_gauge = true;
+        break;
+        
+      case 'standby':
+        // Une seule active, autres en secours
+        newData.accessories.pressure_sensor = true;
+        newData.accessories.control_panel = true;
+        break;
+    }
+    
+    return newData;
+  };
+
+  // LOGIQUE D'EXPERT : Paramètres hydrauliques
+  const applyHydraulicLogic = (data) => {
+    const newData = { ...data };
+    
+    // Calcul automatique puissance pompe
+    const hydraulicPower = (data.flow_rate * data.total_head * 1000 * 9.81) / 3600 / 1000;
+    newData.pump_power = hydraulicPower / 0.75; // Rendement estimé 75%
+    
+    // Calcul diamètres optimaux
+    const velocity = 2.0; // m/s cible
+    const optimalDiameter = Math.sqrt((data.flow_rate / 3600) / (Math.PI/4 * velocity)) * 1000;
+    
+    // Suggestion diamètres standards
+    const standardDiameters = [32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300];
+    newData.suction_diameter = findNearestDiameter(optimalDiameter * 1.2, standardDiameters);
+    newData.discharge_diameter = findNearestDiameter(optimalDiameter, standardDiameters);
+    
+    return newData;
+  };
+
+  // Calcul intelligent des accessoires obligatoires
+  const calculateRequiredAccessories = (data) => {
+    const accessories = { ...data.accessories };
+    
+    // Accessoires OBLIGATOIRES selon normes
+    accessories.pressure_gauge = true; // Toujours obligatoire
+    accessories.isolation_valve = data.pump_count > 1; // Multi-pompes
+    accessories.check_valve = data.pump_configuration === 'parallel';
+    accessories.control_panel = data.pump_count > 1 || data.installation_type === 'surpresseur';
+    accessories.manifold = data.pump_count > 2 || data.installation_type === 'forage';
+    
+    // Accessoires selon puissance
+    if (data.pump_power > 15) {
+      accessories.expansion_joint = true;
+      accessories.pressure_reducing_valve = true;
+    }
+    
+    // Accessoires selon installation
+    if (data.installation_type === 'incendie') {
+      accessories.flow_meter = true;
+      accessories.pressure_sensor = true;
+    }
+    
+    if (data.suction_height > 0) {
+      accessories.strainer = true; // Aspiration
+      accessories.air_release_valve = true;
+    }
+    
+    return accessories;
+  };
+
+  // Fonction utilitaire : Trouver diamètre standard le plus proche
+  const findNearestDiameter = (targetDiameter, standards) => {
+    return standards.reduce((prev, curr) => 
+      Math.abs(curr - targetDiameter) < Math.abs(prev - targetDiameter) ? curr : prev
+    );
   };
 
   // Fonction pour générer un schéma hydraulique professionnel
