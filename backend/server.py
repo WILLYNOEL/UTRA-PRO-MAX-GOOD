@@ -2416,9 +2416,24 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
             f"Réduire hauteur d'aspiration de {hasp:.1f}m à {max(0, hasp - abs(npshd_result.npsh_margin) - 0.5):.1f}m",
         ]
         
-        # Ajouter recommandation de diamètre seulement si nécessaire
+        # NOUVELLES RECOMMANDATIONS GRADUÉES POUR CAVITATION
         if current_suction_dn_selected < recommended_suction_dn_cavitation:
-            solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_cavitation}")
+            # Utiliser les recommandations graduées pour la cavitation
+            cavitation_diameter_options = calculate_graduated_diameter_recommendations(
+                input_data.suction_pipe_diameter,
+                input_data.flow_rate,
+                npshd_result.velocity,
+                input_data.suction_length,
+                is_suction_pipe=True
+            )
+            
+            if cavitation_diameter_options and len(cavitation_diameter_options) > 1:
+                solutions.append("DIAMÈTRE ASPIRATION - Options graduées anti-cavitation:")
+                # Prendre les 3 meilleures options pour cavitation critique
+                solutions.extend([f"  {option}" for option in cavitation_diameter_options[1:4]])
+            else:
+                # Fallback vers ancienne méthode si pas d'options
+                solutions.append(f"Augmenter diamètre aspiration: DN{current_suction_dn_selected} → DN{recommended_suction_dn_cavitation}")
         else:
             solutions.append(f"Diamètre aspiration DN{current_suction_dn_selected} approprié - optimiser autre paramètres")
             
