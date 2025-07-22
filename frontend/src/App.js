@@ -1519,32 +1519,67 @@ const AuditSystem = () => {
           )}
 
           {activeAuditTab === 'energy' && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-gray-900">⚡ Configuration Énergétique</h3>
               <div className="bg-green-50 rounded-lg p-6">
-                <h4 className="font-bold text-green-900 mb-4">⚡ Potentiel d'Économies Énergétiques</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {auditResults.energy_audit.savings_potential?.annual_savings_kwh} kWh
-                    </div>
-                    <div className="text-sm text-gray-600">Économies annuelles</div>
+                <h4 className="font-semibold text-gray-900 mb-4">💰 Coûts et Paramètres Énergétiques</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Coût électricité (€/kWh)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={auditData.electricity_cost_per_kwh}
+                      onChange={(e) => handleAuditInputChange('electricity_cost_per_kwh', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                      placeholder="0.12"
+                    />
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {auditResults.energy_audit.savings_potential?.annual_savings_fcfa.toLocaleString()} FCFA
-                    </div>
-                    <div className="text-sm text-gray-600">Économies financières</div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Facteur de charge</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="1"
+                      value={auditData.load_factor}
+                      onChange={(e) => handleAuditInputChange('load_factor', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                      placeholder="0.75"
+                    />
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {auditResults.energy_audit.savings_potential?.co2_reduction_kg} kg
-                    </div>
-                    <div className="text-sm text-gray-600">Réduction CO₂</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {auditResults.energy_audit.savings_potential?.payback_months} mois
-                    </div>
-                    <div className="text-sm text-gray-600">Retour investissement</div>
+                </div>
+                
+                <div className="mt-4">
+                  <h5 className="font-semibold text-gray-800 mb-3">Équipements de Contrôle</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={auditData.has_vfd}
+                        onChange={(e) => handleAuditInputChange('has_vfd', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Variateur fréquence</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={auditData.has_soft_starter}
+                        onChange={(e) => handleAuditInputChange('has_soft_starter', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Démarreur progressif</span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={auditData.has_automation}
+                        onChange={(e) => handleAuditInputChange('has_automation', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Automatisation</span>
+                    </label>
                   </div>
                 </div>
               </div>
