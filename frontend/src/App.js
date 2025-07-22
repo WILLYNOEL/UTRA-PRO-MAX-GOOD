@@ -12574,7 +12574,7 @@ function App() {
     });
   };
 
-  // LOGIQUE D'EXPERT : Type d'installation
+  // LOGIQUE D'EXPERT : Type d'installation CORRIGÉE
   const applyInstallationTypeLogic = (data, installationType) => {
     let newData = { ...data, installation_type: installationType };
     
@@ -12583,6 +12583,8 @@ function App() {
         newData.suction_height = 3;
         newData.discharge_height = 25;
         newData.operating_pressure = 6;
+        newData.show_suction_fields = true; // Montrer champs aspiration
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, manifold: false, strainer: true };
         break;
         
@@ -12590,6 +12592,8 @@ function App() {
         newData.suction_height = -5; // En charge
         newData.discharge_height = 25;
         newData.operating_pressure = 8;
+        newData.show_suction_fields = true; // Montrer champs aspiration
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, manifold: false, strainer: false };
         break;
         
@@ -12597,6 +12601,8 @@ function App() {
         newData.suction_height = -15;
         newData.discharge_height = 50;
         newData.operating_pressure = 10;
+        newData.show_suction_fields = false; // CACHER champs aspiration (pompe dans l'eau)
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, manifold: true, strainer: false };
         newData.pump_configuration = 'standby'; // Souvent en standby
         break;
@@ -12605,6 +12611,8 @@ function App() {
         newData.suction_height = -30;
         newData.discharge_height = 60;
         newData.operating_pressure = 12;
+        newData.show_suction_fields = false; // CACHER champs aspiration (pompe dans l'eau)
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, manifold: true, flow_meter: true };
         break;
         
@@ -12612,6 +12620,8 @@ function App() {
         newData.suction_height = 2;
         newData.discharge_height = 15;
         newData.operating_pressure = 8;
+        newData.show_suction_fields = true;
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, pressure_sensor: true, expansion_joint: true };
         break;
         
@@ -12619,6 +12629,8 @@ function App() {
         newData.suction_height = 0;
         newData.discharge_height = 40;
         newData.operating_pressure = 16;
+        newData.show_suction_fields = true;
+        newData.show_discharge_fields = true;
         newData.accessories = { ...newData.accessories, pressure_sensor: true, flow_meter: true };
         newData.pump_configuration = 'parallel'; // Toujours en parallèle
         break;
