@@ -244,12 +244,8 @@ const AuditSystem = () => {
     setLoadingAnalysis(true);
     
     try {
-      // Simulation d'analyse experte (en réalité, cela utiliserait l'API backend)
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Générer les résultats d'audit basés sur les données
-      const results = generateAuditResults();
-      setAuditResults(results);
+      // Utiliser la nouvelle fonction d'audit intelligent
+      await performIntelligentAudit();
     } catch (error) {
       console.error('Erreur analyse audit:', error);
     } finally {
