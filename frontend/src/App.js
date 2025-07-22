@@ -14055,11 +14055,11 @@ function App() {
     ctx.lineTo(centerX + 50, pipeY + 5);
     ctx.stroke();
     
-    // Débit sur la tuyauterie (DYNAMIQUE)
+    // Débit sur la tuyauterie (DYNAMIQUE protégé)
     ctx.fillStyle = '#27AE60';
     ctx.font = 'bold 8px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(`${drawingData.flow_rate}m³/h`, centerX + 20, pipeY - 8);
+    ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, centerX + 20, pipeY - 8);
     
     // 8. CHÂTEAU D'EAU FIXE
     const towerW = 100;
