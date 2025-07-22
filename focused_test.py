@@ -8,7 +8,7 @@ import requests
 import json
 import math
 
-BACKEND_URL = "https://42860b2a-c05f-4b6a-8263-acbdeb7052a9.preview.emergentagent.com/api"
+BACKEND_URL = "https://19f490cc-936b-4813-a142-210cb79d9a88.preview.emergentagent.com/api"
 
 def test_npshd_formula_corrections():
     """Test NPSHd formula corrections for flooded vs suction_lift"""

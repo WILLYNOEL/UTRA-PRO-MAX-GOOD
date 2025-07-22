@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://42860b2a-c05f-4b6a-8263-acbdeb7052a9.preview.emergentagent.com/api"
+BACKEND_URL = "https://19f490cc-936b-4813-a142-210cb79d9a88.preview.emergentagent.com/api"
 
 class HydraulicPumpTester:
     def __init__(self):
