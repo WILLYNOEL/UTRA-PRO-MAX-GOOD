@@ -6220,6 +6220,12 @@ const ReservoirCalculator = () => {
   const analyzeExistingInstallation = (data) => {
     const { existing_volume, desired_flow, installation_type, working_pressure, pump_type, daily_usage_hours, priority } = data;
     
+    // Conversion en nombres pour éviter les erreurs
+    const volume = parseFloat(existing_volume) || 0;
+    const flow = parseFloat(desired_flow) || 0;
+    const pressure = parseFloat(working_pressure) || 0;
+    const usage = parseFloat(daily_usage_hours) || 0;
+    
     // Calcul performances avec volume existant
     const kr = pump_type === 'MPC-E' ? 0.7 : 0.9;
     const kH = pump_type === 'MPC-E' ? 0.2 : 0.25;
@@ -6229,21 +6235,26 @@ const ReservoirCalculator = () => {
     let max_possible_starts = 0;
     if (pump_type === 'MPC-E') {
       // Inversion formule MPC-E pour trouver N
-      const numerator = kQ * desired_flow * Math.pow(working_pressure + 1, 2);
-      const denominator = existing_volume * 3.6 * (kr * working_pressure + 1) * kH * working_pressure;
-      const cycle_time = numerator / denominator + 10/3600;
-      max_possible_starts = cycle_time > 0 ? Math.floor(3600 / (cycle_time * 3600)) : 0;
+      const numerator = kQ * flow * Math.pow(pressure + 1, 2);
+      const denominator = volume * 3.6 * (kr * pressure + 1) * kH * pressure;
+      if (denominator > 0) {
+        const cycle_time = numerator / denominator + 10/3600;
+        max_possible_starts = cycle_time > 0 ? Math.floor(3600 / (cycle_time * 3600)) : 0;
+      }
     } else {
       // Inversion formule MPC-S pour trouver N  
-      const numerator = 1000 * desired_flow * (working_pressure + 1) * (kH * working_pressure + working_pressure + 1);
-      const denominator = existing_volume * 4 * (kr * working_pressure + 1) * kH * working_pressure;
+      const numerator = 1000 * flow * (pressure + 1) * (kH * pressure + pressure + 1);
+      const denominator = volume * 4 * (kr * pressure + 1) * kH * pressure;
       max_possible_starts = denominator > 0 ? Math.floor(numerator / denominator) : 0;
     }
 
+    // S'assurer que le nombre de démarrages est positif
+    max_possible_starts = Math.max(0, max_possible_starts);
+
     // Analyse de dimensionnement
     const optimal_volume = calculateReservoir({
-      flow_rate: desired_flow,
-      set_pressure: working_pressure,
+      flow_rate: flow,
+      set_pressure: pressure,
       max_starts_per_hour: getRecommendedStarts(pump_type),
       reservoir_type: pump_type,
       kQ_ratio: kQ,
@@ -6251,7 +6262,7 @@ const ReservoirCalculator = () => {
       kr_ratio: kr
     }).calculated_volume;
 
-    const sizing_ratio = existing_volume / optimal_volume;
+    const sizing_ratio = optimal_volume > 0 ? volume / optimal_volume : 0;
     let sizing_status = '';
     let sizing_color = '';
     
