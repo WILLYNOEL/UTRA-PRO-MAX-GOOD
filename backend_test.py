@@ -8539,16 +8539,17 @@ class HydraulicPumpTester:
                     if pattern in recommendations_text:
                         simple_format_found.append(pattern)
                 
-                # Check velocity limits compliance (all recommendations should respect <4 m/s)
+                # Check velocity limits compliance for RECOMMENDED velocities only
+                # Extract only velocities that appear after DN recommendations (not current state)
                 velocity_compliance = True
-                velocity_values = []
+                recommended_velocity_values = []
                 
-                # Extract velocity values from recommendations
                 import re
-                velocity_matches = re.findall(r'(\d+\.?\d*)\s*m/s', recommendations_text)
-                for match in velocity_matches:
+                # Look for patterns like "DN20→DN200: 1.1m/s" (recommended velocities)
+                dn_velocity_matches = re.findall(r'DN\d+→DN\d+:\s*(\d+\.?\d*)\s*m/s', recommendations_text)
+                for match in dn_velocity_matches:
                     velocity = float(match)
-                    velocity_values.append(velocity)
+                    recommended_velocity_values.append(velocity)
                     if velocity > 4.0:
                         velocity_compliance = False
                 
@@ -8565,7 +8566,7 @@ class HydraulicPumpTester:
                     validation_errors.append(f"Found simple format (should not exist): {simple_format_found}")
                 
                 if not velocity_compliance:
-                    validation_errors.append(f"Velocity limit violations (>4 m/s): {velocity_values}")
+                    validation_errors.append(f"Recommended velocity limit violations (>4 m/s): {recommended_velocity_values}")
                 
                 if validation_errors:
                     self.log_test("Expert Tab Diameter Recommendations Consistency", False, 
@@ -8577,6 +8578,7 @@ class HydraulicPumpTester:
                 success_details.append(f"Graduated sections: {len(graduated_sections_found)}")
                 success_details.append(f"Format indicators: {len(graduated_indicators_found)}")
                 success_details.append(f"Velocity compliance: {velocity_compliance}")
+                success_details.append(f"Recommended velocities: {recommended_velocity_values}")
                 success_details.append(f"No simple format found: {len(simple_format_found) == 0}")
                 
                 self.log_test("Expert Tab Diameter Recommendations Consistency", True, 
