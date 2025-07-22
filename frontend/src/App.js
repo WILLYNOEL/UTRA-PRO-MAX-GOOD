@@ -14171,7 +14171,7 @@ function App() {
     ctx.fillStyle = '#FF5722';
     ctx.font = 'bold 9px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(`L=${drawingData.forage_specific.discharge_length}m`, (wellX + 50 + towerX - 20) / 2, pipeY + 30);
+    ctx.fillText(`L=${drawingData.forage_specific.discharge_length || 0}m`, (wellX + 50 + towerX - 20) / 2, pipeY + 30);
     
     // 10. DONNÉES TECHNIQUES DYNAMIQUES (en bas, épurées)
     const dataX = 50;
