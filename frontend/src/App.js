@@ -6176,6 +6176,395 @@ const FormulaDatabase = () => {
     </div>
   );
 };
+
+// Component pour Calcul des Réservoirs à Vessie
+const ReservoirCalculator = () => {
+  const [reservoirData, setReservoirData] = useState({
+    // Type de réservoir
+    reservoir_type: 'MPC-E', // MPC-E/F ou MPC-S
+    
+    // Paramètres de calcul
+    flow_rate: 5.0, // Q - Débit moyen (m³/h)
+    set_pressure: 4.0, // pset - Pression de consigne (bar)
+    max_starts_per_hour: 20, // N - Nombre max de démarrages/heure
+    
+    // Ratios techniques
+    kQ_ratio: 1.0, // kQ - Ratio débit nominal/débit lance-arrêt  
+    kH_ratio: 1.25, // kH - Ratio pression arrêt/pression démarrage
+    kr_ratio: 0.9, // kr - Ratio pression pré-charge/pression consigne
+  });
+
+  const [calculationResults, setCalculationResults] = useState(null);
+
+  // Fonction de calcul des réservoirs selon document technique
+  const calculateReservoir = (data) => {
+    const { flow_rate, set_pressure, max_starts_per_hour, kQ_ratio, kH_ratio, kr_ratio, reservoir_type } = data;
+    
+    let tank_volume = 0;
+    let formula_used = '';
+    
+    // Calculs selon les formules du document technique
+    if (reservoir_type === 'MPC-E' || reservoir_type === 'MPC-F') {
+      // Formule Hydro MPC-E et -F
+      const numerator = kQ_ratio * flow_rate * Math.pow(set_pressure + 1, 2) * ((3600 / max_starts_per_hour) - 10);
+      const denominator = 3.6 * (kr_ratio * set_pressure + 1) * kH_ratio * set_pressure;
+      tank_volume = numerator / denominator;
+      formula_used = 'Hydro MPC-E/F: V₀ = (kQ × Q × (pset + 1)² × (3600/N - 10)) / (3.6 × (kr × pset + 1) × kH × pset)';
+    } else if (reservoir_type === 'MPC-S') {
+      // Formule Hydro MPC-S
+      const numerator = 1000 * flow_rate * (set_pressure + 1) * (kH_ratio * set_pressure + set_pressure + 1);
+      const denominator = 4 * max_starts_per_hour * (kr_ratio * set_pressure + 1) * kH_ratio * set_pressure;
+      tank_volume = numerator / denominator;
+      formula_used = 'Hydro MPC-S: V₀ = (1000 × Q × (pset + 1) × (kH × pset + pset + 1)) / (4 × N × (kr × pset + 1) × kH × pset)';
+    }
+
+    // Calcul pression maximum de service recommandée (selon standards)
+    const max_service_pressure = set_pressure * 1.5; // 150% de la pression de consigne
+    
+    // Calcul diamètre nominal basé sur volume et standards
+    let nominal_diameter = '';
+    let selected_tank_size = 0;
+    
+    // Sélection intelligente du réservoir standard selon volume calculé
+    const standard_sizes = [
+      { volume: 2, diameter: 'DN25', description: '2L - Très petit débit' },
+      { volume: 5, diameter: 'DN32', description: '5L - Petit débit résidentiel' },
+      { volume: 8, diameter: 'DN40', description: '8L - Résidentiel standard' },
+      { volume: 12, diameter: 'DN40', description: '12L - Résidentiel renforcé' },
+      { volume: 18, diameter: 'DN50', description: '18L - Petit collectif' },
+      { volume: 24, diameter: 'DN50', description: '24L - Collectif standard' },
+      { volume: 35, diameter: 'DN65', description: '35L - Moyen collectif' },
+      { volume: 50, diameter: 'DN65', description: '50L - Grand collectif' },
+      { volume: 80, diameter: 'DN80', description: '80L - Petit industriel' },
+      { volume: 100, diameter: 'DN80', description: '100L - Industriel standard' },
+      { volume: 150, diameter: 'DN100', description: '150L - Industriel renforcé' },
+      { volume: 200, diameter: 'DN100', description: '200L - Grand industriel' },
+      { volume: 300, diameter: 'DN125', description: '300L - Très grand industriel' },
+      { volume: 500, diameter: 'DN150', description: '500L - Industriel lourd' }
+    ];
+    
+    // Sélection du réservoir avec marge de sécurité 10%
+    const required_volume_with_margin = tank_volume * 1.1;
+    const selected_reservoir = standard_sizes.find(size => size.volume >= required_volume_with_margin);
+    
+    if (selected_reservoir) {
+      selected_tank_size = selected_reservoir.volume;
+      nominal_diameter = selected_reservoir.diameter;
+    } else {
+      // Volume trop important, réservoir sur mesure
+      selected_tank_size = Math.ceil(required_volume_with_margin / 50) * 50; // Arrondi aux 50L
+      nominal_diameter = 'Sur mesure (>DN150)';
+    }
+
+    // Calcul de la pression de pré-charge optimale
+    const precharge_pressure = kr_ratio * set_pressure;
+    
+    // Analyse de performance
+    const cycles_per_hour = max_starts_per_hour;
+    const volume_per_cycle = selected_tank_size / cycles_per_hour;
+    
+    // Recommandations techniques
+    const recommendations = [];
+    
+    if (tank_volume < 2) {
+      recommendations.push({
+        type: 'INFO',
+        message: 'Volume très faible - Vérifier si un réservoir est nécessaire',
+        icon: 'ℹ️'
+      });
+    }
+    
+    if (max_starts_per_hour > 30) {
+      recommendations.push({
+        type: 'WARNING',
+        message: 'Nombre de démarrages élevé - Risque usure prématurée pompe',
+        icon: '⚠️'
+      });
+    }
+    
+    if (set_pressure > 8) {
+      recommendations.push({
+        type: 'CRITICAL',
+        message: 'Pression élevée - Vérifier compatibilité matériaux',
+        icon: '🔴'
+      });
+    }
+    
+    if (selected_tank_size > 200) {
+      recommendations.push({
+        type: 'INFO',
+        message: 'Gros volume - Considérer réservoir horizontal ou sur mesure',
+        icon: '📏'
+      });
+    }
+
+    return {
+      calculated_volume: tank_volume,
+      selected_tank_size: selected_tank_size,
+      nominal_diameter: nominal_diameter,
+      max_service_pressure: max_service_pressure,
+      precharge_pressure: precharge_pressure,
+      formula_used: formula_used,
+      volume_per_cycle: volume_per_cycle,
+      recommendations: recommendations,
+      technical_data: {
+        working_pressure_range: `${precharge_pressure.toFixed(1)} - ${set_pressure.toFixed(1)} bar`,
+        membrane_material: reservoir_type === 'MPC-S' ? 'EPDM renforcé' : 'EPDM standard',
+        connection_type: nominal_diameter,
+        application: flow_rate < 2 ? 'Résidentiel' : flow_rate < 10 ? 'Collectif' : 'Industriel'
+      }
+    };
+  };
+
+  // Mise à jour temps réel des calculs
+  useEffect(() => {
+    const results = calculateReservoir(reservoirData);
+    setCalculationResults(results);
+  }, [reservoirData]);
+
+  const handleInputChange = (field, value) => {
+    setReservoirData(prev => ({
+      ...prev,
+      [field]: parseFloat(value) || 0
+    }));
+  };
+
+  const handleTypeChange = (type) => {
+    setReservoirData(prev => ({
+      ...prev,
+      reservoir_type: type
+    }));
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* En-tête */}
+      <div className="bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-2">🏗️ Calcul Réservoirs à Vessie</h2>
+        <p className="text-indigo-100">Dimensionnement intelligent pour pompes à vitesse variable et fixe</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Panneau de saisie */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-6">📊 Paramètres de Calcul</h3>
+          
+          {/* Type de réservoir */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">Type de Réservoir</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleTypeChange('MPC-E')}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  reservoirData.reservoir_type === 'MPC-E'
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                <div className="font-semibold">MPC-E/F</div>
+                <div className="text-xs mt-1">Vitesse Variable</div>
+              </button>
+              <button
+                onClick={() => handleTypeChange('MPC-S')}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  reservoirData.reservoir_type === 'MPC-S'
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                <div className="font-semibold">MPC-S</div>
+                <div className="text-xs mt-1">Vitesse Fixe</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Paramètres principaux */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Débit Moyen (m³/h)
+              </label>
+              <input
+                type="number"
+                value={reservoirData.flow_rate}
+                onChange={(e) => handleInputChange('flow_rate', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                step="0.1"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pression de Consigne (bar)
+              </label>
+              <input
+                type="number"
+                value={reservoirData.set_pressure}
+                onChange={(e) => handleInputChange('set_pressure', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                step="0.1"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Démarrages Max/h
+              </label>
+              <input
+                type="number"
+                value={reservoirData.max_starts_per_hour}
+                onChange={(e) => handleInputChange('max_starts_per_hour', e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                min="1"
+                max="60"
+              />
+            </div>
+          </div>
+
+          {/* Paramètres avancés */}
+          <div className="border-t pt-4">
+            <h4 className="font-semibold text-gray-900 mb-3">⚙️ Paramètres Avancés</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ratio kQ
+                </label>
+                <input
+                  type="number"
+                  value={reservoirData.kQ_ratio}
+                  onChange={(e) => handleInputChange('kQ_ratio', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                  step="0.1"
+                  min="0.5"
+                  max="2"
+                />
+                <div className="text-xs text-gray-500 mt-1">Débit nominal/arrêt</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ratio kH
+                </label>
+                <input
+                  type="number"
+                  value={reservoirData.kH_ratio}
+                  onChange={(e) => handleInputChange('kH_ratio', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                  step="0.05"
+                  min="1.1"
+                  max="2"
+                />
+                <div className="text-xs text-gray-500 mt-1">P arrêt/P démarrage</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ratio kr
+                </label>
+                <input
+                  type="number"
+                  value={reservoirData.kr_ratio}
+                  onChange={(e) => handleInputChange('kr_ratio', e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
+                  step="0.05"
+                  min="0.6"
+                  max="0.95"
+                />
+                <div className="text-xs text-gray-500 mt-1">P pré-charge/P consigne</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Panneau de résultats */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-6">📋 Résultats de Calcul</h3>
+          
+          {calculationResults && (
+            <div className="space-y-6">
+              {/* Résultats principaux */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                  <div className="text-2xl font-bold text-indigo-600">
+                    {calculationResults.selected_tank_size}L
+                  </div>
+                  <div className="text-sm text-gray-600">Volume Réservoir</div>
+                  <div className="text-xs text-indigo-500 mt-1">
+                    Calculé: {calculationResults.calculated_volume.toFixed(1)}L
+                  </div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="text-2xl font-bold text-green-600">
+                    {calculationResults.nominal_diameter}
+                  </div>
+                  <div className="text-sm text-gray-600">Diamètre Nominal</div>
+                  <div className="text-xs text-green-500 mt-1">
+                    Raccordement standard
+                  </div>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {calculationResults.max_service_pressure.toFixed(1)} bar
+                  </div>
+                  <div className="text-sm text-gray-600">Pression Max Service</div>
+                  <div className="text-xs text-orange-500 mt-1">
+                    150% pression consigne
+                  </div>
+                </div>
+                <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-200">
+                  <div className="text-2xl font-bold text-cyan-600">
+                    {calculationResults.precharge_pressure.toFixed(1)} bar
+                  </div>
+                  <div className="text-sm text-gray-600">Pré-charge</div>
+                  <div className="text-xs text-cyan-500 mt-1">
+                    {(reservoirData.kr_ratio * 100).toFixed(0)}% pression consigne
+                  </div>
+                </div>
+              </div>
+
+              {/* Données techniques */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3">🔧 Données Techniques</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div><strong>Plage de travail:</strong> {calculationResults.technical_data.working_pressure_range}</div>
+                  <div><strong>Matériau membrane:</strong> {calculationResults.technical_data.membrane_material}</div>
+                  <div><strong>Type raccordement:</strong> {calculationResults.technical_data.connection_type}</div>
+                  <div><strong>Application:</strong> {calculationResults.technical_data.application}</div>
+                </div>
+              </div>
+
+              {/* Recommandations */}
+              {calculationResults.recommendations.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-gray-900">💡 Recommandations</h4>
+                  {calculationResults.recommendations.map((rec, index) => (
+                    <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                      rec.type === 'CRITICAL' ? 'bg-red-50 border-red-400 text-red-700' :
+                      rec.type === 'WARNING' ? 'bg-yellow-50 border-yellow-400 text-yellow-700' :
+                      'bg-blue-50 border-blue-400 text-blue-700'
+                    }`}>
+                      <div className="flex items-start space-x-2">
+                        <span>{rec.icon}</span>
+                        <span className="text-sm">{rec.message}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Formule utilisée */}
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-2">📐 Formule Appliquée</h4>
+                <div className="text-xs text-blue-700 font-mono">
+                  {calculationResults.formula_used}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
   // Options DN normalisées (diamètres extérieurs réels selon standards)
   const dnOptions = [
