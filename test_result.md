@@ -860,6 +860,55 @@ backend:
           agent: "testing"
           comment: "✅ TESTED: Graduated Diameter Recommendations with Velocity Limits Compliance working perfectly! Comprehensive validation completed with 100% success rate (9/9 tests passed). ✅ VELOCITY LIMITS COMPLIANCE: System correctly respects professional hydraulic velocity standards - aspiration pipes use 1.2/1.5 m/s limits, long distance pipes use 1.5/2.0 m/s limits, no recommendations exceed maximum velocities per pipe type. ✅ PIPE TYPE DETECTION: System correctly identifies pipe type based on length and application - suction pipes prioritize aspiration limits for safety (Case 1: DN20 with 150 m³/h uses aspiration limits), long distance pipes >100m use appropriate limits (Case 2: DN32 with 100 m³/h over 150m uses long distance limits). ✅ COMPLIANCE STATUS: All recommendations show proper compliance status with ✅ CONFORME or ⚠️ ACCEPTABLE indicators. Format verified: 'DN20→DN200: 1.1m/s ✅ CONFORME (réduction -98%, coût +6534%)'. ✅ PROFESSIONAL STANDARDS: No recommendations exceed maximum velocities - all suggestions comply with hydraulic engineering standards. System prevents oversized pipe jumps and provides graduated progression. ✅ VELOCITY WARNINGS: System properly generates velocity limit warnings with format '⚠️ VITESSE EXCESSIVE (XX.X m/s) - TYPE CONDUITE' and target information '🎯 VITESSE CIBLE: X.X m/s (MAX: X.X m/s)'. ✅ COST-BENEFIT ANALYSIS: Each recommendation includes velocity reduction percentages and cost increase analysis. ✅ DIRECT SOLUTION: System provides direct solution when gradual options not feasible. All test cases from review request validated: Case 1 (150 m³/h, DN20, 20m) uses aspiration limits correctly, Case 2 (100 m³/h, DN32, 150m) uses long distance limits correctly, Case 3 (120 m³/h, DN32, 50m) uses aspiration limits for suction pipe safety. Enhanced graduated diameter recommendations system with velocity limits compliance is production-ready and meets all professional hydraulic engineering requirements."
 
+frontend:
+  - task: "Onglet Dessin - Échelle Dynamique des Schémas"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ IMPLÉMENTÉ: Échelle dynamique améliorée pour schéma forage. Système d'échelle adaptatif basé sur les valeurs max (niveau dynamique, hauteur château, longueur refoulement). Échelle de 4.0 pour petites valeurs (≤50m) jusqu'à compression dynamique pour très grandes valeurs (>200m). Position du sol adaptative selon hauteur totale. Console.log ajouté pour debug échelle."
+
+  - task: "Onglet Dessin - HMT Non-Éditable pour Forage"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ IMPLÉMENTÉ: Champ HMT rendu non-éditable (readOnly) pour installations forage. Style visuel différent (bg-green-50, border-green-300, cursor-not-allowed) + indicateur '🔒 Auto-calculé via PARAMÈTRES FORAGE'. HMT automatiquement calculé depuis les paramètres forage (niveau dynamique + hauteur château + pertes charge + pression résiduelle)."
+
+  - task: "Onglet Dessin - Réorganisation Champs FORAGE"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ IMPLÉMENTÉ: DN REFOULEMENT et MATÉRIAU déplacés dans la section 'PARAMÈTRES FORAGE' pour les installations forage. Champs supprimés des sections générales TUYAUTERIES et Matériau/fluide quand type=forage. Logique conditionnelle avec styling orange cohérent dans section forage."
+
+  - task: "Onglet Dessin - Masquage Complet DN ASP"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"  
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ VÉRIFIÉ: Masquage DN ASP déjà implémenté correctement via show_suction_fields=false pour types 'forage' et 'submersible'. Logique dans applyInstallationTypeLogic() fonction lignes 12652 et 12665. Champ DN ASPIRATION conditionné par {drawingData.show_suction_fields && ()}."
+
 backend:
   - task: "Chemical Compatibility Analysis Integration"
     implemented: true
