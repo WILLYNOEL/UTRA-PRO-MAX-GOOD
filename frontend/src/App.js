@@ -16458,11 +16458,8 @@ function App() {
                             <label className="block text-xs font-semibold text-slate-600 mb-1">HAUTEUR CHÂTEAU D'EAU (m)</label>
                             <input
                               type="number"
-                              value={drawingData.forage_specific.reservoir_height}
-                              onChange={(e) => handleDrawingInputChange('forage_specific', {
-                                ...drawingData.forage_specific,
-                                reservoir_height: parseFloat(e.target.value) || 30
-                              })}
+                              value={drawingData.forage_specific.reservoir_height === '' ? '' : drawingData.forage_specific.reservoir_height}
+                              onChange={(e) => handleNestedNumericInputChange('forage_specific', 'reservoir_height', e.target.value, 30)}
                               className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
                               placeholder="30"
                             />
