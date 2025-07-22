@@ -14337,16 +14337,18 @@ function App() {
                       <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                         <div className="text-xs text-blue-700 mb-1">CONFIGURATION RÉSULTANTE</div>
                         <div className="text-sm font-bold text-blue-800">
-                          {(drawingData.pumps_in_service || 1)} pompe{(drawingData.pumps_in_service || 1) > 1 ? 's' : ''} en service
-                          {(drawingData.pumps_in_service || 1) >= 2 && ` (${drawingData.pump_configuration})`}
-                          {(drawingData.pump_count - (drawingData.pumps_in_service || 1)) > 0 && 
-                            ` + ${drawingData.pump_count - (drawingData.pumps_in_service || 1)} secours`}
+                          {drawingData.pumps_in_service || drawingData.pump_count} pompe{(drawingData.pumps_in_service || drawingData.pump_count) > 1 ? 's' : ''} en service
+                          {(drawingData.pumps_in_service || drawingData.pump_count) >= 2 && ` (${drawingData.pump_configuration})`}
+                          {(drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)) > 0 && 
+                            ` + ${drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)} secours`}
                         </div>
                         <div className="text-xs text-blue-600 mt-1">
-                          {drawingData.pump_configuration === 'parallel' && (drawingData.pumps_in_service || 1) >= 2 && 
-                            `Débit: ${((drawingData.pumps_in_service || 1) * drawingData.flow_rate).toFixed(0)} m³/h total`}
-                          {drawingData.pump_configuration === 'series' && (drawingData.pumps_in_service || 1) >= 2 && 
-                            `HMT: ${((drawingData.pumps_in_service || 1) * drawingData.total_head).toFixed(0)} m total`}
+                          {drawingData.pump_configuration === 'parallel' && (drawingData.pumps_in_service || drawingData.pump_count) >= 2 && 
+                            `Débit unitaire: ${drawingData.flow_rate}m³/h × ${drawingData.pumps_in_service || drawingData.pump_count} = ${((drawingData.pumps_in_service || drawingData.pump_count) * drawingData.flow_rate).toFixed(0)}m³/h total`}
+                          {drawingData.pump_configuration === 'series' && (drawingData.pumps_in_service || drawingData.pump_count) >= 2 && 
+                            `HMT unitaire: ${drawingData.total_head}m × ${drawingData.pumps_in_service || drawingData.pump_count} = ${((drawingData.pumps_in_service || drawingData.pump_count) * drawingData.total_head).toFixed(0)}m total`}
+                          {(drawingData.pumps_in_service || drawingData.pump_count) === 1 && 
+                            `Pompe unique: ${drawingData.flow_rate}m³/h - ${drawingData.total_head}m`}
                         </div>
                       </div>
                     </div>
