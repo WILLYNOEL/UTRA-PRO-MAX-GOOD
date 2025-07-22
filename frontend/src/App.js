@@ -595,18 +595,18 @@ const AuditSystem = () => {
         <div className="p-6">
           {activeAuditTab === 'hydraulic' && (
             <div className="space-y-8">
-              <h3 className="text-xl font-bold text-gray-900">🔧 Audit Hydraulique Détaillé</h3>
+              <h3 className="text-xl font-bold text-gray-900">🏗️ Audit Terrain Professionnel</h3>
               
-              {/* Section 1: Installation existante */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-900 mb-4">📋 Données Installation Existante</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Section 1: Données Installation - Contexte */}
+              <div className="bg-blue-50 rounded-lg p-6">
+                <h4 className="font-semibold text-gray-900 mb-4">🏭 Installation et Contexte</h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Âge installation (années)</label>
                     <input
                       type="number"
-                      value={hydraulicAuditData.installation_age}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, installation_age: e.target.value}))}
+                      value={auditData.installation_age}
+                      onChange={(e) => handleAuditInputChange('installation_age', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                       placeholder="Ex: 5"
                     />
@@ -614,8 +614,8 @@ const AuditSystem = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Type installation</label>
                     <select
-                      value={hydraulicAuditData.installation_type}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, installation_type: e.target.value}))}
+                      value={auditData.installation_type}
+                      onChange={(e) => handleAuditInputChange('installation_type', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="surface">Pompe de surface</option>
@@ -625,113 +625,360 @@ const AuditSystem = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Fabricant pompe</label>
-                    <input
-                      type="text"
-                      value={hydraulicAuditData.pump_manufacturer}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, pump_manufacturer: e.target.value}))}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Type de fluide</label>
+                    <select
+                      value={auditData.fluid_type}
+                      onChange={(e) => handleAuditInputChange('fluid_type', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="Ex: Grundfos, KSB, Pedrollo"
+                    >
+                      <option value="water">Eau claire</option>
+                      <option value="seawater">Eau de mer</option>
+                      <option value="wastewater">Eaux usées</option>
+                      <option value="acid">Acide</option>
+                      <option value="base">Base</option>
+                      <option value="milk">Lait</option>
+                      <option value="wine">Vin</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Température fluide (°C)</label>
+                    <input
+                      type="number"
+                      value={auditData.fluid_temperature}
+                      onChange={(e) => handleAuditInputChange('fluid_temperature', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      placeholder="20"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Section 2: Conditions d'exploitation */}
-              <div className="bg-blue-50 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-900 mb-4">⚙️ Conditions d'Exploitation Actuelles</h4>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Section 2: Performances Hydrauliques - COMPARAISON CRITIQUE */}
+              <div className="bg-red-50 rounded-lg p-6 border-2 border-red-200">
+                <h4 className="font-semibold text-red-800 mb-4">📊 PERFORMANCES HYDRAULIQUES - Comparaison Critique</h4>
+                <div className="text-sm text-red-600 mb-4 font-medium">
+                  ⚠️ Renseigner les valeurs ACTUELLES vs REQUISES vs CONCEPTION pour diagnostic précis
+                </div>
+                
+                {/* Comparaison Débit */}
+                <div className="mb-6">
+                  <h5 className="font-medium text-gray-900 mb-3">💧 DÉBIT (m³/h)</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-green-700 mb-1">Débit ACTUEL mesuré</label>
+                      <input
+                        type="number"
+                        value={auditData.current_flow_rate}
+                        onChange={(e) => handleAuditInputChange('current_flow_rate', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        placeholder="Ex: 45"
+                      />
+                      <div className="text-xs text-green-600 mt-1">Mesure terrain réelle</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-blue-700 mb-1">Débit REQUIS process</label>
+                      <input
+                        type="number"
+                        value={auditData.required_flow_rate}
+                        onChange={(e) => handleAuditInputChange('required_flow_rate', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: 60"
+                      />
+                      <div className="text-xs text-blue-600 mt-1">Besoin process réel</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-purple-700 mb-1">Débit CONCEPTION origine</label>
+                      <input
+                        type="number"
+                        value={auditData.original_design_flow}
+                        onChange={(e) => handleAuditInputChange('original_design_flow', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                        placeholder="Ex: 65"
+                      />
+                      <div className="text-xs text-purple-600 mt-1">Spécifications initiales</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comparaison HMT */}
+                <div className="mb-6">
+                  <h5 className="font-medium text-gray-900 mb-3">⬆️ HMT (m)</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-green-700 mb-1">HMT ACTUELLE mesurée</label>
+                      <input
+                        type="number"
+                        value={auditData.current_hmt}
+                        onChange={(e) => handleAuditInputChange('current_hmt', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        placeholder="Ex: 35"
+                      />
+                      <div className="text-xs text-green-600 mt-1">Pression mesurée terrain</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-blue-700 mb-1">HMT REQUISE process</label>
+                      <input
+                        type="number"
+                        value={auditData.required_hmt}
+                        onChange={(e) => handleAuditInputChange('required_hmt', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: 25"
+                      />
+                      <div className="text-xs text-blue-600 mt-1">Besoin pression process</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-purple-700 mb-1">HMT CONCEPTION origine</label>
+                      <input
+                        type="number"
+                        value={auditData.original_design_hmt}
+                        onChange={(e) => handleAuditInputChange('original_design_hmt', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-purple-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                        placeholder="Ex: 30"
+                      />
+                      <div className="text-xs text-purple-600 mt-1">Spécifications initiales</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pressions mesurées terrain */}
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-3">🌡️ PRESSIONS MESURÉES TERRAIN</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-blue-700 mb-1">Pression aspiration (bar)</label>
+                      <input
+                        type="number"
+                        value={auditData.suction_pressure}
+                        onChange={(e) => handleAuditInputChange('suction_pressure', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: -0.2"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-blue-600 mt-1">Manomètre aspiration</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-red-700 mb-1">Pression refoulement (bar)</label>
+                      <input
+                        type="number"
+                        value={auditData.discharge_pressure}
+                        onChange={(e) => handleAuditInputChange('discharge_pressure', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500"
+                        placeholder="Ex: 3.5"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-red-600 mt-1">Manomètre refoulement</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Performances Électriques - COMPARAISON MESURES vs PLAQUE */}
+              <div className="bg-yellow-50 rounded-lg p-6 border-2 border-yellow-200">
+                <h4 className="font-semibold text-yellow-800 mb-4">⚡ PERFORMANCES ÉLECTRIQUES - Mesures vs Plaque Moteur</h4>
+                
+                {/* Comparaison Intensité */}
+                <div className="mb-6">
+                  <h5 className="font-medium text-gray-900 mb-3">🔌 INTENSITÉ (A)</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-green-700 mb-1">Intensité MESURÉE</label>
+                      <input
+                        type="number"
+                        value={auditData.measured_current}
+                        onChange={(e) => handleAuditInputChange('measured_current', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        placeholder="Ex: 28"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-green-600 mt-1">Ampèremètre terrain</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-blue-700 mb-1">Intensité PLAQUE moteur</label>
+                      <input
+                        type="number"
+                        value={auditData.rated_current}
+                        onChange={(e) => handleAuditInputChange('rated_current', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: 22"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-blue-600 mt-1">Valeur nominale constructeur</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comparaison Puissance */}
+                <div className="mb-6">
+                  <h5 className="font-medium text-gray-900 mb-3">🔋 PUISSANCE (kW)</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-green-700 mb-1">Puissance ABSORBÉE mesurée</label>
+                      <input
+                        type="number"
+                        value={auditData.measured_power}
+                        onChange={(e) => handleAuditInputChange('measured_power', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500"
+                        placeholder="Ex: 18"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-green-600 mt-1">Wattmètre terrain</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-blue-700 mb-1">Puissance PLAQUE moteur</label>
+                      <input
+                        type="number"
+                        value={auditData.rated_power}
+                        onChange={(e) => handleAuditInputChange('rated_power', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ex: 15"
+                        step="0.1"
+                      />
+                      <div className="text-xs text-blue-600 mt-1">Puissance nominale constructeur</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Autres mesures électriques */}
+                <div>
+                  <h5 className="font-medium text-gray-900 mb-3">📏 AUTRES MESURES ÉLECTRIQUES</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tension mesurée (V)</label>
+                      <input
+                        type="number"
+                        value={auditData.measured_voltage}
+                        onChange={(e) => handleAuditInputChange('measured_voltage', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
+                        placeholder="Ex: 395"
+                      />
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Cos φ mesuré</label>
+                      <input
+                        type="number"
+                        value={auditData.measured_power_factor}
+                        onChange={(e) => handleAuditInputChange('measured_power_factor', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
+                        placeholder="Ex: 0.82"
+                        step="0.01"
+                        min="0"
+                        max="1"
+                      />
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tension nominale (V)</label>
+                      <input
+                        type="number"
+                        value={auditData.rated_voltage}
+                        onChange={(e) => handleAuditInputChange('rated_voltage', parseFloat(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500"
+                        placeholder="400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: État Mécanique - Observations Terrain */}
+              <div className="bg-orange-50 rounded-lg p-6">
+                <h4 className="font-semibold text-orange-800 mb-4">🔧 ÉTAT MÉCANIQUE - Observations Terrain</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Débit actuel (m³/h)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Vibrations mesurées (mm/s)</label>
                     <input
                       type="number"
-                      value={hydraulicAuditData.current_flow_rate}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, current_flow_rate: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="Ex: 45"
+                      value={auditData.vibration_level}
+                      onChange={(e) => handleAuditInputChange('vibration_level', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                      placeholder="Ex: 2.8"
+                      step="0.1"
                     />
+                    <div className="text-xs text-gray-500 mt-1">Norme: &lt;2.8 mm/s</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">HMT actuelle (m)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bruit mesuré (dB(A))</label>
                     <input
                       type="number"
-                      value={hydraulicAuditData.current_head}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, current_head: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="Ex: 32"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rendement estimé (%)</label>
-                    <input
-                      type="number"
-                      value={hydraulicAuditData.current_efficiency}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, current_efficiency: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      value={auditData.noise_level}
+                      onChange={(e) => handleAuditInputChange('noise_level', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
                       placeholder="Ex: 75"
                     />
+                    <div className="text-xs text-gray-500 mt-1">Limite: 85 dB(A)</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Heures/jour</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Temp. moteur (°C)</label>
                     <input
                       type="number"
-                      value={hydraulicAuditData.operating_hours_daily}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, operating_hours_daily: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                      placeholder="Ex: 12"
+                      value={auditData.motor_temperature}
+                      onChange={(e) => handleAuditInputChange('motor_temperature', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                      placeholder="Ex: 65"
                     />
+                    <div className="text-xs text-gray-500 mt-1">Max: 80°C</div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Temp. paliers (°C)</label>
+                    <input
+                      type="number"
+                      value={auditData.bearing_temperature}
+                      onChange={(e) => handleAuditInputChange('bearing_temperature', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
+                      placeholder="Ex: 55"
+                    />
+                    <div className="text-xs text-gray-500 mt-1">Max: 70°C</div>
                   </div>
                 </div>
-              </div>
 
-              {/* Section 3: Observations visuelles */}
-              <div className="bg-yellow-50 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-900 mb-4">👁️ Observations Visuelles et État</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Niveau de corrosion</label>
                     <select
-                      value={hydraulicAuditData.corrosion_level}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, corrosion_level: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      value={auditData.corrosion_level}
+                      onChange={(e) => handleAuditInputChange('corrosion_level', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
                     >
-                      {corrosionLevels.map(level => (
-                        <option key={level.value} value={level.value}>{level.label}</option>
-                      ))}
+                      <option value="none">Aucune corrosion visible</option>
+                      <option value="light">Corrosion légère</option>
+                      <option value="moderate">Corrosion modérée</option>
+                      <option value="severe">Corrosion sévère</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">État alignement</label>
                     <select
-                      value={hydraulicAuditData.alignment_status}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, alignment_status: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      value={auditData.alignment_status}
+                      onChange={(e) => handleAuditInputChange('alignment_status', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
                     >
-                      {conditionStatuses.map(status => (
-                        <option key={status.value} value={status.value}>{status.label}</option>
-                      ))}
+                      <option value="excellent">Excellent</option>
+                      <option value="good">Bon</option>
+                      <option value="fair">Acceptable</option>
+                      <option value="poor">Mauvais</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Condition accouplement</label>
                     <select
-                      value={hydraulicAuditData.coupling_condition}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, coupling_condition: e.target.value}))}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                      value={auditData.coupling_condition}
+                      onChange={(e) => handleAuditInputChange('coupling_condition', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500"
                     >
-                      {conditionStatuses.map(status => (
-                        <option key={status.value} value={status.value}>{status.label}</option>
-                      ))}
+                      <option value="excellent">Excellent</option>
+                      <option value="good">Bon</option>
+                      <option value="fair">Acceptable</option>
+                      <option value="poor">Mauvais</option>
                     </select>
                   </div>
                 </div>
-                
-                <div className="mt-4 flex items-center space-x-6">
+
+                <div className="flex flex-wrap gap-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={hydraulicAuditData.leakage_present}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, leakage_present: e.target.checked}))}
+                      checked={auditData.leakage_present}
+                      onChange={(e) => handleAuditInputChange('leakage_present', e.target.checked)}
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">Fuites détectées</span>
@@ -739,13 +986,93 @@ const AuditSystem = () => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={hydraulicAuditData.performance_degradation}
-                      onChange={(e) => setHydraulicAuditData(prev => ({...prev, performance_degradation: e.target.checked}))}
+                      checked={auditData.performance_degradation}
+                      onChange={(e) => handleAuditInputChange('performance_degradation', e.target.checked)}
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">Dégradation des performances</span>
                   </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={auditData.energy_consumption_increase}
+                      onChange={(e) => handleAuditInputChange('energy_consumption_increase', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Augmentation consommation</span>
+                  </label>
                 </div>
+              </div>
+
+              {/* Section 5: Contexte Exploitation */}
+              <div className="bg-purple-50 rounded-lg p-6">
+                <h4 className="font-semibold text-purple-800 mb-4">📊 CONTEXTE EXPLOITATION & MAINTENANCE</h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Heures/jour</label>
+                    <input
+                      type="number"
+                      value={auditData.operating_hours_daily}
+                      onChange={(e) => handleAuditInputChange('operating_hours_daily', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                      placeholder="Ex: 16"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Jours/an</label>
+                    <input
+                      type="number"
+                      value={auditData.operating_days_yearly}
+                      onChange={(e) => handleAuditInputChange('operating_days_yearly', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                      placeholder="Ex: 300"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Coût kWh (€)</label>
+                    <input
+                      type="number"
+                      value={auditData.electricity_cost_per_kwh}
+                      onChange={(e) => handleAuditInputChange('electricity_cost_per_kwh', parseFloat(e.target.value))}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                      placeholder="0.12"
+                      step="0.01"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance</label>
+                    <select
+                      value={auditData.maintenance_frequency}
+                      onChange={(e) => handleAuditInputChange('maintenance_frequency', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="weekly">Hebdomadaire</option>
+                      <option value="monthly">Mensuelle</option>
+                      <option value="quarterly">Trimestrielle</option>
+                      <option value="annual">Annuelle</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bouton Analyse */}
+              <div className="text-center">
+                <button
+                  onClick={performExpertAuditAnalysis}
+                  disabled={loadingAnalysis}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50"
+                >
+                  {loadingAnalysis ? (
+                    <>
+                      <span className="inline-block animate-spin mr-2">⚙️</span>
+                      Analyse experte en cours...
+                    </>
+                  ) : (
+                    <>
+                      🎯 Lancer l'Audit Expert Terrain
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}
