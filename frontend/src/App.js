@@ -359,7 +359,7 @@ const AuditSystem = () => {
   const performIntelligentAudit = async () => {
     setLoadingAnalysis(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/audit-analysis`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/audit-analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
