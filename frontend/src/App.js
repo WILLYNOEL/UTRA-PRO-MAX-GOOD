@@ -14037,13 +14037,27 @@ function App() {
       ctx.fill();
     }
     
-    // 7. TUYAUTERIE HORIZONTALE FIXE
+    // 7. TUYAUTERIE HORIZONTALE + RACCORDEMENT CHÂTEAU D'EAU
     const pipeY = groundLevel + 20;
+    
+    // Tuyauterie horizontale principale
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = pipeWidth;
     ctx.beginPath();
     ctx.moveTo(wellX + 25, pipeY);
     ctx.lineTo(towerX - 20, pipeY);
+    ctx.stroke();
+    
+    // Tuyauterie verticale vers château d'eau
+    ctx.beginPath();
+    ctx.moveTo(towerX - 20, pipeY);
+    ctx.lineTo(towerX - 20, towerBaseY + reservoirH - 10); // Jusqu'à l'entrée du réservoir
+    ctx.stroke();
+    
+    // Tuyauterie horizontale DANS le château d'eau
+    ctx.beginPath();
+    ctx.moveTo(towerX - 20, towerBaseY + reservoirH - 10);
+    ctx.lineTo(towerX + 20, towerBaseY + reservoirH - 10); // À l'intérieur du château
     ctx.stroke();
     
     // Flèche débit horizontal
