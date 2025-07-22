@@ -4828,7 +4828,7 @@ const SolarExpertSystem = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Cycles de vie:</span>
-                          <span className="font-medium">>6000 cycles</span>
+                          <span className="font-medium">&gt;6000 cycles</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Autonomie:</span>
