@@ -2415,19 +2415,91 @@ def organize_expert_recommendations_intelligently(expert_recommendations, npshd_
         })
         treated_topics["energy_optimization"] = True
     
-    # 4. COMPATIBILITÉ CHIMIQUE (si non critique)
-    if not treated_topics["chemical_compatibility"] and len(compatibility_analysis["recommendations"]) > 0:
+    # 4. COMPATIBILITÉ CHIMIQUE DÉTAILLÉE (préserver le contenu expert)
+    if not treated_topics["chemical_compatibility"]:
+        # Utiliser TOUTES les analyses détaillées existantes, pas seulement un résumé
+        
+        # Compatibilité critique avec analyse complète
+        if (compatibility_analysis["suction_material_status"] == "incompatible" or 
+            compatibility_analysis["discharge_material_status"] == "incompatible"):
+            # Déjà traité dans critical_safety, ne pas répéter
+            pass
+        else:
+            # Compatibilité normale mais avec analyses détaillées préservées
+            chemical_solutions = []
+            
+            # Préserver toutes les recommandations détaillées d'origine
+            if compatibility_analysis["recommendations"]:
+                chemical_solutions.extend(compatibility_analysis["recommendations"])
+            
+            # Ajouter les analyses hydrauliques spécifiques au fluide
+            if compatibility_analysis["hydraulic_advice"]:
+                chemical_solutions.append("💧 CONSEILS HYDRAULIQUES SPÉCIALISÉS:")
+                chemical_solutions.extend([f"  {advice}" for advice in compatibility_analysis["hydraulic_advice"]])
+            
+            # Préserver les recommandations de joints détaillées
+            if compatibility_analysis["seal_recommendations"]:
+                chemical_solutions.append("🔧 SPÉCIFICATIONS JOINTS ET ÉTANCHÉITÉ:")
+                chemical_solutions.extend([f"  {seal}" for seal in compatibility_analysis["seal_recommendations"]])
+            
+            # Ajouter équipements spécialisés selon le fluide
+            fluid_equipment_recommendations = get_specialized_equipment_recommendations(input_data.fluid_type, input_data.temperature)
+            if fluid_equipment_recommendations:
+                chemical_solutions.append("⚙️ ÉQUIPEMENTS SPÉCIALISÉS REQUIS:")
+                chemical_solutions.extend([f"  {equip}" for equip in fluid_equipment_recommendations])
+            
+            if chemical_solutions:
+                organized_recommendations["installation_guidance"].append({
+                    "type": "compatibility",
+                    "priority": 3, 
+                    "title": f"🧪 ANALYSE CHIMIQUE COMPLÈTE - {compatibility_analysis['fluid_name']}",
+                    "description": f"Analyse détaillée compatibilité {compatibility_analysis['fluid_name']} avec matériaux sélectionnés",
+                    "impact": "Durée de vie maximale, conformité réglementaire, sécurité process",
+                    "solutions": chemical_solutions,
+                    "urgency": "MODÉRÉE",
+                    "cost_impact": "FAIBLE À MOYEN"
+                })
+        
+        treated_topics["chemical_compatibility"] = True
+    
+    # 5. RECOMMANDATIONS D'INSTALLATION ET ÉQUIPEMENTS (nouveau - préserver le contenu expert)
+    
+    installation_solutions = []
+    
+    # Équipements de sécurité selon fluide
+    safety_equipment = get_safety_equipment_recommendations(input_data.fluid_type)
+    if safety_equipment:
+        installation_solutions.append("🛡️ ÉQUIPEMENTS SÉCURITÉ OBLIGATOIRES:")
+        installation_solutions.extend([f"  {equip}" for equip in safety_equipment])
+    
+    # Équipements d'optimisation hydraulique
+    hydraulic_equipment = get_hydraulic_equipment_recommendations(npshd_result, hmt_result, overall_efficiency)
+    if hydraulic_equipment:
+        installation_solutions.append("🔧 ÉQUIPEMENTS OPTIMISATION:")
+        installation_solutions.extend([f"  {equip}" for equip in hydraulic_equipment])
+    
+    # Singularités à supprimer ou ajouter
+    singularity_recommendations = get_singularity_recommendations(npshd_result, hmt_result)
+    if singularity_recommendations:
+        installation_solutions.append("⚙️ MODIFICATION INSTALLATION:")
+        installation_solutions.extend([f"  {sing}" for sing in singularity_recommendations])
+    
+    # Instrumentation et contrôle
+    control_equipment = get_control_equipment_recommendations(input_data.fluid_type, annual_energy_cost, overall_efficiency)
+    if control_equipment:
+        installation_solutions.append("📊 INSTRUMENTATION RECOMMANDÉE:")
+        installation_solutions.extend([f"  {ctrl}" for ctrl in control_equipment])
+    
+    if installation_solutions:
         organized_recommendations["installation_guidance"].append({
-            "type": "compatibility",
-            "priority": 3, 
-            "title": f"🧪 OPTIMISATION CHIMIQUE - {compatibility_analysis['fluid_name']}",
-            "description": "Recommandations spécialisées fluide-matériau",
-            "impact": "Amélioration durée de vie, conformité réglementaire",
-            "solutions": compatibility_analysis["recommendations"][:4] + (
-                compatibility_analysis["seal_recommendations"][:2] if compatibility_analysis["seal_recommendations"] else []
-            ),
-            "urgency": "FAIBLE",
-            "cost_impact": "FAIBLE"
+            "type": "installation",
+            "priority": 4,
+            "title": "🏗️ RECOMMANDATIONS INSTALLATION & ÉQUIPEMENTS",
+            "description": "Équipements et modifications d'installation pour performance optimale",
+            "impact": "Fiabilité système, facilité maintenance, sécurité opérateur",
+            "solutions": installation_solutions,
+            "urgency": "MODÉRÉE",
+            "cost_impact": "VARIABLE SELON ÉQUIPEMENTS"
         })
     
     # Convertir en format liste finale priorisée
@@ -2437,8 +2509,132 @@ def organize_expert_recommendations_intelligently(expert_recommendations, npshd_
     for category in ["critical_safety", "hydraulic_optimization", "energy_efficiency", "installation_guidance", "maintenance_prevention"]:
         final_recommendations.extend(organized_recommendations[category])
     
-    # Limiter à 8 recommandations max pour éviter surcharge
-    return final_recommendations[:8]
+    # Limiter à 10 recommandations max (augmenté pour le contenu détaillé)
+    return final_recommendations[:10]
+
+def get_specialized_equipment_recommendations(fluid_type, temperature):
+    """Retourne les équipements spécialisés requis selon le fluide"""
+    equipment = []
+    
+    if fluid_type in ["acid", "base"]:
+        equipment.extend([
+            "🚿 Douche de décontamination d'urgence (EN 15154)",
+            "👁️ Lave-œil d'urgence (< 10m du poste)",
+            "📞 Système d'alarme chimique",
+            "🌡️ Sonde pH en continu si T>50°C",
+            "💨 Ventilation forcée (20 vol/h min)"
+        ])
+    
+    elif fluid_type in ["gasoline", "diesel"]:
+        equipment.extend([
+            "⚡ Équipements ATEX Zone 1 (moteur antidéflagrant)",
+            "🔥 Détecteur vapeurs hydrocarbures", 
+            "⚡ Mise à la terre obligatoire (< 10Ω)",
+            "🌪️ Récupérateur vapeurs en bout de ligne",
+            "🔧 Soupape de sécurité tarage 1.1x pression service"
+        ])
+    
+    elif fluid_type in ["milk", "wine", "honey", "fruit_juice"]:
+        equipment.extend([
+            "🧽 Raccords démontables pour nettoyage CIP",
+            "🌡️ Purgeur manuel points hauts (éviter stagnation)",
+            "🔄 Vanne échantillonnage contrôle qualité",
+            "📊 Débitmètre magnétique (pas d'obstruction)",
+            "🌡️ Compensation température si T variable"
+        ])
+    
+    elif fluid_type == "seawater":
+        equipment.extend([
+            "⚗️ Anode sacrificielle magnésium (renouvellement annuel)",
+            "🔬 Analyseur chlore résiduel en continu",
+            "🌊 Filtre 100µm avant pompe (protection particules)",
+            "💧 Purge manuelle dessalage (maintenance)"
+        ])
+    
+    return equipment
+
+def get_safety_equipment_recommendations(fluid_type):
+    """Retourne les équipements de sécurité obligatoires selon le fluide"""
+    safety = []
+    
+    if fluid_type in ["acid", "base"]:
+        safety.extend([
+            "EPI: Combinaison chimique + gants nitrile + lunettes étanches",
+            "Neutralisant d'urgence (calcaire si acide, acide si base)",
+            "Kit anti-pollution (absorbants chimiques)"
+        ])
+    elif fluid_type in ["gasoline", "diesel"]:
+        safety.extend([
+            "Extincteur CO2 ou poudre BC (pas d'eau !)",
+            "Détecteur portable vapeurs (LEL/LIE)",
+            "Kit anti-pollution hydrocarbures"
+        ])
+    elif fluid_type == "seawater":
+        safety.extend([
+            "Protection cathodique si présence autres métaux",
+            "Rinçage eau douce après arrêt prolongé"
+        ])
+    
+    return safety
+
+def get_hydraulic_equipment_recommendations(npshd_result, hmt_result, overall_efficiency):
+    """Retourne les équipements d'optimisation hydraulique"""
+    equipment = []
+    
+    # Variateur si efficacité faible
+    if overall_efficiency < 70:
+        equipment.append("🔧 Variateur de vitesse (économie 20-40% si débit variable)")
+    
+    # Surpresseur si HMT très élevée
+    if hmt_result.hmt > 100:
+        equipment.append("📈 Pompe surpresseur étagée (> 100m HMT)")
+    
+    # Réservoir d'aspiration si NPSH critique
+    if npshd_result.cavitation_risk:
+        equipment.extend([
+            "🏗️ Bâche d'aspiration (amélioration NPSH)",
+            "🌪️ Dégazeur si fluide aéré"
+        ])
+    
+    return equipment
+
+def get_singularity_recommendations(npshd_result, hmt_result):
+    """Retourne les modifications de singularités"""
+    modifications = []
+    
+    if npshd_result.velocity > 2.0:
+        modifications.extend([
+            "❌ SUPPRIMER: Coudes 90° non essentiels (remplacer par courbes)",
+            "❌ SUPPRIMER: Vannes d'isolement redondantes aspiration",
+            "✅ AJOUTER: Crépine large maillage (éviter obstruction)"
+        ])
+    
+    if hmt_result.discharge_velocity > 3.0:
+        modifications.extend([
+            "✅ AJOUTER: Clapet anti-retour à battant (pas à bille)",
+            "✅ AJOUTER: Compensateur de dilatation si L>50m"
+        ])
+    
+    return modifications
+
+def get_control_equipment_recommendations(fluid_type, annual_energy_cost, overall_efficiency):
+    """Retourne l'instrumentation recommandée"""
+    control = []
+    
+    # Instrumentation énergétique si coût élevé
+    if annual_energy_cost > 5000:
+        control.extend([
+            "📊 Wattmètre permanent (suivi consommation)",
+            "📈 Enregistreur débit/pression (optimisation)"
+        ])
+    
+    # Instrumentation process selon fluide
+    if fluid_type in ["acid", "base"]:
+        control.append("🧪 pH-mètre continu (alarme haut/bas)")
+    elif fluid_type in ["milk", "wine"]:
+        control.append("🌡️ Thermomètre contact alimentaire")
+    
+    return control
 
 def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysisResult:
     """
