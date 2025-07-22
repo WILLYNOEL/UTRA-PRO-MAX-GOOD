@@ -9024,6 +9024,225 @@ class HydraulicPumpTester:
             self.log_test("Comprehensive Audit System", False, f"Error: {str(e)}")
             return False
 
+    def test_expert_installation_report(self):
+        """Test the new expert_installation_report field in /api/audit-analysis endpoint"""
+        print("\n🔬 Testing Expert Installation Report...")
+        
+        # Test case 1: Critical installation with multiple issues
+        critical_test_data = {
+            "installation_age": 5,
+            "installation_type": "surface",
+            "fluid_type": "water",
+            "fluid_temperature": 20.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "suction_pipe_diameter": 114.3,  # DN100
+            "discharge_pipe_diameter": 88.9,  # DN80
+            
+            # Critical performance issues
+            "current_flow_rate": 30.0,      # Insufficient flow (40% below required)
+            "required_flow_rate": 50.0,     # Required flow
+            "current_hmt": 28.0,            # Slightly below required
+            "required_hmt": 30.0,           # Required HMT
+            
+            # Electrical overload
+            "measured_current": 15.0,       # 50% overload
+            "rated_current": 10.0,          # Rated current
+            "measured_power": 8.0,          # High power consumption
+            "rated_power": 5.0,             # Rated power
+            "measured_voltage": 400.0,
+            "rated_voltage": 400.0,
+            
+            # Mechanical issues
+            "vibration_level": 8.5,         # Excessive vibrations
+            "motor_temperature": 85.0,      # Overheating
+            "bearing_temperature": 75.0,
+            "noise_level": 85.0,
+            
+            # Operational context
+            "operating_hours_daily": 12.0,
+            "operating_days_yearly": 300.0,
+            "electricity_cost_per_kwh": 0.12,
+            "load_factor": 0.8,
+            "has_vfd": False,
+            "performance_degradation": True,
+            "energy_consumption_increase": True,
+            "reported_issues": ["Débit insuffisant", "Vibrations excessives", "Surchauffe moteur"]
+        }
+        
+        # Test case 2: Normal installation for comparison
+        normal_test_data = {
+            "installation_age": 2,
+            "installation_type": "surface",
+            "fluid_type": "water",
+            "fluid_temperature": 20.0,
+            "suction_material": "pvc",
+            "discharge_material": "pvc",
+            "suction_pipe_diameter": 114.3,
+            "discharge_pipe_diameter": 88.9,
+            
+            # Normal performance
+            "current_flow_rate": 48.0,      # Close to required
+            "required_flow_rate": 50.0,
+            "current_hmt": 30.0,           # Meets requirement
+            "required_hmt": 30.0,
+            
+            # Normal electrical parameters
+            "measured_current": 9.5,        # Within normal range
+            "rated_current": 10.0,
+            "measured_power": 4.0,          # Normal power
+            "rated_power": 5.0,
+            "measured_voltage": 400.0,
+            "rated_voltage": 400.0,
+            
+            # Normal mechanical condition
+            "vibration_level": 2.5,         # Normal vibrations
+            "motor_temperature": 65.0,      # Normal temperature
+            "bearing_temperature": 55.0,
+            "noise_level": 70.0,
+            
+            # Normal operation
+            "operating_hours_daily": 8.0,
+            "operating_days_yearly": 250.0,
+            "electricity_cost_per_kwh": 0.12,
+            "load_factor": 0.75,
+            "has_vfd": False,
+            "performance_degradation": False,
+            "energy_consumption_increase": False,
+            "reported_issues": []
+        }
+        
+        test_cases = [
+            {"name": "Critical Installation", "data": critical_test_data},
+            {"name": "Normal Installation", "data": normal_test_data}
+        ]
+        
+        all_passed = True
+        for case in test_cases:
+            try:
+                response = requests.post(f"{BACKEND_URL}/audit-analysis", json=case["data"], timeout=15)
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # 1. Test that expert_installation_report field is present
+                    if "expert_installation_report" not in result:
+                        self.log_test(f"Expert Installation Report - {case['name']} - Field Presence", False, 
+                                    "Missing expert_installation_report field")
+                        all_passed = False
+                        continue
+                    
+                    expert_report = result["expert_installation_report"]
+                    
+                    # 2. Test required sections are present
+                    required_sections = [
+                        "installation_analysis",
+                        "detailed_problems", 
+                        "equipment_replacement_list",
+                        "equipment_addition_list",
+                        "immediate_actions",
+                        "action_plan",
+                        "energy_waste_analysis"
+                    ]
+                    
+                    missing_sections = []
+                    for section in required_sections:
+                        if section not in expert_report:
+                            missing_sections.append(section)
+                    
+                    if missing_sections:
+                        self.log_test(f"Expert Installation Report - {case['name']} - Required Sections", False, 
+                                    f"Missing sections: {missing_sections}")
+                        all_passed = False
+                        continue
+                    
+                    # 3. Test content quality for critical installation
+                    if case["name"] == "Critical Installation":
+                        # Check that detailed problems are identified
+                        detailed_problems = expert_report.get("detailed_problems", [])
+                        if len(detailed_problems) < 3:
+                            self.log_test(f"Expert Installation Report - {case['name']} - Problem Detection", False, 
+                                        f"Expected multiple problems, found {len(detailed_problems)}")
+                            all_passed = False
+                            continue
+                        
+                        # Check equipment replacement recommendations
+                        equipment_replacement = expert_report.get("equipment_replacement_list", [])
+                        if len(equipment_replacement) == 0:
+                            self.log_test(f"Expert Installation Report - {case['name']} - Equipment Replacement", False, 
+                                        "No equipment replacement recommendations for critical issues")
+                            all_passed = False
+                            continue
+                        
+                        # Check immediate actions for critical issues
+                        immediate_actions = expert_report.get("immediate_actions", [])
+                        if len(immediate_actions) == 0:
+                            self.log_test(f"Expert Installation Report - {case['name']} - Immediate Actions", False, 
+                                        "No immediate actions for critical installation")
+                            all_passed = False
+                            continue
+                        
+                        # Check energy waste analysis
+                        energy_waste = expert_report.get("energy_waste_analysis", {})
+                        if not energy_waste or "efficiency_loss" not in energy_waste:
+                            self.log_test(f"Expert Installation Report - {case['name']} - Energy Analysis", False, 
+                                        "Missing or incomplete energy waste analysis")
+                            all_passed = False
+                            continue
+                    
+                    # 4. Test overall audit result structure
+                    required_audit_fields = [
+                        "overall_score", "hydraulic_score", "electrical_score", 
+                        "mechanical_score", "operational_score",
+                        "performance_comparisons", "diagnostics", "recommendations",
+                        "executive_summary", "economic_analysis", "action_plan"
+                    ]
+                    
+                    missing_audit_fields = []
+                    for field in required_audit_fields:
+                        if field not in result:
+                            missing_audit_fields.append(field)
+                    
+                    if missing_audit_fields:
+                        self.log_test(f"Expert Installation Report - {case['name']} - Audit Structure", False, 
+                                    f"Missing audit fields: {missing_audit_fields}")
+                        all_passed = False
+                        continue
+                    
+                    # 5. Test score logic
+                    overall_score = result.get("overall_score", 0)
+                    if case["name"] == "Critical Installation":
+                        if overall_score > 60:  # Should be low for critical issues
+                            self.log_test(f"Expert Installation Report - {case['name']} - Score Logic", False, 
+                                        f"Score too high for critical installation: {overall_score}")
+                            all_passed = False
+                            continue
+                    else:  # Normal installation
+                        if overall_score < 70:  # Should be higher for normal installation
+                            self.log_test(f"Expert Installation Report - {case['name']} - Score Logic", False, 
+                                        f"Score too low for normal installation: {overall_score}")
+                            all_passed = False
+                            continue
+                    
+                    # 6. Test hydraulic-electrical cross analysis
+                    installation_analysis = expert_report.get("installation_analysis", {})
+                    if "hydraulic_electrical_correlation" not in installation_analysis:
+                        self.log_test(f"Expert Installation Report - {case['name']} - Cross Analysis", False, 
+                                    "Missing hydraulic-electrical correlation analysis")
+                        all_passed = False
+                        continue
+                    
+                    self.log_test(f"Expert Installation Report - {case['name']}", True, 
+                                f"Score: {overall_score}, Problems: {len(expert_report.get('detailed_problems', []))}, "
+                                f"Actions: {len(expert_report.get('immediate_actions', []))}")
+                else:
+                    self.log_test(f"Expert Installation Report - {case['name']}", False, f"Status: {response.status_code}")
+                    all_passed = False
+            except Exception as e:
+                self.log_test(f"Expert Installation Report - {case['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
