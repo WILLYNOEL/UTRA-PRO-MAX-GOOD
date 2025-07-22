@@ -6330,9 +6330,26 @@ const ReservoirCalculator = () => {
   };
 
   const handleTypeChange = (type) => {
+    // Valeurs fixes selon le type de réservoir
+    const typeConfigs = {
+      'MPC-E': {
+        kQ_ratio: 0.1,  // 10% pour MPC-E/F
+        kH_ratio: 0.2,  // 20% pour MPC-E/F
+        kr_ratio: 0.7   // 0.7 pour MPC-E/F
+      },
+      'MPC-S': {
+        kQ_ratio: 0,    // Pas de kQ pour MPC-S
+        kH_ratio: 0.25, // 25% pour MPC-S
+        kr_ratio: 0.9   // 0.9 pour MPC-S
+      }
+    };
+
+    const config = typeConfigs[type] || typeConfigs['MPC-E'];
+    
     setReservoirData(prev => ({
       ...prev,
-      reservoir_type: type
+      reservoir_type: type,
+      ...config
     }));
   };
 
