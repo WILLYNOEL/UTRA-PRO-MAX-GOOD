@@ -5210,6 +5210,272 @@ def generate_executive_summary(input_data: AuditInput, scores: Dict[str, int],
         "risk_level": "high" if critical_issues else ("medium" if len(diagnostics) > 2 else "low")
     }
 
+def generate_expert_installation_report(input_data: AuditInput, performance_comparisons: List[AuditComparisonAnalysis]) -> Dict[str, Any]:
+    """
+    Génère un rapport d'expertise exhaustif basé sur l'analyse croisée des données hydrauliques et électriques
+    Identifie les problèmes d'installation et donne des recommandations précises d'amélioration
+    """
+    
+    # ========================================================================================================
+    # ANALYSE CROISÉE HYDRAULIQUE-ÉLECTRIQUE
+    # ========================================================================================================
+    
+    installation_issues = []
+    critical_problems = []
+    equipment_to_replace = []
+    equipment_to_add = []
+    immediate_actions = []
+    
+    # Analyse de la cohérence hydraulique-électrique
+    power_analysis = {}
+    if input_data.measured_power and input_data.current_flow_rate and input_data.current_hmt:
+        # Calcul puissance hydraulique théorique
+        theoretical_hydraulic_power = (input_data.current_flow_rate * input_data.current_hmt * 1000 * 9.81) / (3600 * 1000)  # kW
+        
+        # Estimation rendement global actuel
+        if theoretical_hydraulic_power > 0:
+            actual_global_efficiency = (theoretical_hydraulic_power / input_data.measured_power) * 100
+            power_analysis = {
+                "theoretical_hydraulic_power": theoretical_hydraulic_power,
+                "measured_electrical_power": input_data.measured_power,
+                "actual_global_efficiency": actual_global_efficiency,
+                "expected_efficiency": 65.0,  # Rendement global attendu pour une installation standard
+                "efficiency_gap": actual_global_efficiency - 65.0
+            }
+    
+    # ========================================================================================================
+    # DIAGNOSTIC DES PROBLÈMES MAJEURS
+    # ========================================================================================================
+    
+    # 1. PROBLÈMES HYDRAULIQUES CRITIQUES
+    if input_data.current_flow_rate and input_data.required_flow_rate:
+        flow_deviation = ((input_data.current_flow_rate - input_data.required_flow_rate) / input_data.required_flow_rate) * 100
+        
+        if flow_deviation < -20:
+            critical_problems.append({
+                "type": "DÉBIT INSUFFISANT CRITIQUE",
+                "severity": "URGENT",
+                "description": f"Débit actuel {input_data.current_flow_rate} m³/h insuffisant de {abs(flow_deviation):.1f}% par rapport au besoin ({input_data.required_flow_rate} m³/h)",
+                "causes_probables": [
+                    "Pompe sous-dimensionnée ou usée",
+                    "Colmatage des conduites ou filtres",
+                    "Fuites importantes dans le réseau",
+                    "Vanne partiellement fermée",
+                    "Cavitation pompe (aspiration insuffisante)"
+                ],
+                "consequences": [
+                    "Process industriel dégradé ou arrêté",
+                    "Surconsommation énergétique pour compenser",
+                    "Usure prématurée des équipements"
+                ]
+            })
+            
+        elif flow_deviation > 25:
+            installation_issues.append({
+                "type": "SURDIMENSIONNEMENT HYDRAULIQUE",
+                "severity": "IMPORTANT", 
+                "description": f"Débit actuel {input_data.current_flow_rate} m³/h excessif de {flow_deviation:.1f}% (gaspillage énergétique)",
+                "causes_probables": [
+                    "Pompe surdimensionnée",
+                    "Régulation débit absente ou défaillante",
+                    "Point de fonctionnement inadapté"
+                ],
+                "consequences": [
+                    "Gaspillage énergétique permanent", 
+                    "Usure accélérée par fonctionnement hors courbe",
+                    "Coûts exploitation majorés"
+                ]
+            })
+    
+    # 2. PROBLÈMES ÉLECTRIQUES CRITIQUES
+    if input_data.measured_current and input_data.rated_current:
+        current_ratio = input_data.measured_current / input_data.rated_current
+        
+        if current_ratio > 1.15:
+            critical_problems.append({
+                "type": "SURCHARGE ÉLECTRIQUE CRITIQUE",
+                "severity": "URGENT",
+                "description": f"Intensité mesurée {input_data.measured_current}A dépasse de {(current_ratio-1)*100:.1f}% l'intensité nominale ({input_data.rated_current}A)",
+                "causes_probables": [
+                    "Pompe en surcharge hydraulique permanente",
+                    "Problème d'alignement moteur-pompe",
+                    "Défaillance roulements ou paliers",
+                    "Tension d'alimentation inadéquate",
+                    "Bobinage moteur dégradé"
+                ],
+                "consequences": [
+                    "RISQUE DE DESTRUCTION MOTEUR IMMINENT",
+                    "Déclenchement protections thermiques",
+                    "Surconsommation énergétique majeure",
+                    "Risque d'incendie électrique"
+                ]
+            })
+            
+            equipment_to_replace.extend([
+                "Moteur électrique (vérifier bobinage et isolement)",
+                "Protections électriques (relais thermique adapté)",
+                "Câblage et contacteurs (vérifier échauffement)"
+            ])
+            
+            immediate_actions.extend([
+                "ARRÊT IMMÉDIAT si température moteur > 80°C",
+                "Contrôle isolement moteur (>1MΩ/phase)",
+                "Vérification serrages connexions électriques",
+                "Mesure tension triphasée (équilibrage)"
+            ])
+    
+    # 3. ANALYSE RENDEMENT ÉNERGÉTIQUE
+    if power_analysis and power_analysis["actual_global_efficiency"] < 45:
+        critical_problems.append({
+            "type": "RENDEMENT ÉNERGÉTIQUE CATASTROPHIQUE",
+            "severity": "URGENT",
+            "description": f"Rendement global mesuré {power_analysis['actual_global_efficiency']:.1f}% très inférieur aux standards (65%)",
+            "causes_probables": [
+                "Pompe complètement inadaptée au point de fonctionnement",
+                "Usure interne pompe (jeux hydrauliques)",
+                "Cavitation permanente",
+                "Moteur électrique défaillant",
+                "Pertes hydrauliques majeures (conduites)"
+            ],
+            "consequences": [
+                "Gaspillage énergétique de plus de 40%",
+                "Coûts électricité majorés x2 à x3",
+                "Empreinte carbone excessive"
+            ]
+        })
+    
+    # 4. PROBLÈMES MÉCANIQUES
+    vibration_issues = []
+    if input_data.vibration_level and input_data.vibration_level > 7.1:  # ISO 10816
+        vibration_issues.append({
+            "type": "VIBRATIONS EXCESSIVES CRITIQUES",
+            "severity": "URGENT", 
+            "description": f"Niveau vibratoire {input_data.vibration_level} mm/s dépasse largement les limites ISO 10816 (< 2.8 mm/s)",
+            "causes_probables": [
+                "Défaut d'alignement pompe-moteur majeur",
+                "Déséquilibrage rotor",
+                "Usure roulements/paliers avancée",
+                "Défaut fixation socle béton",
+                "Résonance mécanique"
+            ],
+            "consequences": [
+                "DESTRUCTION IMMINENTE ROULEMENTS",
+                "Fissuration conduites par fatigue",
+                "Desserrage boulonnerie",
+                "Nuisances sonores importantes"
+            ]
+        })
+        
+        equipment_to_replace.extend([
+            "Roulements pompe et moteur",
+            "Accouplement (vérifier usure)",
+            "Joints d'étanchéité",
+            "Plots antivibratoires"
+        ])
+    
+    # 5. PROBLÈMES THERMIQUES
+    thermal_issues = []
+    if input_data.motor_temperature and input_data.motor_temperature > 80:
+        thermal_issues.append({
+            "type": "SURCHAUFFE MOTEUR CRITIQUE",
+            "severity": "URGENT",
+            "description": f"Température moteur {input_data.motor_temperature}°C excessive (limite 80°C classe F)",
+            "causes_probables": [
+                "Surcharge électrique permanente",
+                "Ventilation moteur obstruée",
+                "Température ambiante excessive",
+                "Défaut isolement bobinage"
+            ]
+        })
+    
+    # ========================================================================================================
+    # GÉNÉRATION RECOMMANDATIONS ÉQUIPEMENTS
+    # ========================================================================================================
+    
+    # Équipements à ajouter selon l'analyse
+    if not input_data.has_vfd and power_analysis and power_analysis["efficiency_gap"] < -15:
+        equipment_to_add.append({
+            "equipment": "Variateur de fréquence (VFD)",
+            "justification": "Optimisation énergétique et régulation débit",
+            "expected_savings": "15-30% économies énergie",
+            "cost_estimate": "800-2500€",
+            "priority": "HIGH"
+        })
+    
+    if input_data.vibration_level and input_data.vibration_level > 4.5:
+        equipment_to_add.append({
+            "equipment": "Système surveillance vibratoire",
+            "justification": "Maintenance prédictive et alerte défaillance",
+            "expected_savings": "Éviter arrêt production imprévu",
+            "cost_estimate": "300-800€",
+            "priority": "MEDIUM"
+        })
+    
+    # Conduite et hydraulique
+    hydraulic_improvements = []
+    if input_data.suction_pipe_diameter and input_data.current_flow_rate:
+        # Calcul vitesse aspiration
+        diameter_m = input_data.suction_pipe_diameter / 1000
+        area = math.pi * (diameter_m/2)**2
+        velocity = (input_data.current_flow_rate / 3600) / area
+        
+        if velocity > 1.5:  # Vitesse aspiration excessive
+            hydraulic_improvements.append({
+                "type": "CONDUITE ASPIRATION SOUS-DIMENSIONNÉE", 
+                "current_diameter": f"DN{int(input_data.suction_pipe_diameter)}",
+                "current_velocity": f"{velocity:.1f} m/s",
+                "recommended_diameter": f"DN{int(input_data.suction_pipe_diameter * 1.3)}",
+                "justification": "Réduction pertes charge et risque cavitation",
+                "priority": "HIGH"
+            })
+    
+    # ========================================================================================================
+    # PLAN D'ACTION PRIORITAIRE
+    # ========================================================================================================
+    
+    action_plan = {
+        "phase_immediate": {
+            "timeline": "0-48h",
+            "actions": immediate_actions + [
+                "Vérification niveau huile réducteur",
+                "Contrôle température roulements au toucher",
+                "Test fonctionnement protections électriques"
+            ]
+        },
+        "phase_urgente": {
+            "timeline": "1-2 semaines", 
+            "actions": [action for problem in critical_problems for action in [
+                f"Résoudre: {problem['type']}",
+                f"Causes à vérifier: {', '.join(problem['causes_probables'][:2])}"
+            ]]
+        },
+        "phase_amelioration": {
+            "timeline": "1-3 mois",
+            "actions": [f"Installer: {eq['equipment']}" for eq in equipment_to_add]
+        }
+    }
+    
+    return {
+        "installation_analysis": {
+            "overall_condition": "CRITIQUE" if critical_problems else ("DÉGRADÉE" if installation_issues else "ACCEPTABLE"),
+            "critical_problems_count": len(critical_problems),
+            "issues_count": len(installation_issues),
+            "power_analysis": power_analysis
+        },
+        "detailed_problems": critical_problems + installation_issues + vibration_issues + thermal_issues,
+        "hydraulic_improvements": hydraulic_improvements,
+        "equipment_replacement_list": equipment_to_replace,
+        "equipment_addition_list": equipment_to_add,
+        "immediate_actions": immediate_actions,
+        "action_plan": action_plan,
+        "energy_waste_analysis": {
+            "current_efficiency": power_analysis.get("actual_global_efficiency", 0) if power_analysis else 0,
+            "potential_savings_percent": max(0, 65 - power_analysis.get("actual_global_efficiency", 65)) if power_analysis else 0,
+            "annual_waste_kwh": 0,  # À calculer selon heures fonctionnement
+            "financial_impact": "Surconsommation estimée 20-40% vs installation optimale"
+        }
+    }
+
 def generate_action_plan(recommendations: List[AuditRecommendation], economic_analysis: Dict[str, Any]) -> Dict[str, Any]:
     """Génère le plan d'action prioritaire"""
     critical_actions = [r for r in recommendations if r.priority == "critical"]
