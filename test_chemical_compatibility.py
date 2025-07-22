@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://d40305d1-f7e4-4761-aff0-c1f2df1cb0f9.preview.emergentagent.com/api"
+BACKEND_URL = "https://5615d989-fec4-4cb7-9787-0e64198971f7.preview.emergentagent.com/api"
 
 class ChemicalCompatibilityTester:
     def __init__(self):
