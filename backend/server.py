@@ -903,6 +903,7 @@ class HMTResult(BaseModel):
     useful_pressure_head: float  # m
     hmt: float  # m
     warnings: List[str]
+    recommendations: List[str] = []  # Nouvelles recommandations intelligentes
 
 class ExpertAnalysisInput(BaseModel):
     # Paramètres hydrauliques
