@@ -6188,10 +6188,10 @@ const ReservoirCalculator = () => {
     set_pressure: 4.0, // pset - Pression de consigne (bar)
     max_starts_per_hour: 20, // N - Nombre max de démarrages/heure
     
-    // Ratios techniques
-    kQ_ratio: 1.0, // kQ - Ratio débit nominal/débit lance-arrêt  
-    kH_ratio: 1.25, // kH - Ratio pression arrêt/pression démarrage
-    kr_ratio: 0.9, // kr - Ratio pression pré-charge/pression consigne
+    // Ratios techniques - VALEURS FIXES selon type réservoir
+    kQ_ratio: 0.1, // kQ - 10% pour MPC-E/F uniquement
+    kH_ratio: 0.2, // kH - 20% pour MPC-E/F, 25% pour MPC-S  
+    kr_ratio: 0.7, // kr - 0.7 pour MPC-E/F, 0.9 pour MPC-S
   });
 
   const [calculationResults, setCalculationResults] = useState(null);
