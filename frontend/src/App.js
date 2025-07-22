@@ -4684,6 +4684,172 @@ const SolarExpertSystem = () => {
               <canvas ref={chartRef} style={{maxHeight: '400px'}}></canvas>
             </div>
 
+            {/* Section Recommandations d'Équipements */}
+            <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg shadow-md border border-blue-200">
+              <h4 className="font-bold text-blue-800 mb-4 text-lg">🛠️ Recommandations d'Équipements - Configuration Expert</h4>
+              {(() => {
+                const hydraulicPowerKW = (solarData.flow_rate * solarData.total_head * 1000 * 9.81) / 3600 / 1000;
+                const electricalPowerKW = hydraulicPowerKW / 0.75;
+                const peakPowerW = (electricalPowerKW / 0.8) * 1000;
+                const nbPanels = Math.ceil(peakPowerW / solarData.panel_peak_power);
+                const batteryCapacityKWh = solarData.autonomy_days * electricalPowerKW * solarData.operating_hours;
+                const nbBatteries = Math.ceil(batteryCapacityKWh / 2.5); // Batteries 2.5kWh standard
+
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Pompe Recommandée */}
+                    <div className="bg-white p-5 rounded-lg border-l-4 border-blue-500">
+                      <h5 className="font-semibold text-blue-700 mb-3">💧 Pompe Solaire GRUNDFOS SP</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Modèle:</span>
+                          <span className="font-medium">SP {Math.round(electricalPowerKW * 10)}A-{Math.min(50, Math.round(solarData.total_head/5) * 5)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Puissance nominale:</span>
+                          <span className="font-medium">{electricalPowerKW.toFixed(1)} kW</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Débit max:</span>
+                          <span className="font-medium">{(solarData.flow_rate * 1.2).toFixed(1)} m³/h</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">HMT max:</span>
+                          <span className="font-medium">{Math.round(solarData.total_head * 1.3)} m</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Matériau:</span>
+                          <span className="font-medium">Inox 316L</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Protection:</span>
+                          <span className="font-medium">IP68, Sable résistant</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Certification:</span>
+                          <span className="font-medium">CE, ISO 9001</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Convertisseur RSI */}
+                    <div className="bg-white p-5 rounded-lg border-l-4 border-green-500">
+                      <h5 className="font-semibold text-green-700 mb-3">⚡ Convertisseur GRUNDFOS RSI</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Modèle:</span>
+                          <span className="font-medium">RSI {Math.ceil(electricalPowerKW)}-{Math.ceil(peakPowerW/1000)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Puissance moteur:</span>
+                          <span className="font-medium">{electricalPowerKW.toFixed(1)} kW</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Entrée PV:</span>
+                          <span className="font-medium">{Math.round(peakPowerW)} Wp</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tension DC:</span>
+                          <span className="font-medium">240-800 VDC</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Efficacité:</span>
+                          <span className="font-medium">≥ 95%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Protection:</span>
+                          <span className="font-medium">IP65, MPPT intégré</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Fonctions:</span>
+                          <span className="font-medium">Démarrage progressif</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Panneaux Solaires */}
+                    <div className="bg-white p-5 rounded-lg border-l-4 border-yellow-500">
+                      <h5 className="font-semibold text-yellow-700 mb-3">☀️ Panneaux Solaires - Configuration</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Quantité recommandée:</span>
+                          <span className="font-medium text-lg text-blue-600">{nbPanels} panneaux</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Puissance unitaire:</span>
+                          <span className="font-medium">{solarData.panel_peak_power} Wc</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Puissance totale:</span>
+                          <span className="font-medium">{nbPanels * solarData.panel_peak_power} Wc</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Technologie:</span>
+                          <span className="font-medium">Monocristallin PERC</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tension Voc:</span>
+                          <span className="font-medium">46.8 V</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Configuration:</span>
+                          <span className="font-medium">{Math.ceil(nbPanels/2)}S{Math.min(2, nbPanels)}P optimal</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Garantie:</span>
+                          <span className="font-medium">25 ans puissance</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Batteries de Stockage */}
+                    <div className="bg-white p-5 rounded-lg border-l-4 border-purple-500">
+                      <h5 className="font-semibold text-purple-700 mb-3">🔋 Batteries Lithium-Ion</h5>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Quantité recommandée:</span>
+                          <span className="font-medium text-lg text-blue-600">{nbBatteries} batteries</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Capacité unitaire:</span>
+                          <span className="font-medium">2.5 kWh / 100 Ah</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Capacité totale:</span>
+                          <span className="font-medium">{batteryCapacityKWh.toFixed(1)} kWh</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tension nominale:</span>
+                          <span className="font-medium">24V DC</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Technologie:</span>
+                          <span className="font-medium">LiFePO4</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Cycles de vie:</span>
+                          <span className="font-medium">>6000 cycles</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Autonomie:</span>
+                          <span className="font-medium">{solarData.autonomy_days} jours</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Note Expert */}
+              <div className="mt-4 bg-blue-100 p-4 rounded-lg border-l-4 border-blue-500">
+                <p className="text-sm text-blue-800">
+                  <strong>💡 Note de l'Expert:</strong> Cette configuration a été optimisée pour votre usage spécifique. 
+                  Les équipements GRUNDFOS sont recommandés pour leur fiabilité en milieu tropical et leur service après-vente étendu. 
+                  L'installation doit être réalisée par un technicien certifié avec respect des normes locales.
+                </p>
+              </div>
+            </div>
+
             {/* Graphique de pompage mensuelle */}
             <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
               <h4 className="font-semibold text-gray-800 mb-3">💧 Capacité de Pompage Mensuelle</h4>
