@@ -15965,6 +15965,56 @@ function App() {
                         />
                       </div>
                     </div>
+                    {/* CHAMPS SPÉCIFIQUES FORAGE */}
+                    {drawingData.installation_type === 'forage' && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+                        <h4 className="text-sm font-bold text-orange-700 mb-2">⚡ PARAMÈTRES FORAGE</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">HAUTEUR RÉSERVOIR (m)</label>
+                            <input
+                              type="number"
+                              value={drawingData.forage_specific.reservoir_height}
+                              onChange={(e) => handleDrawingInputChange('forage_specific', {
+                                ...drawingData.forage_specific,
+                                reservoir_height: parseFloat(e.target.value) || 30
+                              })}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                              placeholder="30"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">NIVEAU DYNAMIQUE (m)</label>
+                            <input
+                              type="number"
+                              value={drawingData.forage_specific.dynamic_level}
+                              onChange={(e) => handleDrawingInputChange('forage_specific', {
+                                ...drawingData.forage_specific,
+                                dynamic_level: parseFloat(e.target.value) || 15
+                              })}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                              placeholder="15"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">L. REFOULEMENT (m)</label>
+                            <input
+                              type="number"
+                              value={drawingData.forage_specific.discharge_length}
+                              onChange={(e) => handleDrawingInputChange('forage_specific', {
+                                ...drawingData.forage_specific,
+                                discharge_length: parseFloat(e.target.value) || 100
+                              })}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                              placeholder="100"
+                            />
+                          </div>
+                        </div>
+                        <p className="text-xs text-orange-600 mt-2">
+                          💡 Ces valeurs seront dynamiquement appliquées sur le schéma technique
+                        </p>
+                      </div>
+                    )}
 
                     {/* Matériau et fluide */}
                     <div className="grid grid-cols-2 gap-2">
