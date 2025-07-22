@@ -1228,6 +1228,9 @@ class AuditResult(BaseModel):
     
     # Plan d'action prioritaire
     action_plan: Dict[str, Any]
+    
+    # Rapport d'expertise exhaustif avec analyse croisée
+    expert_installation_report: Optional[Dict[str, Any]] = None
 
 # ============================================================================
 # ENHANCED HYDRAULIC CALCULATION FUNCTIONS
