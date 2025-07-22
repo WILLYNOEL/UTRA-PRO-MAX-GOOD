@@ -4844,7 +4844,7 @@ const SolarExpertSystem = () => {
               <div className="mt-4 bg-blue-100 p-4 rounded-lg border-l-4 border-blue-500">
                 <p className="text-sm text-blue-800">
                   <strong>💡 Note de l'Expert:</strong> Cette configuration a été optimisée pour votre usage spécifique. 
-                  Les équipements GRUNDFOS sont recommandés pour leur fiabilité en milieu tropical et leur service après-vente étendu. 
+                  Les équipements recommandés sont sélectionnés pour leur fiabilité en milieu tropical et leur facilité de maintenance. 
                   L'installation doit être réalisée par un technicien certifié avec respect des normes locales.
                 </p>
               </div>
