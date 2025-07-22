@@ -586,6 +586,19 @@ metadata:
   test_sequence: 0
   run_ui: false
 
+backend:
+  - task: "Audit Results Display Fix - Backend Endpoint Testing"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Commençant les tests de l'endpoint /api/audit-analysis pour vérifier que la structure des données retournées correspond aux attentes du frontend. Le frontend accède à auditResults.overall_score, auditResults.hydraulic_score, etc. et selon l'analyse du code backend, ces champs semblent être retournés directement."
+
 test_plan:
   current_focus: []
   stuck_tasks: []
