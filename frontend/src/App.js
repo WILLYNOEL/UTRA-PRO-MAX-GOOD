@@ -6546,7 +6546,7 @@ const ReservoirCalculator = () => {
   const handleInputChange = (field, value) => {
     setReservoirData(prev => ({
       ...prev,
-      [field]: parseFloat(value) || 0
+      [field]: value === '' ? 0 : parseFloat(value) || 0
     }));
   };
 
@@ -6582,7 +6582,9 @@ const ReservoirCalculator = () => {
   const handleAnalysisInputChange = (field, value) => {
     setAnalysisData(prev => ({
       ...prev,
-      [field]: typeof value === 'string' ? value : (parseFloat(value) || 0)
+      [field]: typeof value === 'string' && !['installation_type', 'pump_type', 'priority'].includes(field) 
+        ? (value === '' ? 0 : parseFloat(value) || 0)
+        : value
     }));
   };
 
