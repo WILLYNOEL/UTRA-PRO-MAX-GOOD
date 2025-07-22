@@ -553,6 +553,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Intelligent Recommendations Integration (HMT, Performance, Expert)"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Intelligent Recommendations Integration working perfectly across all tabs! Comprehensive validation completed with 100% success rate (7/7 test cases passed). ✅ CHEMICAL COMPATIBILITY ANALYSIS: All tabs (HMT, Performance, Expert) successfully integrate chemical compatibility warnings for incompatible fluid-material combinations (acid + cast_iron). HMT shows 1 compatibility warning, Performance shows compatibility recommendations, Expert shows 2 advanced chemical compatibility recommendations. ✅ GRADUATED DIAMETER RECOMMENDATIONS: All tabs provide graduated diameter recommendations with proper velocity limits compliance. HMT shows 9 diameter recommendations with max velocity 3.2 m/s (< 4.0 m/s limit), Performance shows 7 performance-specific diameter recommendations. Expert analysis working after fixing backend bug (suction_pipe_material → suction_material field mapping). ✅ ENERGY OPTIMIZATION: Performance tab shows 2 energy optimization recommendations for low efficiencies (65% pump, 85% motor). Expert tab shows 7 energy recommendations with ROI analysis including cost analysis and optimization potential. ✅ VELOCITY LIMITS COMPLIANCE: All velocity recommendations respect professional limits (no >4 m/s). System correctly excludes warning messages about current excessive velocities and only validates actual recommendations. ✅ EXPERT ANALYSIS BUG FIX: Fixed critical backend bug where expert analysis was accessing wrong field names (suction_pipe_material vs suction_material), now working correctly. ✅ TAB-SPECIFIC RECOMMENDATIONS: Each tab provides appropriate level of recommendations - HMT (basic), Performance (optimization-focused), Expert (advanced with ROI). ✅ BACKEND API INTEGRATION: All three endpoints (/api/calculate-hmt, /api/calculate-performance, /api/expert-analysis) successfully integrate intelligent recommendations. Intelligent recommendations system is production-ready and fully integrated across all tabs as specified in review request."
+
   - task: "NPSHd DN Recommendations Display"
     implemented: true
     working: true
