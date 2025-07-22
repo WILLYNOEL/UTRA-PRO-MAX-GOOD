@@ -16459,9 +16459,9 @@ function App() {
                     {drawingData.installation_type === 'forage' && (
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
                         <h4 className="text-sm font-bold text-orange-700 mb-2">⚡ PARAMÈTRES FORAGE</h4>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1">HAUTEUR RÉSERVOIR (m)</label>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">HAUTEUR CHÂTEAU D'EAU (m)</label>
                             <input
                               type="number"
                               value={drawingData.forage_specific.reservoir_height}
@@ -16486,6 +16486,8 @@ function App() {
                               placeholder="15"
                             />
                           </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1">L. REFOULEMENT (m)</label>
                             <input
@@ -16499,7 +16501,55 @@ function App() {
                               placeholder="100"
                             />
                           </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">PRESSION RÉSIDUELLE (bar)</label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={drawingData.forage_specific.residual_pressure}
+                              onChange={(e) => handleDrawingInputChange('forage_specific', {
+                                ...drawingData.forage_specific,
+                                residual_pressure: parseFloat(e.target.value) || 2
+                              })}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                              placeholder="2"
+                            />
+                          </div>
                         </div>
+                        
+                        {/* CALCUL AUTOMATIQUE HMT */}
+                        <div className="bg-green-100 border border-green-300 rounded p-2">
+                          <h5 className="text-xs font-bold text-green-700 mb-1">📊 CALCUL AUTOMATIQUE HMT</h5>
+                          <div className="text-xs text-green-600">
+                            <div>• Niveau dynamique: {drawingData.forage_specific.dynamic_level}m</div>
+                            <div>• Hauteur château d'eau: {drawingData.forage_specific.reservoir_height}m</div>
+                            <div>• Pertes charge (~10% long.): {Math.round(drawingData.forage_specific.discharge_length * 0.1)}m</div>
+                            <div>• Pression résiduelle: {Math.round(drawingData.forage_specific.residual_pressure * 10)}m</div>
+                            <div className="font-bold text-green-700 border-t pt-1 mt-1">
+                              HMT CALCULÉE = {Math.round(
+                                drawingData.forage_specific.dynamic_level + 
+                                drawingData.forage_specific.reservoir_height + 
+                                (drawingData.forage_specific.discharge_length * 0.1) + 
+                                (drawingData.forage_specific.residual_pressure * 10)
+                              )}m
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const calculatedHMT = Math.round(
+                                drawingData.forage_specific.dynamic_level + 
+                                drawingData.forage_specific.reservoir_height + 
+                                (drawingData.forage_specific.discharge_length * 0.1) + 
+                                (drawingData.forage_specific.residual_pressure * 10)
+                              );
+                              handleDrawingInputChange('total_head', calculatedHMT);
+                            }}
+                            className="mt-2 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                          >
+                            ⚡ APPLIQUER HMT CALCULÉE
+                          </button>
+                        </div>
+                        
                         <p className="text-xs text-orange-600 mt-2">
                           💡 Ces valeurs seront dynamiquement appliquées sur le schéma technique
                         </p>
