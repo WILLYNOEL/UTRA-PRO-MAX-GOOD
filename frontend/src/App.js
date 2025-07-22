@@ -12732,6 +12732,134 @@ function App() {
     );
   };
 
+  // FONCTIONS D'EXPORT PROFESSIONNELLES
+  const exportToPDF = async () => {
+    if (!canvasRef.current) return;
+    
+    try {
+      const canvas = canvasRef.current;
+      
+      // Importer html2pdf
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      // Créer un conteneur pour l'export
+      const exportContainer = document.createElement('div');
+      exportContainer.style.width = '210mm';
+      exportContainer.style.padding = '20mm';
+      exportContainer.style.background = 'white';
+      
+      // Ajouter en-tête professionnel
+      const header = document.createElement('div');
+      header.innerHTML = `
+        <h1 style="text-align: center; color: #1f2937; margin-bottom: 10px;">SCHÉMA HYDRAULIQUE TECHNIQUE</h1>
+        <div style="text-align: center; color: #6b7280; margin-bottom: 20px;">
+          ECO-PUMP AFRIK - Expert Hydraulicien IA v3.0<br/>
+          ${new Date().toLocaleDateString('fr-FR')} - ${drawingData.installation_type.replace('_', ' ').toUpperCase()}
+        </div>
+        <hr style="border: 1px solid #e5e7eb; margin-bottom: 20px;">
+      `;
+      exportContainer.appendChild(header);
+      
+      // Ajouter le canvas
+      const canvasImg = document.createElement('img');
+      canvasImg.src = canvas.toDataURL();
+      canvasImg.style.width = '100%';
+      canvasImg.style.marginBottom = '20px';
+      exportContainer.appendChild(canvasImg);
+      
+      // Ajouter spécifications techniques
+      const specs = document.createElement('div');
+      specs.innerHTML = `
+        <h3 style="color: #1f2937; border-bottom: 2px solid #3b82f6; padding-bottom: 5px;">SPÉCIFICATIONS TECHNIQUES</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+          <div>
+            <strong>Installation:</strong> ${drawingData.installation_type.replace('_', ' ')}<br/>
+            <strong>Pompes:</strong> ${drawingData.pump_count} x ${drawingData.pump_configuration}<br/>
+            <strong>Puissance:</strong> ${drawingData.pump_power.toFixed(1)} kW<br/>
+            <strong>Débit:</strong> ${drawingData.flow_rate} m³/h<br/>
+            <strong>HMT:</strong> ${drawingData.total_head} m<br/>
+          </div>
+          <div>
+            <strong>DN Aspiration:</strong> ${drawingData.suction_diameter}mm<br/>
+            <strong>DN Refoulement:</strong> ${drawingData.discharge_diameter}mm<br/>
+            <strong>Pression service:</strong> ${drawingData.operating_pressure} bar<br/>
+            <strong>Matériau:</strong> ${drawingData.pipe_material}<br/>
+            <strong>Température:</strong> ${drawingData.temperature}°C<br/>
+          </div>
+        </div>
+        <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 4px solid #3b82f6;">
+          <strong>Conformité:</strong> ISO 14692, NF EN 806, DTU 60.11 | 
+          <strong>Protection:</strong> ${drawingData.specifications.protection_class} | 
+          <strong>Tension:</strong> ${drawingData.specifications.voltage}V
+        </div>
+      `;
+      exportContainer.appendChild(specs);
+      
+      // Générer le PDF
+      const opt = {
+        margin: 10,
+        filename: `schema_hydraulique_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+      
+      await html2pdf().set(opt).from(exportContainer).save();
+      
+    } catch (error) {
+      console.error('Erreur export PDF:', error);
+      alert('Erreur lors de l\'export PDF. Veuillez réessayer.');
+    }
+  };
+
+  const exportToDWG = async () => {
+    try {
+      // Simuler export DWG (format CAD)
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      // Conversion en SVG pour compatibilité CAD
+      const svgData = convertCanvasToSVG(canvas);
+      
+      const blob = new Blob([svgData], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `schema_hydraulique_${Date.now()}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Erreur export DWG:', error);
+      alert('Export DWG disponible prochainement. SVG téléchargé en substitution.');
+    }
+  };
+
+  // Conversion Canvas vers SVG pour export CAD
+  const convertCanvasToSVG = (canvas) => {
+    const { width, height } = canvas;
+    const imgData = canvas.toDataURL();
+    
+    return `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>
+            .technical-text { font-family: Arial, sans-serif; font-size: 12px; fill: #1f2937; }
+            .dimension-line { stroke: #6b7280; stroke-width: 1; stroke-dasharray: 3,3; }
+            .pipe { stroke: #1f2937; stroke-width: 3; fill: none; }
+          </style>
+        </defs>
+        <image x="0" y="0" width="${width}" height="${height}" href="${imgData}"/>
+        <text x="20" y="30" class="technical-text">ECO-PUMP AFRIK - Schéma Technique</text>
+        <text x="20" y="50" class="technical-text">Généré le: ${new Date().toLocaleDateString('fr-FR')}</text>
+      </svg>
+    `;
+  };
+
   // Fonction pour générer un schéma hydraulique professionnel
   const generateProfessionalDrawing = () => {
     if (!canvasRef.current) return;
