@@ -16710,18 +16710,20 @@ function App() {
                       </div>
                     )}
 
-                    {/* Matériau et fluide */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <select
-                        value={drawingData.pipe_material}
-                        onChange={(e) => handleDrawingInputChange('pipe_material', e.target.value)}
-                        className="p-2 border border-slate-300 rounded text-sm"
-                      >
-                        <option value="steel">Acier</option>
-                        <option value="stainless">Inox 316L</option>
-                        <option value="pvc">PVC-U</option>
-                        <option value="hdpe">PEHD</option>
-                      </select>
+                    {/* Matériau et fluide - Matériau masqué pour forage (déjà dans PARAMÈTRES FORAGE) */}
+                    <div className={`grid gap-2 ${drawingData.installation_type === 'forage' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                      {drawingData.installation_type !== 'forage' && (
+                        <select
+                          value={drawingData.pipe_material}
+                          onChange={(e) => handleDrawingInputChange('pipe_material', e.target.value)}
+                          className="p-2 border border-slate-300 rounded text-sm"
+                        >
+                          <option value="steel">Acier</option>
+                          <option value="stainless">Inox 316L</option>
+                          <option value="pvc">PVC-U</option>
+                          <option value="hdpe">PEHD</option>
+                        </select>
+                      )}
                       <input
                         type="number"
                         placeholder="Temp. °C"
