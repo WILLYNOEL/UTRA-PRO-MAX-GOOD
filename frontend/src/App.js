@@ -12637,15 +12637,15 @@ function App() {
         break;
         
       case 'submersible':
-        // Pompe immergée dans réservoir
+        // Pompe de relevage dans bâche/fosse
         newData.suction_height = -15;
         newData.discharge_height = 50;
         newData.operating_pressure = 10;
-        newData.show_suction_fields = false; // MASQUER aspiration (pompe dans réservoir)
+        newData.show_suction_fields = false; // MASQUER aspiration (pompe dans bâche)
         newData.show_discharge_fields = true;
-        newData.pump_count = Math.min(data.pump_count, 2); // Max 2 pompes submersibles
+        newData.pump_count = Math.min(Math.max(data.pump_count, 1), 3); // 1-3 pompes
         newData.pumps_in_service = Math.min(data.pumps_in_service, newData.pump_count);
-        newData.pump_configuration = 'standby'; // Configuration standby
+        newData.pump_configuration = 'parallel'; // Toujours en parallèle
         newData.accessories = { ...newData.accessories, manifold: true, strainer: false };
         break;
         
