@@ -12466,31 +12466,26 @@ function App() {
 
   // États pour l'onglet Dessin
   const [drawingData, setDrawingData] = useState({
-    installation_type: 'bache_enterree',
-    pumps: [
-      {
-        id: 1,
-        type: 'centrifuge',
-        power: 1.5,
-        flow: 10,
-        head: 30,
-        position: { x: 0, y: 0 }
-      }
-    ],
-    tanks: [
-      {
-        id: 1,
-        type: 'bache_enterree',
-        capacity: 500,
-        dimensions: { length: 10, width: 5, height: 3 },
-        position: { x: 0, y: 0 }
-      }
-    ],
-    suppressors: [],
-    pipes: [],
-    valves: [],
+    installation_type: 'surface_aspiration',
+    pump_count: 2,
+    pump_configuration: 'parallel',
+    flow_rate: 50,
+    total_head: 30,
+    suction_diameter: 100,
+    discharge_diameter: 80,
+    accessories: {
+      pressure_gauge: true,
+      check_valve: true,
+      isolation_valve: true,
+      pressure_sensor: false,
+      control_panel: true,
+      manifold: false
+    },
+    dimensions: {
+      suction_length: 20,
+      discharge_length: 50
+    },
     drawing_mode: '2d',
-    view_type: 'plan',
     show_dimensions: true,
     show_labels: true
   });
