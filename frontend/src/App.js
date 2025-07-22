@@ -14015,12 +14015,12 @@ function App() {
       }
     }
     
-    // Annotation DN DYNAMIQUE
+    // Annotation DN DYNAMIQUE (protégée)
     ctx.fillStyle = '#27AE60';
     ctx.font = '10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`DN${drawingData.discharge_diameter}`, riserX + 10, groundLevel - 20);
-    ctx.fillText(`${drawingData.flow_rate}m³/h`, riserX + 10, groundLevel - 8);
+    ctx.fillText(`DN${drawingData.discharge_diameter || 80}`, riserX + 10, groundLevel - 20);
+    ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, riserX + 10, groundLevel - 8);
     
     // 6. TÊTE DE FORAGE FIXE
     ctx.fillStyle = '#95A5A6';
