@@ -14222,10 +14222,10 @@ function App() {
     let y = cartY + 40;
     
     const essentialSpecs = [
-      `Débit: ${drawingData.flow_rate} m³/h`,
-      `HMT: ${drawingData.total_head} m`,
-      `DN Ref: ${drawingData.discharge_diameter}mm`,
-      `Pression: ${drawingData.operating_pressure} bar`
+      `Débit: ${drawingData.flow_rate || 0} m³/h`,
+      `HMT: ${drawingData.total_head || 0} m`,
+      `DN Ref: ${drawingData.discharge_diameter || 80}mm`,
+      `Pression: ${drawingData.operating_pressure || 6} bar`
     ];
     
     essentialSpecs.forEach((spec, i) => {
