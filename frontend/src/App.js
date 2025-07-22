@@ -6447,7 +6447,7 @@ const ReservoirCalculator = () => {
       const numerator = kQ * Q * Math.pow(pset + 1, 2) * ((3600 / N) - 10);
       const denominator = 3.6 * (kr * pset + 1) * kH * pset;
       tank_volume = denominator > 0 ? numerator / denominator : 0;
-      formula_used = `Hydro MPC-E/F: V₀ = (0.1 × ${Q} × (${pset} + 1)² × (${(3600 / N).toFixed(0)} - 10)) / (3.6 × (0.7 × ${pset} + 1) × 0.2 × ${pset})`;
+      formula_used = `Hydro MPC-E/F: V₀ = (0.1 × ${Q} × (${pset} + 1)² × (${parseFloat(3600 / N || 0).toFixed(0)} - 10)) / (3.6 × (0.7 × ${pset} + 1) × 0.2 × ${pset})`;
     } else if (reservoir_type === 'MPC-S') {
       // Formule Hydro MPC-S avec kH = 25%, kr = 0.9 (pas de kQ)
       const numerator = 1000 * Q * (pset + 1) * (kH * pset + pset + 1);
