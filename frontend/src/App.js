@@ -12499,6 +12499,13 @@ function App() {
       control_panel_distance: 5.0
     },
     
+    // CHAMPS SPÉCIFIQUES FORAGE
+    forage_specific: {
+      reservoir_height: 30,      // Hauteur du réservoir (m)
+      dynamic_level: 15,         // Niveau dynamique (m)
+      discharge_length: 100      // Longueur refoulement (m)
+    },
+    
     // Accessoires sélectionnables individuellement
     accessories: {
       // Obligatoires selon normes
