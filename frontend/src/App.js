@@ -13461,9 +13461,9 @@ function App() {
     ctx.font = '10px Arial';
     ctx.fillText(drawingData.installation_type.replace('_', ' ').toUpperCase(), col1X, startY + 12);
     ctx.fillText(`${drawingData.pump_count} pompe(s)`, col1X, startY + 24);
-    ctx.fillText(`${drawingData.pumps_in_service || drawingData.pump_count} en service`, col1X, startY + 36);
-    if ((drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)) > 0) {
-      ctx.fillText(`${drawingData.pump_count - (drawingData.pumps_in_service || drawingData.pump_count)} secours`, col1X, startY + 48);
+    ctx.fillText(`${drawingData.pumps_in_service} en service`, col1X, startY + 36);
+    if ((drawingData.pump_count - drawingData.pumps_in_service) > 0) {
+      ctx.fillText(`${drawingData.pump_count - drawingData.pumps_in_service} secours`, col1X, startY + 48);
     }
     
     // Colonne 2 - Hydraulique
