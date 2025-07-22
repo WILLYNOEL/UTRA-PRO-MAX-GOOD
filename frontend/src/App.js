@@ -6414,8 +6414,8 @@ const ReservoirCalculator = () => {
       optimization_opportunities: [
         {
           title: 'Pression de pré-charge',
-          current: `${(kr * working_pressure).toFixed(1)} bar`,
-          optimal: `${(kr * working_pressure * 1.05).toFixed(1)} bar`,
+          current: `${(kr * working_pressure_num).toFixed(1)} bar`,
+          optimal: `${(kr * working_pressure_num * 1.05).toFixed(1)} bar`,
           benefit: '5-10% cycles supplémentaires'
         },
         {
