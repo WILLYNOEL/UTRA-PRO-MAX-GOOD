@@ -12559,19 +12559,22 @@ function App() {
       if (name === 'installation_type') {
         newData = applyInstallationTypeLogic(newData, value);
         
-        // FORCE AUTOMATIQUEMENT le bon nombre de pompes selon contraintes
+        // AJUSTE le nombre de pompes selon les nouvelles possibilités
         switch(value) {
           case 'forage':
+            // Forage: toujours 1 pompe uniquement
             newData.pump_count = 1;
             newData.pumps_in_service = 1;
             break;
           case 'incendie':
-            newData.pump_count = 3;
-            newData.pumps_in_service = 2; // 2 service + 1 secours
+            // Incendie: 1 à 3 pompes, gardons le choix existant si valide
+            newData.pump_count = Math.min(Math.max(prev.pump_count, 1), 3);
+            newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
             break;
           case 'surpresseur':
-            newData.pump_count = 4;
-            newData.pumps_in_service = 3; // 3 service + 1 secours
+            // Surpresseur: 1 à 4 pompes, gardons le choix existant si valide
+            newData.pump_count = Math.min(Math.max(prev.pump_count, 1), 4);
+            newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
             break;
           case 'submersible':
             newData.pump_count = Math.min(prev.pump_count, 2);
