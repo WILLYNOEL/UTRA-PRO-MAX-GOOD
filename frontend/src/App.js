@@ -12647,6 +12647,16 @@ function App() {
   const applyPumpCountLogic = (data, pumpCount) => {
     let newData = { ...data, pump_count: pumpCount };
     
+    // CORRECTION CRITIQUE : Ajuster automatiquement les pompes en service
+    // Si le nombre de pompes diminue, ajuster pumps_in_service
+    if (pumpCount < data.pumps_in_service) {
+      newData.pumps_in_service = pumpCount;
+    }
+    // Si c'est une pompe unique, pompes en service = 1
+    if (pumpCount === 1) {
+      newData.pumps_in_service = 1;
+    }
+    
     // Ajuster les dimensions selon nombre de pompes
     newData.dimensions = {
       ...newData.dimensions,
