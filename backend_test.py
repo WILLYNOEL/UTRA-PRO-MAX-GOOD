@@ -10106,6 +10106,10 @@ class HydraulicPumpTester:
         
         # Run all tests - prioritizing Critical Material Analysis tests from review request
         tests = [
+            # DETAILED CHEMICAL COMPATIBILITY PRESERVATION TESTS - NEW FROM REVIEW REQUEST
+            self.test_detailed_chemical_compatibility_preservation,  # NEW: Test preservation of detailed chemical compatibility analysis
+            self.test_specialized_equipment_recommendations_preservation,  # NEW: Test preservation of specialized equipment recommendations
+            
             # NPSHD CHEMICAL COMPATIBILITY INTEGRATION TEST - FROM REVIEW REQUEST
             self.test_npshd_chemical_compatibility_integration,  # NEW: Test chemical compatibility integration
             
