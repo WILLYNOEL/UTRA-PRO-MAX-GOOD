@@ -14381,27 +14381,32 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Tuyauteries Intelligentes */}
+                  {/* Tuyauteries Intelligentes CONDITIONNELLES */}
                   <div className="bg-white rounded-xl shadow-xl p-5 border-l-4 border-green-600">
                     <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
                       <span className="text-green-600 mr-2">🔧</span>
                       TUYAUTERIES & DIMENSIONS
-                      <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-1 rounded">OPTIMAL</span>
+                      <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-1 rounded">INTELLIGENT</span>
                     </h3>
                     
-                    {/* Diamètres optimisés */}
+                    {/* Diamètres - CONDITIONNELS selon installation */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">DN ASPIRATION</label>
-                        <input
-                          type="number"
-                          value={drawingData.suction_diameter}
-                          onChange={(e) => handleDrawingInputChange('suction_diameter', parseInt(e.target.value) || 100)}
-                          className="w-full p-2 border border-slate-300 rounded text-sm font-medium"
-                        />
-                        <div className="text-xs text-green-600 mt-1">V ≈ {(drawingData.flow_rate / 3600 / (Math.PI * (drawingData.suction_diameter/2000)**2)).toFixed(1)} m/s</div>
-                      </div>
-                      <div>
+                      {/* DN ASPIRATION seulement si nécessaire */}
+                      {drawingData.show_suction_fields && (
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">DN ASPIRATION</label>
+                          <input
+                            type="number"
+                            value={drawingData.suction_diameter}
+                            onChange={(e) => handleDrawingInputChange('suction_diameter', parseInt(e.target.value) || 100)}
+                            className="w-full p-2 border border-slate-300 rounded text-sm font-medium"
+                          />
+                          <div className="text-xs text-green-600 mt-1">V ≈ {(drawingData.flow_rate / 3600 / (Math.PI * (drawingData.suction_diameter/2000)**2)).toFixed(1)} m/s</div>
+                        </div>
+                      )}
+                      
+                      {/* DN REFOULEMENT - toujours présent */}
+                      <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
                         <label className="block text-xs font-semibold text-slate-600 mb-1">DN REFOULEMENT</label>
                         <input
                           type="number"
@@ -14413,22 +14418,30 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Longueurs et distances */}
+                    {/* Longueurs - CONDITIONNELLES */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">L.ASPIRATION (m)</label>
-                        <input
-                          type="number"
-                          value={drawingData.dimensions.suction_length}
-                          onChange={(e) => handleDrawingInputChange('dimensions', {
-                            ...drawingData.dimensions,
-                            suction_length: parseFloat(e.target.value) || 20
-                          })}
-                          className="w-full p-2 border border-slate-300 rounded text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">L.REFOULEMENT (m)</label>
+                      {/* Longueur aspiration SEULEMENT si surface */}
+                      {drawingData.show_suction_fields && (
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">L.ASPIRATION (m)</label>
+                          <input
+                            type="number"
+                            value={drawingData.dimensions.suction_length}
+                            onChange={(e) => handleDrawingInputChange('dimensions', {
+                              ...drawingData.dimensions,
+                              suction_length: parseFloat(e.target.value) || 20
+                            })}
+                            className="w-full p-2 border border-slate-300 rounded text-sm"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                          {drawingData.installation_type.includes('forage') || drawingData.installation_type.includes('submersible') 
+                            ? 'PROFONDEUR (m)' 
+                            : 'L.REFOULEMENT (m)'}
+                        </label>
                         <input
                           type="number"
                           value={drawingData.dimensions.discharge_length}
@@ -14460,6 +14473,18 @@ function App() {
                         onChange={(e) => handleDrawingInputChange('temperature', parseFloat(e.target.value) || 20)}
                         className="p-2 border border-slate-300 rounded text-sm"
                       />
+                    </div>
+
+                    {/* Indicateur de type d'installation */}
+                    <div className="mt-3 p-2 bg-blue-50 rounded-lg">
+                      <div className="text-xs text-blue-700">
+                        <span className="font-semibold">TYPE DÉTECTÉ:</span>
+                        <span className="ml-2">
+                          {drawingData.installation_type.includes('forage') || drawingData.installation_type.includes('submersible')
+                            ? '🕳️ Pompe immergée - Pas d\'aspiration'
+                            : '🏗️ Installation de surface - Avec aspiration'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
