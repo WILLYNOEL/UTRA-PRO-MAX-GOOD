@@ -14116,7 +14116,7 @@ function App() {
     
     // 9. COTATIONS DYNAMIQUES (seules les valeurs changent)
     
-    // MESURE NIVEAU DYNAMIQUE (eau dans forage par rapport au sol)
+    // MESURE NIVEAU DYNAMIQUE (eau dans forage par rapport au sol - niveau élevé)
     ctx.strokeStyle = '#2196F3';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 2]);
@@ -14138,11 +14138,11 @@ function App() {
     ctx.lineTo(wellX - 55, waterLevelY - 5);
     ctx.stroke();
     
-    // Annotation niveau dynamique (DYNAMIQUE protégée)
+    // Annotation niveau dynamique (DYNAMIQUE protégée) - correspond au niveau d'eau réel
     ctx.fillStyle = '#2196F3';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level || 0}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
+    ctx.fillText(`Niv.Eau=${Math.round(waterLevelFromSurface)}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
     
     // MESURE HAUTEUR CHÂTEAU D'EAU (DYNAMIQUE)
     ctx.strokeStyle = '#E91E63';
