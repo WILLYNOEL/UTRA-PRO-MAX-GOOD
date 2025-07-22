@@ -1185,8 +1185,8 @@ const AuditSystem = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Niveau automation</label>
                     <select
-                      value={energyAuditData.automation_level}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, automation_level: e.target.value}))}
+                      value={auditData.automation_level}
+                      onChange={(e) => handleAuditInputChange('automation_level', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="manual">Manuel</option>
