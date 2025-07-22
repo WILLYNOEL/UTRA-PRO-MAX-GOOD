@@ -14211,12 +14211,12 @@ function App() {
   };
   
   
-  // Cartouche technique épuré (sans informations superflues)
+  // Cartouche technique épuré (déplacé en bas à gauche pour ne pas cacher hauteur château)
   const drawCleanTechnicalCartouche = (ctx, canvas, type) => {
-    const cartX = canvas.width - 300;
-    const cartY = 30;
+    const cartX = 50; // Position à gauche au lieu de droite
+    const cartY = canvas.height - 150; // En bas au lieu d'en haut
     const cartW = 270;
-    const cartH = 120; // Plus petit
+    const cartH = 120;
     
     // Cadre simple
     ctx.strokeStyle = '#2C3E50';
@@ -14231,7 +14231,7 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText(`INSTALLATION ${type}`, cartX + 10, cartY + 20);
     
-    // Données techniques ESSENTIELLES SEULEMENT
+    // Données techniques ESSENTIELLES SEULEMENT (SANS ASPIRATION pour forage)
     ctx.font = '10px Arial';
     let y = cartY + 40;
     
