@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix Expert Solaire high flow rate issue where 'Résultats' and 'Économie' tabs display empty for daily flow rates exceeding 204 m³/j"
+user_problem_statement: "Améliorer l'onglet Dessin avec échelle dynamique, réorganisation des champs FORAGE, masquage complet DN ASP, HMT non-éditable pour forage, et correction de la mesure château d'eau"
 
 backend:
   - task: "Detailed Chemical Compatibility Preservation"
