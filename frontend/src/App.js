@@ -14037,7 +14037,12 @@ function App() {
       ctx.fill();
     }
     
-    // 7. TUYAUTERIE HORIZONTALE + RACCORDEMENT CHÂTEAU D'EAU
+    // 7. CHÂTEAU D'EAU FIXE - DÉCLARATIONS D'ABORD
+    const towerW = 100;
+    const towerBaseY = groundLevel - towerHeight;
+    const supportHeight = towerHeight - reservoirH;
+    
+    // 8. TUYAUTERIE HORIZONTALE + RACCORDEMENT CHÂTEAU D'EAU
     const pipeY = groundLevel + 20;
     
     // Tuyauterie horizontale principale
@@ -14075,10 +14080,7 @@ function App() {
     ctx.textAlign = 'center';
     ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, centerX + 20, pipeY - 8);
     
-    // 8. CHÂTEAU D'EAU FIXE
-    const towerW = 100;
-    const towerBaseY = groundLevel - towerHeight;
-    const supportHeight = towerHeight - reservoirH;
+    // 9. CONSTRUCTION DU CHÂTEAU D'EAU
     
     // Support fixe
     ctx.strokeStyle = '#7F8C8D';
