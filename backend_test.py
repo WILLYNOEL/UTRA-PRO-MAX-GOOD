@@ -8609,6 +8609,189 @@ class HydraulicPumpTester:
             self.log_test("Expert Tab Diameter Recommendations Consistency", False, f"Error: {str(e)}")
             return False
 
+    def test_intelligent_expert_recommendations_organization(self):
+        """Test intelligent organization of Expert tab recommendations to eliminate duplicates and improve structure"""
+        print("\n🧠 Testing Intelligent Expert Recommendations Organization...")
+        
+        # Test case from review request - complex scenario to trigger multiple recommendation types
+        test_data = {
+            "flow_rate": 150.0,  # High flow
+            "suction_pipe_diameter": 26.9,  # DN20 - very small
+            "discharge_pipe_diameter": 33.7,  # DN25 - small
+            "suction_dn": 20,  # DN20 selected by user
+            "discharge_dn": 25,  # DN25 selected by user
+            "suction_height": 3.0,
+            "discharge_height": 15.0,
+            "suction_length": 50.0,
+            "discharge_length": 100.0,
+            "total_length": 150.0,
+            "useful_pressure": 2.0,  # bar
+            "suction_material": "cast_iron",  # Incompatible with acid
+            "discharge_material": "pvc",
+            "fluid_type": "acid",  # Incompatible with cast iron
+            "temperature": 25.0,
+            "npsh_required": 4.5,  # High to trigger cavitation
+            "pump_efficiency": 65.0,  # Low efficiency
+            "motor_efficiency": 85.0,  # Moderate efficiency
+            "voltage": 400,
+            "power_factor": 0.8,
+            "starting_method": "star_delta",
+            "cable_length": 50.0,
+            "cable_material": "copper",
+            "installation_type": "surface",
+            "pump_type": "centrifugal",
+            "operating_hours": 8760,
+            "electricity_cost": 0.12,
+            "altitude": 0,
+            "ambient_temperature": 25,
+            "humidity": 60,
+            # Add some fittings to increase complexity
+            "suction_elbow_90": 2,
+            "suction_gate_valve": 1,
+            "discharge_elbow_90": 3,
+            "discharge_check_valve": 1,
+            "discharge_gate_valve": 1
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/expert-analysis", json=test_data, timeout=15)
+            if response.status_code == 200:
+                result = response.json()
+                
+                expert_recommendations = result.get("expert_recommendations", [])
+                
+                if not expert_recommendations:
+                    self.log_test("Expert Recommendations Organization - Presence", False, "No expert recommendations found")
+                    return False
+                
+                # Test 1: Maximum 8 recommendations to prevent overload
+                if len(expert_recommendations) > 8:
+                    self.log_test("Expert Recommendations Organization - Count Limit", False, 
+                                f"Found {len(expert_recommendations)} recommendations, should be max 8")
+                    return False
+                
+                # Test 2: Check priority organization (1-5 priority levels)
+                priorities = [rec.get("priority", 0) for rec in expert_recommendations]
+                unique_priorities = set(priorities)
+                
+                if not all(1 <= p <= 5 for p in priorities):
+                    self.log_test("Expert Recommendations Organization - Priority Range", False, 
+                                f"Priorities should be 1-5, found: {priorities}")
+                    return False
+                
+                # Test 3: Check that recommendations are sorted by priority (critical first)
+                if priorities != sorted(priorities):
+                    self.log_test("Expert Recommendations Organization - Priority Sorting", False, 
+                                "Recommendations should be sorted by priority (1=critical first)")
+                    return False
+                
+                # Test 4: Check for duplicate elimination by analyzing recommendation types
+                recommendation_types = [rec.get("type", "") for rec in expert_recommendations]
+                
+                # Count occurrences of similar topics
+                diameter_count = sum(1 for t in recommendation_types if "diameter" in t.lower() or "diamètre" in t.lower())
+                chemical_count = sum(1 for t in recommendation_types if "chemical" in t.lower() or "chimique" in t.lower() or "compatibilité" in t.lower())
+                cavitation_count = sum(1 for t in recommendation_types if "cavitation" in t.lower())
+                efficiency_count = sum(1 for t in recommendation_types if "efficiency" in t.lower() or "rendement" in t.lower())
+                
+                # Test 5: Verify no excessive duplication (should be consolidated)
+                if diameter_count > 2:
+                    self.log_test("Expert Recommendations Organization - Diameter Consolidation", False, 
+                                f"Found {diameter_count} diameter recommendations, should be consolidated to max 2")
+                    return False
+                
+                if chemical_count > 2:
+                    self.log_test("Expert Recommendations Organization - Chemical Consolidation", False, 
+                                f"Found {chemical_count} chemical compatibility recommendations, should be consolidated")
+                    return False
+                
+                # Test 6: Check expected priority categories are present
+                expected_categories = {
+                    1: ["critical", "safety", "cavitation", "chemical", "incompatibility"],  # Critical safety
+                    2: ["hydraulic", "diameter", "optimization", "head", "loss"],  # Hydraulic optimization
+                    3: ["energy", "efficiency", "cost", "savings", "power"],  # Energy efficiency
+                    4: ["installation", "guidance", "sealing", "material"],  # Installation guidance
+                    5: ["maintenance", "prevention", "monitoring"]  # Maintenance prevention
+                }
+                
+                priority_1_found = False
+                priority_2_found = False
+                
+                for rec in expert_recommendations:
+                    priority = rec.get("priority", 0)
+                    rec_type = rec.get("type", "").lower()
+                    title = rec.get("title", "").lower()
+                    description = rec.get("description", "").lower()
+                    
+                    combined_text = f"{rec_type} {title} {description}"
+                    
+                    if priority == 1:
+                        # Should contain critical safety issues
+                        if any(keyword in combined_text for keyword in expected_categories[1]):
+                            priority_1_found = True
+                    
+                    if priority == 2:
+                        # Should contain hydraulic optimization
+                        if any(keyword in combined_text for keyword in expected_categories[2]):
+                            priority_2_found = True
+                
+                # Test 7: Verify critical safety recommendations are present (cavitation + chemical incompatibility)
+                if not priority_1_found:
+                    self.log_test("Expert Recommendations Organization - Critical Safety", False, 
+                                "Missing critical safety recommendations (cavitation/chemical incompatibility)")
+                    return False
+                
+                # Test 8: Check recommendation structure completeness
+                required_fields = ["type", "priority", "title", "description", "impact", "solutions", "urgency"]
+                for i, rec in enumerate(expert_recommendations):
+                    missing_fields = [field for field in required_fields if field not in rec or not rec[field]]
+                    if missing_fields:
+                        self.log_test("Expert Recommendations Organization - Structure", False, 
+                                    f"Recommendation {i+1} missing fields: {missing_fields}")
+                        return False
+                
+                # Test 9: Verify solutions are actionable (each recommendation should have multiple solutions)
+                for i, rec in enumerate(expert_recommendations):
+                    solutions = rec.get("solutions", [])
+                    if len(solutions) < 2:
+                        self.log_test("Expert Recommendations Organization - Solution Quality", False, 
+                                    f"Recommendation {i+1} should have at least 2 solutions, found {len(solutions)}")
+                        return False
+                
+                # Test 10: Check that high flow + small diameter triggers hydraulic optimization
+                high_velocity_detected = False
+                for rec in expert_recommendations:
+                    combined_text = f"{rec.get('type', '')} {rec.get('title', '')} {rec.get('description', '')}".lower()
+                    if any(keyword in combined_text for keyword in ["velocity", "vitesse", "diameter", "diamètre", "hydraulic", "hydraulique"]):
+                        high_velocity_detected = True
+                        break
+                
+                if not high_velocity_detected:
+                    self.log_test("Expert Recommendations Organization - Velocity Detection", False, 
+                                "Should detect high velocity issues with small diameter and high flow")
+                    return False
+                
+                # Success - all tests passed
+                priority_distribution = {}
+                for p in priorities:
+                    priority_distribution[p] = priority_distribution.get(p, 0) + 1
+                
+                self.log_test("Expert Recommendations Organization", True, 
+                            f"✅ {len(expert_recommendations)} recommendations organized by priority. " +
+                            f"Distribution: {priority_distribution}. " +
+                            f"Types: {len(set(recommendation_types))} unique types. " +
+                            f"Critical safety: {'✅' if priority_1_found else '❌'}, " +
+                            f"Hydraulic opt: {'✅' if priority_2_found else '❌'}")
+                return True
+                
+            else:
+                self.log_test("Expert Recommendations Organization", False, f"Status: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Expert Recommendations Organization", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
