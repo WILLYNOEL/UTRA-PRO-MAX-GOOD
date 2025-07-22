@@ -13695,31 +13695,89 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Configuration pompes ultra-intelligente */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">NB POMPES</label>
-                        <select
-                          value={drawingData.pump_count}
-                          onChange={(e) => handleDrawingInputChange('pump_count', parseInt(e.target.value))}
-                          className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
-                        >
-                          {[1,2,3,4,5,6].map(n => (
-                            <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
-                          ))}
-                        </select>
+                    {/* Configuration pompes VRAIMENT intelligente */}
+                    <div className="mb-4">
+                      <label className="block text-xs font-bold text-slate-700 mb-2">
+                        CONFIGURATION POMPES
+                      </label>
+                      
+                      {/* Nombre de pompes avec logique */}
+                      <div className="grid grid-cols-1 gap-2 mb-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">NOMBRE TOTAL DE POMPES</label>
+                          <select
+                            value={drawingData.pump_count}
+                            onChange={(e) => handleDrawingInputChange('pump_count', parseInt(e.target.value))}
+                            className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
+                          >
+                            {[1,2,3,4,5,6].map(n => (
+                              <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">CONFIGURATION</label>
-                        <select
-                          value={drawingData.pump_configuration}
-                          onChange={(e) => handleDrawingInputChange('pump_configuration', e.target.value)}
-                          className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
-                        >
-                          <option value="parallel">🔀 Parallèle (Débit+)</option>
-                          <option value="series">🔗 Série (HMT+)</option>
-                          <option value="standby">🔄 Standby (Secours)</option>
-                        </select>
+
+                      {/* Configuration série/parallèle SEULEMENT si >= 2 pompes */}
+                      {drawingData.pump_count >= 2 && (
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">POMPES EN SERVICE</label>
+                            <input
+                              type="number"
+                              min="1"
+                              max={drawingData.pump_count}
+                              value={drawingData.pumps_in_service || Math.max(1, drawingData.pump_count - 1)}
+                              onChange={(e) => handleDrawingInputChange('pumps_in_service', parseInt(e.target.value) || 1)}
+                              className="w-full p-2 border border-slate-300 rounded text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">POMPES DE SECOURS</label>
+                            <input
+                              type="number"
+                              min="0"
+                              max={drawingData.pump_count - 1}
+                              value={drawingData.pump_count - (drawingData.pumps_in_service || Math.max(1, drawingData.pump_count - 1))}
+                              onChange={(e) => {
+                                const standby = parseInt(e.target.value) || 0;
+                                handleDrawingInputChange('pumps_in_service', drawingData.pump_count - standby);
+                              }}
+                              className="w-full p-2 border border-slate-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Configuration série/parallèle SEULEMENT pour les pompes en service */}
+                      {(drawingData.pumps_in_service || 1) >= 2 && (
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">CONFIGURATION POMPES EN SERVICE</label>
+                          <select
+                            value={drawingData.pump_configuration}
+                            onChange={(e) => handleDrawingInputChange('pump_configuration', e.target.value)}
+                            className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
+                          >
+                            <option value="parallel">🔀 Parallèle (Débit additionné)</option>
+                            <option value="series">🔗 Série (HMT additionné)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Résumé intelligent de la configuration */}
+                      <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                        <div className="text-xs text-blue-700 mb-1">CONFIGURATION RÉSULTANTE</div>
+                        <div className="text-sm font-bold text-blue-800">
+                          {(drawingData.pumps_in_service || 1)} pompe{(drawingData.pumps_in_service || 1) > 1 ? 's' : ''} en service
+                          {(drawingData.pumps_in_service || 1) >= 2 && ` (${drawingData.pump_configuration})`}
+                          {(drawingData.pump_count - (drawingData.pumps_in_service || 1)) > 0 && 
+                            ` + ${drawingData.pump_count - (drawingData.pumps_in_service || 1)} secours`}
+                        </div>
+                        <div className="text-xs text-blue-600 mt-1">
+                          {drawingData.pump_configuration === 'parallel' && (drawingData.pumps_in_service || 1) >= 2 && 
+                            `Débit: ${((drawingData.pumps_in_service || 1) * drawingData.flow_rate).toFixed(0)} m³/h total`}
+                          {drawingData.pump_configuration === 'series' && (drawingData.pumps_in_service || 1) >= 2 && 
+                            `HMT: ${((drawingData.pumps_in_service || 1) * drawingData.total_head).toFixed(0)} m total`}
+                        </div>
                       </div>
                     </div>
 
