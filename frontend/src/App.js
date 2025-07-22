@@ -1210,8 +1210,8 @@ const AuditSystem = () => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={energyAuditData.soft_starter}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, soft_starter: e.target.checked}))}
+                      checked={auditData.soft_starter}
+                      onChange={(e) => handleAuditInputChange('soft_starter', e.target.checked)}
                       className="mr-2"
                     />
                     <span className="text-sm font-medium text-gray-700">Démarreur progressif</span>
