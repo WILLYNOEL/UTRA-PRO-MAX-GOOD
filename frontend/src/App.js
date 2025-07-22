@@ -6838,6 +6838,253 @@ const ReservoirCalculator = () => {
             </div>
           </div>
         )}
+
+        {/* Contenu du sous-onglet Analyse Existant */}
+        {activeReservoirTab === 'analysis' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Panneau de saisie Analyse */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-gray-900">🔍 Analyse Installation Existante</h3>
+              
+              {/* Paramètres installation */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Volume Réservoir Existant (L)
+                  </label>
+                  <input
+                    type="number"
+                    value={analysisData.existing_volume}
+                    onChange={(e) => handleAnalysisInputChange('existing_volume', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Débit Souhaité (m³/h)
+                  </label>
+                  <input
+                    type="number"
+                    value={analysisData.desired_flow}
+                    onChange={(e) => handleAnalysisInputChange('desired_flow', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                    step="0.1"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pression de Travail (bar)
+                  </label>
+                  <input
+                    type="number"
+                    value={analysisData.working_pressure}
+                    onChange={(e) => handleAnalysisInputChange('working_pressure', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                    step="0.1"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Utilisation (h/jour)
+                  </label>
+                  <input
+                    type="number"
+                    value={analysisData.daily_usage_hours}
+                    onChange={(e) => handleAnalysisInputChange('daily_usage_hours', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                    min="1"
+                    max="24"
+                  />
+                </div>
+              </div>
+
+              {/* Type d'installation */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Type d'Installation</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAnalysisInputChange('installation_type', 'residential')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      analysisData.installation_type === 'residential'
+                        ? 'bg-cyan-600 text-white border-cyan-600'
+                        : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="font-semibold">🏠 Résidentiel</div>
+                    <div className="text-xs mt-1">1-5 m³/h</div>
+                  </button>
+                  <button
+                    onClick={() => handleAnalysisInputChange('installation_type', 'small_commercial')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      analysisData.installation_type === 'small_commercial'
+                        ? 'bg-cyan-600 text-white border-cyan-600'
+                        : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="font-semibold">🏪 Commerce</div>
+                    <div className="text-xs mt-1">3-10 m³/h</div>
+                  </button>
+                  <button
+                    onClick={() => handleAnalysisInputChange('installation_type', 'industrial')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      analysisData.installation_type === 'industrial'
+                        ? 'bg-cyan-600 text-white border-cyan-600'
+                        : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="font-semibold">🏭 Industriel</div>
+                    <div className="text-xs mt-1">8-50 m³/h</div>
+                  </button>
+                  <button
+                    onClick={() => handleAnalysisInputChange('installation_type', 'agricultural')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      analysisData.installation_type === 'agricultural'
+                        ? 'bg-cyan-600 text-white border-cyan-600'
+                        : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="font-semibold">🚜 Agricole</div>
+                    <div className="text-xs mt-1">5-30 m³/h</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Type de pompe et priorité */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type de Pompe</label>
+                  <select
+                    value={analysisData.pump_type}
+                    onChange={(e) => handleAnalysisInputChange('pump_type', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="MPC-E">MPC-E/F (Vitesse Variable)</option>
+                    <option value="MPC-S">MPC-S (Vitesse Fixe)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+                  <select
+                    value={analysisData.priority}
+                    onChange={(e) => handleAnalysisInputChange('priority', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500"
+                  >
+                    <option value="efficiency">Efficacité Énergétique</option>
+                    <option value="durability">Durabilité</option>
+                    <option value="economy">Économie</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Panneau de résultats Analyse */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-gray-900">📊 Analyse et Préconisations</h3>
+              
+              {analysisResults && (
+                <div className="space-y-6">
+                  {/* Statut dimensionnement */}
+                  <div className={`p-4 rounded-lg border-2 ${
+                    analysisResults.sizing_analysis.status_color === 'red' 
+                      ? 'bg-red-50 border-red-300' 
+                      : analysisResults.sizing_analysis.status_color === 'orange'
+                      ? 'bg-orange-50 border-orange-300'
+                      : 'bg-green-50 border-green-300'
+                  }`}>
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-bold text-lg">Dimensionnement: {analysisResults.sizing_analysis.status}</h4>
+                      <span className="text-sm">Max démarrages: {analysisResults.sizing_analysis.max_possible_starts}/h</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div><strong>Volume actuel:</strong> {analysisResults.sizing_analysis.current_volume}L</div>
+                      <div><strong>Volume optimal:</strong> {analysisResults.sizing_analysis.optimal_volume}L</div>
+                      <div><strong>Ratio:</strong> {analysisResults.sizing_analysis.sizing_ratio}</div>
+                      <div><strong>Performance:</strong> {analysisResults.performance_metrics.efficiency_rating}</div>
+                    </div>
+                  </div>
+
+                  {/* Analyse installation */}
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-3">🏗️ Analyse Installation</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div><strong>Type:</strong> {analysisResults.installation_analysis.type}</div>
+                      <div><strong>Usage:</strong> {analysisResults.installation_analysis.usage_pattern}</div>
+                      <div><strong>Débit:</strong> {analysisResults.installation_analysis.flow_adequacy}</div>
+                      <div><strong>Pression:</strong> {analysisResults.installation_analysis.pressure_adequacy}</div>
+                    </div>
+                  </div>
+
+                  {/* Métriques performance */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-3">📈 Métriques Performance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div><strong>Cycles/jour:</strong> {analysisResults.performance_metrics.daily_cycles}</div>
+                      <div><strong>Cycles/an:</strong> {analysisResults.performance_metrics.annual_cycles}</div>
+                      <div className="md:col-span-2"><strong>Impact vie moteur:</strong> {analysisResults.performance_metrics.motor_life_impact}</div>
+                    </div>
+                  </div>
+
+                  {/* Opportunités d'optimisation */}
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-3">🚀 Opportunités d'Optimisation</h4>
+                    {analysisResults.optimization_opportunities.map((opp, index) => (
+                      <div key={index} className="mb-3 last:mb-0">
+                        <div className="flex justify-between items-center text-sm">
+                          <span><strong>{opp.title}:</strong></span>
+                          <span className="text-purple-600">{opp.benefit}</span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {opp.current} → {opp.optimal}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Recommandations intelligentes */}
+                  {analysisResults.recommendations.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-900">💡 Recommandations Intelligentes</h4>
+                      {analysisResults.recommendations.map((rec, index) => (
+                        <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                          rec.type === 'CRITICAL' ? 'bg-red-50 border-red-400' :
+                          rec.type === 'WARNING' ? 'bg-yellow-50 border-yellow-400' :
+                          'bg-blue-50 border-blue-400'
+                        }`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <h5 className="font-semibold text-sm">{rec.title}</h5>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              rec.priority === 'HAUTE' ? 'bg-red-200 text-red-800' :
+                              rec.priority === 'MOYENNE' ? 'bg-orange-200 text-orange-800' :
+                              'bg-blue-200 text-blue-800'
+                            }`}>
+                              {rec.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 mb-2">{rec.description}</p>
+                          <div className="text-xs text-gray-600 mb-2"><strong>Impact:</strong> {rec.impact}</div>
+                          <div className="text-xs">
+                            <strong>Actions:</strong>
+                            <ul className="list-disc list-inside mt-1">
+                              {rec.actions.map((action, idx) => (
+                                <li key={idx}>{action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 const NPSHdCalculator = ({ fluids, pipeMaterials, fittings }) => {
