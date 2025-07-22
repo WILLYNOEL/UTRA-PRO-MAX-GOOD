@@ -3224,8 +3224,8 @@ def calculate_expert_analysis(input_data: ExpertAnalysisInput) -> ExpertAnalysis
     # 1. ANALYSE DE COMPATIBILITÉ CHIMIQUE EXPERTE
     compatibility_analysis = analyze_chemical_compatibility(
         input_data.fluid_type,
-        input_data.suction_pipe_material,
-        input_data.discharge_pipe_material,
+        input_data.suction_material,
+        input_data.discharge_material,
         input_data.temperature
     )
     
