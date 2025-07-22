@@ -12464,30 +12464,68 @@ function App() {
   const [fittings, setFittings] = useState([]);
   const [history, setHistory] = useState([]);
 
-  // États pour l'onglet Dessin
+  // États pour l'onglet Dessin ULTRA-INTELLIGENT
   const [drawingData, setDrawingData] = useState({
     installation_type: 'surface_aspiration',
     pump_count: 2,
     pump_configuration: 'parallel',
+    pump_power: 7.5,
     flow_rate: 50,
     total_head: 30,
     suction_diameter: 100,
     discharge_diameter: 80,
+    
+    // Paramètres avancés auto-calculés
+    suction_height: 3,
+    discharge_height: 25,
+    pipe_material: 'steel',
+    fluid_type: 'water',
+    temperature: 20,
+    operating_pressure: 6,
+    
+    // Distances techniques
+    dimensions: {
+      suction_length: 20,
+      discharge_length: 50,
+      pump_spacing: 1.5,
+      valve_spacing: 2.0,
+      manifold_length: 3.0,
+      control_panel_distance: 5.0
+    },
+    
+    // Accessoires intelligents (auto-calculés)
     accessories: {
       pressure_gauge: true,
       check_valve: true,
       isolation_valve: true,
       pressure_sensor: false,
       control_panel: true,
-      manifold: false
+      manifold: false,
+      flow_meter: false,
+      strainer: true,
+      expansion_joint: false,
+      pressure_reducing_valve: false,
+      air_release_valve: false,
+      drain_valve: true
     },
-    dimensions: {
-      suction_length: 20,
-      discharge_length: 50
-    },
-    drawing_mode: '2d',
+    
+    // Paramètres 3D
+    view_mode: '2d',
     show_dimensions: true,
-    show_labels: true
+    show_labels: true,
+    show_flow_arrows: true,
+    show_elevations: true,
+    
+    // Spécifications techniques
+    specifications: {
+      voltage: 400,
+      frequency: 50,
+      protection_class: 'IP65',
+      insulation_class: 'F',
+      bearing_type: 'ball',
+      coupling_type: 'flexible',
+      base_type: 'concrete'
+    }
   });
 
   const canvasRef = useRef(null);
