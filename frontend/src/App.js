@@ -13164,6 +13164,47 @@ function App() {
     if (drawingData.show_dimensions && diameter) {
       const midX = (x1 + x2) / 2;
       const midY = (y1 + y2) / 2;
+  
+  // Système submersible 3D
+  const create3DSubmersibleSystem = (scene) => {
+    // Forage vertical
+    const wellGeometry = new THREE.CylinderGeometry(0.5, 0.5, 20, 16);
+    const wellMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0x8d6e63,
+      transparent: true,
+      opacity: 0.3
+    });
+    const well = new THREE.Mesh(wellGeometry, wellMaterial);
+    well.position.set(0, -10, 0);
+    scene.add(well);
+    
+    // Pompe submersible
+    const pumpGeometry = new THREE.CylinderGeometry(0.3, 0.3, 2, 12);
+    const pumpMaterial = new THREE.MeshPhongMaterial({ color: 0x1976d2 });
+    const pump = new THREE.Mesh(pumpGeometry, pumpMaterial);
+    pump.position.set(0, -8, 0);
+    scene.add(pump);
+    
+    // Tuyau de refoulement vertical
+    const riserGeometry = new THREE.CylinderGeometry(0.1, 0.1, 15, 12);
+    const riserMaterial = new THREE.MeshPhongMaterial({ color: 0x4caf50 });
+    const riser = new THREE.Mesh(riserGeometry, riserMaterial);
+    riser.position.set(0, -2.5, 0);
+    scene.add(riser);
+    
+    // Château d'eau
+    const towerGeometry = new THREE.CylinderGeometry(3, 3, 4, 16);
+    const towerMaterial = new THREE.MeshPhongMaterial({ color: 0x9c27b0 });
+    const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+    tower.position.set(0, 8, 0);
+    scene.add(tower);
+  };
+  
+  // Système forage 3D
+  const create3DForageSystem = (scene) => {
+    // Utiliser la même logique que submersible pour l'instant
+    create3DSubmersibleSystem(scene);
+  };
       
       ctx.fillStyle = colors[type];
       ctx.font = '10px Arial';
