@@ -15717,7 +15717,7 @@ function App() {
                       >
                         <option value="surface_aspiration">🏗️ Surface Aspiration (Bâche)</option>
                         <option value="surface_charge">🏗️ Surface Charge (Gravitaire)</option>
-                        <option value="submersible">🕳️ Submersible (Forage)</option>
+                        <option value="submersible">🕳️ Pompe de Relevage</option>
                         <option value="forage">⚡ Station Forage</option>
                         <option value="surpresseur">🔧 Surpresseur (Pression)</option>
                         <option value="incendie">🚒 Incendie (Sécurité)</option>
