@@ -13861,14 +13861,22 @@ function App() {
     drawDynamicTechnicalCartouche(ctx, canvas, 'RELEVAGE PARALLÈLE');
   };
 
-  // SCHÉMA FORAGE DYNAMIQUE - PID SIMPLE ET TECHNIQUE
+  // SCHÉMA FORAGE DYNAMIQUE - ÉCHELLE ADAPTATIVE
   const drawProfessionalForage = (ctx, canvas) => {
     // Nettoyage complet
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Paramètres du schéma technique
+    // CALCUL ÉCHELLE ADAPTATIVE selon les valeurs saisies
+    const maxDepth = Math.max(
+      drawingData.forage_specific.dynamic_level,
+      drawingData.forage_specific.reservoir_height,
+      50 // minimum
+    );
+    const scale = Math.min(300 / maxDepth, 3); // Échelle adaptative
+    
+    // Paramètres du schéma technique avec échelle
     const centerX = canvas.width / 2;
-    const groundLevel = canvas.height / 2;
+    const groundLevel = canvas.height / 2 - 50;
     
     // 1. NIVEAU SOL (ligne technique)
     ctx.strokeStyle = '#8B4513';
@@ -13884,10 +13892,10 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText('NIVEAU SOL', 60, groundLevel - 10);
     
-    // 2. FORAGE VERTICAL SIMPLE (rectangle technique) - PROFONDEUR DYNAMIQUE
+    // 2. FORAGE VERTICAL SIMPLE - PROFONDEUR SELON NIVEAU DYNAMIQUE
     const wellX = centerX - 100;
     const wellWidth = 40;
-    const wellDepth = Math.max(100, drawingData.total_head * 3); // Profondeur proportionnelle à HMT
+    const wellDepth = drawingData.forage_specific.dynamic_level * scale; // Profondeur réelle
     
     ctx.strokeStyle = '#2C3E50';
     ctx.lineWidth = 4;
@@ -13895,11 +13903,11 @@ function App() {
     ctx.fillRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     ctx.strokeRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     
-    // Annotation profondeur DYNAMIQUE
+    // Annotation profondeur RÉELLE
     ctx.fillStyle = '#2C3E50';
     ctx.font = '10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(`${Math.round(wellDepth/10)}m`, wellX + wellWidth/2 + 20, groundLevel + wellDepth/2);
+    ctx.fillText(`${drawingData.forage_specific.dynamic_level}m`, wellX + wellWidth/2 + 20, groundLevel + wellDepth/2);
     
     // Label forage
     ctx.fillStyle = '#E74C3C';
@@ -13907,7 +13915,7 @@ function App() {
     ctx.textAlign = 'center';
     ctx.fillText('FORAGE', wellX, groundLevel - 25);
     
-    // 3. NIVEAU D'EAU STATIQUE (ligne simple) - POSITION DYNAMIQUE
+    // 3. NIVEAU D'EAU STATIQUE (ligne simple) - POSITION RÉELLE
     const waterLevel = groundLevel + (wellDepth * 0.3); // 30% de la profondeur
     ctx.strokeStyle = '#3498DB';
     ctx.lineWidth = 2;
@@ -13921,10 +13929,10 @@ function App() {
     ctx.fillStyle = '#3498DB';
     ctx.font = '10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`Niveau ${Math.round((wellDepth * 0.3)/10)}m`, wellX + wellWidth/2 + 10, waterLevel);
+    ctx.fillText(`Niveau statique`, wellX + wellWidth/2 + 10, waterLevel);
     
-    // 4. POMPE SUBMERSIBLE DANS LE FORAGE (symbole PID simple) - POSITION DYNAMIQUE
-    const pumpY = groundLevel + wellDepth * 0.8; // 80% de la profondeur
+    // 4. POMPE SUBMERSIBLE DANS LE FORAGE - POSITION ADAPTÉE
+    const pumpY = groundLevel + wellDepth * 0.8; // 80% de la profondeur réelle
     
     // Corps pompe (rectangle simple)
     ctx.fillStyle = '#1976D2';
@@ -13956,9 +13964,9 @@ function App() {
     ctx.fillText(`${drawingData.flow_rate}m³/h`, wellX, pumpY + 47);
     ctx.fillText(`${drawingData.total_head}m HMT`, wellX, pumpY + 57);
     
-    // 5. COLONNE MONTANTE (tuyau vertical simple) - DIAMÈTRE DYNAMIQUE
+    // 5. COLONNE MONTANTE - DIAMÈTRE DYNAMIQUE
     const riserX = wellX + wellWidth/4;
-    const pipeWidth = Math.max(4, drawingData.discharge_diameter / 20); // Épaisseur proportionnelle au DN
+    const pipeWidth = Math.max(4, drawingData.discharge_diameter / 20);
     
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = pipeWidth;
@@ -13967,17 +13975,19 @@ function App() {
     ctx.lineTo(riserX, groundLevel + 20);
     ctx.stroke();
     
-    // Flèches débit (simples) avec débit affiché
-    const arrowCount = Math.min(4, Math.max(2, Math.round(wellDepth / 80)));
+    // Flèches débit avec nombre adaptatif
+    const arrowCount = Math.min(4, Math.max(2, Math.round(wellDepth / 100)));
     for (let i = 1; i <= arrowCount; i++) {
-      const arrowY = pumpY - 40 - (i * (wellDepth - 100) / arrowCount);
-      ctx.strokeStyle = '#27AE60';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(riserX - 5, arrowY + 8);
-      ctx.lineTo(riserX, arrowY);
-      ctx.lineTo(riserX + 5, arrowY + 8);
-      ctx.stroke();
+      const arrowY = pumpY - 40 - (i * (wellDepth - 80) / arrowCount);
+      if (arrowY > groundLevel + 30) { // Ne pas sortir du sol
+        ctx.strokeStyle = '#27AE60';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(riserX - 5, arrowY + 8);
+        ctx.lineTo(riserX, arrowY);
+        ctx.lineTo(riserX + 5, arrowY + 8);
+        ctx.stroke();
+      }
     }
     
     // Annotation DN DYNAMIQUE
@@ -14002,7 +14012,7 @@ function App() {
       ctx.fill();
     }
     
-    // 7. TUYAUTERIE HORIZONTALE (ligne simple) - DIAMÈTRE PROPORTIONNEL
+    // 7. TUYAUTERIE HORIZONTALE - DIAMÈTRE PROPORTIONNEL
     const pipeY = groundLevel + 20;
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = pipeWidth;
@@ -14135,65 +14145,68 @@ function App() {
       accessoryX += 30;
     }
     
-    // 10. CHÂTEAU D'EAU SURÉLEVÉ - VALEURS DYNAMIQUES DU FORAGE
+    // 10. CHÂTEAU D'EAU SURÉLEVÉ - MESURE DEPUIS SOL JUSQU'AU BOUCHON
     const towerX = centerX + 200;
-    const towerBaseY = groundLevel - drawingData.forage_specific.reservoir_height * 2; // Hauteur proportionnelle
-    const towerW = Math.max(80, Math.min(120, drawingData.flow_rate * 1.5)); // Largeur proportionnelle au débit
-    const towerH = drawingData.forage_specific.reservoir_height; // Hauteur du réservoir saisie
+    const towerHeight = drawingData.forage_specific.reservoir_height * scale; // Hauteur totale depuis le sol
+    const towerBaseY = groundLevel - towerHeight; // Position du bas du château
+    const towerW = Math.max(80, Math.min(120, drawingData.flow_rate * 1.5));
+    const reservoirH = Math.max(30, towerHeight / 3); // Hauteur du réservoir (1/3 de la hauteur totale)
+    const reservoirY = towerBaseY; // Le réservoir est en haut
     
-    // Support du château d'eau
+    // Support du château d'eau (2/3 de la hauteur totale)
+    const supportHeight = towerHeight - reservoirH;
     ctx.strokeStyle = '#7F8C8D';
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.moveTo(towerX + towerW/2 - 15, groundLevel);
-    ctx.lineTo(towerX + towerW/2 - 15, towerBaseY + towerH);
+    ctx.lineTo(towerX + towerW/2 - 15, groundLevel - supportHeight);
     ctx.moveTo(towerX + towerW/2 + 15, groundLevel);
-    ctx.lineTo(towerX + towerW/2 + 15, towerBaseY + towerH);
+    ctx.lineTo(towerX + towerW/2 + 15, groundLevel - supportHeight);
     ctx.stroke();
     
     // Entretoises
     ctx.strokeStyle = '#95A5A6';
     ctx.lineWidth = 2;
-    for (let i = 1; i < 4; i++) {
-      const supportY = groundLevel - (i * drawingData.forage_specific.reservoir_height * 2 / 4);
+    const braceCount = Math.min(5, Math.max(2, Math.round(supportHeight / 30)));
+    for (let i = 1; i < braceCount; i++) {
+      const supportY = groundLevel - (i * supportHeight / braceCount);
       ctx.beginPath();
       ctx.moveTo(towerX + towerW/2 - 15, supportY);
       ctx.lineTo(towerX + towerW/2 + 15, supportY);
       ctx.stroke();
     }
     
-    // Réservoir surélevé
+    // Réservoir surélevé (en haut)
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 3;
     ctx.fillStyle = '#F4ECF7';
-    ctx.fillRect(towerX, towerBaseY, towerW, towerH);
-    ctx.strokeRect(towerX, towerBaseY, towerW, towerH);
+    ctx.fillRect(towerX, reservoirY, towerW, reservoirH);
+    ctx.strokeRect(towerX, reservoirY, towerW, reservoirH);
     
     // Niveau liquide
     const liquidLevel = 0.7;
     ctx.fillStyle = '#9B59B6';
-    ctx.fillRect(towerX + 5, towerBaseY + towerH * (1 - liquidLevel), towerW - 10, towerH * liquidLevel);
+    ctx.fillRect(towerX + 5, reservoirY + reservoirH * (1 - liquidLevel), towerW - 10, reservoirH * liquidLevel);
     
     // Ligne niveau
     ctx.strokeStyle = '#8E44AD';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    ctx.moveTo(towerX, towerBaseY + towerH * (1 - liquidLevel));
-    ctx.lineTo(towerX + towerW, towerBaseY + towerH * (1 - liquidLevel));
+    ctx.moveTo(towerX, reservoirY + reservoirH * (1 - liquidLevel));
+    ctx.lineTo(towerX + towerW, reservoirY + reservoirH * (1 - liquidLevel));
     ctx.stroke();
     ctx.setLineDash([]);
     
-    // VALEURS SAISIES AFFICHÉES VISUELLEMENT
-    // Hauteur du château d'eau
+    // MESURE HAUTEUR CHÂTEAU D'EAU - DEPUIS SOL JUSQU'AU BOUCHON (HAUT DU RÉSERVOIR)
     ctx.strokeStyle = '#E91E63';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 2]);
     ctx.beginPath();
-    ctx.moveTo(towerX + towerW + 10, towerBaseY);
-    ctx.lineTo(towerX + towerW + 30, towerBaseY);
-    ctx.lineTo(towerX + towerW + 30, towerBaseY + towerH);
-    ctx.lineTo(towerX + towerW + 10, towerBaseY + towerH);
+    ctx.moveTo(towerX + towerW + 10, groundLevel);
+    ctx.lineTo(towerX + towerW + 30, groundLevel);
+    ctx.lineTo(towerX + towerW + 30, reservoirY); // Jusqu'au haut du réservoir (bouchon)
+    ctx.lineTo(towerX + towerW + 10, reservoirY);
     ctx.stroke();
     ctx.setLineDash([]);
     
@@ -14201,20 +14214,22 @@ function App() {
     ctx.strokeStyle = '#E91E63';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(towerX + towerW + 25, towerBaseY);
-    ctx.lineTo(towerX + towerW + 25, towerBaseY + 5);
-    ctx.moveTo(towerX + towerW + 25, towerBaseY + towerH);
-    ctx.lineTo(towerX + towerW + 25, towerBaseY + towerH - 5);
+    ctx.moveTo(towerX + towerW + 25, groundLevel);
+    ctx.lineTo(towerX + towerW + 25, groundLevel - 5);
+    ctx.moveTo(towerX + towerW + 25, reservoirY);
+    ctx.lineTo(towerX + towerW + 25, reservoirY + 5);
     ctx.stroke();
     
-    // Annotation hauteur château d'eau (valeur saisie)
+    // Annotation hauteur château d'eau (DEPUIS SOL JUSQU'AU BOUCHON)
     ctx.fillStyle = '#E91E63';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`H=${drawingData.forage_specific.reservoir_height}m`, towerX + towerW + 35, towerBaseY + towerH/2);
+    ctx.fillText(`H=${drawingData.forage_specific.reservoir_height}m`, towerX + towerW + 35, groundLevel - towerHeight/2);
+    ctx.font = '8px Arial';
+    ctx.fillText('(sol→bouchon)', towerX + towerW + 35, groundLevel - towerHeight/2 + 12);
     
-    // Raccordement tuyauterie avec cotes
-    const connectionY = towerBaseY + towerH - 10;
+    // Raccordement tuyauterie
+    const connectionY = groundLevel - 10; // Raccordement près du sol
     ctx.strokeStyle = '#27AE60';
     ctx.lineWidth = pipeWidth;
     ctx.beginPath();
@@ -14247,8 +14262,8 @@ function App() {
     ctx.beginPath();
     ctx.moveTo(wellX - 40, groundLevel);
     ctx.lineTo(wellX - 60, groundLevel);
-    ctx.lineTo(wellX - 60, groundLevel + drawingData.forage_specific.dynamic_level * 3);
-    ctx.lineTo(wellX - 40, groundLevel + drawingData.forage_specific.dynamic_level * 3);
+    ctx.lineTo(wellX - 60, groundLevel + wellDepth);
+    ctx.lineTo(wellX - 40, groundLevel + wellDepth);
     ctx.stroke();
     ctx.setLineDash([]);
     
@@ -14258,23 +14273,23 @@ function App() {
     ctx.beginPath();
     ctx.moveTo(wellX - 55, groundLevel);
     ctx.lineTo(wellX - 55, groundLevel + 5);
-    ctx.moveTo(wellX - 55, groundLevel + drawingData.forage_specific.dynamic_level * 3);
-    ctx.lineTo(wellX - 55, groundLevel + drawingData.forage_specific.dynamic_level * 3 - 5);
+    ctx.moveTo(wellX - 55, groundLevel + wellDepth);
+    ctx.lineTo(wellX - 55, groundLevel + wellDepth - 5);
     ctx.stroke();
     
     // Annotation niveau dynamique (valeur saisie)
     ctx.fillStyle = '#2196F3';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level}m`, wellX - 65, groundLevel + (drawingData.forage_specific.dynamic_level * 3) / 2);
+    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level}m`, wellX - 65, groundLevel + wellDepth / 2);
     
     // Tag château d'eau avec volume estimé
     ctx.fillStyle = '#8E44AD';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('CHÂTEAU D\'EAU', towerX + towerW/2, towerBaseY - 10);
+    ctx.fillText('CHÂTEAU D\'EAU', towerX + towerW/2, reservoirY - 10);
     ctx.font = '8px Arial';
-    ctx.fillText(`V=${Math.round(towerW * towerH * 0.1)}m³`, towerX + towerW/2, towerBaseY - 25);
+    ctx.fillText(`V=${Math.round(towerW * reservoirH * 0.1)}m³`, towerX + towerW/2, reservoirY - 25);
     
     // 11. COFFRET ÉLECTRIQUE DYNAMIQUE si sélectionné
     if (drawingData.accessories.control_panel) {
