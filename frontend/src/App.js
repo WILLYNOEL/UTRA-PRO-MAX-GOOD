@@ -1173,8 +1173,8 @@ const AuditSystem = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Système de contrôle</label>
                     <select
-                      value={energyAuditData.control_system}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, control_system: e.target.value}))}
+                      value={auditData.control_system}
+                      onChange={(e) => handleAuditInputChange('control_system', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500"
                     >
                       {controlSystems.map(system => (
