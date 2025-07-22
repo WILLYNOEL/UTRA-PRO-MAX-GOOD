@@ -102,87 +102,106 @@ const professionalStyles = {
 // Component pour Onglet AUDIT - Analyses Hydraulique et Énergétique Avancées
 const AuditSystem = () => {
   const [activeAuditTab, setActiveAuditTab] = useState('hydraulic');
-  const [hydraulicAuditData, setHydraulicAuditData] = useState({
-    // Données installation existante
+  const [auditData, setAuditData] = useState({
+    // ========================================================================================================
+    // SECTION 1: DONNÉES INSTALLATION EXISTANTE - TERRAIN
+    // ========================================================================================================
     installation_age: '',
     installation_type: 'surface',
-    pump_manufacturer: '',
-    pump_model: '',
-    pump_serial: '',
-    motor_manufacturer: '',
-    motor_power_rated: '',
-    motor_current_rated: '',
+    fluid_type: 'water',
+    fluid_temperature: '20',
     
-    // Conditions d'exploitation actuelles
-    current_flow_rate: '',
-    current_head: '',
-    current_efficiency: '',
-    operating_hours_daily: '',
-    operating_days_yearly: '',
+    // Matériaux et diamètres (CRITIQUE pour audit)
+    suction_material: 'pvc',
+    discharge_material: 'pvc', 
+    suction_pipe_diameter: '114.3',  // DN100 par défaut
+    discharge_pipe_diameter: '88.9',  // DN80 par défaut
     
-    // Mesures techniques relevées
-    suction_pressure: '',
-    discharge_pressure: '',
-    motor_current: '',
-    motor_voltage: '',
-    vibration_level: '',
-    noise_level: '',
-    temperature_motor: '',
-    temperature_bearing: '',
+    // ========================================================================================================
+    // SECTION 2: PERFORMANCES HYDRAULIQUES - COMPARAISON ACTUEL vs REQUIS
+    // ========================================================================================================
     
-    // Observations visuelles
-    leakage_present: false,
-    corrosion_level: 'none',
-    alignment_status: 'good',
-    coupling_condition: 'good',
-    foundation_status: 'good',
+    // Débit - CRITIQUE pour audit
+    current_flow_rate: '',           // Débit mesuré actuellement (m³/h)
+    required_flow_rate: '',          // Débit requis par le process (m³/h)
+    original_design_flow: '',        // Débit de conception originale (m³/h)
     
-    // Maintenance historique
-    last_maintenance: '',
-    maintenance_frequency: 'monthly',
-    replacement_parts: [],
+    // HMT - CRITIQUE pour audit 
+    current_hmt: '',                 // HMT mesurée actuellement (m)
+    required_hmt: '',                // HMT requise par le process (m)
+    original_design_hmt: '',         // HMT de conception originale (m)
     
-    // Problèmes signalés
-    reported_issues: [],
-    performance_degradation: false,
-    energy_consumption_increase: false
-  });
-
-  const [energyAuditData, setEnergyAuditData] = useState({
-    // Données énergétiques
-    electricity_tariff: '96',
-    peak_hours_tariff: '150',
-    off_peak_tariff: '75',
-    demand_charge: '8000',
+    // Mesures pressions (TERRAIN)
+    suction_pressure: '',            // Pression aspiration mesurée (bar)
+    discharge_pressure: '',          // Pression refoulement mesurée (bar)
     
-    // Profil d'exploitation
-    peak_hours_daily: '8',
-    off_peak_hours_daily: '16',
-    seasonal_variation: 'none',
-    load_factor: '0.75',
+    // ========================================================================================================
+    // SECTION 3: PERFORMANCES ÉLECTRIQUES - COMPARAISON ACTUEL vs PLAQUE
+    // ========================================================================================================
     
-    // Mesures énergétiques
-    power_consumption_measured: '',
-    power_factor_measured: '',
-    energy_monthly_kwh: '',
-    energy_cost_monthly: '',
+    // Intensité - CRITIQUE pour diagnostic
+    measured_current: '',            // Intensité mesurée (A)
+    rated_current: '',               // Intensité plaque moteur (A)
     
-    // Équipements auxiliaires
-    control_system: 'basic',
-    variable_frequency_drive: false,
-    soft_starter: false,
-    pressure_tank: false,
-    automation_level: 'manual',
+    // Puissance - CRITIQUE pour rendement
+    measured_power: '',              // Puissance absorbée mesurée (kW)
+    rated_power: '',                 // Puissance plaque moteur (kW)
     
-    // Objectifs d'amélioration
-    target_energy_savings: '20',
-    payback_period_max: '3',
-    investment_budget: '',
+    // Tension et facteur de puissance
+    measured_voltage: '',            // Tension mesurée (V)
+    rated_voltage: '400',            // Tension nominale (V)
+    measured_power_factor: '',       // Cos φ mesuré
     
-    // Contraintes opérationnelles
-    shutdown_windows: 'weekends',
-    safety_requirements: [],
-    environmental_constraints: []
+    // ========================================================================================================
+    // SECTION 4: ÉTAT MÉCANIQUE - OBSERVATIONS TERRAIN
+    // ========================================================================================================
+    
+    // Vibrations et bruit (SEUILS NORMATIFS)
+    vibration_level: '',             // Vibrations mesurées (mm/s)
+    noise_level: '',                 // Bruit mesuré (dB(A))
+    
+    // Températures critiques
+    motor_temperature: '',           // Température moteur (°C)
+    bearing_temperature: '',         // Température paliers (°C)
+    
+    // État visuel (CRITIQUE sécurité)
+    leakage_present: false,          // Fuites détectées
+    corrosion_level: 'none',         // Niveau corrosion
+    alignment_status: 'good',        // État alignement
+    coupling_condition: 'good',      // État accouplement
+    foundation_status: 'good',       // État fondation
+    
+    // ========================================================================================================
+    // SECTION 5: EXPLOITATION ET MAINTENANCE - HISTORIQUE
+    // ========================================================================================================
+    
+    // Utilisation réelle
+    operating_hours_daily: '',       // Heures fonctionnement/jour
+    operating_days_yearly: '',       // Jours fonctionnement/an
+    
+    // Maintenance (PRÉDICTIVE)
+    last_maintenance: '',            // Date dernière maintenance
+    maintenance_frequency: 'monthly', // Fréquence maintenance
+    
+    // Problématiques terrain (DIAGNOSTIC)
+    reported_issues: [],             // Problèmes signalés
+    performance_degradation: false,  // Dégradation performances
+    energy_consumption_increase: false, // Augmentation consommation
+    
+    // ========================================================================================================
+    // SECTION 6: CONTEXTE ÉNERGÉTIQUE - COÛTS RÉELS
+    // ========================================================================================================
+    
+    // Tarifs électriques
+    electricity_cost_per_kwh: '0.12', // Coût kWh (€)
+    
+    // Profil d'utilisation
+    load_factor: '0.75',             // Facteur de charge
+    
+    // Équipements de contrôle existants
+    has_vfd: false,                  // Variateur présent
+    has_soft_starter: false,         // Démarreur progressif
+    has_automation: false            // Automatisation présente
   });
 
   const [auditResults, setAuditResults] = useState(null);
