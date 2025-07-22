@@ -9096,6 +9096,8 @@ class HydraulicPumpTester:
             self.test_expert_tab_diameter_recommendations_consistency,  # NEW: Test Expert tab diameter recommendations consistency with graduated logic
             # INTELLIGENT EXPERT RECOMMENDATIONS ORGANIZATION TEST (from current review request)
             self.test_intelligent_expert_recommendations_organization,  # NEW: Test intelligent organization of Expert tab recommendations to eliminate duplicates and improve structure
+            # COMPREHENSIVE AUDIT SYSTEM TEST (from current review request)
+            self.test_comprehensive_audit_system,  # NEW: Test comprehensive audit system with intelligent field analysis
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
