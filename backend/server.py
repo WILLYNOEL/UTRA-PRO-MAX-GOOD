@@ -5707,7 +5707,32 @@ def generate_action_plan(recommendations: List[AuditRecommendation], economic_an
     high_actions = [r for r in recommendations if r.priority == "high"]
     medium_actions = [r for r in recommendations if r.priority == "medium"]
     
+    phases = [
+        {
+            "phase": "Phase 1 - Immédiate",
+            "timeline": "0-3 mois",
+            "actions": [r.action for r in critical_actions],
+            "investment": sum([r.cost_estimate_max for r in critical_actions]),
+            "expected_impact": "Sécurité, conformité, arrêt dégradation"
+        },
+        {
+            "phase": "Phase 2 - Court terme",
+            "timeline": "3-12 mois", 
+            "actions": [r.action for r in high_actions],
+            "investment": sum([r.cost_estimate_max for r in high_actions]),
+            "expected_impact": "Efficacité énergétique, fiabilité"
+        },
+        {
+            "phase": "Phase 3 - Moyen terme",
+            "timeline": "12-24 mois",
+            "actions": [r.action for r in medium_actions],
+            "investment": sum([r.cost_estimate_max for r in medium_actions]),
+            "expected_impact": "Optimisation performance, ROI"
+        }
+    ]
+    
     return {
+        "phases": phases,  # Added phases field for test compatibility
         "phase_1_immediate": {
             "timeline": "0-3 mois",
             "actions": [r.action for r in critical_actions],
