@@ -14128,7 +14128,7 @@ function App() {
     ctx.fillStyle = '#2196F3';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
+    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level || 0}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
     
     // MESURE HAUTEUR CHÂTEAU D'EAU (DYNAMIQUE)
     ctx.strokeStyle = '#E91E63';
