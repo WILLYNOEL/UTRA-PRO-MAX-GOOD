@@ -13003,101 +13003,101 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveTab('hmt')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'hmt'
-                    ? 'bg-emerald-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-emerald-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🔶</span>
+                <span className="text-base">🔶</span>
                 <span>HMT</span>
               </button>
               <button
                 onClick={() => setActiveTab('performance')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'performance'
-                    ? 'bg-yellow-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-yellow-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">📊</span>
+                <span className="text-base">📊</span>
                 <span>Performance</span>
               </button>
               <button
                 onClick={() => setActiveTab('formulas')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'formulas'
-                    ? 'bg-purple-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-purple-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">📚</span>
+                <span className="text-base">📚</span>
                 <span>Formules</span>
               </button>
               <button
                 onClick={() => setActiveTab('chemical_compatibility')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'chemical_compatibility'
-                    ? 'bg-teal-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-teal-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🧪</span>
+                <span className="text-base">🧪</span>
                 <span>Compatibilité</span>
               </button>
               <button
                 onClick={() => setActiveTab('audit')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'audit'
-                    ? 'bg-indigo-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-indigo-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🔧</span>
+                <span className="text-base">🔧</span>
                 <span>Audit</span>
               </button>
               <button
                 onClick={() => setActiveTab('expert')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'expert'
-                    ? 'bg-violet-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-violet-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🎯</span>
+                <span className="text-base">🎯</span>
                 <span>Expert</span>
               </button>
               <button
                 onClick={() => setActiveTab('reservoir')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'reservoir'
-                    ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🏗️</span>
+                <span className="text-base">🏗️</span>
                 <span>Réservoir</span>
               </button>
               <button
                 onClick={() => setActiveTab('solar')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'solar'
-                    ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg transform scale-105'
+                    ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-gradient-to-r hover:from-orange-600 hover:to-yellow-600 hover:text-white'
                 }`}
               >
-                <span className="text-lg">☀️</span>
+                <span className="text-base">☀️</span>
                 <span>Expert Solaire</span>
               </button>
               <button
                 onClick={() => setActiveTab('drawing')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg font-medium transition-all duration-200 whitespace-nowrap text-sm ${
                   activeTab === 'drawing'
-                    ? 'bg-teal-600 text-white shadow-lg transform scale-105'
+                    ? 'bg-teal-600 text-white shadow-lg'
                     : 'text-blue-200 hover:bg-blue-700/50 hover:text-white'
                 }`}
               >
-                <span className="text-lg">🎨</span>
+                <span className="text-base">🎨</span>
                 <span>Dessin</span>
               </button>
               <button
