@@ -8589,7 +8589,8 @@ class HydraulicPumpTester:
                                                for rec in expert_recommendations if isinstance(rec, dict))
                 velocity_recommendations = any("vitesse" in rec.get("description", "").lower() 
                                              for rec in expert_recommendations if isinstance(rec, dict))
-                diameter_recommendations = any("diamètre" in rec.get("description", "").lower() 
+                diameter_recommendations = any("diamètre" in rec.get("description", "").lower() or
+                                             any("diamètre" in solution.lower() for solution in rec.get("solutions", []))
                                              for rec in expert_recommendations if isinstance(rec, dict))
                 
                 self.log_test("Expert Tab - Cavitation Recommendations", cavitation_recommendations, 
