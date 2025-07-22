@@ -8674,6 +8674,8 @@ class HydraulicPumpTester:
             self.test_compliance_status_formatting,  # NEW: Test compliance status formatting (✅ CONFORME or ⚠️ ACCEPTABLE)
             # INTELLIGENT RECOMMENDATIONS INTEGRATION TEST (from current review request)
             self.test_intelligent_recommendations_integration,  # NEW: Test intelligent recommendations across all tabs (HMT, Performance, Expert)
+            # EXPERT TAB DIAMETER RECOMMENDATIONS CONSISTENCY TEST (from current review request)
+            self.test_expert_tab_diameter_recommendations_consistency,  # NEW: Test Expert tab diameter recommendations consistency with graduated logic
             # Other existing tests
             self.test_user_interface_modifications,  # Test user interface modifications
             self.test_corrected_global_efficiency_formula,  # Test corrected global efficiency
