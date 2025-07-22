@@ -16348,8 +16348,8 @@ function App() {
                         <label className="block text-xs font-semibold text-slate-600 mb-1">HMT (m)</label>
                         <input
                           type="number"
-                          value={drawingData.total_head}
-                          onChange={(e) => handleDrawingInputChange('total_head', parseFloat(e.target.value) || 0)}
+                          value={drawingData.total_head === '' ? '' : drawingData.total_head}
+                          onChange={(e) => handleNumericInputChange('total_head', e.target.value, 0)}
                           className={`w-full p-2 border rounded text-sm focus:border-blue-500 ${
                             drawingData.installation_type === 'forage' 
                               ? 'border-green-300 bg-green-50 text-green-700 cursor-not-allowed' 
