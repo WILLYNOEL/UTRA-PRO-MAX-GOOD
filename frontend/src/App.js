@@ -15282,7 +15282,7 @@ function App() {
                         CONFIGURATION POMPES
                       </label>
                       
-                      {/* Nombre de pompes avec logique */}
+                      {/* Nombre de pompes avec logique INTELLIGENTE */}
                       <div className="grid grid-cols-1 gap-2 mb-3">
                         <div>
                           <label className="block text-xs font-semibold text-slate-600 mb-1">NOMBRE TOTAL DE POMPES</label>
@@ -15291,10 +15291,43 @@ function App() {
                             onChange={(e) => handleDrawingInputChange('pump_count', parseInt(e.target.value))}
                             className="w-full p-2 border border-slate-300 rounded text-sm focus:border-blue-500"
                           >
-                            {[1,2,3,4,5,6].map(n => (
-                              <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
-                            ))}
+                            {(() => {
+                              // LOGIQUE INTELLIGENTE selon type d'installation
+                              switch(drawingData.installation_type) {
+                                case 'forage':
+                                  return [1].map(n => (
+                                    <option key={n} value={n}>{n} pompe (contrainte forage)</option>
+                                  ));
+                                case 'incendie':
+                                  return [3].map(n => (
+                                    <option key={n} value={n}>{n} pompes (réglementation incendie)</option>
+                                  ));
+                                case 'surpresseur':
+                                  return [4].map(n => (
+                                    <option key={n} value={n}>{n} pompes (standard surpresseur)</option>
+                                  ));
+                                case 'submersible':
+                                  return [1,2].map(n => (
+                                    <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
+                                  ));
+                                default:
+                                  // Surface aspiration - choix libre jusqu'à 4
+                                  return [1,2,3,4].map(n => (
+                                    <option key={n} value={n}>{n} pompe{n>1?'s':''}</option>
+                                  ));
+                              }
+                            })()}
                           </select>
+                          {/* Indication contrainte */}
+                          {drawingData.installation_type === 'forage' && (
+                            <p className="text-xs text-orange-600 mt-1">⚠️ Forage: 1 pompe submersible uniquement</p>
+                          )}
+                          {drawingData.installation_type === 'incendie' && (
+                            <p className="text-xs text-red-600 mt-1">🔥 Incendie: 3 pompes réglementaires (2+1 secours)</p>
+                          )}
+                          {drawingData.installation_type === 'surpresseur' && (
+                            <p className="text-xs text-blue-600 mt-1">⚡ Surpresseur: 4 pompes standard (3+1 secours)</p>
+                          )}
                         </div>
                       </div>
 
