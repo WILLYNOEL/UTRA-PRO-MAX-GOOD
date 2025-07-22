@@ -16528,17 +16528,19 @@ function App() {
                         </div>
                       )}
                       
-                      {/* DN REFOULEMENT - toujours présent */}
-                      <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">DN REFOULEMENT</label>
-                        <input
-                          type="number"
-                          value={drawingData.discharge_diameter}
-                          onChange={(e) => handleDrawingInputChange('discharge_diameter', parseInt(e.target.value) || 80)}
-                          className="w-full p-2 border border-slate-300 rounded text-sm font-medium"
-                        />
-                        <div className="text-xs text-green-600 mt-1">V ≈ {(drawingData.flow_rate / 3600 / (Math.PI * (drawingData.discharge_diameter/2000)**2)).toFixed(1)} m/s</div>
-                      </div>
+                      {/* DN REFOULEMENT - Sauf pour forage (déjà dans PARAMÈTRES FORAGE) */}
+                      {drawingData.installation_type !== 'forage' && (
+                        <div className={drawingData.show_suction_fields ? '' : 'col-span-2'}>
+                          <label className="block text-xs font-semibold text-slate-600 mb-1">DN REFOULEMENT</label>
+                          <input
+                            type="number"
+                            value={drawingData.discharge_diameter}
+                            onChange={(e) => handleDrawingInputChange('discharge_diameter', parseInt(e.target.value) || 80)}
+                            className="w-full p-2 border border-slate-300 rounded text-sm font-medium"
+                          />
+                          <div className="text-xs text-green-600 mt-1">V ≈ {(drawingData.flow_rate / 3600 / (Math.PI * (drawingData.discharge_diameter/2000)**2)).toFixed(1)} m/s</div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Longueurs - CONDITIONNELLES */}
