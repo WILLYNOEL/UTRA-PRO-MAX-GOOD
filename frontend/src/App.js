@@ -4754,7 +4754,7 @@ const SolarExpertSystem = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Efficacité:</span>
-                          <span className="font-medium">≥ 95%</span>
+                          <span className="font-medium">&ge; 95%</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Protection:</span>
