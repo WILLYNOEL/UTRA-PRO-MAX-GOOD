@@ -13866,17 +13866,32 @@ function App() {
     // Nettoyage complet
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // CALCUL ÉCHELLE ADAPTATIVE selon les valeurs saisies
-    const maxDepth = Math.max(
+    // CALCUL ÉCHELLE ADAPTATIVE AMÉLIORÉE selon les valeurs saisies
+    const maxVertical = Math.max(
       drawingData.forage_specific.dynamic_level,
       drawingData.forage_specific.reservoir_height,
-      50 // minimum
+      drawingData.forage_specific.discharge_length / 4, // Prendre en compte longueur horizontale
+      30 // minimum
     );
-    const scale = Math.min(300 / maxDepth, 3); // Échelle adaptative
     
-    // Paramètres du schéma technique avec échelle
+    // Échelle améliorée avec plage de valeurs plus large
+    let scale;
+    if (maxVertical <= 50) {
+      scale = 4.0; // Très petites valeurs: zoom fort
+    } else if (maxVertical <= 100) {
+      scale = 3.0; // Valeurs moyennes
+    } else if (maxVertical <= 200) {
+      scale = 2.0; // Grandes valeurs
+    } else {
+      scale = Math.max(0.8, 400 / maxVertical); // Très grandes valeurs: compression
+    }
+    
+    console.log(`Échelle dynamique forage: max=${maxVertical}m, scale=${scale.toFixed(2)}`);
+    
+    // Paramètres du schéma technique avec échelle améliorée
     const centerX = canvas.width / 2;
-    const groundLevel = canvas.height / 2 - 50;
+    const availableHeight = canvas.height - 200; // Espace disponible moins marges
+    const groundLevel = 150 + Math.min(200, maxVertical * scale * 0.3); // Position sol adaptative
     
     // 1. NIVEAU SOL (ligne technique)
     ctx.strokeStyle = '#8B4513';
