@@ -6392,9 +6392,9 @@ const ReservoirCalculator = () => {
       sizing_analysis: {
         status: sizing_status,
         status_color: sizing_color,
-        current_volume: existing_volume,
-        optimal_volume: optimal_volume.toFixed(0),
-        sizing_ratio: sizing_ratio.toFixed(2),
+        current_volume: existing_volume_num,
+        optimal_volume: parseFloat(optimal_volume || 0).toFixed(0),
+        sizing_ratio: parseFloat(sizing_ratio || 0).toFixed(2),
         max_possible_starts: max_possible_starts
       },
       installation_analysis: {
