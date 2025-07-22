@@ -12533,7 +12533,7 @@ function App() {
   // Fonctions de gestion des événements INTELLIGENTES
   const handleDrawingInputChange = (name, value) => {
     setDrawingData(prev => {
-      const newData = { ...prev, [name]: value };
+      let newData = { ...prev, [name]: value };
       
       // LOGIQUE INTELLIGENTE : Communication automatique entre champs
       if (name === 'installation_type') {
