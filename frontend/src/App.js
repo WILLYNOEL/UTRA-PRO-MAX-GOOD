@@ -14211,10 +14211,10 @@ function App() {
   };
   
   
-  // Cartouche technique épuré (déplacé en bas à gauche pour ne pas cacher hauteur château)
+  // Cartouche technique épuré spécialement pour FORAGE (déplacé en bas à gauche, SANS aspiration)
   const drawCleanTechnicalCartouche = (ctx, canvas, type) => {
-    const cartX = 50; // Position à gauche au lieu de droite
-    const cartY = canvas.height - 150; // En bas au lieu d'en haut
+    const cartX = 50; // Position à gauche
+    const cartY = canvas.height - 150; // En bas
     const cartW = 270;
     const cartH = 120;
     
@@ -14231,18 +14231,20 @@ function App() {
     ctx.textAlign = 'left';
     ctx.fillText(`INSTALLATION ${type}`, cartX + 10, cartY + 20);
     
-    // Données techniques ESSENTIELLES SEULEMENT (SANS ASPIRATION pour forage)
+    // Données techniques FORAGE SEULEMENT (aucune aspiration)
     ctx.font = '10px Arial';
     let y = cartY + 40;
     
-    const essentialSpecs = [
+    // Spécifications spéciales pour FORAGE uniquement
+    const forageSpecs = [
       `Débit: ${drawingData.flow_rate || 0} m³/h`,
       `HMT: ${drawingData.total_head || 0} m`,
-      `DN Ref: ${drawingData.discharge_diameter || 80}mm`,
-      `Pression: ${drawingData.operating_pressure || 6} bar`
+      `DN Refoulement: ${drawingData.discharge_diameter || 80} mm`, // SEULEMENT refoulement pour forage
+      `Pression: ${drawingData.operating_pressure || 6} bar`,
+      `Pompe: ${drawingData.pump_count || 1} × submersible` // Spécifique forage
     ];
     
-    essentialSpecs.forEach((spec, i) => {
+    forageSpecs.forEach((spec, i) => {
       ctx.fillText(spec, cartX + 10, y + (i * 15));
     });
   };
