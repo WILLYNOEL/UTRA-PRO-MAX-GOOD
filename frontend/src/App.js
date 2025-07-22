@@ -15635,15 +15635,15 @@ function App() {
                               switch(drawingData.installation_type) {
                                 case 'forage':
                                   return [1].map(n => (
-                                    <option key={n} value={n}>{n} pompe (contrainte forage)</option>
+                                    <option key={n} value={n}>{n} pompe submersible</option>
                                   ));
                                 case 'incendie':
-                                  return [3].map(n => (
-                                    <option key={n} value={n}>{n} pompes (réglementation incendie)</option>
+                                  return [1,2,3].map(n => (
+                                    <option key={n} value={n}>{n} pompe{n>1?'s':''} incendie</option>
                                   ));
                                 case 'surpresseur':
-                                  return [4].map(n => (
-                                    <option key={n} value={n}>{n} pompes (standard surpresseur)</option>
+                                  return [1,2,3,4].map(n => (
+                                    <option key={n} value={n}>{n} pompe{n>1?'s':''} surpresseur</option>
                                   ));
                                 case 'submersible':
                                   return [1,2].map(n => (
