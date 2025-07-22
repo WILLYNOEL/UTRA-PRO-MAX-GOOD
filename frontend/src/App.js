@@ -1232,52 +1232,291 @@ const AuditSystem = () => {
 
           {activeAuditTab === 'results' && auditResults && (
             <div className="space-y-8">
-              <h3 className="text-xl font-bold text-gray-900">📊 Résultats d'Audit et Recommandations</h3>
+              <h3 className="text-xl font-bold text-gray-900">📊 Résultats d'Audit Expert et Recommandations</h3>
               
-              {/* Scores globaux */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border-2 border-blue-200 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {auditResults.hydraulic_audit.overall_score}/100
+              {/* En-tête du rapport */}
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="text-2xl font-bold mb-2">Rapport d'Audit #{auditResults.audit_id}</h4>
+                    <p className="text-blue-100">{auditResults.audit_date}</p>
                   </div>
-                  <div className="text-lg font-medium text-gray-900 mb-1">Score Hydraulique</div>
-                  <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${auditResults.hydraulic_audit.performance_rating.bgColor} ${auditResults.hydraulic_audit.performance_rating.color}`}>
-                    {auditResults.hydraulic_audit.performance_rating.level}
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{auditResults.overall_score}/100</div>
+                    <div className="text-lg">{auditResults.executive_summary?.overall_status || 'Score Global'}</div>
                   </div>
-                </div>
-                <div className="bg-white border-2 border-green-200 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {auditResults.energy_audit.overall_score}/100
-                  </div>
-                  <div className="text-lg font-medium text-gray-900 mb-1">Score Énergétique</div>
-                  <div className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${auditResults.energy_audit.efficiency_rating.bgColor} ${auditResults.energy_audit.efficiency_rating.color}`}>
-                    {auditResults.energy_audit.efficiency_rating.level}
-                  </div>
-                </div>
-                <div className="bg-white border-2 border-purple-200 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {auditResults.combined_analysis.total_score}/100
-                  </div>
-                  <div className="text-lg font-medium text-gray-900 mb-1">Score Global</div>
-                  <div className="text-sm text-gray-600">Analyse combinée</div>
                 </div>
               </div>
 
-              {/* Recommandations hydrauliques */}
-              <div className="bg-blue-50 rounded-lg p-6">
-                <h4 className="font-bold text-blue-900 mb-4">🔧 Recommandations Hydrauliques Prioritaires</h4>
-                <div className="space-y-4">
-                  {auditResults.hydraulic_audit.recommendations.map((rec, index) => (
-                    <div key={index} className={`border-l-4 pl-4 ${
-                      rec.priority === 'Haute' ? 'border-red-400 bg-red-50' :
-                      rec.priority === 'Moyenne' ? 'border-yellow-400 bg-yellow-50' :
-                      'border-green-400 bg-green-50'
-                    }`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-medium text-gray-900">{rec.action}</h5>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          rec.priority === 'Haute' ? 'bg-red-200 text-red-800' :
-                          rec.priority === 'Moyenne' ? 'bg-yellow-200 text-yellow-800' :
+              {/* Scores détaillés par catégorie */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-white border-2 border-blue-200 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">{auditResults.hydraulic_score}/100</div>
+                  <div className="text-sm font-medium text-gray-900">Hydraulique</div>
+                  <div className="text-xs text-gray-600 mt-1">Débit, HMT, Pertes</div>
+                </div>
+                <div className="bg-white border-2 border-yellow-200 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-600 mb-1">{auditResults.electrical_score}/100</div>
+                  <div className="text-sm font-medium text-gray-900">Électrique</div>
+                  <div className="text-xs text-gray-600 mt-1">Intensité, Puissance</div>
+                </div>
+                <div className="bg-white border-2 border-orange-200 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-600 mb-1">{auditResults.mechanical_score}/100</div>
+                  <div className="text-sm font-medium text-gray-900">Mécanique</div>
+                  <div className="text-xs text-gray-600 mt-1">Vibrations, Température</div>
+                </div>
+                <div className="bg-white border-2 border-green-200 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600 mb-1">{auditResults.operational_score}/100</div>
+                  <div className="text-sm font-medium text-gray-900">Exploitation</div>
+                  <div className="text-xs text-gray-600 mt-1">Maintenance, Fiabilité</div>
+                </div>
+              </div>
+
+              {/* Synthèse Executive */}
+              {auditResults.executive_summary && (
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h4 className="font-bold text-gray-900 mb-4">📋 Synthèse Executive</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-red-600">Issues Critiques</div>
+                      <div className="text-2xl font-bold text-red-800">{auditResults.executive_summary.critical_issues_count}</div>
+                      <div className="text-xs text-gray-600">Actions immédiates requises</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-orange-600">Issues Importantes</div>
+                      <div className="text-2xl font-bold text-orange-800">{auditResults.executive_summary.high_issues_count}</div>
+                      <div className="text-xs text-gray-600">À traiter court terme</div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-blue-600">Recommandations</div>
+                      <div className="text-2xl font-bold text-blue-800">{auditResults.executive_summary.total_recommendations}</div>
+                      <div className="text-xs text-gray-600">Actions d'amélioration</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Comparaisons Performance */}
+              {auditResults.performance_comparisons && auditResults.performance_comparisons.length > 0 && (
+                <div className="bg-red-50 rounded-lg p-6 border border-red-200">
+                  <h4 className="font-bold text-red-800 mb-4">⚡ Analyse Comparative des Performances</h4>
+                  <div className="space-y-4">
+                    {auditResults.performance_comparisons.map((comparison, index) => (
+                      <div key={index} className={`bg-white p-4 rounded border-l-4 ${
+                        comparison.status === 'optimal' ? 'border-green-400' :
+                        comparison.status === 'acceptable' ? 'border-yellow-400' : 'border-red-400'
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-medium text-gray-900">{comparison.parameter_name}</div>
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${
+                            comparison.status === 'optimal' ? 'bg-green-100 text-green-800' :
+                            comparison.status === 'acceptable' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {comparison.status.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">{comparison.interpretation}</div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                          {comparison.current_value && (
+                            <div className="text-green-600">Actuel: {comparison.current_value}</div>
+                          )}
+                          {comparison.required_value && (
+                            <div className="text-blue-600">Requis: {comparison.required_value}</div>
+                          )}
+                          {comparison.deviation_from_required && (
+                            <div className="text-red-600">Écart: {comparison.deviation_from_required.toFixed(1)}%</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Diagnostics */}
+              {auditResults.diagnostics && auditResults.diagnostics.length > 0 && (
+                <div className="bg-orange-50 rounded-lg p-6 border border-orange-200">
+                  <h4 className="font-bold text-orange-800 mb-4">🔍 Diagnostics Experts</h4>
+                  <div className="space-y-4">
+                    {auditResults.diagnostics.map((diagnostic, index) => (
+                      <div key={index} className={`bg-white p-4 rounded border-l-4 ${
+                        diagnostic.severity === 'critical' ? 'border-red-500' :
+                        diagnostic.severity === 'high' ? 'border-orange-500' :
+                        diagnostic.severity === 'medium' ? 'border-yellow-500' : 'border-blue-500'
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-medium text-gray-900">{diagnostic.issue}</div>
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${
+                            diagnostic.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                            diagnostic.severity === 'high' ? 'bg-orange-100 text-orange-800' :
+                            diagnostic.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {diagnostic.severity.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          <strong>Cause racine:</strong> {diagnostic.root_cause}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <strong>Urgence:</strong> {diagnostic.urgency}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommandations Priorisées */}
+              {auditResults.recommendations && auditResults.recommendations.length > 0 && (
+                <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                  <h4 className="font-bold text-blue-800 mb-4">💡 Recommandations Priorisées</h4>
+                  <div className="space-y-4">
+                    {auditResults.recommendations.map((recommendation, index) => (
+                      <div key={index} className={`bg-white p-4 rounded border-l-4 ${
+                        recommendation.priority === 'critical' ? 'border-red-500' :
+                        recommendation.priority === 'high' ? 'border-orange-500' :
+                        recommendation.priority === 'medium' ? 'border-yellow-500' : 'border-green-500'
+                      }`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-medium text-gray-900">{recommendation.action}</div>
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${
+                            recommendation.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                            recommendation.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                            recommendation.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {recommendation.priority.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 mb-3">{recommendation.description}</div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          <div>
+                            <div className="font-medium text-gray-700">Coût estimé</div>
+                            <div className="text-green-600">{recommendation.cost_estimate_min.toLocaleString()}€ - {recommendation.cost_estimate_max.toLocaleString()}€</div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-700">Délai</div>
+                            <div className="text-blue-600">{recommendation.timeline}</div>
+                          </div>
+                          {recommendation.roi_months && (
+                            <div>
+                              <div className="font-medium text-gray-700">ROI</div>
+                              <div className="text-purple-600">{recommendation.roi_months} mois</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {recommendation.expected_benefits && recommendation.expected_benefits.length > 0 && (
+                          <div className="mt-3">
+                            <div className="font-medium text-gray-700 text-xs mb-1">Bénéfices attendus:</div>
+                            <div className="text-xs text-gray-600">
+                              {recommendation.expected_benefits.join(' • ')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Analyse Économique */}
+              {auditResults.economic_analysis && (
+                <div className="bg-green-50 rounded-lg p-6 border border-green-200">
+                  <h4 className="font-bold text-green-800 mb-4">💰 Analyse Économique</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-green-700">Coût Énergétique Actuel</div>
+                      <div className="text-xl font-bold text-green-800">
+                        {auditResults.economic_analysis.current_annual_energy_cost.toLocaleString()}€/an
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-blue-700">Investissement Total</div>
+                      <div className="text-xl font-bold text-blue-800">
+                        {auditResults.economic_analysis.total_investment_required.toLocaleString()}€
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded border">
+                      <div className="font-semibold text-purple-700">Retour Investissement</div>
+                      <div className="text-xl font-bold text-purple-800">
+                        {auditResults.economic_analysis.payback_period_years.toFixed(1)} ans
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 bg-white p-4 rounded border">
+                    <div className="font-semibold text-gray-700 mb-2">Économies Potentielles</div>
+                    <div className="text-lg text-green-600 font-bold">
+                      {auditResults.economic_analysis.estimated_annual_savings.toLocaleString()}€/an
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      ROI 5 ans: {auditResults.economic_analysis.roi_5_years?.toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Plan d'Action */}
+              {auditResults.action_plan && (
+                <div className="bg-purple-50 rounded-lg p-6 border border-purple-200">
+                  <h4 className="font-bold text-purple-800 mb-4">🗓️ Plan d'Action Prioritaire</h4>
+                  
+                  <div className="space-y-4">
+                    {auditResults.action_plan.phase_1_immediate && (
+                      <div className="bg-white p-4 rounded border-l-4 border-red-400">
+                        <div className="font-semibold text-red-700 mb-2">Phase 1 - Actions Immédiates</div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          <strong>Timeline:</strong> {auditResults.action_plan.phase_1_immediate.timeline}
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          <strong>Investissement:</strong> {auditResults.action_plan.phase_1_immediate.investment?.toLocaleString()}€
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {auditResults.action_plan.phase_1_immediate.actions?.join(' • ')}
+                        </div>
+                      </div>
+                    )}
+
+                    {auditResults.action_plan.phase_2_short_term && (
+                      <div className="bg-white p-4 rounded border-l-4 border-orange-400">
+                        <div className="font-semibold text-orange-700 mb-2">Phase 2 - Court Terme</div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          <strong>Timeline:</strong> {auditResults.action_plan.phase_2_short_term.timeline}
+                        </div>
+                        <div className="text-sm text-gray-700 mb-2">
+                          <strong>Investissement:</strong> {auditResults.action_plan.phase_2_short_term.investment?.toLocaleString()}€
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {auditResults.action_plan.phase_2_short_term.actions?.join(' • ')}
+                        </div>
+                      </div>
+                    )}
+
+                    {auditResults.action_plan.total_program && (
+                      <div className="bg-white p-4 rounded border">
+                        <div className="font-semibold text-gray-700 mb-2">📊 Récapitulatif Programme</div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <strong>Durée totale:</strong> {auditResults.action_plan.total_program.duration_months} mois
+                          </div>
+                          <div>
+                            <strong>Investissement:</strong> {auditResults.action_plan.total_program.total_investment?.toLocaleString()}€
+                          </div>
+                          <div>
+                            <strong>Économies:</strong> {auditResults.action_plan.total_program.expected_savings?.toLocaleString()}€/an
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
                           'bg-green-200 text-green-800'
                         }`}>
                           {rec.priority}
