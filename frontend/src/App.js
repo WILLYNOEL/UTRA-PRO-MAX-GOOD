@@ -6531,11 +6531,17 @@ const ReservoirCalculator = () => {
     };
   };
 
-  // Mise à jour temps réel des calculs
+  // Mise à jour temps réel des calculs de dimensionnement
   useEffect(() => {
     const results = calculateReservoir(reservoirData);
     setCalculationResults(results);
   }, [reservoirData]);
+
+  // Mise à jour temps réel des analyses d'installation existante
+  useEffect(() => {
+    const results = analyzeExistingInstallation(analysisData);
+    setAnalysisResults(results);
+  }, [analysisData]);
 
   const handleInputChange = (field, value) => {
     setReservoirData(prev => ({
