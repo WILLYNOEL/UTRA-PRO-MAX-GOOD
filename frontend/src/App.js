@@ -1917,22 +1917,43 @@ const AuditSystem = () => {
                       </div>
                     )}
 
-                    {/* Planning Maintenance */}
+                    {/* Planning Maintenance avec section déroulante */}
                     {realTimeAnalysis.section3_corrective_actions.maintenance_schedule.length > 0 && (
                       <div className="mb-6">
-                        <h6 className="font-semibold text-green-800 mb-3">📅 PLANNING MAINTENANCE</h6>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {realTimeAnalysis.section3_corrective_actions.maintenance_schedule.map((schedule, idx) => (
-                            <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-200">
-                              <h8 className="font-semibold text-green-800 text-sm mb-2 block">{schedule.frequency}</h8>
-                              <div className="space-y-1">
-                                {schedule.tasks?.map((task, taskIdx) => (
-                                  <div key={taskIdx} className="text-xs text-green-700">• {task}</div>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
+                        <div 
+                          className="flex items-center justify-between cursor-pointer bg-green-100 hover:bg-green-200 p-3 rounded-lg border border-green-300 transition-colors"
+                          onClick={() => toggleSection('planning_maintenance')}
+                        >
+                          <h6 className="font-semibold text-green-800 flex items-center">
+                            <span className="mr-2">📅</span>
+                            PLANNING MAINTENANCE
+                          </h6>
+                          <svg 
+                            className={`w-5 h-5 text-green-800 transform transition-transform ${expandedSections.planning_maintenance ? 'rotate-180' : ''}`}
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
                         </div>
+                        
+                        {expandedSections.planning_maintenance && (
+                          <div className="mt-3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {realTimeAnalysis.section3_corrective_actions.maintenance_schedule.map((schedule, idx) => (
+                                <div key={idx} className="bg-green-50 p-3 rounded-lg border border-green-200">
+                                  <h8 className="font-semibold text-green-800 text-sm mb-2 block">{schedule.frequency}</h8>
+                                  <div className="space-y-1">
+                                    {schedule.tasks?.map((task, taskIdx) => (
+                                      <div key={taskIdx} className="text-xs text-green-700">• {task}</div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
