@@ -12577,7 +12577,8 @@ function App() {
             newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
             break;
           case 'submersible':
-            newData.pump_count = Math.min(prev.pump_count, 2);
+            // Pompe de relevage: 1 à 3 pompes
+            newData.pump_count = Math.min(Math.max(prev.pump_count, 1), 3);
             newData.pumps_in_service = Math.min(prev.pumps_in_service, newData.pump_count);
             break;
           default:
