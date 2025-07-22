@@ -6338,7 +6338,7 @@ const ReservoirCalculator = () => {
         type: 'INFO',
         category: 'Optimisation',
         title: 'Réservoir surdimensionné',
-        description: `Volume ${existing_volume}L supérieur à l'optimal (${optimal_volume.toFixed(0)}L)`,
+        description: `Volume ${existing_volume_num}L supérieur à l'optimal (${parseFloat(optimal_volume || 0).toFixed(0)}L)`,
         actions: [
           'Augmenter pression de pré-charge pour optimiser',
           'Possibilité de réduire taille lors du remplacement',
