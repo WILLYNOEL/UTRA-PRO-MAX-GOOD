@@ -12501,9 +12501,10 @@ function App() {
     
     // CHAMPS SPÉCIFIQUES FORAGE
     forage_specific: {
-      reservoir_height: 30,      // Hauteur du réservoir (m)
+      reservoir_height: 30,      // Hauteur du réservoir/château d'eau (m)
       dynamic_level: 15,         // Niveau dynamique (m)
-      discharge_length: 100      // Longueur refoulement (m)
+      discharge_length: 100,     // Longueur refoulement (m)
+      residual_pressure: 2       // Pression résiduelle (bar)
     },
     
     // Accessoires sélectionnables individuellement
