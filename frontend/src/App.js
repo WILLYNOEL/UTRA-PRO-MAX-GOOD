@@ -12464,6 +12464,39 @@ function App() {
   const [fittings, setFittings] = useState([]);
   const [history, setHistory] = useState([]);
 
+  // États pour l'onglet Dessin
+  const [drawingData, setDrawingData] = useState({
+    installation_type: 'bache_enterree',
+    pumps: [
+      {
+        id: 1,
+        type: 'centrifuge',
+        power: 1.5,
+        flow: 10,
+        head: 30,
+        position: { x: 0, y: 0 }
+      }
+    ],
+    tanks: [
+      {
+        id: 1,
+        type: 'bache_enterree',
+        capacity: 500,
+        dimensions: { length: 10, width: 5, height: 3 },
+        position: { x: 0, y: 0 }
+      }
+    ],
+    suppressors: [],
+    pipes: [],
+    valves: [],
+    drawing_mode: '2d',
+    view_type: 'plan',
+    show_dimensions: true,
+    show_labels: true
+  });
+
+  const canvasRef = useRef(null);
+
   useEffect(() => {
     loadData();
   }, []);
