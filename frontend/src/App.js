@@ -6179,6 +6179,9 @@ const FormulaDatabase = () => {
 
 // Component pour Calcul des Réservoirs à Vessie
 const ReservoirCalculator = () => {
+  // État pour gérer les sous-onglets
+  const [activeReservoirTab, setActiveReservoirTab] = useState('sizing'); // 'sizing' ou 'analysis'
+  
   const [reservoirData, setReservoirData] = useState({
     // Type de réservoir
     reservoir_type: 'MPC-E', // MPC-E/F ou MPC-S
@@ -6186,7 +6189,7 @@ const ReservoirCalculator = () => {
     // Paramètres de calcul
     flow_rate: 5.0, // Q - Débit moyen (m³/h)
     set_pressure: 4.0, // pset - Pression de consigne (bar)
-    max_starts_per_hour: 20, // N - Nombre max de démarrages/heure
+    max_starts_per_hour: 15, // N - Nombre max de démarrages/heure (valeur recommandée pour MPC-E)
     
     // Ratios techniques - VALEURS FIXES selon type réservoir
     kQ_ratio: 0.1, // kQ - 10% pour MPC-E/F uniquement
@@ -6194,7 +6197,24 @@ const ReservoirCalculator = () => {
     kr_ratio: 0.7, // kr - 0.7 pour MPC-E/F, 0.9 pour MPC-S
   });
 
+  // État pour l'analyse d'installation existante
+  const [analysisData, setAnalysisData] = useState({
+    existing_volume: 50, // Volume réservoir existant (L)
+    desired_flow: 3.0, // Débit souhaité (m³/h)
+    installation_type: 'residential', // Type d'installation
+    working_pressure: 4.0, // Pression de travail (bar)
+    pump_type: 'MPC-E', // Type de pompe
+    daily_usage_hours: 8, // Heures d'utilisation par jour
+    priority: 'efficiency' // 'efficiency', 'durability', 'economy'
+  });
+
   const [calculationResults, setCalculationResults] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState(null);
+
+  // Valeurs recommandées intelligentes selon le type
+  const getRecommendedStarts = (type) => {
+    return type === 'MPC-E' ? 15 : 10; // MPC-E: 15 démarrages, MPC-S: 10 démarrages
+  };
 
   // Fonction de calcul des réservoirs selon document technique
   const calculateReservoir = (data) => {
