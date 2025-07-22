@@ -13938,8 +13938,8 @@ function App() {
     ctx.fillRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     ctx.strokeRect(wellX - wellWidth/2, groundLevel, wellWidth, wellDepth);
     
-    // 3. NIVEAU D'EAU DANS FORAGE (position dynamique selon niveau dynamique saisi)
-    const waterLevelFromSurface = Math.max(0, drawingData.forage_specific.dynamic_level || 15); // Protection contre valeurs vides
+    // 3. NIVEAU D'EAU DANS FORAGE (position plus élevée, plus proche de la surface)
+    const waterLevelFromSurface = Math.min(Math.max(5, (drawingData.forage_specific.dynamic_level || 15) * 0.3), 50); // Eau plus proche surface
     const waterLevelY = groundLevel + waterLevelFromSurface; // Position réelle de l'eau
     
     ctx.strokeStyle = '#3498DB';
