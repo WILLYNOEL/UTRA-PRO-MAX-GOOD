@@ -4699,11 +4699,11 @@ const SolarExpertSystem = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Pompe Recommandée */}
                     <div className="bg-white p-5 rounded-lg border-l-4 border-blue-500">
-                      <h5 className="font-semibold text-blue-700 mb-3">💧 Pompe Solaire GRUNDFOS SP</h5>
+                      <h5 className="font-semibold text-blue-700 mb-3">💧 Pompe Solaire Submersible</h5>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Modèle:</span>
-                          <span className="font-medium">SP {Math.round(electricalPowerKW * 10)}A-{Math.min(50, Math.round(solarData.total_head/5) * 5)}</span>
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-medium">Pompe centrifuge submersible</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Puissance nominale:</span>
@@ -4719,11 +4719,11 @@ const SolarExpertSystem = () => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Matériau:</span>
-                          <span className="font-medium">Inox 316L</span>
+                          <span className="font-medium">Inox haute qualité</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Protection:</span>
-                          <span className="font-medium">IP68, Sable résistant</span>
+                          <span className="font-medium">IP68, Résistant sable</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Certification:</span>
@@ -4732,13 +4732,13 @@ const SolarExpertSystem = () => {
                       </div>
                     </div>
 
-                    {/* Convertisseur RSI */}
+                    {/* Convertisseur */}
                     <div className="bg-white p-5 rounded-lg border-l-4 border-green-500">
-                      <h5 className="font-semibold text-green-700 mb-3">⚡ Convertisseur GRUNDFOS RSI</h5>
+                      <h5 className="font-semibold text-green-700 mb-3">⚡ Convertisseur de Fréquence Solaire</h5>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Modèle:</span>
-                          <span className="font-medium">RSI {Math.ceil(electricalPowerKW)}-{Math.ceil(peakPowerW/1000)}</span>
+                          <span className="text-gray-600">Type:</span>
+                          <span className="font-medium">Variateur solaire MPPT</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Puissance moteur:</span>
