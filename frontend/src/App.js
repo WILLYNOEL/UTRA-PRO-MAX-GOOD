@@ -14155,6 +14155,43 @@ function App() {
     drawCleanTechnicalCartouche(ctx, canvas, 'FORAGE');
   };
   
+  
+  // Cartouche technique épuré (sans informations superflues)
+  const drawCleanTechnicalCartouche = (ctx, canvas, type) => {
+    const cartX = canvas.width - 300;
+    const cartY = 30;
+    const cartW = 270;
+    const cartH = 120; // Plus petit
+    
+    // Cadre simple
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cartX, cartY, cartW, cartH);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(cartX, cartY, cartW, cartH);
+    
+    // Titre épuré
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(`INSTALLATION ${type}`, cartX + 10, cartY + 20);
+    
+    // Données techniques ESSENTIELLES SEULEMENT
+    ctx.font = '10px Arial';
+    let y = cartY + 40;
+    
+    const essentialSpecs = [
+      `Débit: ${drawingData.flow_rate} m³/h`,
+      `HMT: ${drawingData.total_head} m`,
+      `DN Ref: ${drawingData.discharge_diameter}mm`,
+      `Pression: ${drawingData.operating_pressure} bar`
+    ];
+    
+    essentialSpecs.forEach((spec, i) => {
+      ctx.fillText(spec, cartX + 10, y + (i * 15));
+    });
+  };
+  
   // Cartouche technique dynamique
   const drawDynamicTechnicalCartouche = (ctx, canvas, type) => {
     const cartX = canvas.width - 300;
