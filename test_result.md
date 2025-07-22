@@ -412,6 +412,18 @@ backend:
           comment: "✅ TESTED: Graduated Diameter Recommendations System working perfectly! Comprehensive validation completed with 100% success rate (2/2 test cases passed). ✅ HIGH VELOCITY TRIGGERING: DN32 with 120 m³/h flow rate produces velocity 23.61 m/s (>1.5 m/s threshold), correctly triggering multiple DN options. DN32 with 200 m³/h flow rate produces velocity 39.35 m/s, also triggering graduated recommendations. ✅ MULTIPLE DN OPTIONS: System provides multiple DN options instead of single large recommendation. Found 2 categories of recommendations (🟢 OPTIMAL, 🟡 RECOMMANDÉ) for both test cases. ✅ PROPER CATEGORIZATION: Options properly categorized with 🟢 OPTIMAL, 🟡 RECOMMANDÉ, 🔴 COÛTEUX indicators based on efficiency ratio. ✅ COST-BENEFIT ANALYSIS: Each option shows complete analysis with format 'DN32→DN40: Vitesse 18.2m/s (-41%), Coût +30%' including velocity reduction percentages and cost increase percentages. ✅ NO OVERSIZED JUMPS: System does not jump directly to oversized pipes (DN350, DN300, DN250). Provides graduated progression DN32→DN40→DN50. ✅ REASONABLE PROGRESSION: DN progression is gradual and reasonable, not jumping beyond DN150 for initial recommendations. ✅ ECONOMIC OPTIMIZATION: System stops at reasonable DN when velocity becomes acceptable (≤1.5 m/s). ✅ VELOCITY REDUCTION CALCULATION: Correctly calculates velocity reduction percentages (-41% for DN32→DN40, -76% for DN32→DN50). ✅ COST ANALYSIS: Properly estimates cost increases (+30% for DN40, +102% for DN50) based on diameter ratios. ✅ HEADER IDENTIFICATION: System includes 'OPTIMISATION DIAMÈTRE - Options graduées' header to identify graduated recommendations section. Graduated diameter recommendations system successfully prevents oversized pipe recommendations while providing economically optimized solutions with comprehensive cost-benefit analysis."
 
 frontend:
+  - task: "Réservoir Calculator - New Independent Tab Implementation"
+    implemented: true
+    working: "TBD"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Nouveau calculateur de réservoirs à vessie implémenté avec formules techniques MPC-E/F et MPC-S. Interface temps réel avec sélection intelligente taille standard, calcul pression max service, diamètre nominal. Composant autonome ajouté sans casser fonctionnalités existantes."
+
   - task: "AUDIT Tab PDF Export Functionality"
     implemented: true
     working: true
