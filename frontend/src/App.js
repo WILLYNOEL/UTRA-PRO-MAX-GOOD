@@ -103,6 +103,24 @@ const professionalStyles = {
 // Component pour Onglet AUDIT - Analyses Hydraulique et Énergétique Avancées
 const AuditSystem = () => {
   const [activeAuditTab, setActiveAuditTab] = useState('hydraulic');
+  
+  // États pour les sections déroulantes
+  const [expandedSections, setExpandedSections] = useState({
+    planning_maintenance: false,
+    actions_preventives: false,
+    modifications_equipements: true, // Ouvert par défaut
+    analysis_technique: true, // Ouvert par défaut
+    diagnostic_mecanique: true, // Ouvert par défaut
+    actions_immediates: true // Ouvert par défaut
+  });
+
+  const toggleSection = (sectionName) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionName]: !prev[sectionName]
+    }));
+  };
+
   const [auditData, setAuditData] = useState({
     // ========================================================================================================
     // SECTION 1: DONNÉES INSTALLATION EXISTANTE - TERRAIN
