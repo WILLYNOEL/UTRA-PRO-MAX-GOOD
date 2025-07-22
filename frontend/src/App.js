@@ -6550,12 +6550,14 @@ const ReservoirCalculator = () => {
       'MPC-E': {
         kQ_ratio: 0.1,  // 10% pour MPC-E/F
         kH_ratio: 0.2,  // 20% pour MPC-E/F
-        kr_ratio: 0.7   // 0.7 pour MPC-E/F
+        kr_ratio: 0.7,   // 0.7 pour MPC-E/F
+        recommended_starts: 15 // Recommandé pour vitesse variable
       },
       'MPC-S': {
         kQ_ratio: 0,    // Pas de kQ pour MPC-S
         kH_ratio: 0.25, // 25% pour MPC-S
-        kr_ratio: 0.9   // 0.9 pour MPC-S
+        kr_ratio: 0.9,   // 0.9 pour MPC-S
+        recommended_starts: 10 // Recommandé pour vitesse fixe
       }
     };
 
@@ -6564,7 +6566,17 @@ const ReservoirCalculator = () => {
     setReservoirData(prev => ({
       ...prev,
       reservoir_type: type,
-      ...config
+      kQ_ratio: config.kQ_ratio,
+      kH_ratio: config.kH_ratio,
+      kr_ratio: config.kr_ratio,
+      max_starts_per_hour: config.recommended_starts // Met à jour avec la valeur recommandée
+    }));
+  };
+
+  const handleAnalysisInputChange = (field, value) => {
+    setAnalysisData(prev => ({
+      ...prev,
+      [field]: typeof value === 'string' ? value : (parseFloat(value) || 0)
     }));
   };
 
