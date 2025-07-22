@@ -1147,8 +1147,8 @@ const AuditSystem = () => {
                     <input
                       type="number"
                       step="0.01"
-                      value={energyAuditData.power_factor_measured}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, power_factor_measured: e.target.value}))}
+                      value={auditData.power_factor_measured}
+                      onChange={(e) => handleAuditInputChange('power_factor_measured', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                       placeholder="Ex: 0.85"
                     />
