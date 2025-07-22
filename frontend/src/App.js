@@ -1119,8 +1119,8 @@ const AuditSystem = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Prime puissance (FCFA/kW/mois)</label>
                     <input
                       type="number"
-                      value={energyAuditData.demand_charge}
-                      onChange={(e) => setEnergyAuditData(prev => ({...prev, demand_charge: e.target.value}))}
+                      value={auditData.demand_charge}
+                      onChange={(e) => handleAuditInputChange('demand_charge', e.target.value)}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                       placeholder="8000"
                     />
