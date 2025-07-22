@@ -553,6 +553,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Expert Tab Diameter Recommendations Consistency"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Expert Tab Diameter Recommendations Consistency working perfectly! Comprehensive validation completed with 100% success rate. ✅ GRADUATED SECTIONS FOUND: System correctly provides 4 graduated diameter recommendation sections including 'DIAMÈTRE ASPIRATION - Options graduées anti-cavitation', 'OPTIMISATION DIAMÈTRE - Options graduées', 'ASPIRATION - Options graduées vitesses élevées', and 'VITESSE EXCESSIVE' sections as expected. ✅ GRADUATED FORMAT INDICATORS: Found 7 graduated format indicators including '🟢 OPTIMAL', '🟡 RECOMMANDÉ', '✅ CONFORME', '⚠️ ACCEPTABLE', 'DN20→DN', 'DN25→DN', 'réduction -', 'coût +' confirming proper graduated format usage. ✅ NO SIMPLE FORMAT: Confirmed complete absence of simple 'DN32 → DN65' format recommendations - all diameter recommendations use graduated format with cost-benefit analysis. ✅ VELOCITY LIMITS COMPLIANCE: All recommended velocities respect professional limits (<4 m/s). Found recommended velocities: [1.1, 1.1, 1.1, 2.7, 1.1, 2.7] m/s - all compliant. ✅ CAVITATION CRITICAL RECOMMENDATIONS: System correctly generates cavitation-critical diameter recommendations with graduated options for high NPSH requirements (4.0m). ✅ VELOCITY OPTIMIZATION RECOMMENDATIONS: System correctly generates velocity optimization recommendations with graduated options for high velocities (73.32 m/s current → 1.1 m/s recommended). ✅ HIGH VELOCITY DIAMETER RECOMMENDATIONS: System correctly handles very high velocities with graduated recommendations providing multiple DN options with cost-benefit analysis. ✅ COMPREHENSIVE ANALYSIS: Test case with flow_rate=150 m³/h, DN20/DN25 pipes, high NPSH=4.0m successfully triggers all recommendation types. Expert tab diameter recommendations now use consistent graduated logic across all recommendation types as specified in review request."
+
   - task: "Intelligent Recommendations Integration (HMT, Performance, Expert)"
     implemented: true
     working: true
