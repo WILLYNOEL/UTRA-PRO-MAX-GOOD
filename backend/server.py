@@ -5336,6 +5336,91 @@ async def perform_audit_analysis(input_data: AuditInput) -> AuditResult:
             impact="Sécurité électrique, durée de vie moteur, efficacité énergétique"
         ))
     
+@api_router.post("/audit-analysis", response_model=AuditResult)
+async def perform_audit_analysis(input_data: AuditInput) -> AuditResult:
+    """
+    Effectue une analyse d'audit complète et intelligente d'une installation de pompage
+    Comparaisons ACTUEL vs REQUIS vs CONCEPTION avec diagnostic expert terrain
+    """
+    
+    audit_id = str(uuid.uuid4())[:8]
+    audit_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # ========================================================================================================
+    # 1. ANALYSES COMPARATIVES DÉTAILLÉES
+    # ========================================================================================================
+    
+    performance_comparisons = []
+    
+    # Analyse débit
+    if input_data.current_flow_rate and input_data.required_flow_rate:
+        deviation_required = ((input_data.current_flow_rate - input_data.required_flow_rate) / input_data.required_flow_rate) * 100
+        status = "optimal" if abs(deviation_required) <= 5 else ("acceptable" if abs(deviation_required) <= 15 else "problematic")
+        
+        interpretation = f"Débit actuel: {deviation_required:+.1f}% vs requis"
+        if deviation_required > 15:
+            interpretation += " - SURDIMENSIONNEMENT ÉNERGÉTIQUE"
+        elif deviation_required < -15:
+            interpretation += " - SOUS-DIMENSIONNEMENT CRITIQUE"
+        
+        performance_comparisons.append(AuditComparisonAnalysis(
+            parameter_name="Débit",
+            current_value=input_data.current_flow_rate,
+            required_value=input_data.required_flow_rate,
+            original_design_value=input_data.original_design_flow,
+            deviation_from_required=deviation_required,
+            deviation_from_design=((input_data.current_flow_rate - input_data.original_design_flow) / input_data.original_design_flow * 100) if input_data.original_design_flow else None,
+            status=status,
+            interpretation=interpretation,
+            impact="Consommation énergétique, usure équipement, performance process"
+        ))
+    
+    # Analyse HMT
+    if input_data.current_hmt and input_data.required_hmt:
+        deviation_required = ((input_data.current_hmt - input_data.required_hmt) / input_data.required_hmt) * 100
+        status = "optimal" if abs(deviation_required) <= 10 else ("acceptable" if abs(deviation_required) <= 25 else "critical")
+        
+        interpretation = f"HMT actuelle: {deviation_required:+.1f}% vs requise"
+        if deviation_required > 25:
+            interpretation += " - GASPILLAGE ÉNERGÉTIQUE MAJEUR"
+        elif deviation_required < -25:
+            interpretation += " - PERFORMANCE INSUFFISANTE CRITIQUE"
+            
+        performance_comparisons.append(AuditComparisonAnalysis(
+            parameter_name="HMT",
+            current_value=input_data.current_hmt,
+            required_value=input_data.required_hmt,
+            original_design_value=input_data.original_design_hmt,
+            deviation_from_required=deviation_required,
+            deviation_from_design=((input_data.current_hmt - input_data.original_design_hmt) / input_data.original_design_hmt * 100) if input_data.original_design_hmt else None,
+            status=status,
+            interpretation=interpretation,
+            impact="Efficacité énergétique globale, pression process, durée de vie pompe"
+        ))
+    
+    # Analyse intensité
+    if input_data.measured_current and input_data.rated_current:
+        deviation_rated = ((input_data.measured_current - input_data.rated_current) / input_data.rated_current) * 100
+        status = "optimal" if abs(deviation_rated) <= 10 else ("acceptable" if abs(deviation_rated) <= 20 else "critical")
+        
+        interpretation = f"Intensité mesurée: {deviation_rated:+.1f}% vs plaque"
+        if deviation_rated > 20:
+            interpretation += " - SURCHARGE MOTEUR DANGEREUSE"
+        elif deviation_rated < -30:
+            interpretation += " - SOUS-UTILISATION MAJEURE"
+            
+        performance_comparisons.append(AuditComparisonAnalysis(
+            parameter_name="Intensité",
+            current_value=input_data.measured_current,
+            required_value=input_data.rated_current,
+            original_design_value=input_data.rated_current,
+            deviation_from_required=deviation_rated,
+            deviation_from_design=deviation_rated,
+            status=status,
+            interpretation=interpretation,
+            impact="Sécurité électrique, durée de vie moteur, efficacité énergétique"
+        ))
+    
     # ========================================================================================================
     # 2. DIAGNOSTICS EXPERTS PAR CATÉGORIE
     # ========================================================================================================
@@ -5387,6 +5472,250 @@ async def perform_audit_analysis(input_data: AuditInput) -> AuditResult:
         economic_analysis=economic_analysis,
         action_plan=action_plan
     )
+
+# ========================================================================================================
+# AUDIT SYSTEM - FONCTIONS SUPPORT POUR ANALYSE EXPERT
+# ========================================================================================================
+
+def generate_expert_diagnostics(input_data: AuditInput, performance_comparisons: List[AuditComparisonAnalysis]) -> List[AuditDiagnostic]:
+    """Génère des diagnostics experts basés sur les données d'audit"""
+    diagnostics = []
+    
+    # Diagnostic hydraulique
+    if input_data.current_flow_rate and input_data.required_flow_rate:
+        deviation = ((input_data.current_flow_rate - input_data.required_flow_rate) / input_data.required_flow_rate) * 100
+        if abs(deviation) > 20:
+            severity = "critical" if abs(deviation) > 50 else "high"
+            diagnostics.append(AuditDiagnostic(
+                category="hydraulic",
+                issue=f"Débit inadéquat: {deviation:+.1f}% vs requis",
+                severity=severity,
+                root_cause="Dimensionnement incorrect ou dégradation performance",
+                symptoms=["Performance process insuffisante", "Consommation énergétique excessive"],
+                consequences=["Perte de productivité", "Surcoût énergétique", "Usure prématurée"],
+                urgency="immediate" if severity == "critical" else "short_term"
+            ))
+    
+    # Diagnostic électrique
+    if input_data.measured_current and input_data.rated_current:
+        deviation = ((input_data.measured_current - input_data.rated_current) / input_data.rated_current) * 100
+        if deviation > 20:
+            diagnostics.append(AuditDiagnostic(
+                category="electrical",
+                issue=f"Surcharge moteur: {deviation:+.1f}% vs nominal",
+                severity="critical",
+                root_cause="Point de fonctionnement inadapté ou défaut moteur",
+                symptoms=["Échauffement moteur", "Consommation excessive", "Déclenchements protection"],
+                consequences=["Risque de grillage moteur", "Arrêts production", "Coûts maintenance"],
+                urgency="immediate"
+            ))
+    
+    # Diagnostic mécanique
+    if input_data.vibration_level and input_data.vibration_level > 4.5:
+        severity = "critical" if input_data.vibration_level > 7.1 else "high"
+        diagnostics.append(AuditDiagnostic(
+            category="mechanical",
+            issue=f"Vibrations excessives: {input_data.vibration_level} mm/s",
+            severity=severity,
+            root_cause="Défaut d'alignement, balourd, ou usure roulements",
+            symptoms=["Bruit anormal", "Usure accélérée", "Desserrage boulonnerie"],
+            consequences=["Défaillance catastrophique", "Arrêt production", "Dommages collatéraux"],
+            urgency="immediate" if severity == "critical" else "short_term"
+        ))
+    
+    return diagnostics
+
+def generate_expert_recommendations(input_data: AuditInput, diagnostics: List[AuditDiagnostic], 
+                                  performance_comparisons: List[AuditComparisonAnalysis]) -> List[AuditRecommendation]:
+    """Génère des recommandations d'amélioration priorisées"""
+    recommendations = []
+    
+    # Recommandations basées sur les diagnostics
+    for diagnostic in diagnostics:
+        if diagnostic.severity == "critical":
+            if diagnostic.category == "hydraulic":
+                recommendations.append(AuditRecommendation(
+                    priority="critical",
+                    category="efficiency",
+                    action="Redimensionnement hydraulique urgent",
+                    description="Modification système pour atteindre performances requises",
+                    technical_details=[
+                        "Analyse complète courbes pompe vs point fonctionnement",
+                        "Redimensionnement diamètres selon vitesses optimales",
+                        "Ajustement caractéristiques hydrauliques"
+                    ],
+                    cost_estimate_min=15000,
+                    cost_estimate_max=50000,
+                    timeline="2-6 semaines",
+                    expected_benefits=[
+                        "Performances process optimales",
+                        "Réduction consommation 20-40%",
+                        "Fiabilité équipement améliorée"
+                    ],
+                    roi_months=18,
+                    risk_if_not_done="Perte productivité continue, surcoûts énergétiques majeurs"
+                ))
+    
+    # Recommandations maintenance préventive
+    if input_data.vibration_level and input_data.vibration_level > 2.8:
+        recommendations.append(AuditRecommendation(
+            priority="high",
+            category="maintenance",
+            action="Programme maintenance prédictive",
+            description="Mise en place suivi vibratoire et thermique",
+            technical_details=[
+                "Installation capteurs vibration permanents",
+                "Surveillance thermique paliers et moteur",
+                "Planning maintenance conditionnelle"
+            ],
+            cost_estimate_min=5000,
+            cost_estimate_max=15000,
+            timeline="1-2 semaines",
+            expected_benefits=[
+                "Prévention pannes 90%",
+                "Réduction coûts maintenance 30%",
+                "Disponibilité équipement >95%"
+            ],
+            roi_months=12,
+            risk_if_not_done="Pannes imprévisibles, coûts maintenance correctifs élevés"
+        ))
+    
+    return recommendations
+
+def calculate_audit_scores(input_data: AuditInput, performance_comparisons: List[AuditComparisonAnalysis], 
+                          diagnostics: List[AuditDiagnostic]) -> Dict[str, int]:
+    """Calcule les scores d'audit par catégorie"""
+    
+    # Score hydraulique
+    hydraulic_score = 100
+    for comp in performance_comparisons:
+        if comp.parameter_name in ["Débit", "HMT"] and comp.status == "problematic":
+            hydraulic_score -= 30
+        elif comp.parameter_name in ["Débit", "HMT"] and comp.status == "critical":
+            hydraulic_score -= 50
+    
+    # Score électrique  
+    electrical_score = 100
+    for comp in performance_comparisons:
+        if comp.parameter_name == "Intensité" and comp.status == "critical":
+            electrical_score -= 40
+    
+    # Score mécanique
+    mechanical_score = 100
+    if input_data.vibration_level:
+        if input_data.vibration_level > 7.1:
+            mechanical_score -= 50
+        elif input_data.vibration_level > 4.5:
+            mechanical_score -= 30
+        elif input_data.vibration_level > 2.8:
+            mechanical_score -= 15
+    
+    if input_data.corrosion_level == "severe":
+        mechanical_score -= 30
+    elif input_data.corrosion_level == "moderate":
+        mechanical_score -= 20
+    
+    # Score opérationnel
+    operational_score = 100
+    if input_data.performance_degradation:
+        operational_score -= 25
+    if input_data.energy_consumption_increase:
+        operational_score -= 20
+    
+    # Score global
+    overall_score = (hydraulic_score + electrical_score + mechanical_score + operational_score) // 4
+    
+    return {
+        "overall": max(0, overall_score),
+        "hydraulic": max(0, hydraulic_score),
+        "electrical": max(0, electrical_score), 
+        "mechanical": max(0, mechanical_score),
+        "operational": max(0, operational_score)
+    }
+
+def generate_executive_summary(input_data: AuditInput, scores: Dict[str, int], 
+                              diagnostics: List[AuditDiagnostic], 
+                              recommendations: List[AuditRecommendation]) -> Dict[str, Any]:
+    """Génère la synthèse executive"""
+    
+    critical_issues = len([d for d in diagnostics if d.severity == "critical"])
+    high_issues = len([d for d in diagnostics if d.severity == "high"])
+    
+    overall_status = "Excellent" if scores["overall"] >= 90 else (
+        "Bon" if scores["overall"] >= 75 else (
+        "Acceptable" if scores["overall"] >= 60 else (
+        "Problématique" if scores["overall"] >= 40 else "Critique")))
+    
+    return {
+        "overall_status": overall_status,
+        "overall_score": scores["overall"],
+        "critical_issues_count": critical_issues,
+        "high_issues_count": high_issues,
+        "total_recommendations": len(recommendations),
+        "immediate_actions_required": critical_issues > 0,
+        "key_findings": [d.issue for d in diagnostics[:3]],  # Top 3 issues
+        "priority_investments": sum([r.cost_estimate_max for r in recommendations if r.priority in ["critical", "high"]]),
+        "estimated_annual_savings": 50000 if scores["overall"] < 60 else 25000  # Estimation
+    }
+
+def generate_economic_analysis(input_data: AuditInput, recommendations: List[AuditRecommendation]) -> Dict[str, Any]:
+    """Génère l'analyse économique"""
+    
+    total_investment = sum([r.cost_estimate_max for r in recommendations])
+    annual_energy_cost = (input_data.rated_power or 15) * (input_data.operating_hours_daily or 8) * (input_data.operating_days_yearly or 300) * input_data.electricity_cost_per_kwh
+    
+    potential_savings = annual_energy_cost * 0.3 if total_investment > 20000 else annual_energy_cost * 0.15
+    
+    payback_years = total_investment / potential_savings if potential_savings > 0 else 10
+    
+    return {
+        "current_annual_energy_cost": annual_energy_cost,
+        "total_investment_required": total_investment,
+        "estimated_annual_savings": potential_savings,
+        "payback_period_years": min(payback_years, 10),
+        "roi_5_years": (potential_savings * 5 - total_investment) / total_investment * 100 if total_investment > 0 else 0,
+        "co2_reduction_tons_year": potential_savings * 0.5 / 1000,  # Estimation
+        "investment_breakdown": [
+            {"category": "Hydraulique", "amount": sum([r.cost_estimate_max for r in recommendations if r.category == "efficiency"])},
+            {"category": "Maintenance", "amount": sum([r.cost_estimate_max for r in recommendations if r.category == "maintenance"])},
+            {"category": "Sécurité", "amount": sum([r.cost_estimate_max for r in recommendations if r.category == "safety"])}
+        ]
+    }
+
+def generate_action_plan(recommendations: List[AuditRecommendation], economic_analysis: Dict[str, Any]) -> Dict[str, Any]:
+    """Génère le plan d'action prioritaire"""
+    
+    # Tri par priorité et ROI
+    critical_actions = [r for r in recommendations if r.priority == "critical"]
+    high_actions = [r for r in recommendations if r.priority == "high"]
+    medium_actions = [r for r in recommendations if r.priority == "medium"]
+    
+    return {
+        "phase_1_immediate": {
+            "timeline": "0-3 mois",
+            "actions": [r.action for r in critical_actions],
+            "investment": sum([r.cost_estimate_max for r in critical_actions]),
+            "expected_impact": "Sécurité, conformité, arrêt dégradation"
+        },
+        "phase_2_short_term": {
+            "timeline": "3-12 mois", 
+            "actions": [r.action for r in high_actions],
+            "investment": sum([r.cost_estimate_max for r in high_actions]),
+            "expected_impact": "Efficacité énergétique, fiabilité"
+        },
+        "phase_3_medium_term": {
+            "timeline": "12-24 mois",
+            "actions": [r.action for r in medium_actions],
+            "investment": sum([r.cost_estimate_max for r in medium_actions]),
+            "expected_impact": "Optimisation performance, ROI"
+        },
+        "total_program": {
+            "duration_months": 24,
+            "total_investment": economic_analysis["total_investment_required"],
+            "expected_savings": economic_analysis["estimated_annual_savings"],
+            "payback_years": economic_analysis["payback_period_years"]
+        }
+    }
 
 # Include the router in the main app
 app.include_router(api_router)
