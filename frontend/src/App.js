@@ -16641,6 +16641,34 @@ function App() {
                           </div>
                         </div>
                         
+                        {/* DN REFOULEMENT et MATÉRIAU pour FORAGE */}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">DN REFOULEMENT (mm)</label>
+                            <input
+                              type="number"
+                              value={drawingData.discharge_diameter}
+                              onChange={(e) => handleDrawingInputChange('discharge_diameter', parseInt(e.target.value) || 80)}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                              placeholder="80"
+                            />
+                            <div className="text-xs text-green-600 mt-1">V ≈ {(drawingData.flow_rate / 3600 / (Math.PI * (drawingData.discharge_diameter/2000)**2)).toFixed(1)} m/s</div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1">MATÉRIAU</label>
+                            <select
+                              value={drawingData.pipe_material}
+                              onChange={(e) => handleDrawingInputChange('pipe_material', e.target.value)}
+                              className="w-full p-2 border border-orange-300 rounded text-sm focus:border-orange-500"
+                            >
+                              <option value="steel">Acier</option>
+                              <option value="stainless">Inox 316L</option>
+                              <option value="pvc">PVC-U</option>
+                              <option value="hdpe">PEHD</option>
+                            </select>
+                          </div>
+                        </div>
+                        
                         {/* CALCUL AUTOMATIQUE HMT */}
                         <div className="bg-green-100 border border-green-300 rounded p-2">
                           <h5 className="text-xs font-bold text-green-700 mb-1">📊 CALCUL AUTOMATIQUE HMT</h5>
