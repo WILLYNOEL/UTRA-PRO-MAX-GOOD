@@ -9225,9 +9225,9 @@ class HydraulicPumpTester:
                     
                     # 6. Test hydraulic-electrical cross analysis
                     installation_analysis = expert_report.get("installation_analysis", {})
-                    if "hydraulic_electrical_correlation" not in installation_analysis:
+                    if "power_analysis" not in installation_analysis:
                         self.log_test(f"Expert Installation Report - {case['name']} - Cross Analysis", False, 
-                                    "Missing hydraulic-electrical correlation analysis")
+                                    "Missing power analysis in installation analysis")
                         all_passed = False
                         continue
                     
