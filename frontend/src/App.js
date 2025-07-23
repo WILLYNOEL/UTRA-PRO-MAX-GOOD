@@ -17201,21 +17201,24 @@ function App() {
                         ÉQUIPEMENTS MÉCANIQUES
                       </h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <label className={`flex items-center p-2 rounded cursor-pointer ${
-                          drawingData.accessories.strainer ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={drawingData.accessories.strainer}
-                            onChange={(e) => handleDrawingInputChange('accessories', {
-                              ...drawingData.accessories,
-                              strainer: e.target.checked
-                            })}
-                            className="rounded border-slate-300 text-orange-600 mr-2"
-                          />
-                          <span className="font-medium">Crépine/Filtre</span>
-                          {drawingData.accessories.strainer && <span className="ml-auto text-orange-500">✓</span>}
-                        </label>
+                        {/* Crépine/Filtre - MASQUÉ pour relevage */}
+                        {drawingData.installation_type !== 'submersible' && (
+                          <label className={`flex items-center p-2 rounded cursor-pointer ${
+                            drawingData.accessories.strainer ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={drawingData.accessories.strainer}
+                              onChange={(e) => handleDrawingInputChange('accessories', {
+                                ...drawingData.accessories,
+                                strainer: e.target.checked
+                              })}
+                              className="rounded border-slate-300 text-orange-600 mr-2"
+                            />
+                            <span className="font-medium">Crépine/Filtre</span>
+                            {drawingData.accessories.strainer && <span className="ml-auto text-orange-500">✓</span>}
+                          </label>
+                        )}
                         
                         <label className={`flex items-center p-2 rounded cursor-pointer ${
                           drawingData.accessories.flexible_coupling ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
