@@ -17331,47 +17331,42 @@ function App() {
                       />
                     </div>
                     
-                    {/* Cartouche Technique Ultra-Complet */}
+                    {/* Cartouche Technique Professionnel - Épuré */}
                     <div className="p-6 bg-slate-50 border-t">
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-                        <div className="space-y-1">
-                          <div className="font-bold text-slate-800 text-xs">INSTALLATION</div>
-                          <div className="text-slate-700">{drawingData.installation_type.replace('_', ' ').toUpperCase()}</div>
-                          <div className="text-blue-600 font-medium">{drawingData.pump_count} × {drawingData.pump_configuration}</div>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                        <div className="space-y-2">
+                          <div className="font-bold text-slate-800 text-xs border-b border-slate-300 pb-1">INSTALLATION</div>
+                          <div className="text-slate-700 font-medium">{drawingData.installation_type.replace('_', ' ').toUpperCase()}</div>
+                          <div className="text-blue-600 font-bold">{drawingData.pump_count} pompe{drawingData.pump_count > 1 ? 's' : ''} - {drawingData.pump_configuration.toUpperCase()}</div>
                         </div>
-                        <div className="space-y-1">
-                          <div className="font-bold text-slate-800 text-xs">HYDRAULIQUE</div>
-                          <div className="text-slate-700">Q: {drawingData.flow_rate} m³/h</div>
-                          <div className="text-slate-700">HMT: {drawingData.total_head} m</div>
+                        
+                        <div className="space-y-2">
+                          <div className="font-bold text-slate-800 text-xs border-b border-slate-300 pb-1">PARAMÈTRES HYDRAULIQUES</div>
+                          <div className="text-red-600 font-bold">Q: {drawingData.flow_rate} m³/h</div>
+                          <div className="text-red-600 font-bold">HMT: {drawingData.total_head} m</div>
                           <div className="text-green-600 font-bold">P: {drawingData.pump_power.toFixed(1)} kW</div>
                         </div>
-                        <div className="space-y-1">
-                          <div className="font-bold text-slate-800 text-xs">TUYAUTERIES</div>
+                        
+                        <div className="space-y-2">
+                          <div className="font-bold text-slate-800 text-xs border-b border-slate-300 pb-1">DIAMÈTRES</div>
                           {/* DN ASP masqué pour forage et submersible */}
                           {drawingData.show_suction_fields && (
-                            <div className="text-slate-700">DN Asp: {drawingData.suction_diameter}mm</div>
+                            <div className="text-red-600 font-bold">DN Asp: {drawingData.suction_diameter}mm</div>
                           )}
-                          <div className="text-slate-700">DN Ref: {drawingData.discharge_diameter}mm</div>
-                          <div className="text-slate-700">{drawingData.pipe_material.toUpperCase()}</div>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="font-bold text-slate-800 text-xs">SPÉCIFICATIONS</div>
-                          <div className="text-slate-700">{drawingData.specifications.voltage}V - {drawingData.specifications.frequency}Hz</div>
-                          <div className="text-slate-700">{drawingData.specifications.protection_class}</div>
-                          <div className="text-slate-700">Isolement: {drawingData.specifications.insulation_class}</div>
+                          <div className="text-red-600 font-bold">DN Ref: {drawingData.discharge_diameter}mm</div>
+                          <div className="text-slate-600 text-xs">{drawingData.pipe_material.toUpperCase()} • {drawingData.temperature}°C</div>
                         </div>
                       </div>
                       
-                      {/* Ligne de conformité */}
-                      <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
-                        <div>
-                          <span className="font-semibold">📋 Conformité:</span> ISO 14692, NF EN 806, DTU 60.11 | 
-                          <span className="font-semibold"> Protection:</span> {drawingData.specifications.protection_class} | 
-                          <span className="font-semibold"> Température:</span> {drawingData.temperature}°C
+                      {/* Signature simplifiée */}
+                      <div className="mt-4 pt-3 border-t border-slate-300 flex justify-between items-center">
+                        <div className="text-xs text-slate-600">
+                          <span className="font-semibold">Conforme ISO/EN</span> • 
+                          <span className="ml-1">Protection {drawingData.specifications.protection_class}</span>
                         </div>
-                        <div className="text-right">
-                          <div className="font-bold text-slate-700">ECO-PUMP AFRIK</div>
-                          <div>Expert Hydraulique IA v3.0 • {new Date().toLocaleDateString('fr-FR')}</div>
+                        <div className="text-right text-xs">
+                          <div className="font-bold text-slate-700">ECO-PUMP EXPERT</div>
+                          <div className="text-slate-500">{new Date().toLocaleDateString('fr-FR')} • v3.0</div>
                         </div>
                       </div>
                     </div>
