@@ -14522,8 +14522,8 @@ function App() {
       ctx.fillText(text, dataX, dataY + (i * 15));
     });
     
-    // Cartouche technique épuré
-    drawCleanTechnicalCartouche(ctx, canvas, 'FORAGE');
+    // Légende complète des équipements (remplace le cartouche technique)
+    drawEquipmentLegend(ctx, canvas, 'FORAGE');
   };
   
   
