@@ -12534,7 +12534,8 @@ function App() {
       air_release_valve: false,
       drain_valve: true,
       pressure_reducing_valve: false,
-      safety_valve: false
+      safety_valve: false,
+      bladder_tank: false // NOUVEAU : Réservoir à vessie
     },
     
     // Paramètres 3D et affichage
