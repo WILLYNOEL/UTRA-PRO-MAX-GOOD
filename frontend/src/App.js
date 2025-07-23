@@ -2818,7 +2818,7 @@ const AuditSystem = () => {
                     <div className="bg-white p-4 rounded border">
                       <div className="font-semibold text-green-700">Coût Énergétique Actuel</div>
                       <div className="text-xl font-bold text-green-800">
-                        {auditResults.economic_analysis.current_annual_energy_cost.toLocaleString()}€/an
+                        {auditResults.economic_analysis?.current_annual_energy_cost?.toLocaleString() || '0'}€/an
                       </div>
                     </div>
                     <div className="bg-white p-4 rounded border">
