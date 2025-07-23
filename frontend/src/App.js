@@ -2782,7 +2782,7 @@ const AuditSystem = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                           <div>
                             <div className="font-medium text-gray-700">Coût estimé</div>
-                            <div className="text-green-600">{recommendation.cost_estimate_min.toLocaleString()}€ - {recommendation.cost_estimate_max.toLocaleString()}€</div>
+                            <div className="text-green-600">{recommendation.cost_estimate_min?.toLocaleString() || '0'}€ - {recommendation.cost_estimate_max?.toLocaleString() || '0'}€</div>
                           </div>
                           <div>
                             <div className="font-medium text-gray-700">Délai</div>
