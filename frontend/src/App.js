@@ -16714,25 +16714,28 @@ function App() {
                         VANNES & ROBINETTERIE
                       </h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <label className={`flex items-center p-2 rounded cursor-pointer ${
-                          drawingData.accessories.isolation_valve_suction ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={drawingData.accessories.isolation_valve_suction}
-                            onChange={(e) => handleDrawingInputChange('accessories', {
-                              ...drawingData.accessories,
-                              isolation_valve_suction: e.target.checked
-                            })}
-                            className="rounded border-slate-300 text-green-600 mr-2"
-                          />
-                          <span className="font-medium">Vanne Isolement Asp.</span>
-                          {drawingData.accessories.isolation_valve_suction && <span className="ml-auto text-green-500">✓</span>}
-                        </label>
+                        {/* Vanne Isolement Aspiration - MASQUÉE pour forage */}
+                        {drawingData.show_suction_fields && (
+                          <label className={`flex items-center p-2 rounded cursor-pointer ${
+                            drawingData.accessories.isolation_valve_suction ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={drawingData.accessories.isolation_valve_suction}
+                              onChange={(e) => handleDrawingInputChange('accessories', {
+                                ...drawingData.accessories,
+                                isolation_valve_suction: e.target.checked
+                              })}
+                              className="rounded border-slate-300 text-green-600 mr-2"
+                            />
+                            <span className="font-medium">Vanne Isolement Asp.</span>
+                            {drawingData.accessories.isolation_valve_suction && <span className="ml-auto text-green-500">✓</span>}
+                          </label>
+                        )}
                         
                         <label className={`flex items-center p-2 rounded cursor-pointer ${
                           drawingData.accessories.isolation_valve_discharge ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
+                        } ${drawingData.show_suction_fields ? '' : 'col-span-2'}`}>
                           <input
                             type="checkbox"
                             checked={drawingData.accessories.isolation_valve_discharge}
