@@ -17220,21 +17220,24 @@ function App() {
                           </label>
                         )}
                         
-                        <label className={`flex items-center p-2 rounded cursor-pointer ${
-                          drawingData.accessories.flexible_coupling ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={drawingData.accessories.flexible_coupling}
-                            onChange={(e) => handleDrawingInputChange('accessories', {
-                              ...drawingData.accessories,
-                              flexible_coupling: e.target.checked
-                            })}
-                            className="rounded border-slate-300 text-orange-600 mr-2"
-                          />
-                          <span className="font-medium">Raccord Flexible</span>
-                          {drawingData.accessories.flexible_coupling && <span className="ml-auto text-orange-500">✓</span>}
-                        </label>
+                        {/* Raccord Flexible - MASQUÉ pour surface, incendie, suppression ET relevage */}
+                        {!['surface_aspiration', 'surface_charge', 'incendie', 'surpresseur', 'submersible'].includes(drawingData.installation_type) && (
+                          <label className={`flex items-center p-2 rounded cursor-pointer ${
+                            drawingData.accessories.flexible_coupling ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={drawingData.accessories.flexible_coupling}
+                              onChange={(e) => handleDrawingInputChange('accessories', {
+                                ...drawingData.accessories,
+                                flexible_coupling: e.target.checked
+                              })}
+                              className="rounded border-slate-300 text-orange-600 mr-2"
+                            />
+                            <span className="font-medium">Raccord Flexible</span>
+                            {drawingData.accessories.flexible_coupling && <span className="ml-auto text-orange-500">✓</span>}
+                          </label>
+                        )}
                         
                         <label className={`flex items-center p-2 rounded cursor-pointer ${
                           drawingData.accessories.expansion_joint ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
