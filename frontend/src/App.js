@@ -16598,13 +16598,16 @@ function App() {
                           <option value="hdpe">PEHD</option>
                         </select>
                       )}
-                      <input
-                        type="number"
-                        placeholder="Temp. °C"
-                        value={drawingData.temperature}
-                        onChange={(e) => handleDrawingInputChange('temperature', parseFloat(e.target.value) || 20)}
-                        className="p-2 border border-slate-300 rounded text-sm"
-                      />
+                      {/* Température masquée pour forage - champ inutile */}
+                      {drawingData.installation_type !== 'forage' && (
+                        <input
+                          type="number"
+                          placeholder="Temp. °C"
+                          value={drawingData.temperature}
+                          onChange={(e) => handleDrawingInputChange('temperature', parseFloat(e.target.value) || 20)}
+                          className="p-2 border border-slate-300 rounded text-sm"
+                        />
+                      )}
                     </div>
 
                     {/* Indicateur de type d'installation */}
