@@ -13237,11 +13237,7 @@ function App() {
       // Équipements sélectionnés sur collecteur
       drawSelectedEquipments(ctx, collecteurRefoulementX + 50, 0, centerY, 4, 30);
     }
-    
-    for (let i = 0; i < pumpCount; i++) {
-      const pumpX = centerX - 50;
-      const pumpY = startY + (i * pumpSpacing);
-      const isStandby = i >= drawingData.pumps_in_service;
+
       
       // PIQUAGE INDIVIDUEL depuis collecteur vers pompe (90°)
       const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
