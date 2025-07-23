@@ -17320,6 +17320,23 @@ function App() {
                           {drawingData.accessories.expansion_joint && <span className="ml-auto text-orange-500">✓</span>}
                         </label>
                         
+                        {/* NOUVEAU : Réservoir à vessie */}
+                        <label className={`flex items-center p-2 rounded cursor-pointer ${
+                          drawingData.accessories.bladder_tank ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
+                        }`}>
+                          <input
+                            type="checkbox"
+                            checked={drawingData.accessories.bladder_tank}
+                            onChange={(e) => handleDrawingInputChange('accessories', {
+                              ...drawingData.accessories,
+                              bladder_tank: e.target.checked
+                            })}
+                            className="rounded border-slate-300 text-orange-600 mr-2"
+                          />
+                          <span className="font-medium">Réservoir à Vessie</span>
+                          {drawingData.accessories.bladder_tank && <span className="ml-auto text-orange-500">✓</span>}
+                        </label>
+                        
                         <label className={`flex items-center p-2 rounded cursor-pointer ${
                           drawingData.accessories.manifold ? 'bg-orange-50 border border-orange-200' : 'bg-gray-50 hover:bg-gray-100'
                         }`}>
