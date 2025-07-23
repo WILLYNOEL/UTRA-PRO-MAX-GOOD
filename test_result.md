@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Améliorer l'onglet Dessin avec échelle dynamique, réorganisation des champs FORAGE, masquage complet DN ASP, HMT non-éditable pour forage, et correction de la mesure château d'eau"
+user_problem_statement: "Corriger le cartouche technique dans l'onglet Dessin - Supprimer les informations non pertinentes (barrées en rouge) et s'assurer que toutes les valeurs encerclées en rouge (flow, HMT, DN, etc.) sont dynamiques et mises à jour en temps réel"
 
 backend:
   - task: "Detailed Chemical Compatibility Preservation"
