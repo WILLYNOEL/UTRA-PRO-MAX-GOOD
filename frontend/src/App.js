@@ -14395,6 +14395,57 @@ function App() {
       equipmentX += equipmentSpacing;
     }
     
+    // RÉSERVOIR À VESSIE (si sélectionné) - NOUVEAU
+    if (drawingData.accessories.bladder_tank) {
+      const tankX = equipmentX;
+      const tankY = pipeY - 25;
+      
+      // Corps principal du réservoir (cylindre vertical)
+      ctx.strokeStyle = '#8E44AD';
+      ctx.lineWidth = 1.5;
+      ctx.fillStyle = '#F8F9FA';
+      ctx.fillRect(tankX - 8, tankY, 16, 20);
+      ctx.strokeRect(tankX - 8, tankY, 16, 20);
+      
+      // Vessie interne (ovale)
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(tankX, tankY + 10, 5, 8, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Valve de gonflage vessie (petit cercle en haut)
+      ctx.beginPath();
+      ctx.arc(tankX, tankY + 3, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#34495E';
+      ctx.fill();
+      
+      // Raccordement hydraulique (en bas)
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(tankX, tankY + 20);
+      ctx.lineTo(tankX, pipeY);
+      ctx.stroke();
+      
+      // Pression interne (jauge simple)
+      ctx.strokeStyle = '#F39C12';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(tankX + 6, tankY + 6, 3, 0, Math.PI);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('VT', tankX, pipeY + 18);
+      ctx.font = '5px Arial';
+      ctx.fillText('6bar', tankX, pipeY + 25);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
     // 9. CONSTRUCTION DU CHÂTEAU D'EAU
     
     // Support fixe
