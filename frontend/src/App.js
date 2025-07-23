@@ -14565,11 +14565,12 @@ function App() {
   };
   
   // Cartouche technique dynamique
+  // Cartouche technique dynamique épuré
   const drawDynamicTechnicalCartouche = (ctx, canvas, type) => {
-    const cartX = canvas.width - 300;
+    const cartX = canvas.width - 280;
     const cartY = 30;
-    const cartW = 270;
-    const cartH = 140;
+    const cartW = 260;
+    const cartH = 100;
     
     // Cadre simple
     ctx.strokeStyle = '#2C3E50';
@@ -14578,43 +14579,37 @@ function App() {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(cartX, cartY, cartW, cartH);
     
-    // Titre
+    // Titre simplifié
     ctx.fillStyle = '#2C3E50';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`STATION DE POMPAGE ${type}`, cartX + 10, cartY + 20);
+    ctx.fillText(`SCHÉMA ${type}`, cartX + 8, cartY + 16);
     
-    // Données techniques DYNAMIQUES
-    ctx.font = '10px Arial';
-    let y = cartY + 40;
-    
-    const specs = [
-      `Installation: ${drawingData.installation_type.toUpperCase()}`,
-      `Pompes: ${drawingData.pump_count} × ${drawingData.pumps_in_service} service`,
-      `Débit nominal: ${drawingData.flow_rate} m³/h`,
-      `HMT nominale: ${drawingData.total_head} m`,
-      `DN refoulement: ${drawingData.discharge_diameter} mm`,
-      `Pression service: ${drawingData.operating_pressure} bar`,
-      `Température: ${drawingData.temperature}°C`,
-      `Matériau: ${drawingData.material}`,
-      `Accessoires: ${Object.values(drawingData.accessories).filter(Boolean).length}/21`
-    ];
-    
-    specs.forEach(spec => {
-      ctx.fillText(spec, cartX + 10, y);
-      y += 12;
-    });
-    
-    // Logo technique
-    ctx.strokeStyle = '#3498DB';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(cartX + cartW - 40, cartY + 10, 30, 30);
-    ctx.stroke();
-    ctx.fillStyle = '#3498DB';
+    // Données techniques DYNAMIQUES en couleurs
     ctx.font = '8px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('PID', cartX + cartW - 25, cartY + 30);
+    let y = cartY + 32;
+    
+    // Informations de base
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText(`${drawingData.installation_type.replace('_', ' ').toUpperCase()}`, cartX + 8, y);
+    y += 10;
+    ctx.fillText(`${drawingData.pump_count} pompe${drawingData.pump_count > 1 ? 's' : ''}`, cartX + 8, y);
+    y += 10;
+    
+    // Valeurs hydrauliques importantes en ROUGE
+    ctx.fillStyle = '#E74C3C';
+    ctx.font = 'bold 8px Arial';
+    ctx.fillText(`Q: ${drawingData.flow_rate} m³/h`, cartX + 8, y);
+    y += 10;
+    ctx.fillText(`HMT: ${drawingData.total_head} m`, cartX + 8, y);
+    y += 10;
+    ctx.fillText(`DN: ${drawingData.discharge_diameter}mm`, cartX + 8, y);
+    
+    // Signature compacte
+    ctx.fillStyle = '#7F8C8D';
+    ctx.font = '7px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`ECO-PUMP • ${new Date().toLocaleDateString('fr-FR')}`, cartX + cartW - 8, cartY + cartH - 8);
   };
   
   // Cartouche technique simplifié PID
