@@ -13041,70 +13041,39 @@ function App() {
     drawTechnicalCartouche(ctx, canvas);
   };
 
-  // SCHÉMA SURFACE ASPIRATION EN PARALLÈLE - COLLECTEUR 90° PID TECHNIQUE
+  // SCHÉMA SURFACE ASPIRATION - LIGNE DIRECTE (1 pompe) OU COLLECTEURS (plusieurs)
   const drawProfessionalSurfaceAspiration = (ctx, canvas) => {
     // Nettoyage complet
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // PARAMÈTRES FIXES DU SCHÉMA
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
+    const tankX = centerX - 200;
+    const tankW = 100;
+    const tankH = 80;
+    const pumpCount = drawingData.pump_count || 1;
     
-    // 1. BÂCHE D'ASPIRATION (gauche)
-    const tankX = 100;
-    const tankY = centerY - 60;
-    const tankW = 120;
-    const tankH = 120;
-    
-    ctx.strokeStyle = '#2196F3';
+    // 1. BÂCHE D'ASPIRATION FIXE
+    ctx.strokeStyle = '#5D4037';
     ctx.lineWidth = 3;
-    ctx.fillStyle = '#E3F2FD';
-    ctx.fillRect(tankX, tankY, tankW, tankH);
-    ctx.strokeRect(tankX, tankY, tankW, tankH);
+    ctx.fillStyle = '#EFEBE9';
+    ctx.fillRect(tankX, centerY - tankH/2, tankW, tankH);
+    ctx.strokeRect(tankX, centerY - tankH/2, tankW, tankH);
     
-    // Niveau d'eau
-    ctx.fillStyle = '#1976D2';
-    ctx.fillRect(tankX + 5, tankY + tankH * 0.3, tankW - 10, tankH * 0.6);
+    // Niveau d'eau dans bâche
+    ctx.fillStyle = '#2196F3';
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(tankX + 5, centerY - tankH/2 + 15, tankW - 10, tankH - 20);
+    ctx.globalAlpha = 1.0;
     
-    // Label bâche
-    ctx.fillStyle = '#1976D2';
+    // Étiquette bâche
+    ctx.fillStyle = '#5D4037';
     ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('BÂCHE', tankX + tankW/2, tankY - 10);
-    ctx.fillText('ASPIRATION', tankX + tankW/2, tankY - 25);
+    ctx.fillText('BÂCHE ASPIRATION', tankX + tankW/2, centerY - tankH/2 - 15);
     
-    // 2. COLLECTEUR D'ASPIRATION VERTICAL (À 90°)
-    const collecteurAspirationX = centerX - 150;
-    const collecteurStartY = centerY - 80;
-    const collecteurEndY = centerY + 80;
-    
-    ctx.strokeStyle = '#FF9800';
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(collecteurAspirationX, collecteurStartY);
-    ctx.lineTo(collecteurAspirationX, collecteurEndY);
-    ctx.stroke();
-    
-    // Label collecteur aspiration
-    ctx.fillStyle = '#E65100';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.save();
-    ctx.translate(collecteurAspirationX - 20, centerY);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('COLLECTEUR ASPIRATION', 0, 0);
-    ctx.restore();
-    
-    // Tuyauterie de la bâche vers collecteur
-    ctx.strokeStyle = '#FF9800';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(tankX + tankW, centerY);
-    ctx.lineTo(collecteurAspirationX, centerY);
-    ctx.stroke();
-    
-    // 3. POMPES - LIGNE DIRECTE pour 1 pompe, COLLECTEUR pour plusieurs
-    const pumpCount = drawingData.pump_count;
-    
+    // 2. DÉCISION : LIGNE DIRECTE ou COLLECTEURS selon nombre de pompes
     if (pumpCount === 1) {
       // ===== LIGNE DIRECTE POUR 1 POMPE (PAS DE COLLECTEURS) =====
       const pumpX = centerX;
@@ -13115,56 +13084,79 @@ function App() {
       ctx.strokeStyle = '#0D47A1';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(pumpX, pumpY, 15, 0, Math.PI * 2);
+      ctx.arc(pumpX, pumpY, 20, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       
-      // Aspiration directe (ligne horizontale)
+      // Roue pompe
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      for (let j = 0; j < 6; j++) {
+        const angle = (j * Math.PI * 2) / 6;
+        ctx.beginPath();
+        ctx.moveTo(pumpX, pumpY);
+        ctx.lineTo(pumpX + Math.cos(angle) * 12, pumpY + Math.sin(angle) * 12);
+        ctx.stroke();
+      }
+      
+      // ASPIRATION DIRECTE (ligne horizontale)
       ctx.strokeStyle = '#FF9800';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.beginPath();
       ctx.moveTo(tankX + tankW, centerY);
-      ctx.lineTo(pumpX - 15, pumpY);
+      ctx.lineTo(pumpX - 20, pumpY);
       ctx.stroke();
       
-      // Refoulement direct (ligne horizontale)
+      // REFOULEMENT DIRECT (ligne horizontale)
       ctx.strokeStyle = '#4CAF50';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.moveTo(pumpX + 15, pumpY);
+      ctx.moveTo(pumpX + 20, pumpY);
       ctx.lineTo(centerX + 200, pumpY);
       ctx.stroke();
       
-      // Équipements sélectionnés sur refoulement
-      drawSelectedEquipments(ctx, pumpX + 50, 0, pumpY, 4, 30);
+      // Équipements sélectionnés sur refoulement direct
+      drawSelectedEquipments(ctx, pumpX + 60, 0, pumpY, 6, 35);
       
       // Tag pompe
       ctx.fillStyle = '#0D47A1';
-      ctx.font = 'bold 10px Arial';
+      ctx.font = 'bold 12px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('P-01', pumpX, pumpY + 35);
+      ctx.fillText('P-01', pumpX, pumpY + 40);
+      ctx.font = '9px Arial';
+      ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, pumpX, pumpY + 52);
+      ctx.fillText(`${drawingData.total_head || 0}m HMT`, pumpX, pumpY + 64);
+      
+      // Annotations lignes directes
+      ctx.fillStyle = '#FF9800';
       ctx.font = '8px Arial';
-      ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, pumpX, pumpY + 45);
-      ctx.fillText(`${drawingData.total_head || 0}m HMT`, pumpX, pumpY + 55);
+      ctx.textAlign = 'center';
+      ctx.fillText(`DN${drawingData.suction_diameter || 100}`, tankX + tankW + 50, centerY - 15);
+      ctx.fillText('ASPIRATION', tankX + tankW + 50, centerY - 5);
+      
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillText(`DN${drawingData.discharge_diameter || 80}`, pumpX + 100, pumpY - 15);
+      ctx.fillText('REFOULEMENT', pumpX + 100, pumpY - 5);
+      ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, pumpX + 100, pumpY + 15);
       
     } else {
       // ===== COLLECTEURS POUR PLUSIEURS POMPES =====
       const pumpSpacing = 80;
-      const startY = centerY - 80;
+      const startY = centerY - ((pumpCount - 1) * pumpSpacing) / 2;
       
-      // COLLECTEUR D'ASPIRATION VERTICAL (À 90°)
-      const collecteurAspirationX = centerX - 150;
-      const collecteurStartY = startY;
-      const collecteurEndY = startY + (pumpCount * pumpSpacing);
+      // COLLECTEUR D'ASPIRATION VERTICAL
+      const collecteurAspirationX = centerX - 100;
+      const collecteurStartY = startY - 40;
+      const collecteurEndY = startY + ((pumpCount - 1) * pumpSpacing) + 40;
       
       ctx.strokeStyle = '#FF9800';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 8;
       ctx.beginPath();
       ctx.moveTo(collecteurAspirationX, collecteurStartY);
       ctx.lineTo(collecteurAspirationX, collecteurEndY);
       ctx.stroke();
       
-      // Tuyauterie de la bâche vers collecteur
+      // Tuyauterie bâche vers collecteur
       ctx.beginPath();
       ctx.moveTo(tankX + tankW, centerY);
       ctx.lineTo(collecteurAspirationX, centerY);
@@ -13172,18 +13164,16 @@ function App() {
       
       // POMPES avec piquages individuels
       for (let i = 0; i < pumpCount; i++) {
-        const pumpX = centerX - 50;
-        const pumpY = startY + 30 + (i * pumpSpacing);
+        const pumpX = centerX - 20;
+        const pumpY = startY + (i * pumpSpacing);
         const isStandby = i >= drawingData.pumps_in_service;
         
         // Piquage aspiration 90°
-        const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
-        
         ctx.strokeStyle = '#FF9800';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(collecteurAspirationX, piquageY);
-        ctx.lineTo(pumpX - 25, piquageY);
+        ctx.moveTo(collecteurAspirationX, pumpY);
+        ctx.lineTo(pumpX - 25, pumpY);
         ctx.stroke();
         
         // Pompe
@@ -13191,9 +13181,20 @@ function App() {
         ctx.strokeStyle = isStandby ? '#546E7A' : '#0D47A1';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(pumpX, pumpY, 15, 0, Math.PI * 2);
+        ctx.arc(pumpX, pumpY, 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
+        
+        // Roue pompe
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        for (let j = 0; j < 6; j++) {
+          const angle = (j * Math.PI * 2) / 6;
+          ctx.beginPath();
+          ctx.moveTo(pumpX, pumpY);
+          ctx.lineTo(pumpX + Math.cos(angle) * 12, pumpY + Math.sin(angle) * 12);
+          ctx.stroke();
+        }
         
         // Tag pompe
         ctx.fillStyle = isStandby ? '#546E7A' : '#0D47A1';
@@ -13201,14 +13202,14 @@ function App() {
         ctx.textAlign = 'center';
         ctx.fillText(`P-${String(i + 1).padStart(2, '0')}`, pumpX, pumpY + 35);
         ctx.font = '8px Arial';
-        ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX, pumpY + 45);
+        ctx.fillText(isStandby ? 'SECOURS' : 'SERVICE', pumpX, pumpY + 47);
       }
       
-      // COLLECTEUR REFOULEMENT pour plusieurs pompes
-      const collecteurRefoulementX = centerX + 50;
+      // COLLECTEUR REFOULEMENT
+      const collecteurRefoulementX = centerX + 80;
       
       ctx.strokeStyle = '#4CAF50';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 8;
       ctx.beginPath();
       ctx.moveTo(collecteurRefoulementX, collecteurStartY);
       ctx.lineTo(collecteurRefoulementX, collecteurEndY);
@@ -13216,15 +13217,14 @@ function App() {
       
       // Piquages refoulement
       for (let i = 0; i < pumpCount; i++) {
-        const pumpX = centerX - 50;
-        const pumpY = startY + 30 + (i * pumpSpacing);
-        const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
+        const pumpX = centerX - 20;
+        const pumpY = startY + (i * pumpSpacing);
         
         ctx.strokeStyle = '#4CAF50';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(pumpX + 25, piquageY);
-        ctx.lineTo(collecteurRefoulementX, piquageY);
+        ctx.moveTo(pumpX + 25, pumpY);
+        ctx.lineTo(collecteurRefoulementX, pumpY);
         ctx.stroke();
       }
       
@@ -13235,136 +13235,50 @@ function App() {
       ctx.stroke();
       
       // Équipements sélectionnés sur collecteur
-      drawSelectedEquipments(ctx, collecteurRefoulementX + 50, 0, centerY, 4, 30);
-    }
-
-    // 4. COLLECTEUR DE REFOULEMENT VERTICAL (parallèle)
-    const collecteurRefoulementX = centerX + 50;
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(collecteurRefoulementX, collecteurStartY);
-    ctx.lineTo(collecteurRefoulementX, collecteurEndY);
-    ctx.stroke();
-    
-    // Connexions des pompes au collecteur refoulement
-    for (let i = 0; i < pumpCount; i++) {
-      const piquageY = collecteurStartY + 30 + (i * (collecteurEndY - collecteurStartY - 60) / (pumpCount - 1 || 1));
-      ctx.strokeStyle = '#4CAF50';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(centerX - 50 + 80, piquageY);
-      ctx.lineTo(collecteurRefoulementX, piquageY);
-      ctx.stroke();
-    }
-    
-    // Label collecteur refoulement
-    ctx.fillStyle = '#2E7D32';
-    ctx.font = 'bold 10px Arial';
-    ctx.textAlign = 'center';
-    ctx.save();
-    ctx.translate(collecteurRefoulementX + 20, centerY);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText('COLLECTEUR REFOULEMENT', 0, 0);
-    ctx.restore();
-    ctx.font = '8px Arial';
-    ctx.fillText(`DN${drawingData.discharge_diameter}`, collecteurRefoulementX + 30, centerY);
-    
-    // 5. TUYAUTERIE VERS STOCKAGE
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(collecteurRefoulementX, centerY);
-    ctx.lineTo(centerX + 200, centerY);
-    ctx.stroke();
-    
-    // Flèche débit total
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(centerX + 150, centerY - 5);
-    ctx.lineTo(centerX + 165, centerY);
-    ctx.lineTo(centerX + 150, centerY + 5);
-    ctx.stroke();
-    
-    // Débit total affiché
-    ctx.fillStyle = '#2E7D32';
-    ctx.font = 'bold 9px Arial';
-    ctx.textAlign = 'center';
-    const totalFlow = drawingData.flow_rate * drawingData.pumps_in_service;
-    ctx.fillText(`${totalFlow}m³/h`, centerX + 130, centerY - 10);
-    
-    // 6. RÉSERVOIR DE STOCKAGE
-    const storageX = centerX + 220;
-    const storageY = centerY - 60;
-    const storageW = 100;
-    const storageH = 120;
-    
-    ctx.strokeStyle = '#9C27B0';
-    ctx.lineWidth = 3;
-    ctx.fillStyle = '#F3E5F5';
-    ctx.fillRect(storageX, storageY, storageW, storageH);
-    ctx.strokeRect(storageX, storageY, storageW, storageH);
-    
-    // Niveau stockage
-    ctx.fillStyle = '#8E24AA';
-    ctx.fillRect(storageX + 5, storageY + storageH * 0.2, storageW - 10, storageH * 0.7);
-    
-    // Raccordement
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.moveTo(centerX + 200, centerY);
-    ctx.lineTo(storageX, centerY);
-    ctx.lineTo(storageX, storageY + storageH - 20);
-    ctx.stroke();
-    
-    // Label stockage
-    ctx.fillStyle = '#7B1FA2';
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('STOCKAGE', storageX + storageW/2, storageY - 10);
-    
-    // 7. INSTRUMENTATIONS
-    if (drawingData.accessories.pressure_gauge_discharge) {
-      const gaugeX = centerX + 100;
-      const gaugeY = centerY - 30;
+      drawSelectedEquipments(ctx, collecteurRefoulementX + 40, 0, centerY, 6, 35);
       
-      // Manomètre PID
-      ctx.beginPath();
-      ctx.arc(gaugeX, gaugeY, 12, 0, Math.PI * 2);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fill();
-      ctx.strokeStyle = '#2C3E50';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      
-      // Aiguille
-      ctx.strokeStyle = '#E74C3C';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(gaugeX, gaugeY);
-      ctx.lineTo(gaugeX + 6, gaugeY - 6);
-      ctx.stroke();
-      
-      // Raccordement
-      ctx.strokeStyle = '#7F8C8D';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(gaugeX, gaugeY + 12);
-      ctx.lineTo(gaugeX, centerY);
-      ctx.stroke();
-      
-      // Tag avec pression
-      ctx.fillStyle = '#2C3E50';
-      ctx.font = '8px Arial';
+      // Annotations collecteurs
+      ctx.fillStyle = '#FF9800';
+      ctx.font = '9px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('PI-001', gaugeX, gaugeY + 25);
-      ctx.fillText(`${drawingData.operating_pressure}bar`, gaugeX, gaugeY + 35);
+      ctx.save();
+      ctx.translate(collecteurAspirationX - 20, centerY);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('COLLECTEUR ASPIRATION', 0, 0);
+      ctx.restore();
+      
+      ctx.fillStyle = '#4CAF50';
+      ctx.save();
+      ctx.translate(collecteurRefoulementX + 20, centerY);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('COLLECTEUR REFOULEMENT', 0, 0);
+      ctx.restore();
     }
     
-    // 8. CARTOUCHE TECHNIQUE
-    drawDynamicTechnicalCartouche(ctx, canvas, 'SURFACE PARALLÈLE');
+    // 3. DONNÉES TECHNIQUES DYNAMIQUES (bas de page)
+    const dataX = 50;
+    const dataY = centerY + 150;
+    
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = '10px Arial';
+    ctx.textAlign = 'left';
+    
+    const techData = [
+      `TYPE: Surface avec aspiration`,
+      `POMPES: ${pumpCount} × ${drawingData.pumps_in_service || pumpCount} service`,
+      `DÉBIT ${pumpCount === 1 ? '' : 'UNITAIRE'}: ${drawingData.flow_rate || 0} m³/h`,
+      ...(pumpCount > 1 ? [`DÉBIT TOTAL: ${(drawingData.flow_rate || 0) * pumpCount} m³/h`] : []),
+      `HMT: ${drawingData.total_head || 0} m`,
+      `DN ASPIRATION: ${drawingData.suction_diameter || 100} mm`,
+      `DN REFOULEMENT: ${drawingData.discharge_diameter || 80} mm`
+    ];
+    
+    techData.forEach((text, i) => {
+      ctx.fillText(text, dataX, dataY + (i * 12));
+    });
+    
+    // Légende des équipements
+    drawEquipmentLegend(ctx, canvas, pumpCount === 1 ? 'SURFACE (1 POMPE)' : 'SURFACE (COLLECTEURS)');
   };
 
   // FONCTIONS DE DESSIN D'ÉQUIPEMENTS PROFESSIONNELS
