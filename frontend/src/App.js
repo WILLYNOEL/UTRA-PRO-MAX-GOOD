@@ -2838,7 +2838,7 @@ const AuditSystem = () => {
                   <div className="mt-4 bg-white p-4 rounded border">
                     <div className="font-semibold text-gray-700 mb-2">Économies Potentielles</div>
                     <div className="text-lg text-green-600 font-bold">
-                      {auditResults.economic_analysis.estimated_annual_savings.toLocaleString()}€/an
+                      {auditResults.economic_analysis?.estimated_annual_savings?.toLocaleString() || '0'}€/an
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
                       ROI 5 ans: {auditResults.economic_analysis.roi_5_years?.toFixed(0)}%
