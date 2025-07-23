@@ -8,7 +8,7 @@ import json
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://3cd9f542-b6a9-4745-bbaf-f64139ff26c2.preview.emergentagent.com/api"
+BACKEND_URL = "https://230eef6b-c579-496a-8a4c-b69f38c6e481.preview.emergentagent.com/api"
 
 def test_intelligent_recommendations_integration():
     """Test intelligent recommendations integration across all tabs (HMT, Performance, Expert)"""
