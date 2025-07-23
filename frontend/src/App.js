@@ -3123,7 +3123,7 @@ const AuditSystem = () => {
                             <strong>Investissement:</strong> {auditResults.action_plan?.total_program?.total_investment?.toLocaleString() || '0'}€
                           </div>
                           <div>
-                            <strong>Économies:</strong> {auditResults.action_plan.total_program.expected_savings?.toLocaleString()}€/an
+                            <strong>Économies:</strong> {auditResults.action_plan?.total_program?.expected_savings?.toLocaleString() || '0'}€/an
                           </div>
                         </div>
                       </div>
