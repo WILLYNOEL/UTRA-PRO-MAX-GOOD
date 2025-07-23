@@ -9391,6 +9391,276 @@ class HydraulicPumpTester:
             self.log_test("Audit Analysis - Critical Data Processing", False, f"Error: {str(e)}")
             return False
 
+    def test_dessin_tab_endpoints(self):
+        """Test specific endpoints for Dessin tab technical cartridge"""
+        print("\n🎨 Testing Dessin Tab Endpoints for Technical Cartridge...")
+        
+        all_passed = True
+        
+        # 1. Test general endpoints
+        print("\n📋 Testing General Endpoints...")
+        
+        # Test GET /api/fluids
+        try:
+            response = requests.get(f"{BACKEND_URL}/fluids", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                fluids = data.get("fluids", [])
+                if len(fluids) >= 4:  # At least water, oil, acid, glycol
+                    self.log_test("GET /api/fluids", True, f"Found {len(fluids)} fluids")
+                else:
+                    self.log_test("GET /api/fluids", False, f"Only {len(fluids)} fluids found")
+                    all_passed = False
+            else:
+                self.log_test("GET /api/fluids", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("GET /api/fluids", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test GET /api/pipe-materials
+        try:
+            response = requests.get(f"{BACKEND_URL}/pipe-materials", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                materials = data.get("materials", [])
+                expected_materials = ["pvc", "pehd", "steel", "steel_galvanized", "cast_iron", "concrete"]
+                found_materials = [m.get("id") for m in materials]
+                missing = [m for m in expected_materials if m not in found_materials]
+                if not missing:
+                    self.log_test("GET /api/pipe-materials", True, f"Found all {len(materials)} materials")
+                else:
+                    self.log_test("GET /api/pipe-materials", False, f"Missing materials: {missing}")
+                    all_passed = False
+            else:
+                self.log_test("GET /api/pipe-materials", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("GET /api/pipe-materials", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test GET /api/solar-regions
+        try:
+            response = requests.get(f"{BACKEND_URL}/solar-regions", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                regions = data.get("regions", [])
+                if len(regions) > 0:
+                    self.log_test("GET /api/solar-regions", True, f"Found {len(regions)} solar regions")
+                else:
+                    self.log_test("GET /api/solar-regions", False, "No solar regions found")
+                    all_passed = False
+            else:
+                self.log_test("GET /api/solar-regions", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("GET /api/solar-regions", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # 2. Test main hydraulic endpoint with realistic data
+        print("\n⚙️ Testing Main Hydraulic Endpoint...")
+        
+        # Test data from review request
+        test_data = {
+            "flow_rate": 50.0,  # m³/h
+            "hmt": 30.0,  # m
+            "pipe_diameter": 100.0,  # mm
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80.0,  # %
+            "motor_efficiency": 90.0,  # %
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verify hydraulic calculations
+                power_calcs = result.get("power_calculations", {})
+                hydraulic_power = power_calcs.get("hydraulic_power", 0)
+                absorbed_power = power_calcs.get("absorbed_power", 0)
+                
+                # Check velocity and Reynolds number
+                velocity = result.get("velocity", 0)
+                reynolds_number = result.get("reynolds_number", 0)
+                
+                # Check overall efficiency
+                overall_efficiency = result.get("overall_efficiency", 0)
+                expected_efficiency = 80.0 * 90.0 / 100  # 72%
+                
+                errors = []
+                
+                if hydraulic_power <= 0:
+                    errors.append("Hydraulic power is zero or negative")
+                
+                if absorbed_power <= hydraulic_power:
+                    errors.append("Absorbed power should be greater than hydraulic power")
+                
+                if velocity <= 0:
+                    errors.append("Velocity is zero or negative")
+                
+                if reynolds_number <= 0:
+                    errors.append("Reynolds number is zero or negative")
+                
+                if abs(overall_efficiency - expected_efficiency) > 1:
+                    errors.append(f"Overall efficiency: expected ~{expected_efficiency:.1f}%, got {overall_efficiency:.1f}%")
+                
+                # Check performance curves for technical cartridge
+                performance_curves = result.get("performance_curves", {})
+                if "flow" not in performance_curves or "hmt" not in performance_curves:
+                    errors.append("Missing performance curves data")
+                
+                if errors:
+                    self.log_test("POST /api/calculate-performance", False, "; ".join(errors))
+                    all_passed = False
+                else:
+                    self.log_test("POST /api/calculate-performance", True, 
+                                f"Flow: {test_data['flow_rate']} m³/h, HMT: {test_data['hmt']} m, "
+                                f"P2: {hydraulic_power:.3f} kW, P1: {absorbed_power:.3f} kW, "
+                                f"Velocity: {velocity:.2f} m/s, Efficiency: {overall_efficiency:.1f}%")
+            else:
+                self.log_test("POST /api/calculate-performance", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("POST /api/calculate-performance", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # 3. Test hydraulic calculations consistency
+        print("\n🔧 Testing Hydraulic Calculations Consistency...")
+        
+        # Test flow rate calculation consistency
+        expected_velocity = (50.0 / 3600) / (3.14159 * (0.1/2)**2)  # Q/A
+        
+        # Test HMT calculation with separate endpoint
+        hmt_test_data = {
+            "installation_type": "surface",
+            "suction_type": "flooded",
+            "hasp": 2.0,
+            "discharge_height": 25.0,
+            "useful_pressure": 0.5,  # 0.5 bar = 5m
+            "suction_pipe_diameter": 100.0,
+            "discharge_pipe_diameter": 100.0,
+            "suction_pipe_length": 20.0,
+            "discharge_pipe_length": 80.0,
+            "suction_pipe_material": "pvc",
+            "discharge_pipe_material": "pvc",
+            "suction_fittings": [],
+            "discharge_fittings": [],
+            "fluid_type": "water",
+            "temperature": 20.0,
+            "flow_rate": 50.0
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-hmt", json=hmt_test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                calculated_hmt = result.get("hmt", 0)
+                static_head = result.get("static_head", 0)
+                total_head_loss = result.get("total_head_loss", 0)
+                
+                if calculated_hmt > 0 and static_head > 0 and total_head_loss >= 0:
+                    self.log_test("HMT Calculation Consistency", True, 
+                                f"HMT: {calculated_hmt:.2f} m, Static: {static_head:.2f} m, Losses: {total_head_loss:.2f} m")
+                else:
+                    self.log_test("HMT Calculation Consistency", False, 
+                                f"Invalid values - HMT: {calculated_hmt}, Static: {static_head}, Losses: {total_head_loss}")
+                    all_passed = False
+            else:
+                self.log_test("HMT Calculation Consistency", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("HMT Calculation Consistency", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # 4. Test power calculations for technical cartridge
+        print("\n⚡ Testing Power Calculations for Technical Cartridge...")
+        
+        # Verify power formulas with exact test data
+        # P2 = ((Q × H) / (η × 367)) * 100
+        expected_p2 = ((50.0 * 30.0) / (80.0 * 367)) * 100  # Should be ~5.109 kW
+        # P1 = P2 / (motor_efficiency / 100)
+        expected_p1 = expected_p2 / (90.0 / 100)  # Should be ~5.677 kW
+        
+        power_test_data = {
+            "flow_rate": 50.0,
+            "hmt": 30.0,
+            "pipe_diameter": 100.0,
+            "fluid_type": "water",
+            "pipe_material": "pvc",
+            "pump_efficiency": 80.0,
+            "motor_efficiency": 90.0,
+            "starting_method": "star_delta",
+            "power_factor": 0.8,
+            "cable_length": 50.0,
+            "voltage": 400
+        }
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=power_test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                power_calcs = result.get("power_calculations", {})
+                actual_p2 = power_calcs.get("hydraulic_power", 0)
+                actual_p1 = power_calcs.get("absorbed_power", 0)
+                
+                p2_error = abs(actual_p2 - expected_p2)
+                p1_error = abs(actual_p1 - expected_p1)
+                
+                if p2_error < 0.1 and p1_error < 0.1:
+                    self.log_test("Power Calculations for Technical Cartridge", True, 
+                                f"P2: {actual_p2:.3f} kW (expected {expected_p2:.3f}), "
+                                f"P1: {actual_p1:.3f} kW (expected {expected_p1:.3f})")
+                else:
+                    self.log_test("Power Calculations for Technical Cartridge", False, 
+                                f"P2 error: {p2_error:.3f} kW, P1 error: {p1_error:.3f} kW")
+                    all_passed = False
+            else:
+                self.log_test("Power Calculations for Technical Cartridge", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("Power Calculations for Technical Cartridge", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # 5. Test dynamic values for technical cartridge
+        print("\n📊 Testing Dynamic Values for Technical Cartridge...")
+        
+        # Test that values change when parameters change
+        modified_test_data = power_test_data.copy()
+        modified_test_data["flow_rate"] = 75.0  # Increase flow rate
+        modified_test_data["hmt"] = 40.0  # Increase HMT
+        
+        try:
+            response = requests.post(f"{BACKEND_URL}/calculate-performance", json=modified_test_data, timeout=10)
+            if response.status_code == 200:
+                result = response.json()
+                power_calcs = result.get("power_calculations", {})
+                modified_p2 = power_calcs.get("hydraulic_power", 0)
+                modified_p1 = power_calcs.get("absorbed_power", 0)
+                modified_velocity = result.get("velocity", 0)
+                
+                # Values should be different (higher) than original test
+                if modified_p2 > expected_p2 and modified_p1 > expected_p1:
+                    self.log_test("Dynamic Values for Technical Cartridge", True, 
+                                f"Values correctly updated - P2: {modified_p2:.3f} kW, P1: {modified_p1:.3f} kW, V: {modified_velocity:.2f} m/s")
+                else:
+                    self.log_test("Dynamic Values for Technical Cartridge", False, 
+                                f"Values not properly updated - P2: {modified_p2:.3f} kW, P1: {modified_p1:.3f} kW")
+                    all_passed = False
+            else:
+                self.log_test("Dynamic Values for Technical Cartridge", False, f"Status: {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("Dynamic Values for Technical Cartridge", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         print("HYDRAULIC PUMP CALCULATION API - URGENT TESTING")
         print("=" * 80)
