@@ -16997,7 +16997,10 @@ function App() {
                         </div>
                         <div className="space-y-1">
                           <div className="font-bold text-slate-800 text-xs">TUYAUTERIES</div>
-                          <div className="text-slate-700">DN Asp: {drawingData.suction_diameter}mm</div>
+                          {/* DN ASP masqué pour forage et submersible */}
+                          {drawingData.show_suction_fields && (
+                            <div className="text-slate-700">DN Asp: {drawingData.suction_diameter}mm</div>
+                          )}
                           <div className="text-slate-700">DN Ref: {drawingData.discharge_diameter}mm</div>
                           <div className="text-slate-700">{drawingData.pipe_material.toUpperCase()}</div>
                         </div>
