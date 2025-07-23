@@ -12559,6 +12559,28 @@ function App() {
 
   const canvasRef = useRef(null);
 
+  // Effet pour régénérer automatiquement le schéma quand les valeurs importantes changent
+  useEffect(() => {
+    if (canvasRef.current && activeTab === 'drawing') {
+      // Régénération automatique du schéma après un petit délai pour éviter les re-rendus trop fréquents
+      const timeoutId = setTimeout(() => {
+        generateProfessionalDrawing();
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [
+    drawingData.flow_rate,
+    drawingData.total_head, 
+    drawingData.discharge_diameter,
+    drawingData.suction_diameter,
+    drawingData.pump_count,
+    drawingData.pump_configuration,
+    drawingData.installation_type,
+    drawingData.pump_power,
+    activeTab
+  ]);
+
   // Fonction pour gérer les inputs numériques avec backspace sur "0"
   const handleNumericInputChange = (fieldName, value, defaultValue = 0) => {
     // Si la valeur est vide (après backspace), utiliser une chaîne vide temporairement
