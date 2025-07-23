@@ -412,6 +412,18 @@ backend:
           comment: "✅ TESTED: Graduated Diameter Recommendations System working perfectly! Comprehensive validation completed with 100% success rate (2/2 test cases passed). ✅ HIGH VELOCITY TRIGGERING: DN32 with 120 m³/h flow rate produces velocity 23.61 m/s (>1.5 m/s threshold), correctly triggering multiple DN options. DN32 with 200 m³/h flow rate produces velocity 39.35 m/s, also triggering graduated recommendations. ✅ MULTIPLE DN OPTIONS: System provides multiple DN options instead of single large recommendation. Found 2 categories of recommendations (🟢 OPTIMAL, 🟡 RECOMMANDÉ) for both test cases. ✅ PROPER CATEGORIZATION: Options properly categorized with 🟢 OPTIMAL, 🟡 RECOMMANDÉ, 🔴 COÛTEUX indicators based on efficiency ratio. ✅ COST-BENEFIT ANALYSIS: Each option shows complete analysis with format 'DN32→DN40: Vitesse 18.2m/s (-41%), Coût +30%' including velocity reduction percentages and cost increase percentages. ✅ NO OVERSIZED JUMPS: System does not jump directly to oversized pipes (DN350, DN300, DN250). Provides graduated progression DN32→DN40→DN50. ✅ REASONABLE PROGRESSION: DN progression is gradual and reasonable, not jumping beyond DN150 for initial recommendations. ✅ ECONOMIC OPTIMIZATION: System stops at reasonable DN when velocity becomes acceptable (≤1.5 m/s). ✅ VELOCITY REDUCTION CALCULATION: Correctly calculates velocity reduction percentages (-41% for DN32→DN40, -76% for DN32→DN50). ✅ COST ANALYSIS: Properly estimates cost increases (+30% for DN40, +102% for DN50) based on diameter ratios. ✅ HEADER IDENTIFICATION: System includes 'OPTIMISATION DIAMÈTRE - Options graduées' header to identify graduated recommendations section. Graduated diameter recommendations system successfully prevents oversized pipe recommendations while providing economically optimized solutions with comprehensive cost-benefit analysis."
 
 frontend:
+  - task: "Cartouche Technique Dessin - Correction et Épuration"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "✅ IMPLÉMENTÉ: Corrections complètes du cartouche technique dans l'onglet Dessin. (1) Cartouche HTML épuré: Suppression des 4 colonnes redondantes, passage à 3 colonnes claires avec valeurs hydrauliques Q, HMT en ROUGE pour visibilité (encerclées en rouge requirements). (2) Signature simplifiée: Suppression de la ligne de conformité trop chargée (ISO 14692, NF EN 806, DTU 60.11 - barrées en rouge requirements), remplacée par signature compacte 'ECO-PUMP EXPERT'. (3) Cartouche Canvas épuré: Fonction drawTechnicalCartouche corrigée avec valeurs dynamiques Q, HMT, DN en ROUGE, dimensions réduites (320x120 au lieu de 350x150), informations essentielles uniquement. (4) Cartouche dynamique: drawDynamicTechnicalCartouche simplifié avec mise à jour temps réel des valeurs importantes. (5) Auto-régénération: useEffect ajouté pour régénération automatique du schéma quand flow_rate, total_head, discharge_diameter, pump_count changent - cartouche toujours à jour en temps réel. Toutes les valeurs 'encerclées en rouge' sont maintenant dynamiques et les informations 'barrées en rouge' ont été supprimées. Interface épurée et professionnelle."
+
   - task: "Réservoir Calculator Numerical Input Handling - analyzeExistingInstallation Fix"
     implemented: true
     working: true
