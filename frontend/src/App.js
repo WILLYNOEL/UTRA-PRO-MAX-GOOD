@@ -3104,7 +3104,7 @@ const AuditSystem = () => {
                           <strong>Timeline:</strong> {auditResults.action_plan.phase_2_short_term.timeline}
                         </div>
                         <div className="text-sm text-gray-700 mb-2">
-                          <strong>Investissement:</strong> {auditResults.action_plan.phase_2_short_term.investment?.toLocaleString()}€
+                          <strong>Investissement:</strong> {auditResults.action_plan?.phase_2_short_term?.investment?.toLocaleString() || '0'}€
                         </div>
                         <div className="text-sm text-gray-600">
                           {auditResults.action_plan.phase_2_short_term.actions?.join(' • ')}
