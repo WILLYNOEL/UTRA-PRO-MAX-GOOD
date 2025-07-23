@@ -14782,6 +14782,21 @@ function App() {
     ctx.fill();
     ctx.fillStyle = '#2C3E50';
     ctx.fillText('E - Coffret Électrique', symbolX + 15, symbolY + 9);
+    
+    // 4. Réservoir à vessie (NOUVEAU)
+    symbolX -= 240; // Retour à gauche, ligne suivante
+    symbolY += 12;
+    ctx.strokeStyle = '#8E44AD';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#F8F9FA';
+    ctx.fillRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.strokeRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.strokeStyle = '#E74C3C';
+    ctx.beginPath();
+    ctx.ellipse(symbolX + 7, symbolY + 10, 2.5, 4, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('VT - Réservoir à Vessie', symbolX + 15, symbolY + 9);
   };
   
   // Cartouche technique dynamique
