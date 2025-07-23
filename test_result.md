@@ -703,8 +703,7 @@ backend:
 
 test_plan:
   current_focus:
-    - "Real-time Analysis System - Audit Analysis Critical Data Testing"
-    - "AUDIT Tab PDF Export Functionality"
+    - "Cartouche Technique Dessin - Correction et Épuration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
