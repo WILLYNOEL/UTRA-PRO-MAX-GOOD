@@ -16638,25 +16638,28 @@ function App() {
                         INSTRUMENTATION
                       </h4>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <label className={`flex items-center p-2 rounded cursor-pointer ${
-                          drawingData.accessories.pressure_gauge_suction ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={drawingData.accessories.pressure_gauge_suction}
-                            onChange={(e) => handleDrawingInputChange('accessories', {
-                              ...drawingData.accessories,
-                              pressure_gauge_suction: e.target.checked
-                            })}
-                            className="rounded border-slate-300 text-blue-600 mr-2"
-                          />
-                          <span className="font-medium">Manomètre Aspiration</span>
-                          {drawingData.accessories.pressure_gauge_suction && <span className="ml-auto text-blue-500">✓</span>}
-                        </label>
+                        {/* Manomètre Aspiration - MASQUÉ pour forage */}
+                        {drawingData.show_suction_fields && (
+                          <label className={`flex items-center p-2 rounded cursor-pointer ${
+                            drawingData.accessories.pressure_gauge_suction ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={drawingData.accessories.pressure_gauge_suction}
+                              onChange={(e) => handleDrawingInputChange('accessories', {
+                                ...drawingData.accessories,
+                                pressure_gauge_suction: e.target.checked
+                              })}
+                              className="rounded border-slate-300 text-blue-600 mr-2"
+                            />
+                            <span className="font-medium">Manomètre Aspiration</span>
+                            {drawingData.accessories.pressure_gauge_suction && <span className="ml-auto text-blue-500">✓</span>}
+                          </label>
+                        )}
                         
                         <label className={`flex items-center p-2 rounded cursor-pointer ${
                           drawingData.accessories.pressure_gauge_discharge ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
+                        } ${drawingData.show_suction_fields ? '' : 'col-span-2'}`}>
                           <input
                             type="checkbox"
                             checked={drawingData.accessories.pressure_gauge_discharge}
