@@ -3120,7 +3120,7 @@ const AuditSystem = () => {
                             <strong>Durée totale:</strong> {auditResults.action_plan.total_program.duration_months} mois
                           </div>
                           <div>
-                            <strong>Investissement:</strong> {auditResults.action_plan.total_program.total_investment?.toLocaleString()}€
+                            <strong>Investissement:</strong> {auditResults.action_plan?.total_program?.total_investment?.toLocaleString() || '0'}€
                           </div>
                           <div>
                             <strong>Économies:</strong> {auditResults.action_plan.total_program.expected_savings?.toLocaleString()}€/an
