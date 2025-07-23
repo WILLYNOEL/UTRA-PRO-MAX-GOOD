@@ -14140,11 +14140,11 @@ function App() {
     ctx.lineTo(wellX - 55, waterLevelY - 5);
     ctx.stroke();
     
-    // Annotation niveau dynamique (DYNAMIQUE protégée) - correspond au niveau d'eau réel
+    // Annotation niveau dynamique - VALEUR SAISIE (position figée, valeur dynamique)
     ctx.fillStyle = '#2196F3';
     ctx.font = 'bold 10px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`Niv.Eau=${Math.round(waterLevelFromSurface)}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
+    ctx.fillText(`Niv.Dyn=${drawingData.forage_specific.dynamic_level || 0}m`, wellX - 65, groundLevel + waterLevelFromSurface / 2);
     
     // MESURE HAUTEUR CHÂTEAU D'EAU (DYNAMIQUE)
     ctx.strokeStyle = '#E91E63';
