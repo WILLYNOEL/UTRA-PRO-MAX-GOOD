@@ -3089,7 +3089,7 @@ const AuditSystem = () => {
                           <strong>Timeline:</strong> {auditResults.action_plan.phase_1_immediate.timeline}
                         </div>
                         <div className="text-sm text-gray-700 mb-2">
-                          <strong>Investissement:</strong> {auditResults.action_plan.phase_1_immediate.investment?.toLocaleString()}€
+                          <strong>Investissement:</strong> {auditResults.action_plan?.phase_1_immediate?.investment?.toLocaleString() || '0'}€
                         </div>
                         <div className="text-sm text-gray-600">
                           {auditResults.action_plan.phase_1_immediate.actions?.join(' • ')}
