@@ -14527,42 +14527,209 @@ function App() {
   };
   
   
-  // Cartouche technique épuré spécialement pour FORAGE (déplacé en bas à gauche, SANS aspiration)
-  const drawCleanTechnicalCartouche = (ctx, canvas, type) => {
-    const cartX = 50; // Position à gauche
-    const cartY = canvas.height - 150; // En bas
-    const cartW = 270;
-    const cartH = 120;
+  // LÉGENDE COMPLÈTE DES ÉQUIPEMENTS (en bas à gauche au lieu des infos techniques)
+  const drawEquipmentLegend = (ctx, canvas, type) => {
+    const cartX = 50; 
+    const cartY = canvas.height - 160; 
+    const cartW = 320; // Plus large pour la légende
+    const cartH = 140;
     
-    // Cadre simple
+    // Cadre de la légende
     ctx.strokeStyle = '#2C3E50';
     ctx.lineWidth = 2;
     ctx.strokeRect(cartX, cartY, cartW, cartH);
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(cartX, cartY, cartW, cartH);
     
-    // Titre épuré
+    // Titre de la légende
     ctx.fillStyle = '#2C3E50';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 11px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`INSTALLATION ${type}`, cartX + 10, cartY + 20);
+    ctx.fillText(`LÉGENDE ÉQUIPEMENTS - ${type}`, cartX + 10, cartY + 18);
     
-    // Données techniques FORAGE SEULEMENT (aucune aspiration)
-    ctx.font = '10px Arial';
-    let y = cartY + 40;
+    // Position de départ pour les symboles
+    let symbolX = cartX + 15;
+    let symbolY = cartY + 35;
+    const columnWidth = 150;
+    const rowHeight = 22;
     
-    // Spécifications spéciales pour FORAGE uniquement
-    const forageSpecs = [
-      `Débit: ${drawingData.flow_rate || 0} m³/h`,
-      `HMT: ${drawingData.total_head || 0} m`,
-      `DN Refoulement: ${drawingData.discharge_diameter || 80} mm`, // SEULEMENT refoulement pour forage
-      `Pression: ${drawingData.operating_pressure || 6} bar`,
-      `Pompe: ${drawingData.pump_count || 1} × submersible` // Spécifique forage
-    ];
+    ctx.font = '8px Arial';
     
-    forageSpecs.forEach((spec, i) => {
-      ctx.fillText(spec, cartX + 10, y + (i * 15));
-    });
+    // COLONNE 1 - INSTRUMENTS
+    ctx.fillStyle = '#3498DB';
+    ctx.font = 'bold 8px Arial';
+    ctx.fillText('INSTRUMENTATION', symbolX, symbolY);
+    symbolY += 12;
+    ctx.font = '7px Arial';
+    
+    // 1. Manomètre
+    ctx.beginPath();
+    ctx.arc(symbolX + 6, symbolY + 3, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.strokeStyle = '#E74C3C';
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 6, symbolY + 3);
+    ctx.lineTo(symbolX + 9, symbolY);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('PI - Manomètre', symbolX + 15, symbolY + 6);
+    symbolY += rowHeight;
+    
+    // 2. Débitmètre
+    ctx.fillStyle = '#F8F9FA';
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 1;
+    ctx.fillRect(symbolX + 2, symbolY - 2, 12, 8);
+    ctx.strokeRect(symbolX + 2, symbolY - 2, 12, 8);
+    ctx.strokeStyle = '#3498DB';
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 8, symbolY + 2);
+    ctx.lineTo(symbolX + 11, symbolY - 1);
+    ctx.moveTo(symbolX + 8, symbolY + 2);
+    ctx.lineTo(symbolX + 5, symbolY - 1);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('FI - Débitmètre', symbolX + 15, symbolY + 3);
+    symbolY += rowHeight;
+    
+    // 3. Capteur Pression
+    ctx.fillStyle = '#3498DB';
+    ctx.strokeStyle = '#2980B9';
+    ctx.lineWidth = 1;
+    ctx.fillRect(symbolX + 3, symbolY - 2, 8, 6);
+    ctx.strokeRect(symbolX + 3, symbolY - 2, 8, 6);
+    ctx.beginPath();
+    ctx.arc(symbolX + 7, symbolY + 1, 2, -Math.PI/4, Math.PI/4);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('PT - Capteur Pression', symbolX + 15, symbolY + 3);
+    
+    // COLONNE 2 - VANNES
+    symbolX += columnWidth;
+    symbolY = cartY + 35;
+    
+    ctx.fillStyle = '#E74C3C';
+    ctx.font = 'bold 8px Arial';
+    ctx.fillText('VANNES & ROBINETTERIE', symbolX, symbolY);
+    symbolY += 12;
+    ctx.font = '7px Arial';
+    
+    // 1. Vanne Isolement
+    ctx.strokeStyle = '#2C3E50';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 7, symbolY - 3);
+    ctx.lineTo(symbolX + 11, symbolY + 1);
+    ctx.lineTo(symbolX + 7, symbolY + 5);
+    ctx.lineTo(symbolX + 3, symbolY + 1);
+    ctx.closePath();
+    ctx.fillStyle = '#ECF0F1';
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = '#34495E';
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 5, symbolY - 1);
+    ctx.lineTo(symbolX + 9, symbolY + 3);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('XV - Vanne Isolement', symbolX + 15, symbolY + 3);
+    symbolY += rowHeight;
+    
+    // 2. Vanne à Boisseau
+    ctx.beginPath();
+    ctx.arc(symbolX + 7, symbolY + 1, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#9B59B6';
+    ctx.fill();
+    ctx.strokeStyle = '#8E44AD';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 4, symbolY + 1);
+    ctx.lineTo(symbolX + 10, symbolY + 1);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('BV - Vanne à Boisseau', symbolX + 15, symbolY + 3);
+    symbolY += rowHeight;
+    
+    // 3. Clapet Anti-retour
+    ctx.fillStyle = '#F39C12';
+    ctx.strokeStyle = '#E67E22';
+    ctx.lineWidth = 1;
+    ctx.fillRect(symbolX + 3, symbolY - 2, 10, 6);
+    ctx.strokeRect(symbolX + 3, symbolY - 2, 10, 6);
+    ctx.strokeStyle = '#D35400';
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 5, symbolY - 1);
+    ctx.lineTo(symbolX + 9, symbolY + 1);
+    ctx.lineTo(symbolX + 5, symbolY + 3);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('NRV - Clapet Anti-retour', symbolX + 15, symbolY + 3);
+    
+    // BAS - DIVERS
+    symbolX = cartX + 15;
+    symbolY = cartY + 115;
+    
+    ctx.fillStyle = '#27AE60';
+    ctx.font = 'bold 8px Arial';
+    ctx.fillText('DIVERS', symbolX, symbolY);
+    ctx.font = '7px Arial';
+    
+    // 1. Filtre
+    ctx.strokeStyle = '#16A085';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#A3F7E8';
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 3, symbolY + 5);
+    ctx.lineTo(symbolX + 11, symbolY + 5);
+    ctx.lineTo(symbolX + 9, symbolY + 11);
+    ctx.lineTo(symbolX + 5, symbolY + 11);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = '#16A085';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(symbolX + 5, symbolY + 7);
+    ctx.lineTo(symbolX + 7, symbolY + 9);
+    ctx.lineTo(symbolX + 9, symbolY + 7);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('FT - Filtre', symbolX + 15, symbolY + 9);
+    
+    // 2. Pompe (référence)
+    symbolX += 80;
+    ctx.fillStyle = '#1976D2';
+    ctx.strokeStyle = '#0D47A1';
+    ctx.lineWidth = 1;
+    ctx.fillRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.strokeRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(symbolX + 7, symbolY + 10, 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('PS - Pompe Submersible', symbolX + 15, symbolY + 9);
+    
+    // 3. Coffret électrique
+    symbolX += 120;
+    ctx.fillStyle = '#2C3E50';
+    ctx.strokeStyle = '#1A252F';
+    ctx.lineWidth = 1;
+    ctx.fillRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.strokeRect(symbolX + 3, symbolY + 5, 8, 10);
+    ctx.fillStyle = '#27AE60';
+    ctx.beginPath();
+    ctx.arc(symbolX + 7, symbolY + 8, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#2C3E50';
+    ctx.fillText('E - Coffret Électrique', symbolX + 15, symbolY + 9);
   };
   
   // Cartouche technique dynamique
