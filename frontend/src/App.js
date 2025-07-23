@@ -15255,12 +15255,12 @@ function App() {
     ctx.fillText('COMMANDE', x + width/2, y + height + 15);
   };
 
-  // Cartouche technique professionnel
+  // Cartouche technique professionnel épuré
   const drawTechnicalCartouche = (ctx, canvas) => {
-    const cartX = canvas.width - 350;
-    const cartY = canvas.height - 150;
-    const cartWidth = 330;
-    const cartHeight = 130;
+    const cartX = canvas.width - 320;
+    const cartY = canvas.height - 140;
+    const cartWidth = 300;
+    const cartHeight = 120;
     
     // Fond du cartouche
     ctx.fillStyle = '#fafafa';
@@ -15269,58 +15269,62 @@ function App() {
     ctx.lineWidth = 2;
     ctx.strokeRect(cartX, cartY, cartWidth, cartHeight);
     
-    // En-tête
+    // En-tête simplifié
     ctx.fillStyle = '#1565c0';
-    ctx.fillRect(cartX, cartY, cartWidth, 25);
+    ctx.fillRect(cartX, cartY, cartWidth, 20);
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px Arial';
+    ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('SCHÉMA HYDRAULIQUE TECHNIQUE - ECO-PUMP AFRIK', cartX + cartWidth/2, cartY + 17);
+    ctx.fillText('SCHÉMA HYDRAULIQUE TECHNIQUE', cartX + cartWidth/2, cartY + 14);
     
-    // Informations techniques en colonnes
-    const col1X = cartX + 10;
-    const col2X = cartX + 120;
-    const col3X = cartX + 230;
-    const startY = cartY + 40;
+    // Informations techniques en colonnes simplifiées
+    const col1X = cartX + 8;
+    const col2X = cartX + 105;
+    const col3X = cartX + 202;
+    const startY = cartY + 35;
     
     ctx.fillStyle = '#424242';
-    ctx.font = '10px Arial';
+    ctx.font = '9px Arial';
     ctx.textAlign = 'left';
     
     // Colonne 1 - Installation
-    ctx.font = 'bold 10px Arial';
+    ctx.font = 'bold 9px Arial';
     ctx.fillText('INSTALLATION:', col1X, startY);
-    ctx.font = '10px Arial';
+    ctx.font = '8px Arial';
     ctx.fillText(drawingData.installation_type.replace('_', ' ').toUpperCase(), col1X, startY + 12);
-    ctx.fillText(`${drawingData.pump_count} pompe(s)`, col1X, startY + 24);
-    ctx.fillText(`${drawingData.pumps_in_service} en service`, col1X, startY + 36);
-    if ((drawingData.pump_count - drawingData.pumps_in_service) > 0) {
-      ctx.fillText(`${drawingData.pump_count - drawingData.pumps_in_service} secours`, col1X, startY + 48);
+    ctx.fillText(`${drawingData.pump_count} pompe${drawingData.pump_count > 1 ? 's' : ''}`, col1X, startY + 22);
+    ctx.fillText(`${drawingData.pumps_in_service} service`, col1X, startY + 32);
+    
+    // Colonne 2 - Hydraulique (VALEURS DYNAMIQUES)
+    ctx.font = 'bold 9px Arial';
+    ctx.fillStyle = '#d32f2f'; // Rouge pour les valeurs importantes
+    ctx.fillText('HYDRAULIQUE:', col2X, startY);
+    ctx.font = '8px Arial';
+    ctx.fillText(`Q: ${drawingData.flow_rate} m³/h`, col2X, startY + 12);
+    ctx.fillText(`HMT: ${drawingData.total_head} m`, col2X, startY + 22);
+    ctx.fillStyle = '#2e7d32'; // Vert pour la puissance
+    ctx.fillText(`P: ${drawingData.pump_power.toFixed(1)} kW`, col2X, startY + 32);
+    
+    // Colonne 3 - Diamètres (VALEURS DYNAMIQUES)
+    ctx.fillStyle = '#d32f2f'; // Rouge pour les DN
+    ctx.font = 'bold 9px Arial';
+    ctx.fillText('DIAMÈTRES:', col3X, startY);
+    ctx.font = '8px Arial';
+    if (drawingData.show_suction_fields) {
+      ctx.fillText(`DN Asp: ${drawingData.suction_diameter}`, col3X, startY + 12);
+      ctx.fillText(`DN Ref: ${drawingData.discharge_diameter}`, col3X, startY + 22);
+    } else {
+      ctx.fillText(`DN Ref: ${drawingData.discharge_diameter}`, col3X, startY + 12);
     }
     
-    // Colonne 2 - Hydraulique
-    ctx.font = 'bold 10px Arial';
-    ctx.fillText('HYDRAULIQUE:', col2X, startY);
-    ctx.font = '10px Arial';
-    ctx.fillText(`Débit: ${drawingData.flow_rate} m³/h`, col2X, startY + 12);
-    ctx.fillText(`HMT: ${drawingData.total_head} m`, col2X, startY + 24);
-    ctx.fillText(`Puissance: ${drawingData.pump_power.toFixed(1)} kW`, col2X, startY + 36);
-    ctx.fillText(`Pression: ${drawingData.operating_pressure} bar`, col2X, startY + 48);
-    
-    // Colonne 3 - Tuyauteries
-    ctx.font = 'bold 10px Arial';
-    ctx.fillText('TUYAUTERIES:', col3X, startY);
-    ctx.font = '10px Arial';
-    ctx.fillText(`DN Asp: ${drawingData.suction_diameter}mm`, col3X, startY + 12);
-    ctx.fillText(`DN Ref: ${drawingData.discharge_diameter}mm`, col3X, startY + 24);
-    ctx.fillText(`Matériau: ${drawingData.pipe_material.toUpperCase()}`, col3X, startY + 36);
-    ctx.fillText(`Temp: ${drawingData.temperature}°C`, col3X, startY + 48);
-    
-    // Ligne de conformité
+    // Signature simplifiée
     ctx.fillStyle = '#757575';
-    ctx.font = '8px Arial';
+    ctx.font = '7px Arial';
     ctx.textAlign = 'left';
-    ctx.fillText(`Conformité: ISO 14692, NF EN 806, DTU 60.11 | Protection: ${drawingData.specifications.protection_class} | Date: ${new Date().toLocaleDateString('fr-FR')}`, cartX + 10, cartY + cartHeight - 8);
+    ctx.fillText(`ISO/EN • Protection ${drawingData.specifications.protection_class}`, cartX + 8, cartY + cartHeight - 12);
+    
+    ctx.textAlign = 'right';
+    ctx.fillText(`ECO-PUMP EXPERT • ${new Date().toLocaleDateString('fr-FR')}`, cartX + cartWidth - 8, cartY + cartHeight - 12);
   };
   // ========================================================================
   // FONCTIONS DE DESSIN ISO PROFESSIONNELLES - CONFORMITÉ EN-ISO 14692
