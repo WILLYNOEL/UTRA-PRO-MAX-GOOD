@@ -2824,7 +2824,7 @@ const AuditSystem = () => {
                     <div className="bg-white p-4 rounded border">
                       <div className="font-semibold text-blue-700">Investissement Total</div>
                       <div className="text-xl font-bold text-blue-800">
-                        {auditResults.economic_analysis.total_investment_required.toLocaleString()}€
+                        {auditResults.economic_analysis?.total_investment_required?.toLocaleString() || '0'}€
                       </div>
                     </div>
                     <div className="bg-white p-4 rounded border">
