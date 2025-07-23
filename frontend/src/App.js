@@ -17176,21 +17176,24 @@ function App() {
                           {drawingData.accessories.check_valve && <span className="ml-auto text-green-500">✓</span>}
                         </label>
                         
-                        <label className={`flex items-center p-2 rounded cursor-pointer ${
-                          drawingData.accessories.safety_valve ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
-                        }`}>
-                          <input
-                            type="checkbox"
-                            checked={drawingData.accessories.safety_valve}
-                            onChange={(e) => handleDrawingInputChange('accessories', {
-                              ...drawingData.accessories,
-                              safety_valve: e.target.checked
-                            })}
-                            className="rounded border-slate-300 text-green-600 mr-2"
-                          />
-                          <span className="font-medium">Soupape Sécurité</span>
-                          {drawingData.accessories.safety_valve && <span className="ml-auto text-green-500">✓</span>}
-                        </label>
+                        {/* Soupape Sécurité - MASQUÉE pour relevage */}
+                        {drawingData.installation_type !== 'submersible' && (
+                          <label className={`flex items-center p-2 rounded cursor-pointer ${
+                            drawingData.accessories.safety_valve ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100'
+                          }`}>
+                            <input
+                              type="checkbox"
+                              checked={drawingData.accessories.safety_valve}
+                              onChange={(e) => handleDrawingInputChange('accessories', {
+                                ...drawingData.accessories,
+                                safety_valve: e.target.checked
+                              })}
+                              className="rounded border-slate-300 text-green-600 mr-2"
+                            />
+                            <span className="font-medium">Soupape Sécurité</span>
+                            {drawingData.accessories.safety_valve && <span className="ml-auto text-green-500">✓</span>}
+                          </label>
+                        )}
                       </div>
                     </div>
 
