@@ -14579,6 +14579,158 @@ function App() {
   };
   
   
+  // Fonction générique pour dessiner les équipements sélectionnés (réutilisable pour tous types)
+  const drawSelectedEquipments = (ctx, startX, startY, pipeY, pipeWidth, spacing = 35) => {
+    let equipmentX = startX;
+    
+    // MANOMÈTRE REFOULEMENT (si sélectionné)
+    if (drawingData.accessories.pressure_gauge_discharge) {
+      const gaugeX = equipmentX;
+      const gaugeY = pipeY - 20;
+      
+      ctx.beginPath();
+      ctx.arc(gaugeX, gaugeY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#E74C3C';
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY);
+      ctx.lineTo(gaugeX + 3, gaugeY - 3);
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY + 6);
+      ctx.lineTo(gaugeX, pipeY);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PI', gaugeX, pipeY + 12);
+      
+      equipmentX += spacing;
+    }
+    
+    // DÉBITMÈTRE (si sélectionné)
+    if (drawingData.accessories.flow_meter) {
+      const flowX = equipmentX;
+      
+      ctx.fillStyle = '#F8F9FA';
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1;
+      ctx.fillRect(flowX - 7, pipeY - 6, 14, 12);
+      ctx.strokeRect(flowX - 7, pipeY - 6, 14, 12);
+      
+      ctx.strokeStyle = '#3498DB';
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2;
+        ctx.beginPath();
+        ctx.moveTo(flowX, pipeY);
+        ctx.lineTo(flowX + Math.cos(angle) * 3, pipeY + Math.sin(angle) * 3);
+        ctx.stroke();
+      }
+      
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('FI', flowX, pipeY + 12);
+      
+      equipmentX += spacing;
+    }
+    
+    // VANNE ISOLEMENT (si sélectionnée)
+    if (drawingData.accessories.isolation_valve_discharge) {
+      const valveX = equipmentX;
+      
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(valveX, pipeY - 6);
+      ctx.lineTo(valveX + 6, pipeY);
+      ctx.lineTo(valveX, pipeY + 6);
+      ctx.lineTo(valveX - 6, pipeY);
+      ctx.closePath();
+      ctx.fillStyle = '#ECF0F1';
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#34495E';
+      ctx.beginPath();
+      ctx.moveTo(valveX - 4, pipeY - 4);
+      ctx.lineTo(valveX + 4, pipeY + 4);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('XV', valveX, pipeY + 12);
+      
+      equipmentX += spacing;
+    }
+    
+    // RÉSERVOIR À VESSIE (si sélectionné)
+    if (drawingData.accessories.bladder_tank) {
+      const tankX = equipmentX;
+      const tankY = pipeY - 20;
+      
+      ctx.strokeStyle = '#8E44AD';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#F8F9FA';
+      ctx.fillRect(tankX - 6, tankY, 12, 15);
+      ctx.strokeRect(tankX - 6, tankY, 12, 15);
+      
+      ctx.strokeStyle = '#E74C3C';
+      ctx.beginPath();
+      ctx.ellipse(tankX, tankY + 7, 3, 5, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.beginPath();
+      ctx.moveTo(tankX, tankY + 15);
+      ctx.lineTo(tankX, pipeY);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('VT', tankX, pipeY + 12);
+      
+      equipmentX += spacing;
+    }
+    
+    // CLAPET ANTI-RETOUR (si sélectionné)
+    if (drawingData.accessories.check_valve) {
+      const checkX = equipmentX;
+      
+      ctx.fillStyle = '#F39C12';
+      ctx.strokeStyle = '#E67E22';
+      ctx.lineWidth = 1;
+      ctx.fillRect(checkX - 6, pipeY - 4, 12, 8);
+      ctx.strokeRect(checkX - 6, pipeY - 4, 12, 8);
+      
+      ctx.strokeStyle = '#D35400';
+      ctx.beginPath();
+      ctx.moveTo(checkX - 3, pipeY - 1);
+      ctx.lineTo(checkX + 1, pipeY);
+      ctx.lineTo(checkX - 3, pipeY + 1);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '5px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('NRV', checkX, pipeY + 12);
+      
+      equipmentX += spacing;
+    }
+    
+    return equipmentX; // Retourner la position finale pour d'autres équipements
+  };
+  
   // LÉGENDE COMPLÈTE DES ÉQUIPEMENTS (en bas à gauche au lieu des infos techniques)
   const drawEquipmentLegend = (ctx, canvas, type) => {
     const cartX = 50; 
