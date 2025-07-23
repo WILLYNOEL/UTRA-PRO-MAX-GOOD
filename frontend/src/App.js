@@ -13238,7 +13238,6 @@ function App() {
       drawSelectedEquipments(ctx, collecteurRefoulementX + 50, 0, centerY, 4, 30);
     }
 
-  };
     // 4. COLLECTEUR DE REFOULEMENT VERTICAL (parallèle)
     const collecteurRefoulementX = centerX + 50;
     ctx.strokeStyle = '#4CAF50';
