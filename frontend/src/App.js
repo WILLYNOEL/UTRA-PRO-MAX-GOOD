@@ -13990,6 +13990,79 @@ function App() {
     ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, wellX, pumpY + 47);
     ctx.fillText(`${drawingData.total_head || 0}m HMT`, wellX, pumpY + 57);
     
+    // 4bis. COFFRET DE PROTECTION ÉLECTRIQUE AU-DESSUS DU FORAGE
+    const panelX = wellX - 60;  // Position à gauche du forage
+    const panelY = groundLevel - 120; // Au-dessus du forage
+    const panelW = 50;
+    const panelH = 70;
+    
+    // Boîtier principal
+    ctx.fillStyle = '#2C3E50';
+    ctx.strokeStyle = '#1A252F';
+    ctx.lineWidth = 2;
+    ctx.fillRect(panelX, panelY, panelW, panelH);
+    ctx.strokeRect(panelX, panelY, panelW, panelH);
+    
+    // Façade grise
+    ctx.fillStyle = '#95A5A6';
+    ctx.fillRect(panelX + 3, panelY + 3, panelW - 6, panelH - 6);
+    
+    // Poignée
+    ctx.fillStyle = '#34495E';
+    ctx.fillRect(panelX + panelW - 8, panelY + panelH/2 - 5, 5, 10);
+    
+    // LED de fonctionnement (verte)
+    ctx.beginPath();
+    ctx.arc(panelX + 12, panelY + 15, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#27AE60';
+    ctx.fill();
+    
+    // Écran LCD
+    ctx.fillStyle = '#1A1A1A';
+    ctx.fillRect(panelX + 8, panelY + 25, 34, 18);
+    ctx.fillStyle = '#00FF00';
+    ctx.font = '6px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('AUTO', panelX + 25, panelY + 32);
+    ctx.fillText('ON', panelX + 25, panelY + 39);
+    
+    // Boutons de contrôle
+    ctx.fillStyle = '#E74C3C';
+    ctx.beginPath();
+    ctx.arc(panelX + 12, panelY + 50, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#27AE60';
+    ctx.beginPath();
+    ctx.arc(panelX + 25, panelY + 50, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#F39C12';
+    ctx.beginPath();
+    ctx.arc(panelX + 38, panelY + 50, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // CÂBLE ÉLECTRIQUE TRÈS FIN vers la pompe (comme demandé)
+    ctx.strokeStyle = '#E74C3C'; // Rouge comme sur votre schéma
+    ctx.lineWidth = 1; // Très fin
+    ctx.setLineDash([2, 2]); // Pointillés pour différencier de la tuyauterie
+    ctx.beginPath();
+    ctx.moveTo(panelX + panelW/2, panelY + panelH); // Depuis le bas du coffret
+    ctx.lineTo(panelX + panelW/2, groundLevel - 10); // Jusqu'au niveau sol
+    ctx.lineTo(wellX - 15, groundLevel - 10); // Horizontal vers le forage
+    ctx.lineTo(wellX - 15, pumpY - 20); // Descend jusqu'à la pompe
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset pointillés
+    
+    // Étiquette coffret
+    ctx.fillStyle = '#2C3E50';
+    ctx.font = 'bold 8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('COFFRET', panelX + panelW/2, panelY - 5);
+    ctx.fillText('PROTECTION', panelX + panelW/2, panelY - 15);
+    ctx.font = '7px Arial';
+    ctx.fillText('IP65', panelX + panelW/2, panelY + panelH + 10);
+    
     // 5. COLONNE MONTANTE FIXE
     const riserX = wellX + wellWidth/4;
     const pipeWidth = 6; // Épaisseur fixe
