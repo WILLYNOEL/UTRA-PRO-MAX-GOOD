@@ -14153,6 +14153,247 @@ function App() {
     ctx.textAlign = 'center';
     ctx.fillText(`${drawingData.flow_rate || 0}m³/h`, centerX + 20, pipeY - 8);
     
+    // ÉQUIPEMENTS SÉLECTIONNÉS - Symboles discrets sur tuyauterie
+    let equipmentX = wellX + 80; // Position de départ sur la tuyauterie
+    const equipmentSpacing = 40; // Espacement entre équipements
+    
+    // MANOMÈTRE REFOULEMENT (si sélectionné)
+    if (drawingData.accessories.pressure_gauge_discharge) {
+      const gaugeX = equipmentX;
+      const gaugeY = pipeY - 25;
+      
+      // Cercle manomètre (petit)
+      ctx.beginPath();
+      ctx.arc(gaugeX, gaugeY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      // Aiguille
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY);
+      ctx.lineTo(gaugeX + 4, gaugeY - 4);
+      ctx.stroke();
+      
+      // Raccordement à la tuyauterie
+      ctx.strokeStyle = '#7F8C8D';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gaugeX, gaugeY + 8);
+      ctx.lineTo(gaugeX, pipeY);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PI', gaugeX, gaugeY + 20);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // DÉBITMÈTRE (si sélectionné)
+    if (drawingData.accessories.flow_meter) {
+      const flowX = equipmentX;
+      
+      // Corps débitmètre (petit rectangle)
+      ctx.fillStyle = '#F8F9FA';
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(flowX - 10, pipeY - 8, 20, 16);
+      ctx.strokeRect(flowX - 10, pipeY - 8, 20, 16);
+      
+      // Roue interne
+      ctx.strokeStyle = '#3498DB';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        const angle = (i * Math.PI) / 2;
+        ctx.beginPath();
+        ctx.moveTo(flowX, pipeY);
+        ctx.lineTo(flowX + Math.cos(angle) * 4, pipeY + Math.sin(angle) * 4);
+        ctx.stroke();
+      }
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('FI', flowX, pipeY + 20);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // VANNE ISOLEMENT REFOULEMENT (si sélectionnée)
+    if (drawingData.accessories.isolation_valve_discharge) {
+      const valveX = equipmentX;
+      
+      // Losange (petit)
+      ctx.strokeStyle = '#2C3E50';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(valveX, pipeY - 8);
+      ctx.lineTo(valveX + 8, pipeY);
+      ctx.lineTo(valveX, pipeY + 8);
+      ctx.lineTo(valveX - 8, pipeY);
+      ctx.closePath();
+      ctx.fillStyle = '#ECF0F1';
+      ctx.fill();
+      ctx.stroke();
+      
+      // Obturateur
+      ctx.strokeStyle = '#34495E';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(valveX - 6, pipeY - 6);
+      ctx.lineTo(valveX + 6, pipeY + 6);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('XV', valveX, pipeY + 20);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // CLAPET ANTI-RETOUR (si sélectionné)
+    if (drawingData.accessories.check_valve) {
+      const checkX = equipmentX;
+      
+      // Corps clapet (petit rectangle)
+      ctx.fillStyle = '#F39C12';
+      ctx.strokeStyle = '#E67E22';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(checkX - 8, pipeY - 6, 16, 12);
+      ctx.strokeRect(checkX - 8, pipeY - 6, 16, 12);
+      
+      // Flèche directionnelle
+      ctx.strokeStyle = '#D35400';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(checkX - 4, pipeY - 2);
+      ctx.lineTo(checkX + 2, pipeY);
+      ctx.lineTo(checkX - 4, pipeY + 2);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('NRV', checkX, pipeY + 20);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // VANNE À BOISSEAU (si sélectionnée)
+    if (drawingData.accessories.ball_valve) {
+      const ballX = equipmentX;
+      
+      // Cercle (boisseau)
+      ctx.beginPath();
+      ctx.arc(ballX, pipeY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#9B59B6';
+      ctx.fill();
+      ctx.strokeStyle = '#8E44AD';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      
+      // Passage (ligne)
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ballX - 4, pipeY);
+      ctx.lineTo(ballX + 4, pipeY);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('BV', ballX, pipeY + 18);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // FILTRE (si sélectionné)
+    if (drawingData.accessories.suction_filter) {
+      const filterX = equipmentX;
+      
+      // Corps filtre (trapèze)
+      ctx.strokeStyle = '#16A085';
+      ctx.lineWidth = 1.5;
+      ctx.fillStyle = '#A3F7E8';
+      ctx.beginPath();
+      ctx.moveTo(filterX - 8, pipeY - 6);
+      ctx.lineTo(filterX + 8, pipeY - 6);
+      ctx.lineTo(filterX + 6, pipeY + 6);
+      ctx.lineTo(filterX - 6, pipeY + 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      // Maille du filtre (lignes zigzag)
+      ctx.strokeStyle = '#16A085';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(filterX - 4, pipeY - 2);
+      ctx.lineTo(filterX, pipeY);
+      ctx.lineTo(filterX + 4, pipeY - 2);
+      ctx.moveTo(filterX - 4, pipeY + 2);
+      ctx.lineTo(filterX, pipeY);
+      ctx.lineTo(filterX + 4, pipeY + 2);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('FT', filterX, pipeY + 18);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
+    // CAPTEUR PRESSION (si sélectionné)
+    if (drawingData.accessories.pressure_sensor) {
+      const sensorX = equipmentX;
+      const sensorY = pipeY - 20;
+      
+      // Corps capteur (petit rectangle)
+      ctx.fillStyle = '#3498DB';
+      ctx.strokeStyle = '#2980B9';
+      ctx.lineWidth = 1;
+      ctx.fillRect(sensorX - 6, sensorY - 4, 12, 8);
+      ctx.strokeRect(sensorX - 6, sensorY - 4, 12, 8);
+      
+      // Antenne/signal
+      ctx.strokeStyle = '#2980B9';
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(sensorX, sensorY, i * 3, -Math.PI/4, Math.PI/4);
+        ctx.stroke();
+      }
+      
+      // Raccordement à la tuyauterie
+      ctx.beginPath();
+      ctx.moveTo(sensorX, sensorY + 4);
+      ctx.lineTo(sensorX, pipeY);
+      ctx.stroke();
+      
+      // Étiquette très petite
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('PT', sensorX, pipeY + 18);
+      
+      equipmentX += equipmentSpacing;
+    }
+    
     // 9. CONSTRUCTION DU CHÂTEAU D'EAU
     
     // Support fixe
