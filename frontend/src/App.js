@@ -17307,8 +17307,8 @@ function App() {
                   </div>
                 </div>
 
-                {/* Zone de Dessin Ultra-Professionnelle */}
-                <div className="xl:col-span-2">
+                {/* Zone de schéma - Occupe plus d'espace */}
+                <div className="xl:col-span-3">
                   <div className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
                     <div className="flex justify-between items-center px-6 py-4 bg-slate-50 border-b">
                       <h3 className="text-xl font-bold text-slate-800 flex items-center">
