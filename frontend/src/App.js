@@ -16523,9 +16523,9 @@ function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Panel Configuration ULTRA-INTELLIGENT */}
-                <div className="xl:col-span-1 space-y-4">
+              <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+                {/* Panel Configuration OPTIMISÉ - Plus compact */}
+                <div className="xl:col-span-1 space-y-3">
                   
                   {/* Configuration Principale Intelligente */}
                   <div className="bg-white rounded-xl shadow-xl p-5 border-l-4 border-blue-600">
