@@ -16801,10 +16801,14 @@ function App() {
                         </div>
                       )}
                     </div>
-                    {/* CHAMPS SPÉCIFIQUES FORAGE */}
+                    {/* CHAMPS SPÉCIFIQUES FORAGE - OPTIMISÉS ET BIEN VISIBLES */}
                     {drawingData.installation_type === 'forage' && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
-                        <h4 className="text-sm font-bold text-orange-700 mb-2">⚡ PARAMÈTRES FORAGE</h4>
+                      <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg p-4 mb-4 shadow-lg">
+                        <h4 className="text-lg font-bold text-orange-700 mb-3 flex items-center">
+                          <span className="mr-2">⚡</span>
+                          PARAMÈTRES FORAGE
+                          <span className="ml-auto text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full">VISIBLE</span>
+                        </h4>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1">HAUTEUR CHÂTEAU D'EAU (m)</label>
