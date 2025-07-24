@@ -16507,16 +16507,16 @@ function App() {
         return (
           <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
             <div className="container mx-auto p-6">
-              {/* En-tête Expert Ultra */}
-              <div className="bg-gradient-to-r from-slate-800 to-blue-900 rounded-xl p-6 mb-6 text-white">
-                <h1 className="text-4xl font-bold mb-2">
-                  <span className="mr-3">⚙️</span>
+              {/* En-tête Expert Compact */}
+              <div className="bg-gradient-to-r from-slate-800 to-blue-900 rounded-lg p-4 mb-4 text-white">
+                <h1 className="text-2xl font-bold mb-1">
+                  <span className="mr-2">⚙️</span>
                   GÉNÉRATEUR HYDRAULIQUE EXPERT IA
                 </h1>
-                <p className="text-blue-100 text-lg">
-                  Interface Ultra-Intelligente | Auto-Calculs | Export CAD/PDF | Conformité ISO-EN-DTU
+                <p className="text-blue-100 text-sm">
+                  Interface Optimisée | Auto-Calculs | Export CAD/PDF | Conformité ISO-EN-DTU
                 </p>
-                <div className="mt-3 flex items-center space-x-4 text-sm">
+                <div className="mt-2 flex items-center space-x-3 text-xs">
                   <span className="bg-green-500 px-2 py-1 rounded">🟢 IA ACTIVE</span>
                   <span className="bg-blue-500 px-2 py-1 rounded">📐 CAD EXPERT</span>
                   <span className="bg-purple-500 px-2 py-1 rounded">🔬 NORMES ISO</span>
